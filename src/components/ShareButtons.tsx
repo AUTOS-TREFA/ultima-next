@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Facebook, Share2, Link as LinkIcon } from 'lucide-react';
 import { WhatsAppIcon } from './icons';

@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { BookOpen, Rocket } from 'lucide-react';
 import useSEO from '../hooks/useSEO';

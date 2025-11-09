@@ -1,3 +1,5 @@
+'use client';
+
 import { useQuery } from '@tanstack/react-query';
 import VehicleService from '../services/VehicleService';
 import type { Vehicle } from '../types/types';

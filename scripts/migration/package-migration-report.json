@@ -1,0 +1,33 @@
+{
+  "timestamp": "2025-11-09T02:08:21.337Z",
+  "changes": {
+    "scriptsUpdated": [
+      "dev",
+      "build",
+      "start",
+      "lint",
+      "type-check",
+      "sitemap"
+    ],
+    "dependenciesAdded": [
+      "next",
+      "@supabase/auth-helpers-nextjs",
+      "@supabase/ssr"
+    ],
+    "dependenciesRemoved": [
+      "vite",
+      "@vitejs/plugin-react",
+      "vite-tsconfig-paths"
+    ],
+    "devDependenciesAdded": [
+      "@types/node",
+      "eslint-config-next"
+    ],
+    "reactVersionUpdated": "^18.3.0"
+  },
+  "nextSteps": [
+    "Run: rm -rf node_modules package-lock.json",
+    "Run: npm install",
+    "Verify all dependencies are compatible"
+  ]
+}

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useMemo } from 'react';
 import { useVehicles } from '../context/VehicleContext';
 import { Phone, MapPin, Share2 } from 'lucide-react';

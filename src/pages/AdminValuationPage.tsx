@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { FileText, Download, Loader2, CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
 import ValuationPDFService, { RecentCommit } from '../services/ValuationPDFService';

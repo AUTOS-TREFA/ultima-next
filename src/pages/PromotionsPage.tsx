@@ -1,6 +1,8 @@
 
 
 
+'use client';
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useVehicles } from '../context/VehicleContext';
 import VehicleGridCard from '../components/VehicleGridCard';

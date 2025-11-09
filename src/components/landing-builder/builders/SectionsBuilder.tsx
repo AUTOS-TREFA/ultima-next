@@ -1,4 +1,6 @@
 
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { SectionsInputPanel } from '../SectionsInputPanel';
 import { SectionsPreviewer } from '../SectionsPreviewer';

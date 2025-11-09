@@ -321,7 +321,7 @@ export const fetchIntelimotorValuation = async (params: FetchVehicleValuationPar
 
             // Add Supabase auth if using Supabase function
             if (isSupabaseFunction) {
-                const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+                const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
                 if (supabaseAnonKey) {
                     headers['Authorization'] = `Bearer ${supabaseAnonKey}`;
                     headers['apikey'] = supabaseAnonKey;

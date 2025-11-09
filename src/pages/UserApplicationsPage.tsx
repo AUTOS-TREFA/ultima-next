@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 // FIX: Corrected casing for 'ApplicationService' import to match filename and resolve module resolution conflicts.

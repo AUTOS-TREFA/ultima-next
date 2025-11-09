@@ -1,0 +1,1507 @@
+{
+  "timestamp": "2025-11-09T02:07:22.174Z",
+  "summary": {
+    "totalFiles": 240,
+    "clientComponents": 0,
+    "serverComponents": 240,
+    "skippedFiles": 0,
+    "modificationRate": "0.0%"
+  },
+  "clientIndicators": [
+    "/\\buseState\\b/",
+    "/\\buseEffect\\b/",
+    "/\\buseContext\\b/",
+    "/\\buseReducer\\b/",
+    "/\\buseCallback\\b/",
+    "/\\buseMemo\\b/",
+    "/\\buseRef\\b/",
+    "/\\buseLayoutEffect\\b/",
+    "/\\buseImperativeHandle\\b/",
+    "/\\buseDebugValue\\b/",
+    "/\\buseTransition\\b/",
+    "/\\buseDeferredValue\\b/",
+    "/\\buseId\\b/",
+    "/\\buseQuery\\b/",
+    "/\\buseMutation\\b/",
+    "/\\buseForm\\b/",
+    "/\\buseFieldArray\\b/",
+    "/\\buseWatch\\b/",
+    "/\\buseFormContext\\b/",
+    "/\\buseController\\b/",
+    "/from ['\"]react-hook-form['\"]/",
+    "/from ['\"]@tanstack\\/react-query['\"]/",
+    "/onClick\\s*=/",
+    "/onChange\\s*=/",
+    "/onSubmit\\s*=/",
+    "/onFocus\\s*=/",
+    "/onBlur\\s*=/",
+    "/addEventListener/",
+    "/createContext/",
+    "/\\bwindow\\./",
+    "/\\blocalstorage\\./i",
+    "/\\bsessionstorage\\./i",
+    "/\\bnavigator\\./",
+    "/\\bdocument\\./"
+  ],
+  "alwaysClientPatterns": [
+    "/\\/context\\//i",
+    "/Context\\.tsx?$/",
+    "/Provider\\.tsx?$/",
+    "/AuthHandler/",
+    "/RedirectManager/",
+    "/LeadSourceHandler/",
+    "/ErrorBoundary/",
+    "/ProtectedRoute/",
+    "/PublicRoute/",
+    "/AdminRoute/",
+    "/SalesRoute/"
+  ],
+  "results": [
+    {
+      "file": "src/components/icons.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/icons-jsx.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/WhyChooseTrefaSection.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/WebhookTestPanel.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/WallOfLove.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/VerticalStepper.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/VehicleSelector.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/VehicleListCardB.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/VehicleGridCard.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/VehicleConnectionStatus.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/VehicleCarousel.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/VehicleCardSkeleton.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/VehicleCard.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/ValuationWidget.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/UserAnalyticsModal.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/TopMenu.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/TinderTutorialOverlay.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/TestimonialCta.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/SurveyInvitation.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/StepIndicator.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/StatsCard.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/Sparkles.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/SimpleVehicleCard.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/SidebarContent.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/ShareButtons.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/SeparacionModule.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/ScrollToTop.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/SalesRoute.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/ReviewCard.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/RegisterBenefits.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/RedirectManager.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/RecentlyViewed.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/RecentActivity.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/PurchaseProjectionModule.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/PublicRoute.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/ProtectedRoute.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/PrintableApplication.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/PriceRangeSlider.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/PriceDropNotificationToggle.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/PortalCta.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/Pagination.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/OnboardingStepper.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/OnboardingModal.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/OnboardingGuide.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/MiniValuationForm.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/MegaMenu.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/MainLayout.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/LocationSection.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/LocationGrid.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/Lightbox.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/LeadSourceHandler.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/LazyImage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/LandingHeaderB.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/KeyEventsSummary.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/InventorySliderCard.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/InventorySlider.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/InventoryLayout.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/InspectionReport.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/InjectionCard.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/ImageCarousel.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/IDScanner.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/HomePageHeader.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/HeroVehicleSlider.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/HeroVehicleScroller.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/HeroVehicleCard.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/HeaderSearchBar.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/Header.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/FormField.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/Footer.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/FinancialProjection.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/FilterSidebar.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/FileUpload.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/ExplorarTutorialOverlay.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/ErrorBoundary.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/EmailNotificationsHistory.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/EdgeVehicleCard.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/EbookCta.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/DynamicRoadmapDisplay.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/DocumentUploadSection.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/DocumentUploadDashboardModule.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/DashboardVehicleCard.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/DashboardLayout.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/CreditScoreRecommendations.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/CreateUserModal.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/CountdownTimer.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/Confetti.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/CircularProgress.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/CarSwiper.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/Breadcrumbs.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/BottomNav.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/BetaSurveyInvitation.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/BankingProfileSummary.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/BankSelector.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/BankScoreCard.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/AuthHandler.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/AuthBenefitsBlock.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/ApplicationStatusGuide.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/ApplicationCard.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/AnimatedGridBackground.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/AnimatedBlobs.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/AnimatedBackground.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/AirtableImageUploader.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/AdminRoute.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/AdminRoadmapManager.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/AccordionItem.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/SectionsPreviewer.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/SectionsInputPanel.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/PublishedPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/Previewer.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/PreviewPane.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/Navbar.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/LandingPagePreviewer.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/LandingPageInputPanel.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/InputPanel.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/HeroPreviewer.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/HeroInputPanel.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/FeaturesPreviewer.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/FeaturesInputPanel.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/DeviceSwitcher.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/ComparisonPreviewer.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/ComparisonInputPanel.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/CodeBlock.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/CarouselPreviewer.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/CarouselInputPanel.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/builders/SectionsBuilder.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/builders/LandingPageBuilder.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/builders/HeroBuilder.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/builders/FeaturesBuilder.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/builders/ComparisonBuilder.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/builders/CarouselBuilder.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/block-templates/BlockSideBySideImageLeft.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/block-templates/BlockSideBySide.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/block-templates/BlockImageTopStandard.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/block-templates/BlockImageTopCentered.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/block-templates/hero/HeroSplit.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/block-templates/hero/HeroMinimalist.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/block-templates/hero/HeroCentered.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/block-templates/features/FeaturesIconGrid.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/block-templates/features/FeaturesCards.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/block-templates/features/FeaturesAlternating.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/block-templates/comparison/ComparisonTable.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/block-templates/comparison/ComparisonSideBySide.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/block-templates/comparison/ComparisonPricingBoxes.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/block-templates/carousels/HorizontalCarousel.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/block-templates/carousels/GalleryCarousel.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/landing-builder/block-templates/carousels/CenteredCarousel.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/dashboard/TrendLineChart.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/dashboard/SourcePieChart.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/dashboard/FilterPanel.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/dashboard/ConversionFunnel.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/VehicleCard/VehicleCardSpecs.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/VehicleCard/VehicleCardPromotions.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/VehicleCard/VehicleCardPrice.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/VehicleCard/VehicleCardImage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/VehicleCard/VehicleCardHeader.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/VehicleCard/VehicleCardActions.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/components/RedirectManager.ts",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/faqs.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/VisitasPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/VehicleListPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/VehicleForSaleDetailPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/VehicleDetailPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/VacancyDetailPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/VacanciesListPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/UserApplicationsPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/SurveyPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/Solicitudes.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/SimpleCRMPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/SellMyCarPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/SeguimientoPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/SalesLeadsDashboardPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/SalesClientProfilePage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/ResponsiveVehicleListPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/ResponsiveInventoryPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/RapidInventoryPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/R2ImageManagerPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/QuoteCarPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/PromotionsPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/ProfilePage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/PrivacyPolicyPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/PerfilacionBancariaPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/NotFoundPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/MarketingHubPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/MarketingConfigPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/MarketingCategoryPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/MarketingAnalyticsDashboardPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/LandingPageOriginal.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/LandingPageBolt.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/LandingPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/KitTrefaPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/IntelPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/HomePage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/GetAQuotePage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/FinanciamientosPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/FavoritesPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/ExplorarPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/DynamicLandingPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/DashboardPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/DashboardInventoryPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/ContactPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/ConstructorPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/ChangelogPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/CarStudioPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/BrandsPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/BetaPollPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AutosConOfertaPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AuthPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AsesorProfilePage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/Application.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AdminValuationPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AdminVacanciesPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AdminUserManagementPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AdminSalesDashboard.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AdminLogsPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AdminLoginPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AdminLeadsDashboardPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AdminInspectionsListPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AdminInspectionPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AdminEndpointConfigPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AdminConfigPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AdminComprasDashboardPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AdminClientProfilePage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AdminCandidatesPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AdminAirtableConfigPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/AboutPage.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/pages/config.ts",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/context/VehicleContext.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/context/LandingBuilderContext.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/context/FilterContext.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/context/ConfigContext.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/context/AuthContext.tsx",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/hooks/useVehicles.ts",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/hooks/useVehicleFilters.ts",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/hooks/useVehicleConnection.ts",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/hooks/useSEO.ts",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/hooks/usePriceWatch.ts",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/hooks/useIsMobile.ts",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/hooks/useIntersectionObserver.ts",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/hooks/useFavorites.ts",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    },
+    {
+      "file": "src/hooks/useDebounce.ts",
+      "type": "server",
+      "modified": false,
+      "reason": "No client-side features detected"
+    }
+  ],
+  "recommendations": [
+    "Review server component candidates for potential server-side rendering",
+    "Consider using Server Components for static content",
+    "Client Components with minimal interactivity could be split",
+    "Use Suspense boundaries for client components with data fetching"
+  ]
+}

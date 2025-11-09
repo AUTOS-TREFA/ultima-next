@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FacebookIcon, InstagramIcon, LinkedInIcon, GoogleIcon } from './icons';
@@ -16,7 +18,7 @@ const Footer: React.FC = () => {
     const navigate = useNavigate();
 
     // Get app version from git commit hash
-    const appVersion = import.meta.env.VITE_GIT_COMMIT || import.meta.env.VITE_APP_VERSION || 'dev';
+    const appVersion = process.env.NEXT_PUBLIC_GIT_COMMIT || process.env.NEXT_PUBLIC_APP_VERSION || 'dev';
 
     const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, to: string, authRequired: boolean) => {
         if (authRequired && !session) {

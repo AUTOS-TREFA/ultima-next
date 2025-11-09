@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AccordionItem from './AccordionItem';

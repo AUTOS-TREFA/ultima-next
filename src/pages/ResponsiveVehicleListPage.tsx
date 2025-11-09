@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 
 const VehicleListPage = lazy(() => import('./VehicleListPage'));

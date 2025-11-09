@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Save, Loader2, Database, AlertTriangle, CheckCircle } from 'lucide-react';

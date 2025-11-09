@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { Loader2, AlertTriangle, Save } from 'lucide-react';
 import { AdminService } from '../services/AdminService'; // Assuming a function to get/set config will be here

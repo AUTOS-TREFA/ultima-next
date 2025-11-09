@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo } from 'react';
 import { config } from './config';
 import useSEO from '../hooks/useSEO';

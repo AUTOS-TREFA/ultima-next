@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import type { SavedHeroProps, SavedBlockProps, SavedFeaturesProps, SavedCarouselProps, SavedComparisonProps } from '../../types/landing-builder';
 import { CodeBlock } from './CodeBlock';

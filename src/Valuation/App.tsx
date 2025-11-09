@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -864,4 +866,3 @@ export default ValuationApp;
 // }
 
 // export default ValuationApp;
-

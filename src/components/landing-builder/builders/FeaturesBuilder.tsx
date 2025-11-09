@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import type { FeaturesProps, FeatureItem } from '../../types/landing-builder';
 import { GoogleGenAI } from "@google/genai";

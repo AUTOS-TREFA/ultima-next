@@ -8,8 +8,8 @@
  */
 
 const SUPABASE_STORAGE_BASE = 'https://jjepfehmuybpctdzipnu.supabase.co/storage/v1/object/public';
-const IMAGE_CDN_URL = import.meta.env.VITE_IMAGE_CDN_URL || '';
-const R2_PUBLIC_URL = import.meta.env.VITE_CLOUDFLARE_R2_PUBLIC_URL || '';
+const IMAGE_CDN_URL = process.env.NEXT_PUBLIC_IMAGE_CDN_URL || '';
+const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || '';
 
 export interface ImageOptions {
   width?: number;

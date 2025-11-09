@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Calendar, Filter, RotateCcw, X } from 'lucide-react';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';

@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { WordPressVehicle } from '../types/types';
 import SimpleVehicleCard from './SimpleVehicleCard';

@@ -1,4 +1,6 @@
 
+'use client';
+
 import React, { useState } from 'react';
 import { useBuilderContext } from '../../../context/LandingBuilderContext';
 import { LandingPageInputPanel } from '../LandingPageInputPanel';

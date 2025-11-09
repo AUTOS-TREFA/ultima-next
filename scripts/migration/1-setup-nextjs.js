@@ -135,46 +135,48 @@ if (!fs.existsSync(envLocalPath)) {
 // Step 4: Update tsconfig.json for Next.js
 console.log('\n📝 Updating tsconfig.json for Next.js...');
 const tsconfigPath = path.join(rootDir, 'tsconfig.json');
-const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, 'utf8'));
 
-tsconfig.compilerOptions = {
-  ...tsconfig.compilerOptions,
-  target: "ES2017",
-  lib: ["dom", "dom.iterable", "esnext"],
-  allowJs: true,
-  skipLibCheck: true,
-  strict: true,
-  forceConsistentCasingInFileNames: true,
-  noEmit: true,
-  esModuleInterop: true,
-  module: "esnext",
-  moduleResolution: "bundler",
-  resolveJsonModule: true,
-  isolatedModules: true,
-  jsx: "preserve",
-  incremental: true,
-  plugins: [
-    {
-      "name": "next"
+// Create backup first
+fs.copyFileSync(tsconfigPath, tsconfigPath + '.backup');
+
+// Create new Next.js compatible tsconfig
+const newTsconfig = {
+  compilerOptions: {
+    target: "ES2017",
+    lib: ["dom", "dom.iterable", "esnext"],
+    allowJs: true,
+    skipLibCheck: true,
+    strict: true,
+    noEmit: true,
+    esModuleInterop: true,
+    module: "esnext",
+    moduleResolution: "bundler",
+    resolveJsonModule: true,
+    isolatedModules: true,
+    jsx: "preserve",
+    incremental: true,
+    plugins: [
+      {
+        name: "next"
+      }
+    ],
+    paths: {
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/pages/*": ["./src/pages/*"],
+      "@/services/*": ["./src/services/*"],
+      "@/context/*": ["./src/context/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/utils/*": ["./src/utils/*"]
     }
-  ],
-  paths: {
-    "@/*": ["./src/*"],
-    "@/components/*": ["./src/components/*"],
-    "@/pages/*": ["./src/pages/*"],
-    "@/services/*": ["./src/services/*"],
-    "@/context/*": ["./src/context/*"],
-    "@/hooks/*": ["./src/hooks/*"],
-    "@/types/*": ["./src/types/*"],
-    "@/utils/*": ["./src/utils/*"],
-  }
+  },
+  include: ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  exclude: ["node_modules"]
 };
 
-tsconfig.include = ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"];
-tsconfig.exclude = ["node_modules"];
-
-fs.writeFileSync(tsconfigPath, JSON.stringify(tsconfig, null, 2));
-console.log('  ✓ tsconfig.json updated');
+fs.writeFileSync(tsconfigPath, JSON.stringify(newTsconfig, null, 2));
+console.log('  ✓ tsconfig.json updated (backup created)');
 
 // Step 5: Create .gitignore additions
 console.log('\n📋 Updating .gitignore...');

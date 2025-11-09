@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { getCdnUrl, getResponsiveSrcSet, ImageOptions } from '../utils/imageUrl';
 

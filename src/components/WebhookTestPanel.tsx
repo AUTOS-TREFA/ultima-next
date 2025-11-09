@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import VehicleService from '../services/VehicleService';
 

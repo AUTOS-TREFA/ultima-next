@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { BookOpen, Users, AlertCircle, Wrench, Search, X, Maximize2, List } from 'lucide-react';
 import useSEO from '../hooks/useSEO';

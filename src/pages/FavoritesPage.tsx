@@ -1,5 +1,7 @@
 
 
+'use client';
+
 import React, { useMemo } from 'react';
 import { useFavorites } from '../hooks/useFavorites';
 import { useVehicles } from '../context/VehicleContext';

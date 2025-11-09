@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { motion, useMotionValue, useTransform, PanInfo } from 'framer-motion';
 import LazyImage from './LazyImage';

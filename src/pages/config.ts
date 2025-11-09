@@ -1,3 +1,5 @@
+'use client';
+
 const env = (import.meta as any)?.env ?? {};
 
 // --- Supabase Configuration ---

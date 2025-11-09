@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 
 const useIsMobile = (breakpoint = 1024) => { // 1024px is lg breakpoint

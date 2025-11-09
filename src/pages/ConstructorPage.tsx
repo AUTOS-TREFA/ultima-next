@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { BuilderProvider, useBuilderContext } from '../context/LandingBuilderContext';
 import { HeroBuilder } from '../components/landing-builder/builders/HeroBuilder';

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useCallback, useEffect, lazy, Suspense, useRef } from 'react';
 import { Upload, Camera, CheckCircle, Trash2 } from 'lucide-react';
 import { DocumentService, UploadedDocument } from '../services/documentService';

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { DownloadIcon, FileTextIcon, XIcon, ChevronUpIcon } from './icons';
 

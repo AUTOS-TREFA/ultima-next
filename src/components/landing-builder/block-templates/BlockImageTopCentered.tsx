@@ -1,4 +1,6 @@
 
+'use client';
+
 import React, { useState, useEffect, useRef } from 'react';
 import type { BlockProps, Roundness } from '../../../types/landing-builder';
 

@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 type Device = 'desktop' | 'tablet' | 'mobile';
