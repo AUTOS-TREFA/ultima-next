@@ -1,4 +1,8 @@
-import VacancyDetailPage from '@/pages/VacancyDetailPage';
+'use client';
+
+export const dynamic = 'force-dynamic';
+
+import VacancyDetailPage from '@/page-components/VacancyDetailPage';
 
 interface PageProps {
   params: { id: string };

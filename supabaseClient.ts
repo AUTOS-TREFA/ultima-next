@@ -1,16 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 
 // IMPORTANT: Your Supabase project's URL and Anon Key should be stored in environment variables.
-// The execution environment should provide these variables via import.meta.env.
+// Next.js uses process.env, with NEXT_PUBLIC_ prefix for client-side access.
 // For example:
-// VITE_SUPABASE_URL="https://jjepfehmuybpctdzipnu.supabase.co"
+// NEXT_PUBLIC_SUPABASE_URL="https://jjepfehmuybpctdzipnu.supabase.co"
 // ...
 const FALLBACK_URL = 'https://jjepfehmuybpctdzipnu.supabase.co';
 const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqZXBmZWhtdXlicGN0ZHppcG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQxOTk2MDMsImV4cCI6MjA1OTc3NTYwM30.yaMESZqaoLvkbVSgdHxpU-Vb7q-naxj95QxcpRYPrX4';
 
-const env = (import.meta as any)?.env;
-const envUrl = env?.VITE_SUPABASE_URL;
-const envKey = env?.VITE_SUPABASE_ANON_KEY;
+// Next.js environment variables - supports both NEXT_PUBLIC_ and VITE_ prefixes
+const envUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const envKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
 const supabaseUrl = (typeof envUrl === 'string' && envUrl.startsWith('http')) ? envUrl : FALLBACK_URL;
 
@@ -39,7 +39,7 @@ const isKeyValidForProject = (key: string): boolean => {
     }
 };
 
-const supabaseAnonKey = isKeyValidForProject(envKey) ? envKey : FALLBACK_KEY;
+const supabaseAnonKey = (envKey && isKeyValidForProject(envKey)) ? envKey : FALLBACK_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Supabase URL and Anon Key must be defined.');

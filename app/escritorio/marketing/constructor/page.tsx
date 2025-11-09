@@ -1,6 +1,8 @@
 'use client';
 
-import ConstructorPage from '@/pages/ConstructorPage';
+export const dynamic = 'force-dynamic';
+
+import ConstructorPage from '@/page-components/ConstructorPage';
 
 export default function Page() {
   return <ConstructorPage />;

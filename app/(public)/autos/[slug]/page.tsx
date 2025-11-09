@@ -1,4 +1,8 @@
-import VehicleDetailPage from '@/pages/VehicleDetailPage';
+'use client';
+
+export const dynamic = 'force-dynamic';
+
+import VehicleDetailPage from '@/page-components/VehicleDetailPage';
 
 interface PageProps {
   params: { slug: string };

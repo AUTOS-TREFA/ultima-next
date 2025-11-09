@@ -1,6 +1,8 @@
 'use client';
 
-import ExplorarPage from '@/pages/ExplorarPage';
+export const dynamic = 'force-dynamic';
+
+import ExplorarPage from '@/page-components/ExplorarPage';
 
 export default function Page() {
   return <ExplorarPage />;

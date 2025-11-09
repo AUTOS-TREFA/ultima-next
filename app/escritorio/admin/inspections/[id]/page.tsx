@@ -1,4 +1,8 @@
-import AdminInspectionPage from '@/pages/AdminInspectionPage';
+'use client';
+
+export const dynamic = 'force-dynamic';
+
+import AdminInspectionPage from '@/page-components/AdminInspectionPage';
 
 interface PageProps {
   params: { id: string };

@@ -30,7 +30,10 @@
         "./src/components/*"
       ],
       "@/pages/*": [
-        "./src/pages/*"
+        "./src/page-components/*"
+      ],
+      "@/page-components/*": [
+        "./src/page-components/*"
       ],
       "@/services/*": [
         "./src/services/*"

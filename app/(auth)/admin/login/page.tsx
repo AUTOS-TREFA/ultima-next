@@ -1,6 +1,8 @@
 'use client';
 
-import AdminLoginPage from '@/pages/AdminLoginPage';
+export const dynamic = 'force-dynamic';
+
+import AdminLoginPage from '@/page-components/AdminLoginPage';
 
 export default function Page() {
   return <AdminLoginPage />;
