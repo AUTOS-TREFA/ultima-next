@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { SellCarService } from '../services/SellCarService';
 import { AdminService } from '../services/AdminService';
@@ -20,9 +21,10 @@ const ProfileDataItem: React.FC<{ label: string, value: any, icon?: React.ReactN
 );
 
 const AutosConOfertaPage: React.FC = () => {
-    const { listingId } = useParams<{ listingId: string }>();
+    const params = useParams<{ listingId: string }>();
+    const listingId = params?.listingId;
     const { user } = useAuth();
-    const navigate = useNavigate();
+    const router = useRouter();
     const queryClient = useQueryClient();
 
     const [contacted, setContacted] = useState(false);
@@ -117,7 +119,7 @@ const AutosConOfertaPage: React.FC = () => {
     return (
         <div className="space-y-6 max-w-6xl mx-auto">
             <div className="flex items-center justify-between">
-                <Link to="/escritorio/admin/compras" className="flex items-center gap-2 text-primary-600 hover:text-primary-800 font-semibold">
+                <Link href="/escritorio/admin/compras" className="flex items-center gap-2 text-primary-600 hover:text-primary-800 font-semibold">
                     <ArrowLeft className="w-5 h-5" />
                     Volver a Compras
                 </Link>
@@ -356,7 +358,7 @@ const AutosConOfertaPage: React.FC = () => {
                         {!kommoWebhookUrl && (
                             <p className="text-xs text-red-600 mt-2">
                                 No se ha configurado el webhook. Configúralo en{' '}
-                                <Link to="/escritorio/admin/marketing" className="underline">
+                                <Link href="/escritorio/admin/marketing" className="underline">
                                     Marketing
                                 </Link>
                             </p>

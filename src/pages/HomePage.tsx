@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useVehicles } from '../context/VehicleContext';
 import type { Vehicle } from '../types/types';
 import useIntersectionObserver from '../hooks/useIntersectionObserver';
@@ -16,7 +17,6 @@ import { motion } from 'framer-motion';
 import WallOfLove from '../components/WallOfLove';
 import { formatPrice } from '../utils/formatters';
 import { getVehicleImage } from '../utils/getVehicleImage';
-import useSEO from '../hooks/useSEO';
 import WhyChooseTrefaSection from '../components/WhyChooseTrefaSection';
 import VehicleGridCard from '../components/VehicleGridCard';
 import LazyImage from '../components/LazyImage';
@@ -54,7 +54,7 @@ const HeroVehicleCard: React.FC<{ vehicle: Vehicle }> = React.memo(({ vehicle })
           </div>
         </div>
       </div>
-      <Link to={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10">
+      <Link href={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10">
         <span className="sr-only">Ver detalles de {vehicle.titulo}</span>
       </Link>
     </div>
@@ -176,7 +176,7 @@ const NewHeroSection: React.FC = () => {
 
       <div className="mt-12 sm:mt-14 text-center">
         <Link
-          to="/autos"
+          href="/autos"
           data-gtm-id="cta-principal-inicio"
           className="inline-block text-xl font-semibold transition-all duration-300 px-10 py-5 rounded-lg text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700"
         >
@@ -320,7 +320,7 @@ const FeaturedInventorySection: React.FC = () => {
       </div>
       <div className="mt-12 text-center">
         <Link
-          to="/autos"
+          href="/autos"
           className="text-base font-semibold text-primary-600 hover:text-primary-700 transition-colors"
         >
           Conocer nuestro famoso inventario &rarr;
@@ -413,11 +413,11 @@ const LandingPageHero: React.FC = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 pt-2 lg:pt-4 w-full sm:w-auto">
-            <Link to="/autos" className="inline-flex items-center justify-center gap-2 bg-background text-foreground border-2 border-input hover:bg-accent hover:text-accent-foreground px-6 py-2.5 lg:px-8 lg:py-3 rounded-lg font-semibold transition-all text-sm lg:text-base">
+            <Link href="/autos" className="inline-flex items-center justify-center gap-2 bg-background text-foreground border-2 border-input hover:bg-accent hover:text-accent-foreground px-6 py-2.5 lg:px-8 lg:py-3 rounded-lg font-semibold transition-all text-sm lg:text-base">
               Ver Inventario
               <Car className="w-4 h-4" />
             </Link>
-            <Link to="/kit-trefa" className="inline-flex items-center justify-center gap-2 bg-primary text-white hover:bg-primary/90 px-6 py-2.5 lg:px-8 lg:py-3 rounded-lg font-semibold shadow-lg transition-all text-sm lg:text-base">
+            <Link href="/kit-trefa" className="inline-flex items-center justify-center gap-2 bg-primary text-white hover:bg-primary/90 px-6 py-2.5 lg:px-8 lg:py-3 rounded-lg font-semibold shadow-lg transition-all text-sm lg:text-base">
               Conoce el Kit de Seguridad
               <ArrowRight className="w-4 h-4" />
             </Link>
@@ -480,7 +480,7 @@ const TestimonioSeparator: React.FC = () => {
 /* ---------- CTA Cards Section ---------- */
 const CTACardsSection: React.FC = () => {
   const { vehicles: allVehicles } = useVehicles();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const marcas = useMemo(() => {
     if (!allVehicles) return [];
@@ -490,21 +490,21 @@ const CTACardsSection: React.FC = () => {
         id: marcaName,
         name: marcaName,
         slug: marcaName.toLowerCase().replace(/\s+/g, '-'),
-        logoUrl: BRAND_LOGOS[marcaName] || '/images/trefalogo.png'
+        logoUrl: '/images/trefalogo.png'
     }));
   }, [allVehicles]);
 
   const handleFilterClick = (filterKey: string, filterValue: string) => {
     if (filterKey === 'automarca') {
-        navigate(`/marcas/${filterValue.toLowerCase()}`);
+        router.push(`/marcas/${filterValue.toLowerCase()}`);
     } else if (filterKey === 'classification') {
-        navigate(`/carroceria/${filterValue.toLowerCase()}`);
+        router.push(`/carroceria/${filterValue.toLowerCase()}`);
     } else {
         const params = new URLSearchParams();
         if (filterValue) {
              params.set(filterKey, filterValue);
         }
-        navigate(`/autos?${params.toString()}`);
+        router.push(`/autos?${params.toString()}`);
     }
   };
 
@@ -519,7 +519,7 @@ const CTACardsSection: React.FC = () => {
               <p className="mt-4 text-lg text-gray-300">
                 Autos seminuevos seleccionados cuidadosamente para ti.
               </p>
-              <Link to="/autos" className="mt-8 inline-flex items-center font-semibold group text-lg">
+              <Link href="/autos" className="mt-8 inline-flex items-center font-semibold group text-lg">
                 Ver inventario
                 <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
               </Link>
@@ -546,7 +546,7 @@ const CTACardsSection: React.FC = () => {
                 Recibe una oferta por tu auto en un proceso rápido y transparente.
               </p>
               <Link
-                to="/vender-mi-auto"
+                href="/vender-mi-auto"
                 className="mt-6 inline-flex items-center font-semibold group text-lg"
               >
                 Recibir una oferta
@@ -594,7 +594,7 @@ const CTACardsSection: React.FC = () => {
                 Nuevo portal de financiamiento con respuesta en 24 horas o menos.
               </p>
               <Link
-                to="/escritorio/aplicacion"
+                href="/escritorio/aplicacion"
                 className="mt-8 text-trefa-primary inline-flex items-center font-semibold group text-lg"
               >
                 Ver autos elegibles
@@ -617,13 +617,7 @@ const CTACardsSection: React.FC = () => {
 
 /* ---------- Home Page ---------- */
 const HomePage: React.FC = () => {
-  useSEO({
-    title: 'Autos Seminuevos Certificados y con Financiamiento | TREFA',
-    description:
-      'Compra y vende tu auto de forma segura. En TREFA ofrecemos seminuevos certificados con inspección de 150 puntos y financiamiento ágil 100% digital.',
-    keywords:
-      'autos seminuevos, seminuevos monterrey, venta de autos, financiamiento automotriz, comprar auto, vender auto, agencia de seminuevos, trefa',
-  });
+  // SEO metadata is handled in the page.tsx file in Next.js
 
   return (
     <main className="relative z-10">

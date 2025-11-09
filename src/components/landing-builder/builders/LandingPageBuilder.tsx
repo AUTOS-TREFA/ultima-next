@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useBuilderContext } from '../../../context/LandingBuilderContext';
 import { LandingPageInputPanel } from '../LandingPageInputPanel';
 import { LandingPagePreviewer } from '../LandingPagePreviewer';
-import type { SavedHeroProps, SavedBlockProps, SavedFeaturesProps, SavedCarouselProps, SavedComparisonProps, PublishedPage } from '../../types/landing-builder';
+import type { SavedHeroProps, SavedBlockProps, SavedFeaturesProps, SavedCarouselProps, SavedComparisonProps, PublishedPage } from '../../../types/landing-builder';
 
 export const LandingPageBuilder: React.FC = () => {
     const { savedHeros, savedSections, savedFeatures, savedCarousels, savedComparisons, addPublishedPage } = useBuilderContext();

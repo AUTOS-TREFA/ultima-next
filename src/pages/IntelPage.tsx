@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { BookOpen, Users, AlertCircle, Wrench, Search, X, Maximize2, List } from 'lucide-react';
-import useSEO from '../hooks/useSEO';
 
 type CategoryType = 'usuario' | 'colaborador' | 'admin';
 
@@ -17,10 +16,7 @@ interface DocSectionData {
 }
 
 const IntelPage: React.FC = () => {
-  useSEO({
-    title: 'Centro de Documentación - Autos TREFA',
-    description: 'Guías completas para usuarios, colaboradores y administradores de la plataforma TREFA',
-  });
+    // SEO metadata is handled in the page.tsx file in Next.js
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<CategoryType | null>(null);

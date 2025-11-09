@@ -393,7 +393,7 @@ export default function MarketingConfigPage() {
     if (result.config) {
       marketingConfigService.trackConversionEvent(
         'test_event',
-        'Lead',
+        'LeadComplete',
         { test: true, timestamp: new Date().toISOString() }
       );
     }

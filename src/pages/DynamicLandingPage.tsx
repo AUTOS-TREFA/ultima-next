@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useRouter } from 'next/navigation';
 import LandingPageService, { type LandingPageWithComponents } from '../services/LandingPageService';
 import { generateSEOFromSections } from '../utils/seoGenerator';
 import type {
@@ -78,8 +78,9 @@ const renderSection = (
 };
 
 const DynamicLandingPage: React.FC = () => {
-  const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
+  const params = useParams<{ slug: string }>();
+    const slug = params?.slug;
+  const router = useRouter();
   const [page, setPage] = useState<LandingPageWithComponents | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -177,7 +178,7 @@ const DynamicLandingPage: React.FC = () => {
           <h1 className="text-4xl font-bold text-slate-900 mb-4">404</h1>
           <p className="text-lg text-slate-600 mb-8">{error || 'Landing page not found'}</p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => router.push('/')}
             className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
             Volver al inicio
@@ -191,9 +192,9 @@ const DynamicLandingPage: React.FC = () => {
     <main className="min-h-screen">
       {page.components.map((component) => {
         const section = {
+          ...component.data,
           id: component.id,
-          layout: component.layout,
-          ...component.data
+          layout: component.layout
         };
         return (
           <div key={component.id}>

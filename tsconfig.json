@@ -56,6 +56,11 @@
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "constructor",
+    "server",
+    "supabase",
+    "test-*.ts",
+    "vite.config.ts"
   ]
 }

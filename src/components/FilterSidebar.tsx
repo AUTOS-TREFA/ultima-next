@@ -118,13 +118,13 @@ const FilterSidebar: React.FC<FilterSidebarProps> = (props) => {
 
     const counts = useMemo(() => ({
         marcas: Object.fromEntries((filterOptions?.marcas || []).map(s => [s.name, s.count])),
-        autoano: Object.fromEntries((filterOptions?.autoano || []).map(y => [y.name, y.count])),
-        garantia: Object.fromEntries((filterOptions?.garantia || []).map(c => [c.name, c.count])),
-        transmision: Object.fromEntries((filterOptions?.transmision || []).map(t => [t.name, t.count])),
-        combustible: Object.fromEntries((filterOptions?.combustible || []).map(f => [f.name, f.count])),
+        autoano: Object.fromEntries((filterOptions?.years || []).map(y => [y.name, y.count])),
+        garantia: Object.fromEntries((filterOptions?.warranties || []).map(c => [c.name, c.count])),
+        transmision: Object.fromEntries((filterOptions?.transmissions || []).map(t => [t.name, t.count])),
+        combustible: Object.fromEntries((filterOptions?.combustibles || []).map(f => [f.name, f.count])),
         carroceria: Object.fromEntries((filterOptions?.carroceria || []).map(w => [w.name, w.count])),
-        promociones: Object.fromEntries((filterOptions?.promociones || []).map(p => [p.name, p.count])),
-        ubicacion: Object.fromEntries((filterOptions?.ubicacion || []).map(p => [p.name, p.count])),
+        promociones: Object.fromEntries((filterOptions?.promotions || []).map(p => [p.name, p.count])),
+        ubicacion: Object.fromEntries((filterOptions?.sucursales || []).map(p => [p.name, p.count])),
     }), [filterOptions]);
 
     const FilterBody = (
@@ -210,27 +210,27 @@ const FilterSidebar: React.FC<FilterSidebarProps> = (props) => {
             </AccordionItem>
 
             <AccordionItem title="Año">
-                <CheckboxFilterGroup options={(filterOptions?.autoano || []).map(y => y.name)} selected={currentFilters.autoano || []} onChange={(v) => handleCheckboxChange('autoano', v)} counts={counts.autoano} />
+                <CheckboxFilterGroup options={(filterOptions?.years || []).map(y => y.name)} selected={currentFilters.autoano || []} onChange={(v) => handleCheckboxChange('autoano', v)} counts={counts.autoano} />
             </AccordionItem>
 
             <AccordionItem title="Sucursal">
-                <CheckboxFilterGroup options={(filterOptions?.ubicacion || []).map(s => s.name)} selected={currentFilters.ubicacion || []} onChange={(v) => handleCheckboxChange('ubicacion', v)} counts={counts.ubicacion} />
+                <CheckboxFilterGroup options={(filterOptions?.sucursales || []).map(s => s.name)} selected={currentFilters.ubicacion || []} onChange={(v) => handleCheckboxChange('ubicacion', v)} counts={counts.ubicacion} />
             </AccordionItem>
 
             <AccordionItem title="Transmisión">
-                <CheckboxFilterGroup options={(filterOptions?.transmision || []).map(t => t.name)} selected={currentFilters.transmision || []} onChange={(v) => handleCheckboxChange('transmision', v)} counts={counts.transmision} />
+                <CheckboxFilterGroup options={(filterOptions?.transmissions || []).map(t => t.name)} selected={currentFilters.transmision || []} onChange={(v) => handleCheckboxChange('transmision', v)} counts={counts.transmision} />
             </AccordionItem>
 
             <AccordionItem title="Combustible">
-                <CheckboxFilterGroup options={(filterOptions?.combustible || []).map(c => c.name)} selected={currentFilters.combustible || []} onChange={(v) => handleCheckboxChange('combustible', v)} counts={counts.combustible} />
+                <CheckboxFilterGroup options={(filterOptions?.combustibles || []).map(c => c.name)} selected={currentFilters.combustible || []} onChange={(v) => handleCheckboxChange('combustible', v)} counts={counts.combustible} />
             </AccordionItem>
 
             <AccordionItem title="Garantía">
-                <CheckboxFilterGroup options={(filterOptions?.garantia || []).map(w => w.name)} selected={currentFilters.garantia || []} onChange={(v) => handleCheckboxChange('garantia', v)} counts={counts.garantia} />
+                <CheckboxFilterGroup options={(filterOptions?.warranties || []).map(w => w.name)} selected={currentFilters.garantia || []} onChange={(v) => handleCheckboxChange('garantia', v)} counts={counts.garantia} />
             </AccordionItem>
 
             <AccordionItem title="Promociones">
-                <CheckboxFilterGroup options={(filterOptions?.promotions || []).map(p => p.name)} selected={currentFilters.promotion || []} onChange={(v) => handleCheckboxChange('promotion', v)} counts={counts.promotions} labelFormatter={formatPromotion} />
+                <CheckboxFilterGroup options={(filterOptions?.promotions || []).map(p => p.name)} selected={currentFilters.promociones || []} onChange={(v) => handleCheckboxChange('promociones', v)} counts={counts.promociones} labelFormatter={(v) => formatPromotion(String(v))} />
             </AccordionItem>
 
             <div className="mt-4 pt-4 border-t border-gray-200">

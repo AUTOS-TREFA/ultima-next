@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SellCarService } from '../services/SellCarService';
 import { supabase } from '../../supabaseClient';
@@ -19,8 +20,9 @@ interface PhotoWithMetadata {
 }
 
 const VehicleForSaleDetailPage: React.FC = () => {
-    const { listingId } = useParams<{ listingId: string }>();
-    const navigate = useNavigate();
+    const params = useParams<{ listingId: string }>();
+    const listingId = params?.listingId;
+    const router = useRouter();
     const queryClient = useQueryClient();
     const [photoMetadata, setPhotoMetadata] = useState<PhotoWithMetadata[]>([]);
     const [selectedPhoto, setSelectedPhoto] = useState<PhotoWithMetadata | null>(null);
@@ -102,7 +104,7 @@ const VehicleForSaleDetailPage: React.FC = () => {
         <div className="max-w-7xl mx-auto space-y-6">
             {/* Header */}
             <div className="flex items-center gap-4">
-                <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-full">
+                <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full">
                     <ArrowLeft className="w-5 h-5" />
                 </button>
                 <div className="flex-1">

@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import useSEO from '../hooks/useSEO';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { ShieldCheck, TrendingUp, Award, Car, DollarSign, FileText, Wrench, Check, X, ArrowRight, Star } from 'lucide-react';
 import { proxyImage } from '../utils/proxyImage';
 import { useVehicles } from '../context/VehicleContext';
@@ -97,7 +96,7 @@ const MasonryVehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
     const imageSrc = getVehicleImage(vehicle);
     const isPopular = vehicle.view_count >= 1000;
     return (
-        <Link to={`/autos/${vehicle.slug}`} className="group block relative z-10">
+        <Link href={`/autos/${vehicle.slug}`} className="group block relative z-10">
             <div className={`relative ${!isPopular ? 'overflow-hidden' : ''} rounded-lg shadow-md hover:shadow-xl transition-shadow ${isPopular ? 'popular-card' : ''}`}>
                 <div className={`aspect-[4/3] bg-gray-100 ${isPopular ? 'overflow-hidden rounded-t-lg' : ''}`}>
                     <LazyImage
@@ -247,11 +246,7 @@ const SingleCardSlider: React.FC<{ vehicles: Vehicle[] }> = ({ vehicles }) => {
 
 
 const KitTrefaPage: React.FC = () => {
-    useSEO({
-        title: 'El Kit de Seguridad TREFA | Tu Compra Blindada',
-        description: 'Cada auto TREFA incluye el Kit de Seguridad sin costo: Garantía de Satisfacción, Certificado de Procedencia, Garantía Blindada de $100,000 y mucho más.',
-        keywords: 'kit de seguridad trefa, compra blindada, garantía de satisfacción, certificado de procedencia, garantía blindada, escudo anti-depreciación'
-    });
+    // SEO metadata is handled in the page.tsx file in Next.js
 
     const { vehicles: allVehicles, isLoading } = useVehicles();
     const [displayVehicles, setDisplayVehicles] = useState<Vehicle[]>([]);
@@ -351,7 +346,7 @@ const KitTrefaPage: React.FC = () => {
                         transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
                         className="flex flex-col sm:flex-row gap-4 justify-center pt-8"
                     >
-                        <Link to="/autos" className="inline-flex items-center justify-center gap-2 bg-primary text-white hover:bg-primary/90 px-8 py-3 rounded-lg font-semibold shadow-lg transition-all">
+                        <Link href="/autos" className="inline-flex items-center justify-center gap-2 bg-primary text-white hover:bg-primary/90 px-8 py-3 rounded-lg font-semibold shadow-lg transition-all">
                             Ver Inventario Certificado
                             <ArrowRight className="w-4 h-4" />
                         </Link>
@@ -621,7 +616,7 @@ const KitTrefaPage: React.FC = () => {
                                         <p className="text-muted-foreground">Amplia selección con Kit de Seguridad TREFA</p>
                                     </div>
                                 </div>
-                                <Link to="/autos?carroceria=SUV" className="bg-primary text-white hover:bg-primary/90 px-4 py-2 rounded-lg text-sm font-semibold">
+                                <Link href="/autos?carroceria=SUV" className="bg-primary text-white hover:bg-primary/90 px-4 py-2 rounded-lg text-sm font-semibold">
                                     Ver todos →
                                 </Link>
                             </div>
@@ -654,7 +649,7 @@ const KitTrefaPage: React.FC = () => {
                                 ) : (
                                     <p className="text-muted-foreground text-center py-8">Actualizando selección de Hatchbacks...</p>
                                 )}
-                                <Link to="/autos?carroceria=Hatchback" className="mt-4 inline-block text-white bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg font-semibold text-sm">
+                                <Link href="/autos?carroceria=Hatchback" className="mt-4 inline-block text-white bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg font-semibold text-sm">
                                     Ver todos →
                                 </Link>
                             </div>
@@ -675,7 +670,7 @@ const KitTrefaPage: React.FC = () => {
                                 ) : (
                                     <p className="text-muted-foreground text-center py-8">Actualizando selección de Sedanes...</p>
                                 )}
-                                <Link to="/autos?carroceria=Sedan" className="mt-4 inline-block text-white bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg font-semibold text-sm">
+                                <Link href="/autos?carroceria=Sedan" className="mt-4 inline-block text-white bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg font-semibold text-sm">
                                     Ver todos →
                                 </Link>
                             </div>
@@ -697,7 +692,7 @@ const KitTrefaPage: React.FC = () => {
                             ) : (
                                 <p className="text-muted-foreground text-center py-8">Actualizando selección de Pick Ups...</p>
                             )}
-                            <Link to="/autos?carroceria=Pick Up" className="mt-4 inline-block text-white bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg font-semibold text-sm w-full text-center">
+                            <Link href="/autos?carroceria=Pick Up" className="mt-4 inline-block text-white bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg font-semibold text-sm w-full text-center">
                                 Ver todos →
                             </Link>
                         </div>
@@ -771,11 +766,11 @@ const KitTrefaPage: React.FC = () => {
                             No dejes tu inversión al azar. Elige la certeza y la tranquilidad que solo TREFA te puede ofrecer. Cada auto incluye el Kit de Seguridad valorado en $123,500 MXN sin costo adicional.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                            <Link to="/autos" className="inline-flex items-center justify-center gap-2 bg-white text-primary hover:bg-white/95 px-8 py-4 rounded-lg font-bold shadow-xl transition-all hover:scale-105 text-lg">
+                            <Link href="/autos" className="inline-flex items-center justify-center gap-2 bg-white text-primary hover:bg-white/95 px-8 py-4 rounded-lg font-bold shadow-xl transition-all hover:scale-105 text-lg">
                                 Explorar Autos con Kit de Seguridad
                                 <ArrowRight className="w-5 h-5" />
                             </Link>
-                            <Link to="/contacto" className="inline-flex items-center justify-center gap-2 bg-transparent hover:bg-white/10 border-2 border-white text-white px-8 py-4 rounded-lg font-bold transition-all hover:scale-105 text-lg">
+                            <Link href="/contacto" className="inline-flex items-center justify-center gap-2 bg-transparent hover:bg-white/10 border-2 border-white text-white px-8 py-4 rounded-lg font-bold transition-all hover:scale-105 text-lg">
                                 Contactar Asesor
                                 <ArrowRight className="w-5 h-5" />
                             </Link>

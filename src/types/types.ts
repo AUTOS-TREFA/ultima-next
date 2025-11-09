@@ -177,3 +177,61 @@ export interface UserVehicleForSale {
     asesor_asignado?: string;
     tags?: string[];
 }
+// =============================================================================
+// JOB APPLICATION - JOB POSTING INTERFACE
+// =============================================================================
+export interface JobApplication {
+    id: string;
+    candidate_name: string;
+    candidate_email: string;
+    candidate_phone: string;
+    submitted_at: string;
+    cv_url: string;
+}
+
+export interface Vacancy {
+    id: string;
+    title: string;
+    description?: string;
+    requirements?: string;
+    benefits?: string;
+    location?: string;
+    salary_range?: string;
+    job_type?: string;
+    schedule?: string;
+    department?: string;
+    status?: 'draft' | 'published' | 'archived';
+    image_url?: string;
+    created_at?: string;
+    updated_at?: string;
+    applications_count?: number;
+}
+
+// =============================================================================
+// FINANCING APPLICATION TYPES
+// =============================================================================
+export interface ApplicationListItem {
+    id: string;
+    status: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface LatestApplicationData {
+    id: string;
+    status: string;
+    created_at: string;
+}
+
+export interface UpdatedApplicationData {
+    id: string;
+    status: string;
+    updated_at: string;
+}
+
+export interface BankProfileData {
+    is_complete: boolean;
+    banco_recomendado?: string;
+    respuestas?: any;
+    banco_segunda_opcion?: string;
+}

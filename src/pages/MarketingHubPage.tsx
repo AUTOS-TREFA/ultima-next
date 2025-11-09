@@ -1,9 +1,20 @@
+'use client';
+
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { TrendingUp, Tag, Settings, Users, Layout, Image } from 'lucide-react';
 
+interface MarketingTool {
+  title: string;
+  description: string;
+  icon: React.ComponentType<any>;
+  link: string;
+  color: string;
+  disabled?: boolean;
+}
+
 const MarketingHubPage: React.FC = () => {
-  const marketingTools = [
+  const marketingTools: MarketingTool[] = [
     {
       title: 'Promociones',
       description: 'Gestionar promociones y ofertas especiales',
@@ -109,7 +120,7 @@ const MarketingHubPage: React.FC = () => {
           ) : (
             <Link
               key={tool.title}
-              to={tool.link}
+              href={tool.link}
               className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:border-primary-300 transition-all duration-200 transform hover:-translate-y-1"
             >
               {CardContent}
@@ -129,7 +140,7 @@ const MarketingHubPage: React.FC = () => {
               Documentos y materiales de marketing
             </p>
             <Link
-              to="/kit-trefa"
+              href="/kit-trefa"
               className="text-primary-600 hover:text-primary-700 font-medium text-sm"
             >
               Ver materiales →
@@ -141,7 +152,7 @@ const MarketingHubPage: React.FC = () => {
               Gestionar ofertas de empleo y candidatos
             </p>
             <Link
-              to="/escritorio/admin/vacantes"
+              href="/escritorio/admin/vacantes"
               className="text-primary-600 hover:text-primary-700 font-medium text-sm"
             >
               Gestionar vacantes →

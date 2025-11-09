@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import type { VehicleFilters } from '../types/types';
 import { useVehicles } from '../context/VehicleContext';
@@ -15,7 +15,6 @@ import RecentlyViewed from '../components/RecentlyViewed';
 import Pagination from '../components/Pagination';
 import FilterSidebar from '../components/FilterSidebar';
 import { ListIcon, LayoutGridIcon, SearchIcon, ChevronDownIcon, MapPinIcon } from '../components/icons';
-import useSEO from '../hooks/useSEO';
 import useDebounce from '../hooks/useDebounce';
 import { proxyImage } from '../utils/proxyImage';
 import ExplorarTutorialOverlay from '../components/ExplorarTutorialOverlay';
@@ -23,9 +22,9 @@ import { useDrag } from '@use-gesture/react';
 import { animated, useSpring } from 'react-spring';
 
 const VehicleListPage: React.FC = () => {
-  const { marca, carroceria } = useParams<{ marca?: string; carroceria?: string }>();
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const params = useParams<{ marca?: string; carroceria?: string }>();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const { vehicles, totalCount, isLoading: vehiclesLoading, error: vehiclesError } = useVehicles();
   const { filters, handleFiltersChange, onRemoveFilter, handleClearFilters, currentPage, handlePageChange } = useFilters();
   const isInitialMount = useRef(true);
@@ -121,11 +120,7 @@ const generateDynamicTitle = (count: number, filters: VehicleFilters) => {
     return <>{parts}</>;
   };
 
-  useSEO({
-    title: generateDynamicTitle(totalCount, filters),
-    description: 'Explora nuestro inventario de autos seminuevos certificados. Encuentra el auto perfecto para ti con opciones de financiamiento.',
-    keywords: 'inventario, autos seminuevos, trefa, financiamiento, comprar auto'
-  });
+  // SEO metadata is handled in the page.tsx file in Next.js
 
   const [view, setView] = useState<'list' | 'grid'>('grid');
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
@@ -228,7 +223,6 @@ const generateDynamicTitle = (count: number, filters: VehicleFilters) => {
         maxPrice: 'Precio Máximo',
         enganchemin: 'Enganche Mínimo',
         maxEnganche: 'Enganche Máximo',
-        recienLlegados: 'Recién llegados',
         search: 'Búsqueda',
         orderby: 'Ordenar por',
     };
@@ -257,7 +251,7 @@ const generateDynamicTitle = (count: number, filters: VehicleFilters) => {
                 else if (filterKey === 'transmision') label = String(v);
                 else if (filterKey === 'combustible') label = String(v);
                 else if (filterKey === 'garantia') label = String(v);
-                else if (filterKey === 'promotion') label = String(v);
+                else if (filterKey === 'promociones') label = String(v);
                 list.push({ key: filterKey, value: v, label });
             });
         } else if (typeof value === 'string' && value) {
@@ -488,7 +482,7 @@ const generateDynamicTitle = (count: number, filters: VehicleFilters) => {
             )}
           </div>
         </div>
-        <RecentlyViewed layout="carousel" />
+        <RecentlyViewed />
       </main>
 
       {(isFilterSheetOpen || isClosing) && (

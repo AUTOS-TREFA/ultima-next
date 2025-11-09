@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { 
   Play,
   CheckCircle,
@@ -18,7 +18,7 @@ import {
   Sun,
   Moon
 } from 'lucide-react';
-import { WebhookService } from '../services/webhookService';
+// import { WebhookService } from '../services/webhookService'; // TODO: File doesn't exist
 
 const formSchema = z.object({
   fullName: z.string().min(2, 'Nombre completo requerido'),
@@ -190,7 +190,7 @@ const LandingPage: React.FC = () => {
               </a>
               
               <Link
-                to="/auth"
+                href="/auth"
                 className={`text-sm font-medium transition-colors backdrop-blur-sm px-3 py-2 rounded-full border ${
                   isLightTheme 
                     ? 'text-trefa-700 hover:text-trefa-900 bg-white/60 border-white/40 hover:bg-white/80 shadow-lg' 
@@ -358,7 +358,7 @@ const LandingPage: React.FC = () => {
                         Te contactaremos en las próximas 24 horas con las mejores opciones de financiamiento.
                       </p>
                       <Link
-                        to="/auth"
+                        href="/auth"
                         className="inline-flex items-center px-3 sm:px-4 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-gradient-to-r from-trefa-500 to-orange-500 text-white rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm lg:text-base hover:shadow-2xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm"
                       >
                         Crear Cuenta
@@ -1113,7 +1113,7 @@ const LandingPage: React.FC = () => {
               Ver beneficios
             </button>
             <Link
-              to="/autos"
+              href="/autos"
               className={`inline-flex items-center px-8 py-4 ${isLightTheme ? 'bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black' : 'bg-gradient-to-r from-corporate-700 to-corporate-800 hover:from-corporate-800 hover:to-corporate-900'} text-white rounded-xl font-bold text-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105`}
             >
               Ver autos disponibles
@@ -1238,7 +1238,7 @@ const LandingPage: React.FC = () => {
                 Política de Privacidad
               </a>
               {' • '}
-              <Link to="/vender" className={`transition-colors ${isLightTheme ? 'text-trefa-600 hover:text-trefa-800' : 'hover:text-white'}`}>
+              <Link href="/vender" className={`transition-colors ${isLightTheme ? 'text-trefa-600 hover:text-trefa-800' : 'hover:text-white'}`}>
                 Vender mi Auto
               </Link>
               {' • '}
@@ -1254,4 +1254,4 @@ const LandingPage: React.FC = () => {
   );
 };
 
-export default LandingPageBolt;
+export default LandingPage;

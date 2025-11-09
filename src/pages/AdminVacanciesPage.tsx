@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { VacancyService } from '../services/VacancyService';
 import type { Vacancy } from '../types/types';
@@ -201,11 +201,11 @@ const AdminVacanciesPage: React.FC = () => {
                                         'bg-gray-100 text-gray-800'
                                     }`}>{vacancy.status}</span>
                                 </td>
-                                <td className="p-3">{vacancy.application_count || 0}</td>
-                                <td className="p-3">{new Date(vacancy.created_at).toLocaleDateString('es-MX')}</td>
+                                <td className="p-3">{vacancy.applications_count || 0}</td>
+                                <td className="p-3">{vacancy.created_at ? new Date(vacancy.created_at).toLocaleDateString('es-MX') : 'N/A'}</td>
                                 <td className="p-3 flex gap-2">
                                     <button onClick={() => handleOpenModal(vacancy)} className="p-2 text-gray-500 hover:text-primary-600"><Edit className="w-4 h-4"/></button>
-                                    <Link to={`/escritorio/admin/vacantes/${vacancy.id}/candidatos`} className="p-2 text-gray-500 hover:text-primary-600"><Users className="w-4 h-4"/></Link>
+                                    <Link href={`/escritorio/admin/vacantes/${vacancy.id}/candidatos`} className="p-2 text-gray-500 hover:text-primary-600"><Users className="w-4 h-4"/></Link>
                                 </td>
                             </tr>
                         ))}

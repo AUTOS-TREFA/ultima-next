@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { CheckCircle, Edit3, ListChecks, ArrowLeft, ArrowRight, Info } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../context/AuthContext';
@@ -84,7 +84,7 @@ const ApplicationPrompt: React.FC = () => (
             <div>
                 <p className="font-bold">¡Un último favor! (Opcional)</p>
                 <p className="text-sm">Para una evaluación completa, te invitamos a simular una solicitud de financiamiento. Esto nos dará información valiosa sobre el flujo de la aplicación.</p>
-                <Link to="/escritorio/aplicacion" target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-sm font-semibold text-indigo-600 hover:text-indigo-800 underline">
+                <Link href="/escritorio/aplicacion" target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-sm font-semibold text-indigo-600 hover:text-indigo-800 underline">
                     Ir a la Solicitud de Financiamiento &rarr;
                 </Link>
             </div>
@@ -391,7 +391,7 @@ const BetaPollPage: React.FC = () => {
                 Muchas gracias por tu tiempo y tus valiosos comentarios. Tu feedback nos ayudará a construir una mejor experiencia para todos.
             </p>
             <Link
-                to="/"
+                href="/"
                 className="bg-primary-600 text-white font-bold py-4 px-10 rounded-lg hover:bg-primary-700 transition-colors text-lg shadow-lg"
             >
                 Volver al Inicio

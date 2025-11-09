@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { SalesService } from '../services/SalesService';
 import { Loader2, AlertTriangle, User, Users, FileText, Clock, Search, Filter } from 'lucide-react';
@@ -234,7 +234,7 @@ const SalesLeadsDashboardPage: React.FC = () => {
                                 filteredLeads.map(lead => (
                                     <tr key={lead.id} className="bg-white border-b hover:bg-gray-50">
                                         <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                                            <Link to={`/escritorio/ventas/cliente/${lead.id}`} className="hover:underline text-primary-600">
+                                            <Link href={`/escritorio/ventas/cliente/${lead.id}`} className="hover:underline text-primary-600">
                                                 {`${lead.first_name || ''} ${lead.last_name || ''}`.trim() || 'Sin Nombre'}
                                             </Link>
                                         </td>
@@ -289,7 +289,7 @@ const SalesLeadsDashboardPage: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <Link
-                                                to={`/escritorio/ventas/cliente/${lead.id}`}
+                                                href={`/escritorio/ventas/cliente/${lead.id}`}
                                                 className="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors"
                                             >
                                                 Ver Perfil

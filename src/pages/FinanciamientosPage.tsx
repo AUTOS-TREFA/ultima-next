@@ -4,9 +4,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import useSEO from '../hooks/useSEO';
 import {
   CheckCircle,
   ArrowRight,
@@ -60,7 +60,7 @@ const MasonryVehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
   const isPopular = vehicle.view_count >= 1000;
 
   return (
-    <Link to={`/autos/${vehicle.slug}`} className="group block relative z-10">
+    <Link href={`/autos/${vehicle.slug}`} className="group block relative z-10">
       <div className={`relative ${!isPopular ? 'overflow-hidden' : ''} rounded-lg shadow-md hover:shadow-xl transition-shadow ${isPopular ? 'popular-card' : ''}`}>
         <div className={`aspect-[4/3] bg-gray-100 ${isPopular ? 'overflow-hidden rounded-t-lg' : ''}`}>
           <LazyImage
@@ -141,13 +141,9 @@ const HorizontalSlider: React.FC<{ vehicles: Vehicle[] }> = ({ vehicles }) => {
 };
 
 const FinanciamientosPage: React.FC = () => {
-  useSEO({
-    title: 'Financiamiento Ideal para tu Auto en 24 Horas | TREFA',
-    description: 'Conectamos tu perfil con el banco que ofrece la mejor tasa de interés. Financiamiento digital rápido, seguro y sin complicaciones. Respuesta en 24 horas o menos.',
-    keywords: 'financiamiento automotriz, crédito para auto, préstamo para coche, TREFA, financiamiento en 24 horas, mejor tasa de interés'
-  });
+  // SEO metadata is handled in the page.tsx file in Next.js
 
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'submitting' | 'success' | 'error' | 'otp'>('idle');
   const { vehicles: allVehicles } = useVehicles();
@@ -521,27 +517,14 @@ const FinanciamientosPage: React.FC = () => {
               />
             </div>
 
-            {submissionStatus === 'error' && (
-              <div className="p-3 bg-red-100 border-2 border-red-400 rounded-lg text-center">
-                <p className="text-red-800 font-bold text-sm">
-                  Código inválido o expirado. Inténtalo de nuevo.
-                </p>
-              </div>
-            )}
+            {/* Error message will be shown when component re-renders with error status */}
 
             <button
               type="submit"
-              disabled={otp.length < 6 || submissionStatus === 'submitting'}
+              disabled={otp.length < 6}
               className="w-full bg-gradient-to-r from-primary via-orange-500 to-yellow-500 text-white py-4 px-6 rounded-xl font-black text-base hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
             >
-              {submissionStatus === 'submitting' ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Verificando...</span>
-                </div>
-              ) : (
-                'Verificar y Continuar'
-              )}
+              Verificar y Continuar
             </button>
 
             <button
@@ -948,7 +931,7 @@ const FinanciamientosPage: React.FC = () => {
 
           <div className="text-center mt-8">
             <Link
-              to={`/acceder${urlParams ? `?${urlParams}` : ''}`}
+              href={`/acceder${urlParams ? `?${urlParams}` : ''}`}
               className="inline-flex items-center gap-2 bg-primary text-white hover:bg-primary/90 px-8 py-4 rounded-lg font-black text-lg shadow-lg hover:shadow-xl transition-all"
             >
               Crear mi cuenta
@@ -1439,7 +1422,7 @@ const FinanciamientosPage: React.FC = () => {
               </button>
 
               <Link
-                to={`/acceder${urlParams ? `?${urlParams}` : ''}`}
+                href={`/acceder${urlParams ? `?${urlParams}` : ''}`}
                 className="inline-flex items-center justify-center gap-2 bg-transparent hover:bg-white/10 border-2 border-white text-white px-8 py-4 rounded-xl font-black transition-all hover:scale-105 text-lg"
               >
                 Crear mi cuenta

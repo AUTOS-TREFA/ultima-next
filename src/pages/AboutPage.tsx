@@ -1,22 +1,12 @@
+'use client';
+
 import React from 'react';
-import { Link } from 'react-router-dom';
-import useSEO from '../hooks/useSEO';
+import Link from 'next/link';
 import { ArrowRightIcon as ArrowRight, CheckCircleIcon as CheckCircle } from '../components/icons';
 import LazyImage from '../components/LazyImage';
 
 const AboutPage: React.FC = () => {
-  useSEO({
-    title: 'Conócenos | Quiénes Somos | TREFA - Agencia de Seminuevos en Monterrey',
-    description: 'TREFA es la agencia líder en compra-venta de autos seminuevos certificados en Monterrey. Conoce nuestra historia, misión y por qué somos la mejor opción para comprar o vender tu auto usado. Más de 1000 clientes satisfechos nos respaldan.',
-    keywords: 'sobre trefa, agencia seminuevos monterrey, quienes somos trefa, historia trefa, misión trefa, valores trefa, mejor agencia autos monterrey, compra venta autos confiable',
-    canonical: 'https://trefa.mx/conocenos',
-    openGraph: {
-      title: 'Conócenos | La Mejor Agencia de Seminuevos en Monterrey | TREFA',
-      description: 'Descubre por qué TREFA es la agencia de autos seminuevos más confiable de Monterrey. Historia, valores y compromiso con nuestros clientes.',
-      type: 'website',
-      url: 'https://trefa.mx/conocenos'
-    }
-  });
+  // SEO metadata is handled in the page.tsx file in Next.js
 
   const values = [
     {
@@ -202,7 +192,7 @@ const AboutPage: React.FC = () => {
                 Con años de experiencia en la industria automotriz, conocemos las necesidades de nuestros clientes y trabajamos incansablemente para superar sus expectativas.
               </p>
               <Link
-                to="/vacantes"
+                href="/vacantes"
                 className="inline-flex items-center text-lg font-semibold text-orange-600 hover:text-orange-700 transition-colors group"
               >
                 Únete a nuestro equipo
@@ -232,13 +222,13 @@ const AboutPage: React.FC = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              to="/autos"
+              href="/autos"
               className="inline-block text-lg font-semibold transition-all duration-300 px-8 py-4 rounded-lg bg-white text-orange-600 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               Ver Inventario
             </Link>
             <Link
-              to="/vender-mi-auto"
+              href="/vender-mi-auto"
               className="inline-block text-lg font-semibold transition-all duration-300 px-8 py-4 rounded-lg border-2 border-white text-white hover:bg-white hover:text-orange-600"
             >
               Vender mi Auto

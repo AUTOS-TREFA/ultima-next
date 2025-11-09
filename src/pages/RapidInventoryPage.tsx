@@ -5,14 +5,9 @@ import VehicleService from '../services/VehicleService';
 import type { Vehicle } from '../types/types';
 import VehicleGridCard from '../components/VehicleGridCard';
 import { Search, Database } from 'lucide-react';
-import useSEO from '../hooks/useSEO';
 
 const RapidInventoryPage: React.FC = () => {
-    useSEO({
-        title: 'Inventario Rápido | TREFA',
-        description: 'Explora nuestro inventario de autos seminuevos cargado directamente desde nuestro procesador rápido.',
-        keywords: 'autos seminuevos, venta de autos, inventario rápido, trefa'
-    });
+    // SEO metadata is handled in the page.tsx file in Next.js
 
     const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
     const [isLoading, setIsLoading] = useState(true);

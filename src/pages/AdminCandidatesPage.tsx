@@ -1,13 +1,15 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { VacancyService } from '../services/VacancyService';
 import type { JobApplication, Vacancy } from '../types/types';
 import { Loader2, AlertTriangle, Users, ArrowLeft, Download } from 'lucide-react';
 
 const AdminCandidatesPage: React.FC = () => {
-    const { vacancyId } = useParams<{ vacancyId: string }>();
+    const params = useParams<{ vacancyId: string }>();
+    const vacancyId = params?.vacancyId;
     const [vacancy, setVacancy] = useState<Vacancy | null>(null);
     const [applications, setApplications] = useState<JobApplication[]>([]);
     const [loading, setLoading] = useState(true);
@@ -41,7 +43,7 @@ const AdminCandidatesPage: React.FC = () => {
     return (
         <div className="space-y-8">
             <div>
-                <Link to="/escritorio/admin/vacantes" className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900 mb-4">
+                <Link href="/escritorio/admin/vacantes" className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900 mb-4">
                     <ArrowLeft className="w-4 h-4"/> Volver a Vacantes
                 </Link>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center">

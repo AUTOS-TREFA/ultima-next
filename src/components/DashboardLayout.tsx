@@ -7,7 +7,8 @@ import React, { useState, useRef, useEffect } from 'react';
 
 
 
-import { Outlet, useLocation, Link } from 'react-router-dom';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 
 
@@ -49,7 +50,11 @@ import { useAuth } from '../context/AuthContext';
 
 
 
-const DashboardLayout: React.FC = () => {
+interface DashboardLayoutProps {
+    children: React.ReactNode;
+}
+
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
 
 
@@ -100,11 +105,11 @@ const DashboardLayout: React.FC = () => {
 
 
 
-    const location = useLocation();
+    const pathname = usePathname();
 
 
 
-    const noPadding = location.pathname.endsWith('/encuesta');
+    const noPadding = pathname?.endsWith('/encuesta');
 
 
 
@@ -136,7 +141,7 @@ const DashboardLayout: React.FC = () => {
 
 
 
-    }, [location.pathname]);
+    }, [pathname]);
 
 
 
@@ -144,31 +149,14 @@ const DashboardLayout: React.FC = () => {
 
 
 
-    const handleCloseTutorial = () => {
-
-
-
-        if (user) {
-
-
-
-            const tutorialShownKey = `tutorialShown_${user.id}`;
-
-
-
-            localStorage.setItem(tutorialShownKey, 'true');
-
-
-
-        }
-
-
-
-        setShowTutorial(false);
-
-
-
-    };
+    // Tutorial functionality commented out - not currently in use
+    // const handleCloseTutorial = () => {
+    //     if (user) {
+    //         const tutorialShownKey = `tutorialShown_${user.id}`;
+    //         localStorage.setItem(tutorialShownKey, 'true');
+    //     }
+    //     // setShowTutorial(false);
+    // };
 
 
 
@@ -360,7 +348,7 @@ const DashboardLayout: React.FC = () => {
                         <span className="sr-only">Abrir menú</span>
                         <Menu className="h-6 w-6" aria-hidden="true" />
                     </button>
-                    <Link to="/escritorio" className="flex items-center">
+                    <Link href="/escritorio" className="flex items-center">
                         <img src="/images/trefalogo.png" alt="TREFA Logo" className="h-6" />
                     </Link>
                     <div className="w-10"></div> {/* Spacer for center alignment */}
@@ -377,7 +365,7 @@ const DashboardLayout: React.FC = () => {
 
 
 
-                        <Outlet />
+                        {children}
 
 
 

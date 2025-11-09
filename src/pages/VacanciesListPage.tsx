@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { VacancyService } from '../services/VacancyService';
 import type { Vacancy } from '../types/types';
-import useSEO from '../hooks/useSEO';
 import { Briefcase, MapPin, Clock, DollarSign, Loader2, AlertTriangle, Calendar as CalendarIcon } from 'lucide-react';
 
 const VacancyCard: React.FC<{ vacancy: Vacancy }> = ({ vacancy }) => (
@@ -13,7 +12,7 @@ const VacancyCard: React.FC<{ vacancy: Vacancy }> = ({ vacancy }) => (
             <div className="flex items-start justify-between">
                 <div>
                     <h2 className="text-xl font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
-                        <Link to={`/vacantes/${vacancy.id}`}>{vacancy.title}</Link>
+                        <Link href={`/vacantes/${vacancy.id}`}>{vacancy.title}</Link>
                     </h2>
                     <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-500">
                         <div className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /> {vacancy.location}</div>
@@ -30,18 +29,14 @@ const VacancyCard: React.FC<{ vacancy: Vacancy }> = ({ vacancy }) => (
                  <p className="text-gray-600 text-sm line-clamp-2">{vacancy.description}</p>
             </div>
         </div>
-        <Link to={`/vacantes/${vacancy.id}`} className="block text-center bg-gray-50 group-hover:bg-primary-50 p-3 text-sm font-semibold text-primary-600 transition-colors">
+        <Link href={`/vacantes/${vacancy.id}`} className="block text-center bg-gray-50 group-hover:bg-primary-50 p-3 text-sm font-semibold text-primary-600 transition-colors">
             Ver Detalles y Aplicar
         </Link>
     </div>
 );
 
 const VacanciesListPage: React.FC = () => {
-    useSEO({
-        title: 'Únete a Nuestro Equipo | Vacantes en TREFA',
-        description: 'Explora las oportunidades de carrera en TREFA. Buscamos talento apasionado por la industria automotriz y la tecnología. ¡Aplica hoy!',
-        keywords: 'vacantes, empleos, carrera, trefa, trabajo, automotriz'
-    });
+    // SEO metadata is handled in the page.tsx file in Next.js
 
     const [vacancies, setVacancies] = useState<Vacancy[]>([]);
     const [loading, setLoading] = useState(true);

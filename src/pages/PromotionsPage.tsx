@@ -7,15 +7,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useVehicles } from '../context/VehicleContext';
 import VehicleGridCard from '../components/VehicleGridCard';
 import { Tag, AlertTriangle } from 'lucide-react';
-import useSEO from '../hooks/useSEO';
 import { formatPromotion, getPromotionStyles } from '../utils/formatters';
 
 const PromotionsPage: React.FC = () => {
-useSEO({
-    title: 'Promociones y Ofertas de Autos Seminuevos | TREFA',
-    description: 'Encuentra las mejores promociones y ofertas en autos seminuevos. Bonos, descuentos y financiamiento especial en TREFA.',
-    keywords: 'promociones, ofertas, autos seminuevos, trefa, financiamiento, bonos'
-  });
+    // SEO metadata is handled in the page.tsx file in Next.js
 
     const { vehicles: allVehicles, isLoading } = useVehicles();
     const [error] = useState<string | null>(null);

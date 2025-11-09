@@ -147,6 +147,9 @@ class VehicleService {
 
                 view_count: safeParseInt(item.view_count),
 
+                ingreso_inventario: item.ingreso_inventario || null,
+                rezago: !!item.rezago,
+
                 // Legacy aliases
                 title: title,
                 price: safeParseFloat(item.precio),
@@ -160,8 +163,8 @@ class VehicleService {
      * Fetch vehicles from rapid-processor edge function
      */
     private static async fetchFromRapidProcessor(filters: VehicleFilters = {}, page: number = 1): Promise<{ vehicles: Vehicle[], totalCount: number }> {
-        const supabaseUrl = supabase.supabaseUrl;
-        const supabaseKey = supabase.supabaseKey;
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
         // Build query parameters
         const params = new URLSearchParams({
@@ -293,8 +296,8 @@ class VehicleService {
             query = query.in('ubicacion', rawSucursales);
         }
 
-        if (filters.promotion && filters.promotion.length > 0) {
-            query = query.overlaps('promociones', filters.promotion);
+        if (filters.promociones && filters.promociones.length > 0) {
+            query = query.overlaps('promociones', filters.promociones);
         }
 
         if (filters.search) {
@@ -475,7 +478,7 @@ class VehicleService {
         return null;
     }
 
-    private static async getVehicleBySlug(slug: string): Promise<Vehicle | null> {
+    public static async getVehicleBySlug(slug: string): Promise<Vehicle | null> {
         if (!slug) return null;
         try {
             const { data, error } = await supabase

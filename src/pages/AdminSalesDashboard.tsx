@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { AnalyticsService, DashboardMetrics, TrendComparisons, DashboardFilters } from '../services/AnalyticsService';
 import { BrevoEmailService } from '../services/BrevoEmailService';
@@ -32,7 +32,7 @@ import {
 
 export default function AdminSalesDashboard() {
     const { user, profile } = useAuth();
-    const navigate = useNavigate();
+    const router = useRouter();
     const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
     const [timeSeriesData, setTimeSeriesData] = useState<any[]>([]);
     const [trends, setTrends] = useState<TrendComparisons | null>(null);
@@ -229,7 +229,7 @@ export default function AdminSalesDashboard() {
                         icon={<FileText className="w-6 h-6" />}
                         color="blue"
                         trendPercent={trends?.applicationsChangePercent}
-                        onClick={() => navigate('/escritorio/mis-aplicaciones')}
+                        onClick={() => router.push('/escritorio/mis-aplicaciones')}
                     />
 
                     {/* Pending Applications */}
@@ -272,7 +272,7 @@ export default function AdminSalesDashboard() {
                             icon={<Users className="w-6 h-6" />}
                             color="indigo"
                             trendPercent={trends?.leadsChangePercent}
-                            onClick={() => navigate(isAdmin ? '/escritorio/admin/crm' : '/escritorio/ventas/crm')}
+                            onClick={() => router.push(isAdmin ? '/escritorio/admin/crm' : '/escritorio/ventas/crm')}
                         />
 
                         <MetricCard
@@ -534,7 +534,7 @@ export default function AdminSalesDashboard() {
                                                 metrics.recentLeads.map((lead) => (
                                                     <div
                                                         key={lead.id}
-                                                        onClick={() => navigate(isAdmin ? `/escritorio/admin/cliente/${lead.id}` : `/escritorio/ventas/cliente/${lead.id}`)}
+                                                        onClick={() => router.push(isAdmin ? `/escritorio/admin/cliente/${lead.id}` : `/escritorio/ventas/cliente/${lead.id}`)}
                                                         className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
                                                     >
                                                         <div className="flex-1">
@@ -570,7 +570,7 @@ export default function AdminSalesDashboard() {
                                                 metrics.recentApplications.map((app) => (
                                                     <div
                                                         key={app.id}
-                                                        onClick={() => navigate(`/escritorio/aplicacion/${app.id}`)}
+                                                        onClick={() => router.push(`/escritorio/aplicacion/${app.id}`)}
                                                         className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
                                                     >
                                                         <div className="flex-1">
@@ -713,28 +713,28 @@ export default function AdminSalesDashboard() {
                         <h3 className="text-xl font-bold text-gray-900 mb-4">Acciones Rápidas</h3>
                         <div className="grid grid-cols-2 gap-3">
                             <button
-                                onClick={() => navigate(isAdmin ? '/escritorio/admin/crm' : '/escritorio/ventas/crm')}
+                                onClick={() => router.push(isAdmin ? '/escritorio/admin/crm' : '/escritorio/ventas/crm')}
                                 className="flex items-center justify-center gap-2 py-3 px-4 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
                             >
                                 <Users className="w-4 h-4" />
                                 <span className="text-sm font-medium">Ver Leads</span>
                             </button>
                             <button
-                                onClick={() => navigate('/escritorio/mis-aplicaciones')}
+                                onClick={() => router.push('/escritorio/mis-aplicaciones')}
                                 className="flex items-center justify-center gap-2 py-3 px-4 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
                             >
                                 <FileText className="w-4 h-4" />
                                 <span className="text-sm font-medium">Solicitudes</span>
                             </button>
                             <button
-                                onClick={() => navigate('/escritorio/seguimiento')}
+                                onClick={() => router.push('/escritorio/seguimiento')}
                                 className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                             >
                                 <BarChart3 className="w-4 h-4" />
                                 <span className="text-sm font-medium">Tracking</span>
                             </button>
                             <button
-                                onClick={() => navigate('/escritorio/autos')}
+                                onClick={() => router.push('/escritorio/autos')}
                                 className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                             >
                                 <FileText className="w-4 h-4" />

@@ -415,10 +415,11 @@ export default class AirtableDirectService {
         do {
             const params = new URLSearchParams({
                 filterByFormula: formula,
-                fields: ['OrdenCompra', 'ordencompra'],
                 pageSize: '100',
                 sort: '[{ "field": "ordencompra", "direction": "desc"}]'
             });
+            params.append('fields', 'OrdenCompra');
+            params.append('fields', 'ordencompra');
             if (offset) {
                 params.append('offset', offset);
             }

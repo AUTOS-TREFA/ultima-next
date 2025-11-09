@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useRouter, usePathname } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -44,11 +44,11 @@ type SellCarFormData = z.infer<typeof sellCarSchema>;
 
 const SellMyCarPage: React.FC = () => {
     const { user } = useAuth();
-    const location = useLocation();
-    const navigate = useNavigate();
+    const pathname = usePathname();
+    const router = useRouter();
     
     // Check for data passed from ValuationApp navigation, sessionStorage, or localStorage (for post-login redirect)
-    const initialValuationData = location.state?.valuationData ||
+    const initialValuationData =
                                   JSON.parse(sessionStorage.getItem('sellCarValuation') || 'null') ||
                                   JSON.parse(localStorage.getItem('pendingValuationData') || 'null');
 
@@ -135,7 +135,7 @@ const SellMyCarPage: React.FC = () => {
 
             // Redirect to Citas page with Cita de Inspección pre-selected after a short delay
             setTimeout(() => {
-                navigate('/escritorio/citas', { state: { activeTab: 'cita-inspeccion' } });
+                router.push('/escritorio/citas', { state: { activeTab: 'cita-inspeccion' } });
             }, 2000);
         } catch (error: any) {
             console.error("Failed to submit sell car form:", error);

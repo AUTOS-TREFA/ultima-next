@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { LogIn, Loader2 } from 'lucide-react';
@@ -11,20 +12,20 @@ const AdminLoginPage: React.FC = () => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const navigate = useNavigate();
+    const router = useRouter();
     const { session, profile } = useAuth();
 
     useEffect(() => {
         if (session && profile) {
             if (profile.role === 'admin') {
-                navigate('/escritorio/admin/dashboard', { replace: true });
+                router.replace('/escritorio/admin/dashboard');
             } else if (profile.role === 'sales') {
-                navigate('/escritorio/ventas/dashboard', { replace: true });
+                router.replace('/escritorio/ventas/dashboard');
             } else {
-                navigate('/escritorio', { replace: true });
+                router.replace('/escritorio');
             }
         }
-    }, [session, profile, navigate]);
+    }, [session, profile, router]);
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -51,14 +52,14 @@ const AdminLoginPage: React.FC = () => {
                     .single();
 
                 if (profile?.role === 'admin') {
-                    navigate('/escritorio/admin/dashboard');
+                    router.push('/escritorio/admin/dashboard');
                 } else if (profile?.role === 'sales') {
-                    navigate('/escritorio/ventas/dashboard');
+                    router.push('/escritorio/ventas/dashboard');
                 } else {
-                    navigate('/escritorio');
+                    router.push('/escritorio');
                 }
             } else {
-                navigate('/escritorio');
+                router.push('/escritorio');
             }
         }
     };
@@ -129,7 +130,7 @@ const AdminLoginPage: React.FC = () => {
                         </div>
                     </form>
                     <div className="mt-6 text-center text-sm">
-                        <Link to="/" className="font-medium text-primary-600 hover:text-primary-500">
+                        <Link href="/" className="font-medium text-primary-600 hover:text-primary-500">
                             Volver al sitio principal
                         </Link>
                     </div>

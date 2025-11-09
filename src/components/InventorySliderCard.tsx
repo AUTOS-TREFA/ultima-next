@@ -13,7 +13,8 @@ interface InventorySliderCardProps {
 
 const InventorySliderCard: React.FC<InventorySliderCardProps> = ({ vehicle }) => {
     const hasSlug = vehicle.slug && vehicle.slug.trim() !== '';
-    const imageSrc = vehicle.feature_image || DEFAULT_PLACEHOLDER_IMAGE;
+    const rawImage = vehicle.feature_image || DEFAULT_PLACEHOLDER_IMAGE;
+    const imageSrc = Array.isArray(rawImage) ? rawImage[0] : rawImage;
     
     const CardContent = () => (
         <div className="flex flex-col h-full bg-white rounded-xl shadow-md overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1">

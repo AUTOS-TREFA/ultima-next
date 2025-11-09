@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { VacancyService } from '../services/VacancyService';
 import type { Vacancy } from '../types/types';
-import useSEO from '../hooks/useSEO';
 import { MapPin, Clock, DollarSign, Loader2, AlertTriangle, ArrowLeft, X, FileText, CheckCircle, Calendar as CalendarIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -115,7 +115,10 @@ const InputField: React.FC<{name: any, label: string, type?: string, register: a
 );
 
 const VacancyDetailPage: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
+    const params = useParams<{ id: string }>();
+    const vehicleId = params?.id;
+    const applicationIdFromUrl = params?.id;
+    const id = params?.id;
     const [vacancy, setVacancy] = useState<Vacancy | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -123,7 +126,7 @@ const VacancyDetailPage: React.FC = () => {
 
     useSEO({
         title: vacancy ? `${vacancy.title} | Vacantes en TREFA` : 'Vacante en TREFA',
-        description: vacancy ? vacancy.description.substring(0, 160) : 'Oportunidad de carrera en TREFA.',
+        description: vacancy ? (vacancy.description?.substring(0, 160) || 'Oportunidad de carrera en TREFA.') : 'Oportunidad de carrera en TREFA.',
         keywords: vacancy ? `${vacancy.title}, vacante, empleo, trefa, ${vacancy.location}` : 'vacantes, trefa, empleo',
     });
 
@@ -139,19 +142,22 @@ const VacancyDetailPage: React.FC = () => {
             .finally(() => setLoading(false));
     }, [id]);
 
-    const renderDetail = (Icon: React.ElementType, label: string) => (
-        <div className="flex items-center gap-3 text-gray-600">
-            <Icon className="w-5 h-5 text-primary-600" />
-            <span className="font-medium">{label}</span>
-        </div>
-    );
+    const renderDetail = (Icon: React.ElementType, label: string | undefined) => {
+        if (!label) return null;
+        return (
+            <div className="flex items-center gap-3 text-gray-600">
+                <Icon className="w-5 h-5 text-primary-600" />
+                <span className="font-medium">{label}</span>
+            </div>
+        );
+    };
     
     return (
         <div className="bg-gray-50 min-h-screen">
             {isModalOpen && vacancy && <ApplicationModal vacancy={vacancy} onClose={() => setIsModalOpen(false)} />}
             <main className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                 <div className="mb-8">
-                    <Link to="/vacantes" className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900">
+                    <Link href="/vacantes" className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900">
                         <ArrowLeft className="w-4 h-4"/> Volver a todas las vacantes
                     </Link>
                 </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useVehicles } from '../context/VehicleContext';
 import type { WordPressVehicle } from '../types/types';
 import { Heart, X, ArrowLeft, RotateCcw, Grid3x3, Info, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -12,7 +12,7 @@ import { useDrag } from '@use-gesture/react';
 import { DEFAULT_PLACEHOLDER_IMAGE } from '../utils/constants';
 
 const ExplorarPage: React.FC = () => {
-    const navigate = useNavigate();
+    const router = useRouter();
     const { vehicles: allVehicles, isLoading, error } = useVehicles();
     const { isFavorite, toggleFavorite } = useFavorites();
     const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
@@ -196,7 +196,7 @@ const ExplorarPage: React.FC = () => {
                         {error?.message || 'En este momento no tenemos vehículos en inventario.'}
                     </p>
                     <button
-                        onClick={() => navigate('/')}
+                        onClick={() => router.push('/')}
                         className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
                     >
                         Volver al inicio
@@ -260,7 +260,7 @@ const ExplorarPage: React.FC = () => {
             {/* Header */}
             <div className="relative flex items-center justify-between px-4 py-3 bg-black/20 backdrop-blur-sm border-b border-white/5 z-20 flex-shrink-0">
                 <button
-                    onClick={() => navigate('/')}
+                    onClick={() => router.push('/')}
                     className="flex items-center gap-2 text-white/80 hover:text-white transition-colors px-2 py-1"
                 >
                     <ArrowLeft className="w-5 h-5" />
@@ -315,7 +315,7 @@ const ExplorarPage: React.FC = () => {
                             </button>
 
                             <button
-                                onClick={() => navigate('/escritorio/favoritos')}
+                                onClick={() => router.push('/escritorio/favoritos')}
                                 className="w-full flex items-center justify-center gap-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold py-4 px-6 rounded-xl transition-all border border-white/10"
                             >
                                 <Heart className="w-5 h-5" />
@@ -426,7 +426,7 @@ const ExplorarPage: React.FC = () => {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                navigate(`/autos/${car.slug}`);
+                                                router.push(`/autos/${car.slug}`);
                                             }}
                                             className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm text-gray-900 text-xs font-bold px-4 py-2 rounded-full hover:bg-white transition-all shadow-lg z-20 pointer-events-auto"
                                         >

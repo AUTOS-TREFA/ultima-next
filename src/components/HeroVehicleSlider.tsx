@@ -3,12 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import type { WordPressVehicle } from '../types/types';
 import { Link } from 'react-router-dom';
-import { formatPrice, getPlaceholderImage } from '../utils/formatters';
+import { formatPrice } from '../utils/formatters';
 import { useVehicles } from '../context/VehicleContext';
 
 const HeroVehicleCard: React.FC<{ vehicle: WordPressVehicle }> = ({ vehicle }) => {
     const [isLoaded, setIsLoaded] = useState(false);
-    const imageSrc = vehicle.feature_image || vehicle.thumbnail_webp || vehicle.thumbnail || vehicle.feature_image_webp || getPlaceholderImage(vehicle);
+    const rawImage = vehicle.feature_image || vehicle.thumbnail_webp || vehicle.thumbnail || vehicle.feature_image_webp || '/images/placeholder-car.jpg';
+    const imageSrc = Array.isArray(rawImage) ? rawImage[0] : rawImage;
 
     return (
         <div className="relative h-full">

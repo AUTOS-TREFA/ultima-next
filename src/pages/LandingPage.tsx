@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import useSEO from '../hooks/useSEO';
 import { useVehicles } from '../context/VehicleContext';
 import type { Vehicle } from '../types/types';
 import { getVehicleImage } from '../utils/getVehicleImage';
@@ -79,7 +78,7 @@ const HeroVehicleCard: React.FC<{ vehicle: Vehicle }> = React.memo(({ vehicle })
           </div>
         </div>
       </div>
-      <Link to={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10">
+      <Link href={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10">
         <span className="sr-only">Ver detalles de {vehicle.titulo}</span>
       </Link>
     </div>
@@ -124,7 +123,7 @@ const MasonryVehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
   const imageSrc = getVehicleImage(vehicle);
   const isPopular = vehicle.view_count >= 1000;
   return (
-    <Link to={`/autos/${vehicle.slug}`} className="group block relative z-10">
+    <Link href={`/autos/${vehicle.slug}`} className="group block relative z-10">
       <div className={`relative ${!isPopular ? 'overflow-hidden' : ''} rounded-lg shadow-md hover:shadow-xl transition-shadow ${isPopular ? 'popular-card' : ''}`}>
         <div className={`aspect-[4/3] bg-gray-100 ${isPopular ? 'overflow-hidden rounded-t-lg' : ''}`}>
           <LazyImage
@@ -273,11 +272,7 @@ const SingleCardSlider: React.FC<{ vehicles: Vehicle[] }> = ({ vehicles }) => {
 };
 
 const LandingPage: React.FC = () => {
-  useSEO({
-    title: 'TREFA Auto Inventory - Autos Seminuevos Certificados',
-    description: 'Encuentra el auto perfecto en nuestra selección de vehículos seminuevos 2019 en adelante con Kit de Seguridad incluido: Garantía Blindada, Certificado de Procedencia y más.',
-    keywords: 'autos seminuevos, vehículos certificados, garantía blindada, financiamiento automotriz, autos trefa'
-  });
+  // SEO metadata is handled in the page.tsx file in Next.js
 
   const { vehicles: allVehicles, isLoading } = useVehicles();
   const [displayVehicles, setDisplayVehicles] = useState<Vehicle[]>([]);
@@ -429,7 +424,7 @@ const LandingPage: React.FC = () => {
               transition={{ duration: 0.6, ease: "easeOut", delay: 0.6 }}
               className="flex flex-col sm:flex-row gap-4 pt-4"
             >
-              <Link to="/autos" className="group relative overflow-hidden inline-flex items-center justify-center gap-2 bg-background text-foreground border-2 border-input hover:bg-accent hover:text-accent-foreground px-8 py-3 rounded-xl font-bold text-lg transition-all hover:scale-105 shadow-md hover:shadow-lg">
+              <Link href="/autos" className="group relative overflow-hidden inline-flex items-center justify-center gap-2 bg-background text-foreground border-2 border-input hover:bg-accent hover:text-accent-foreground px-8 py-3 rounded-xl font-bold text-lg transition-all hover:scale-105 shadow-md hover:shadow-lg">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                 <span className="relative">Ver Inventario</span>
                 <Car className="w-5 h-5 relative group-hover:translate-x-1 transition-transform" />
@@ -557,7 +552,7 @@ const LandingPage: React.FC = () => {
           viewport={{ once: true }}
           className="container mx-auto px-4 lg:px-6 relative z-10 text-center"
         >
-          <Link to="/autos" className="group relative overflow-hidden inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary via-orange-500 to-yellow-500 text-white hover:shadow-2xl px-8 py-4 rounded-xl font-black shadow-lg transition-all hover:scale-105 text-lg">
+          <Link href="/autos" className="group relative overflow-hidden inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary via-orange-500 to-yellow-500 text-white hover:shadow-2xl px-8 py-4 rounded-xl font-black shadow-lg transition-all hover:scale-105 text-lg">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
             <span className="relative">Ver el inventario completo</span>
             <ArrowRight className="w-5 h-5 relative group-hover:translate-x-1 transition-transform" />
@@ -629,7 +624,7 @@ const LandingPage: React.FC = () => {
                     <p className="text-muted-foreground">Amplia selección con inspección de 150 puntos</p>
                   </div>
                 </div>
-                <Link to="/autos?carroceria=SUV" className="bg-primary text-white hover:bg-primary/90 px-4 py-2 rounded-lg text-sm font-semibold">
+                <Link href="/autos?carroceria=SUV" className="bg-primary text-white hover:bg-primary/90 px-4 py-2 rounded-lg text-sm font-semibold">
                   Ver todos →
                 </Link>
               </div>
@@ -658,7 +653,7 @@ const LandingPage: React.FC = () => {
                 ) : (
                   <p className="text-muted-foreground text-center py-8">Actualizando selección de Hatchbacks...</p>
                 )}
-                <Link to="/autos?carroceria=Hatchback" className="mt-4 inline-block text-white bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg font-semibold text-sm">
+                <Link href="/autos?carroceria=Hatchback" className="mt-4 inline-block text-white bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg font-semibold text-sm">
                   Ver todos →
                 </Link>
               </div>
@@ -679,7 +674,7 @@ const LandingPage: React.FC = () => {
                 ) : (
                   <p className="text-muted-foreground text-center py-8">Actualizando selección de Sedanes...</p>
                 )}
-                <Link to="/autos?carroceria=Sedan" className="mt-4 inline-block text-white bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg font-semibold text-sm">
+                <Link href="/autos?carroceria=Sedan" className="mt-4 inline-block text-white bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg font-semibold text-sm">
                   Ver todos →
                 </Link>
               </div>
@@ -701,7 +696,7 @@ const LandingPage: React.FC = () => {
               ) : (
                 <p className="text-muted-foreground text-center py-8">Actualizando selección de Pick Ups...</p>
               )}
-              <Link to="/autos?carroceria=Pick Up" className="mt-4 inline-block text-white bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg font-semibold text-sm w-full text-center">
+              <Link href="/autos?carroceria=Pick Up" className="mt-4 inline-block text-white bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg font-semibold text-sm w-full text-center">
                 Ver todos →
               </Link>
             </div>
@@ -769,7 +764,7 @@ const LandingPage: React.FC = () => {
             <p className="text-lg text-muted-foreground mb-6 max-w-3xl mx-auto">
               Garantía Blindada, Certificado de Procedencia, Programa de Recompra, Check-up de Confianza, Bono de Movilidad, Bono de Tranquilidad Financiera y más beneficios exclusivos
             </p>
-            <Link to="/kit-trefa" className="inline-flex items-center gap-2 bg-primary text-white hover:bg-primary/90 px-6 py-3 rounded-lg font-semibold">
+            <Link href="/kit-trefa" className="inline-flex items-center gap-2 bg-primary text-white hover:bg-primary/90 px-6 py-3 rounded-lg font-semibold">
               Conocer el Kit de Seguridad Completo
               <ArrowRight className="w-5 h-5" />
             </Link>
@@ -872,7 +867,7 @@ const LandingPage: React.FC = () => {
                 <div className="text-muted-foreground text-left">Máxima seguridad</div>
               </div>
               <div className="mt-8 mb-6">
-                <Link to="/autos" className="w-full bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-semibold block text-center">
+                <Link href="/autos" className="w-full bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-semibold block text-center">
                   ¡Elige TREFA!
                 </Link>
               </div>
@@ -1146,12 +1141,12 @@ const LandingPage: React.FC = () => {
               seminuevos. Te ayudamos a encontrar el vehículo perfecto para ti y tu familia.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Link to="/autos" className="group relative overflow-hidden inline-flex items-center justify-center gap-2 bg-white text-primary hover:bg-white/95 px-8 py-4 rounded-xl font-black shadow-2xl transition-all hover:scale-105 text-lg">
+              <Link href="/autos" className="group relative overflow-hidden inline-flex items-center justify-center gap-2 bg-white text-primary hover:bg-white/95 px-8 py-4 rounded-xl font-black shadow-2xl transition-all hover:scale-105 text-lg">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                 <span className="relative">Ver Inventario</span>
                 <Car className="w-5 h-5 relative group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link to="/contacto" className="group relative overflow-hidden inline-flex items-center justify-center gap-2 bg-transparent hover:bg-white/10 border-2 border-white text-white px-8 py-4 rounded-xl font-black transition-all hover:scale-105 text-lg">
+              <Link href="/contacto" className="group relative overflow-hidden inline-flex items-center justify-center gap-2 bg-transparent hover:bg-white/10 border-2 border-white text-white px-8 py-4 rounded-xl font-black transition-all hover:scale-105 text-lg">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                 <span className="relative">Agendar Cita</span>
                 <Calendar className="w-5 h-5 relative group-hover:translate-x-1 transition-transform" />

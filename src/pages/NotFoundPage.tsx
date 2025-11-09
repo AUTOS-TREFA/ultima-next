@@ -1,12 +1,13 @@
 'use client';
 
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon, HomeIcon } from '../components/icons';
 import { proxyImage } from '../utils/proxyImage';
 
 const NotFoundPage: React.FC = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] bg-white text-center p-4">
@@ -17,14 +18,14 @@ const NotFoundPage: React.FC = () => {
       </p>
       <div className="mt-10 flex items-center justify-center gap-x-4">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => router.back()}
           className="flex items-center gap-2 rounded-md bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-200 transition-colors"
         >
           <ArrowLeftIcon className="w-4 h-4" />
           Regresar
         </button>
         <Link
-          to="/"
+          href="/"
           className="flex items-center gap-2 rounded-md bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 transition-colors"
         >
           <HomeIcon className="w-4 h-4" />

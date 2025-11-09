@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { SalesService } from '../services/SalesService';
 import { AdminService } from '../services/AdminService';
@@ -337,7 +338,10 @@ const KommoDataDisplay: React.FC<{ kommoData: any; lastSynced: string }> = ({ ko
 };
 
 const SalesClientProfilePage: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
+    const params = useParams<{ id: string }>();
+    const vehicleId = params?.id;
+    const applicationIdFromUrl = params?.id;
+    const id = params?.id;
     const { user } = useAuth();
     const [clientData, setClientData] = useState<{ profile: Profile; applications: any[]; tags: any[]; reminders: any[]; documents: any[] } | null>(null);
     const [loading, setLoading] = useState(true);
@@ -467,7 +471,7 @@ const SalesClientProfilePage: React.FC = () => {
                             <h2 className="text-lg font-bold mb-2">Error al Cargar Perfil</h2>
                             <p className="text-sm mb-4">{error || 'No se pudo cargar el perfil del cliente. Verifica que tengas acceso autorizado.'}</p>
                             <Link
-                                to="/escritorio/ventas/leads"
+                                href="/escritorio/ventas/leads"
                                 className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
                             >
                                 <ArrowLeft className="w-4 h-4" />
@@ -484,7 +488,7 @@ const SalesClientProfilePage: React.FC = () => {
 
     return (
         <div className="space-y-8">
-            <Link to="/escritorio/ventas/leads" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-semibold">
+            <Link href="/escritorio/ventas/leads" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-semibold">
                 <ArrowLeft className="w-4 h-4" />
                 Volver a Mis Leads
             </Link>

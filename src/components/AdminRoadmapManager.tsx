@@ -19,7 +19,7 @@ interface RoadmapItem {
 }
 
 const AdminRoadmapManager: React.FC = () => {
-  const { user, userProfile } = useAuth();
+  const { user, profile } = useAuth();
   const [items, setItems] = useState<RoadmapItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<RoadmapItem | null>(null);
@@ -37,10 +37,10 @@ const AdminRoadmapManager: React.FC = () => {
   };
 
   useEffect(() => {
-    if (userProfile?.role === 'admin') {
+    if (profile?.role === 'admin') {
       loadItems();
     }
-  }, [userProfile]);
+  }, [profile]);
 
   const loadItems = async () => {
     setLoading(true);
@@ -90,7 +90,7 @@ const AdminRoadmapManager: React.FC = () => {
       setEditingItem(null);
     } catch (error) {
       console.error('Error saving roadmap item:', error);
-      alert(`Error al guardar: ${error.message || 'Error desconocido'}`);
+      alert(`Error al guardar: ${(error as Error).message || 'Error desconocido'}`);
     }
   };
 
@@ -121,7 +121,7 @@ const AdminRoadmapManager: React.FC = () => {
     setShowForm(true);
   };
 
-  if (userProfile?.role !== 'admin') {
+  if (profile?.role !== 'admin') {
     return null;
   }
 

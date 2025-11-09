@@ -1,12 +1,7 @@
 import React from 'react';
-import useSEO from '../hooks/useSEO';
 
 const PrivacyPolicyPage: React.FC = () => {
-useSEO({
-    title: 'Aviso de Privacidad | TREFA',
-    description: 'Consulta nuestro aviso de privacidad para conocer cómo manejamos tus datos personales en TREFA.',
-    keywords: 'aviso de privacidad, política de privacidad, trefa, datos personales'
-  });
+    // SEO metadata is handled in the page.tsx file in Next.js
 
     return (
         <div className="bg-white py-16 px-4 sm:px-6 lg:px-8">

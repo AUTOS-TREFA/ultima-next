@@ -13,7 +13,7 @@ export const SectionsPreviewer: React.FC<BlockProps> = (props) => {
   const fullProps = { ...props, image: props.image || "ruta/a/tu/imagen.jpg" };
 
   const handleSave = (layout: 'side' | 'centered' | 'standard' | 'side-left') => {
-    addSection({ ...fullProps, id: Date.now().toString(), layout });
+    addSection({ ...fullProps, layout });
   }
 
   return (

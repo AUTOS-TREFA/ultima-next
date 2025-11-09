@@ -227,16 +227,17 @@ class LandingPageService {
       if (!data) return null;
 
       // Transform the RPC response to our interface
+      const pageData = data as any;
       return {
-        id: data.page_id,
-        slug: data.page_slug,
-        title: data.page_title,
-        status: data.page_status,
-        meta_title: data.page_meta_title,
-        meta_description: data.page_meta_description,
-        views: data.page_views,
+        id: pageData.page_id,
+        slug: pageData.page_slug,
+        title: pageData.page_title,
+        status: pageData.page_status,
+        meta_title: pageData.page_meta_title,
+        meta_description: pageData.page_meta_description,
+        views: pageData.page_views,
         component_ids: [],
-        components: data.components || []
+        components: pageData.components || []
       };
     } catch (error) {
       console.error('Error fetching landing page:', error);

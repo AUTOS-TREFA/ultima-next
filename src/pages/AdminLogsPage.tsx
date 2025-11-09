@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../../supabaseClient';
 import {
@@ -55,7 +55,7 @@ interface ConversionLog {
 
 export default function AdminLogsPage() {
     const { profile } = useAuth();
-    const navigate = useNavigate();
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState<'emails' | 'sync' | 'conversions' | 'events'>('emails');
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -76,9 +76,9 @@ export default function AdminLogsPage() {
     // Redirect if not admin
     useEffect(() => {
         if (profile && profile.role !== 'admin') {
-            navigate('/escritorio/dashboard');
+            router.push('/escritorio/dashboard');
         }
-    }, [profile, navigate]);
+    }, [profile, router]);
 
     useEffect(() => {
         loadData();

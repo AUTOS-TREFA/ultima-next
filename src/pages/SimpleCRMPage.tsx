@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../../supabaseClient';
 import { Loader2, AlertTriangle, User, Users, FileText, Clock, Search, Ban, Check, X, Edit2, ExternalLink, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
@@ -135,7 +135,7 @@ const SimpleCRMPage: React.FC = () => {
             console.log('[SimpleCRM] Fetched leads:', leadsData?.length);
 
             // Transform data to match Client interface
-            const combinedClients: Client[] = (leadsData || []).map(client => ({
+            const combinedClients: Client[] = (leadsData || []).map((client: any) => ({
                 id: client.id,
                 first_name: client.first_name,
                 last_name: client.last_name,
@@ -697,7 +697,7 @@ const SimpleCRMPage: React.FC = () => {
                                     </td>
                                     <td className="px-6 py-4">
                                         <Link
-                                            to={`/escritorio/admin/cliente/${client.id}`}
+                                            href={`/escritorio/admin/cliente/${client.id}`}
                                             className="flex items-center gap-1 text-primary-600 hover:text-primary-700 font-medium"
                                         >
                                             Ver perfil

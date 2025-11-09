@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import VehicleService from '../services/VehicleService';
 import { useVehicles } from '../context/VehicleContext';
 import type { WordPressVehicle, InspectionReportData } from '../types/types';
@@ -32,7 +33,6 @@ import Lightbox from '../components/Lightbox';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { useFavorites } from '../hooks/useFavorites';
 import RecentlyViewed from '../components/RecentlyViewed';
-import useSEO from '../hooks/useSEO';
 import { useAuth } from '../context/AuthContext';
 import InspectionReport from '../components/InspectionReport';
 import { InspectionService } from '../services/InspectionService';
@@ -226,6 +226,7 @@ const MediaGallery: React.FC<{
 const TitlePriceActionsBlock: React.FC<{
     vehicle: WordPressVehicle;
     financeData: any;
+    favoriteCount: number;
     isFavorite: boolean;
     isToggling: boolean;
     onToggleFavorite: () => void;
@@ -559,7 +560,7 @@ const TabsSection: React.FC<{
                     <tab.icon className="w-4 h-4" /> {tab.label}
                 </button>
             ))}
-            {isAdmin && <Link to={`/escritorio/admin/inspections/${vehicleId}`} className="ml-auto px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-md flex items-center gap-2"><EditIcon className="w-4 h-4"/> Editar</Link>}
+            {isAdmin && <Link href={`/escritorio/admin/inspections/${vehicleId}`} className="ml-auto px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-md flex items-center gap-2"><EditIcon className="w-4 h-4"/> Editar</Link>}
         </div>
 
         <div className="mt-6">
@@ -604,8 +605,9 @@ const TabsSection: React.FC<{
 // =================================================================================
 
 const VehicleDetailPage: React.FC = () => {
-    const { slug } = useParams<{ slug: string }>();
-    const navigate = useNavigate();
+    const params = useParams<{ slug: string }>();
+    const slug = params?.slug;
+    const router = useRouter();
     const { session, user } = useAuth();
     const { vehicles: allVehicles } = useVehicles();
     const [vehicle, setVehicle] = useState<WordPressVehicle | null>(null);
@@ -672,7 +674,7 @@ const VehicleDetailPage: React.FC = () => {
         if (!vehicle) return;
         const financingUrl = session ? '/escritorio/aplicacion' : '/acceder';
         const urlWithParams = vehicle.ordencompra ? `${financingUrl}?ordencompra=${vehicle.ordencompra}` : financingUrl;
-        navigate(urlWithParams);
+        router.push(urlWithParams);
     };
 
     useEffect(() => {
@@ -814,7 +816,7 @@ const VehicleDetailPage: React.FC = () => {
           {prevVehicle ? (() => {
             const prevImage = getVehicleImage(prevVehicle);
             return (
-              <Link to={`/autos/${prevVehicle.slug}`} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-white/60 transition-colors">
+              <Link href={`/autos/${prevVehicle.slug}`} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-white/60 transition-colors">
                 <ChevronLeftIcon className="w-8 h-8 flex-shrink-0 text-gray-400 group-hover:text-primary-600 transition-colors" />
                 <img src={prevImage} alt={prevVehicle.titulo} className="w-20 h-16 object-cover rounded-md flex-shrink-0 hidden sm:block" />
                 <div className="truncate text-left">
@@ -831,7 +833,7 @@ const VehicleDetailPage: React.FC = () => {
           {nextVehicle ? (() => {
             const nextImage = getVehicleImage(nextVehicle);
             return (
-              <Link to={`/autos/${nextVehicle.slug}`} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-white/60 transition-colors">
+              <Link href={`/autos/${nextVehicle.slug}`} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-white/60 transition-colors">
                 <div className="truncate text-right">
                   <span className="text-xs text-gray-500 block">Siguiente</span>
                   <span className="font-semibold hidden md:block truncate text-neutral-800 group-hover:text-primary-700">{nextVehicle.titulo}</span>

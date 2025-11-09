@@ -5,7 +5,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '../context/AuthContext';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ProfileService } from '../services/profileService';
 import { User, ArrowLeft, CheckCircle, Loader2, Info, ArrowRight } from 'lucide-react';
 import type { Profile } from '../types/types';
@@ -61,7 +62,7 @@ const checkProfileCompleteness = (p: Profile | undefined): boolean => {
 
 const ProfilePage: React.FC = () => {
   const { user, profile, loading, reloadProfile } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [isProfileComplete, setIsProfileComplete] = useState(false);
@@ -175,7 +176,7 @@ const ProfilePage: React.FC = () => {
       toast.success('¡Perfil guardado! Redirigiendo a perfilación bancaria...');
 
       setTimeout(() => {
-        navigate('/escritorio/perfilacion-bancaria');
+        router.push('/escritorio/perfilacion-bancaria');
       }, 4000);
 
     } catch (error) {
@@ -198,7 +199,7 @@ const ProfilePage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
       <Link
-        to="/escritorio"
+        href="/escritorio"
         className="flex items-center text-gray-600 hover:text-gray-900 mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
@@ -242,7 +243,7 @@ const ProfilePage: React.FC = () => {
                 <h3 className="text-xl font-bold text-green-900">¡Perfil Completo!</h3>
                 <p className="text-gray-600 mt-2 mb-4">Has completado tu información personal. El siguiente paso es crear tu perfilamiento bancario para encontrar el banco con las mejores condiciones para tu caso específico.</p>
                 <Link
-                    to="/escritorio/perfilacion-bancaria"
+                    href="/escritorio/perfilacion-bancaria"
                     className="inline-flex items-center justify-center py-2.5 px-6 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-green-50 focus:ring-green-500"
                 >
                     Crear mi perfil bancario  <ArrowRight className="w-4 h-4 ml-2" />

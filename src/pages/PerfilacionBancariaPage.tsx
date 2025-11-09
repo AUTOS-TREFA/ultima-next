@@ -4,7 +4,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useForm, Controller, useController } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate, Link } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { BankProfilingService, getBankColor, getBankLogo } from '../services/BankProfilingService';
 import { Profile } from '../types/types';
@@ -160,7 +161,7 @@ const BankCard: React.FC<{ bankName: string, title: string, description: string 
 
 const PerfilacionBancariaPage: React.FC = () => {
     const { user, profile, loading: authLoading } = useAuth();
-    const navigate = useNavigate();
+    const router = useRouter();
     const [status, setStatus] = useState<'loading' | 'profile_incomplete' | 'ready' | 'error' | 'success'>('loading');
     const [showConfetti, setShowConfetti] = useState(false);
     const [recommendedBank, setRecommendedBank] = useState<string | null>(null);
@@ -190,8 +191,8 @@ const PerfilacionBancariaPage: React.FC = () => {
             const existingProfile = await BankProfilingService.getUserBankProfile(user.id);
             if (existingProfile) {
                 if (existingProfile.respuestas) reset(existingProfile.respuestas);
-                setRecommendedBank(existingProfile.banco_recomendado);
-                setSecondRecommendedBank(existingProfile.banco_segunda_opcion);
+                setRecommendedBank(existingProfile.banco_recomendado || null);
+                setSecondRecommendedBank(existingProfile.banco_segunda_opcion || null);
                 if (existingProfile.is_complete) setStatus('success');
                 else setStatus('ready');
             } else {
@@ -209,12 +210,12 @@ const PerfilacionBancariaPage: React.FC = () => {
             localStorage.removeItem('loginRedirect');
 
             const timer = setTimeout(() => {
-                navigate(path);
+                router.push(path);
             }, 7000); // Redirect after 7 seconds
 
             return () => clearTimeout(timer);
         }
-    }, [status, navigate]);
+    }, [status, router]);
 
 
     const onSubmit = async (data: BankProfileFormData) => {
@@ -250,7 +251,7 @@ const PerfilacionBancariaPage: React.FC = () => {
                 <p className="text-gray-600 mt-2 max-w-lg mx-auto">
                     Para poder crear tu perfil bancario, necesitamos que termines de llenar tu información personal.
                 </p>
-                <Link to="/escritorio/profile" className="mt-6 inline-block bg-primary-600 text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-primary-700 transition-colors">
+                <Link href="/escritorio/profile" className="mt-6 inline-block bg-primary-600 text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-primary-700 transition-colors">
                   Ir a Mi Perfil
                 </Link>
             </div>

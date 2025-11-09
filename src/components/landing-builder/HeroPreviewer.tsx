@@ -12,7 +12,7 @@ export const HeroPreviewer: React.FC<HeroProps> = (props) => {
     const fullProps = { ...props, image: props.image || "ruta/a/tu/imagen.jpg" };
 
     const handleSave = (layout: 'centered' | 'split' | 'minimalist') => {
-        addHero({ ...fullProps, id: Date.now().toString(), layout });
+        addHero({ ...fullProps, layout });
     };
 
     return (

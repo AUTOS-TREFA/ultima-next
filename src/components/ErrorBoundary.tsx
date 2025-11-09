@@ -33,7 +33,7 @@ class ErrorBoundary extends Component<Props, State> {
 
     // Log environment info for debugging
     console.log("Environment:", {
-      mode: import.meta.env.MODE,
+      mode: process.env.NODE_ENV,
       version: process.env.NEXT_PUBLIC_APP_VERSION,
       hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
       hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -45,7 +45,7 @@ class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
-      const isDev = import.meta.env.MODE === 'development';
+      const isDev = process.env.NODE_ENV === 'development';
 
       return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-center p-4">

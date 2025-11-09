@@ -33,10 +33,10 @@ export const ImageService = {
   /**
    * Fetches an image from a public URL and uploads it as a backup to Supabase Storage.
    * @param imageUrl - The public URL of the image to back up.
-   * @param vehicleId - The ID of the vehicle this image belongs to.
+   * @param vehicleId - The ID of the vehicle this image belongs to (can be either numeric or Airtable record ID string).
    * @returns The path of the uploaded file in Supabase Storage.
    */
-  async backupImageToSupabase(imageUrl: string, vehicleId: number): Promise<string> {
+  async backupImageToSupabase(imageUrl: string, vehicleId: number | string): Promise<string> {
     try {
       // Fetch the image from the public URL
       const response = await fetch(imageUrl);

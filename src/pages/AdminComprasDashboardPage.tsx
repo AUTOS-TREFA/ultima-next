@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { SellCarService } from '../services/SellCarService';
 import { Loader2, AlertTriangle, Car, ShoppingCart, Clock, CheckCircle, Search, Trash2 } from 'lucide-react';
@@ -213,7 +213,7 @@ const AdminComprasDashboardPage: React.FC = () => {
                                 {filteredData.map(lead => (
                                     <tr key={lead.id} className="bg-white border-b hover:bg-gray-50">
                                         <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                                            <Link to={`/escritorio/admin/compras/${lead.id}`} className="hover:underline text-primary-600">
+                                            <Link href={`/escritorio/admin/compras/${lead.id}`} className="hover:underline text-primary-600">
                                                 {`${lead.first_name || ''} ${lead.last_name || ''}`.trim() || 'Sin Nombre'}
                                             </Link>
                                         </td>

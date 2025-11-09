@@ -2,15 +2,11 @@
 
 import React from 'react';
 import { BookOpen, Rocket } from 'lucide-react';
-import useSEO from '../hooks/useSEO';
 import AdminRoadmapManager from '../components/AdminRoadmapManager';
 import DynamicRoadmapDisplay from '../components/DynamicRoadmapDisplay';
 
 const ChangelogPage: React.FC = () => {
-  useSEO({
-    title: 'Registro de Cambios y Roadmap - Autos TREFA',
-    description: 'Historial de actualizaciones y plan de desarrollo de la plataforma TREFA',
-  });
+    // SEO metadata is handled in the page.tsx file in Next.js
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-900 to-primary-700 py-8 px-4">

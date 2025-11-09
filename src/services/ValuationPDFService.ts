@@ -686,7 +686,7 @@ export class ValuationPDFService {
       }
 
       // Advantage box
-      const impactColor = advantage.impact === 'Alto' ? [5, 150, 105] :
+      const impactColor: [number, number, number] = advantage.impact === 'Alto' ? [5, 150, 105] :
                          advantage.impact === 'Medio-Alto' ? [59, 130, 246] : [107, 114, 128];
 
       this.pdf.setDrawColor(...impactColor);
@@ -898,7 +898,7 @@ export class ValuationPDFService {
         this.addNewPage();
       }
 
-      const levelColor = risk.level.includes('Alto') ? [239, 68, 68] :
+      const levelColor: [number, number, number] = risk.level.includes('Alto') ? [239, 68, 68] :
                         risk.level.includes('Medio') ? [245, 158, 11] : [107, 114, 128];
 
       // Risk box
@@ -955,7 +955,7 @@ export class ValuationPDFService {
     const recommendations = [
       {
         timeframe: 'INMEDIATO (0-1 mes)',
-        color: [239, 68, 68],
+        color: [239, 68, 68] as [number, number, number],
         items: [
           'Proteger propiedad intelectual mediante registro formal ante IMPI',
           'Establecer programa de backup automatizado de código y base de datos',
@@ -964,7 +964,7 @@ export class ValuationPDFService {
       },
       {
         timeframe: 'CORTO PLAZO (1-3 meses) - Inversión: $18,500 USD',
-        color: [245, 158, 11],
+        color: [245, 158, 11] as [number, number, number],
         items: [
           'Implementar suite de testing (Vitest + Playwright) con 60% de cobertura',
           'Centralizar gestión de secrets en Google Secret Manager',
@@ -975,7 +975,7 @@ export class ValuationPDFService {
       },
       {
         timeframe: 'MEDIANO PLAZO (3-6 meses) - Inversión: $32,500 USD',
-        color: [59, 130, 246],
+        color: [59, 130, 246] as [number, number, number],
         items: [
           'Contratar desarrollador adicional para reducir dependencia única',
           'Implementar CDN global para optimización de performance',
@@ -986,7 +986,7 @@ export class ValuationPDFService {
       },
       {
         timeframe: 'LARGO PLAZO (6-12 meses) - Inversión: $160,000 USD',
-        color: [5, 150, 105],
+        color: [5, 150, 105] as [number, number, number],
         items: [
           'Desarrollar arquitectura multi-tenant para modelo SaaS B2B',
           'Crear aplicaciones móviles nativas (iOS y Android)',

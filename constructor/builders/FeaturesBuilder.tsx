@@ -67,7 +67,7 @@ export const FeaturesBuilder: React.FC = () => {
                 model: 'gemini-2.5-flash',
                 contents: `Basado en el título del servicio: "${feature.title}", escribe una descripción corta y atractiva (1-2 frases).`,
             });
-            handleFeatureChange(id, 'description', response.text.trim());
+            handleFeatureChange(id, 'description', response.text?.trim() || '');
         } catch (e) {
             console.error(e);
             setError("No se pudo generar la descripción.");

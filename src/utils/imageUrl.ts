@@ -125,7 +125,7 @@ export function getResponsiveSrcSet(
 export function isOptimizedUrl(url: string | null | undefined): boolean {
   if (!url) return false;
 
-  return (
+  return !!(
     (IMAGE_CDN_URL && url.startsWith(IMAGE_CDN_URL)) ||
     (R2_PUBLIC_URL && url.startsWith(R2_PUBLIC_URL))
   );

@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { CheckCircleIcon, HeartIcon, FileTextIcon, BellIcon, CalendarIcon, GoogleIcon } from '../components/icons';
 import type { WordPressVehicle } from '../types/types';
 import VehicleService from '../services/VehicleService';
 import { formatPrice } from '../utils/formatters';
-import useSEO from '../hooks/useSEO';
 import { getVehicleImage } from '../utils/getVehicleImage';
 import { getEmailRedirectUrl } from './config';
 import { proxyImage } from '../utils/proxyImage';
@@ -71,20 +71,16 @@ const allCustomerAvatars = [
 ];
 
 const AuthPage: React.FC = () => {
-    useSEO({
-        title: 'Accede o Crea tu Cuenta | Portal TREFA',
-        description: 'Inicia sesión en tu cuenta de TREFA para guardar favoritos, solicitar financiamiento y dar seguimiento a tus trámites. Proceso seguro y rápido.',
-        keywords: 'iniciar sesión trefa, crear cuenta trefa, portal de clientes, acceso trefa'
-    });
+    // SEO metadata is handled in the page.tsx file in Next.js
 
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [view, setView] = useState<'signIn' | 'verifyOtp'>('signIn');
-    const navigate = useNavigate();
+    const router = useRouter();
     const { session, profile } = useAuth();
-    const [searchParams] = useSearchParams();
+    const searchParams = useSearchParams();
     const [vehicleToFinance, setVehicleToFinance] = useState<WordPressVehicle | null>(null);
     const [isLoadingVehicle, setIsLoadingVehicle] = useState(false);
     const [isVideoLoaded, setIsVideoLoaded] = useState(false);
@@ -127,12 +123,12 @@ const AuthPage: React.FC = () => {
             }
 
             localStorage.removeItem('loginRedirect'); // Clean up after use
-            navigate(redirectPath, { replace: true });
+            router.replace(redirectPath);
         }
-    }, [session, profile, navigate]);
+    }, [session, profile, router]);
 
     useEffect(() => {
-        const ordenCompraFromUrl = searchParams.get('ordencompra');
+        const ordenCompraFromUrl = searchParams?.get('ordencompra');
         if (ordenCompraFromUrl) {
             setIsLoadingVehicle(true);
             sessionStorage.setItem('pendingOrdenCompra', ordenCompraFromUrl);
@@ -182,7 +178,7 @@ const AuthPage: React.FC = () => {
             // Track OTP request
             conversionTracking.trackAuth.otpRequested(email, {
                 source: source || 'direct',
-                vehicleId: searchParams.get('ordencompra') || undefined
+                vehicleId: searchParams?.get('ordencompra') || undefined
             });
 
             setView('verifyOtp');
@@ -221,7 +217,7 @@ const AuthPage: React.FC = () => {
                 console.log('🎉 New user detected - tracking InitialRegistration');
                 conversionTracking.trackAuth.otpVerified(data.user?.id || '', {
                     email: email,
-                    vehicleId: searchParams.get('ordencompra') || undefined
+                    vehicleId: searchParams?.get('ordencompra') || undefined
                 });
 
                 // Wait 500ms to ensure Facebook Pixel event is sent before redirect
@@ -243,7 +239,7 @@ const AuthPage: React.FC = () => {
                 }
             }
             localStorage.removeItem('loginRedirect');
-            navigate(redirectPath, { replace: true });
+            router.replace(redirectPath);
 
         } catch (error: any) {
              console.error('Full OTP Error:', error);
@@ -260,7 +256,7 @@ const AuthPage: React.FC = () => {
         // Track Google sign-in attempt
         conversionTracking.trackButtonClick('Google Sign In Initiated', {
             page: 'auth',
-            vehicleId: searchParams.get('ordencompra') || undefined
+            vehicleId: searchParams?.get('ordencompra') || undefined
         });
 
         const { error } = await supabase.auth.signInWithOAuth({
@@ -292,7 +288,7 @@ const AuthPage: React.FC = () => {
     const renderSignInView = () => (
         <div className="space-y-8">
             <div className="text-left lg:text-center">
-                <Link to="/" className="inline-block mb-8 lg:hidden">
+                <Link href="/" className="inline-block mb-8 lg:hidden">
                     <img src="/images/trefalogo.png" alt="TREFA Logo" className="h-8 w-auto mx-auto" />
                 </Link>
                 <h1 className="text-lg lg:text-2xl font-extrabold text-gray-900 tracking-tight lg:tracking-normal">Accede o crea tu cuenta</h1>
@@ -400,7 +396,7 @@ const AuthPage: React.FC = () => {
         </div>
         <div className="relative w-full max-w-5xl mx-auto bg-transparent rounded-2xl shadow-xl overflow-hidden grid lg:grid-cols-2">
             <div className="relative hidden lg:flex flex-col justify-between h-full p-10 bg-white/60 backdrop-blur-sm text-gray-800 border-r border-white/20">
-                <Link to="/" className="transition-transform hover:scale-105">
+                <Link href="/" className="transition-transform hover:scale-105">
                     <img src="/images/trefalogo.png" alt="TREFA Logo" className="h-8 mb-2 w-auto" />
                 </Link>
 

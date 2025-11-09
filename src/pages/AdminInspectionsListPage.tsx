@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import VehicleService from '../services/VehicleService';
 import type { WordPressVehicle } from '../types/types';
 import { Loader2, Search, FileText, Edit } from 'lucide-react';
@@ -67,7 +67,7 @@ const AdminInspectionsListPage: React.FC = () => {
                         const imageSrc = vehicle.thumbnail_webp || vehicle.thumbnail || vehicle.feature_image_webp || vehicle.feature_image || DEFAULT_PLACEHOLDER_IMAGE;
                         return (
                             <li key={vehicle.id}>
-                                <Link to={`/escritorio/admin/inspections/${vehicle.id}`} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                                <Link href={`/escritorio/admin/inspections/${vehicle.id}`} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
                                     <div className="flex items-center gap-4">
                                         <img src={imageSrc} alt={vehicle.titulo} className="w-20 h-16 object-cover rounded-md flex-shrink-0" />
                                         <div>

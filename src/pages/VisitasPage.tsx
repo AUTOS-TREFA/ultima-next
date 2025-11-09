@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo } from 'react';
 import { config } from './config';
-import useSEO from '../hooks/useSEO';
 import { useAuth } from '../context/AuthContext';
 import {
     Building as BuildingIcon,
@@ -52,11 +51,7 @@ const getAvailableSlots = () => {
 };
 
 const VisitasPage: React.FC = () => {
-    useSEO({
-        title: 'Agenda tu Visita | TREFA',
-        description: 'Agenda una visita para ver tu próximo auto en una de nuestras sucursales en Monterrey, Guadalupe, Saltillo o Reynosa.',
-        keywords: 'agendar visita, prueba de manejo, sucursales trefa, ver autos'
-    });
+    // SEO metadata is handled in the page.tsx file in Next.js
     const { user } = useAuth();
     
     // State Management

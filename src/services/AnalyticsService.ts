@@ -62,6 +62,7 @@ export interface TrendComparisons {
 }
 
 export interface DashboardFilters {
+    dateRange?: 'last7days' | 'last30days' | 'last90days' | 'thisMonth' | 'lastMonth' | 'custom' | 'all';
     startDate?: Date;
     endDate?: Date;
     source?: 'all' | 'facebook' | 'google' | 'bot' | 'direct' | 'other';
@@ -115,12 +116,14 @@ export class AnalyticsService {
             ] = await Promise.all([
                 leadQuery,
                 appQuery,
-                remindersQuery
-                    .then(result => result)
-                    .catch(error => {
+                (async () => {
+                    try {
+                        return await remindersQuery;
+                    } catch (error) {
                         console.warn('[Analytics] lead_reminders table not found, skipping reminders:', error);
                         return { data: [], error: null };
-                    })
+                    }
+                })()
             ]);
 
             // Try to fetch Kommo leads if the table exists

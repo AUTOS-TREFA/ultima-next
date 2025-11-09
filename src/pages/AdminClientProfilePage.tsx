@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { AdminService } from '../services/AdminService';
 import { KommoService } from '../services/KommoService';
@@ -548,7 +549,10 @@ const KommoDataDisplay: React.FC<{ kommoData: any; lastSynced: string }> = ({ ko
 };
 
 const AdminClientProfilePage: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
+    const params = useParams<{ id: string }>();
+    const vehicleId = params?.id;
+    const applicationIdFromUrl = params?.id;
+    const id = params?.id;
     const { user } = useAuth();
     const [clientData, setClientData] = useState<{ profile: Profile; applications: any[]; tags: any[]; reminders: any[]; documents: any[] } | null>(null);
     const [loading, setLoading] = useState(true);
@@ -697,7 +701,7 @@ const AdminClientProfilePage: React.FC = () => {
                             <h2 className="text-lg font-bold mb-2">Error al Cargar Perfil</h2>
                             <p className="text-sm mb-4">{error}</p>
                             <Link
-                                to="/escritorio/admin/crm"
+                                href="/escritorio/admin/crm"
                                 className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
                             >
                                 <ArrowLeft className="w-4 h-4" />
@@ -716,7 +720,7 @@ const AdminClientProfilePage: React.FC = () => {
                 <div className="p-6 bg-yellow-50 border-2 border-yellow-200 text-yellow-800 rounded-xl">
                     <p className="font-semibold">No hay datos del cliente disponibles.</p>
                     <Link
-                        to="/escritorio/admin/crm"
+                        href="/escritorio/admin/crm"
                         className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-yellow-600 text-white font-semibold rounded-lg hover:bg-yellow-700 transition-colors"
                     >
                         <ArrowLeft className="w-4 h-4" />
@@ -731,7 +735,7 @@ const AdminClientProfilePage: React.FC = () => {
 
     return (
         <div className="space-y-8">
-            <Link to="/escritorio/admin/crm" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-semibold">
+            <Link href="/escritorio/admin/crm" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-semibold">
                 <ArrowLeft className="w-4 h-4" />
                 Volver al CRM
             </Link>

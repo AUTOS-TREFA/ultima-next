@@ -57,9 +57,9 @@ export const BuilderProvider: React.FC<{ children: ReactNode }> = ({ children })
   // Helper function to transform database component to typed component
   const transformComponent = (component: LandingPageComponent): any => {
     return {
+      ...component.data,
       id: component.id,
-      layout: component.layout,
-      ...component.data
+      layout: component.layout
     };
   };
 

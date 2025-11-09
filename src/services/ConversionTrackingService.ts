@@ -156,7 +156,7 @@ class ConversionTrackingService {
      * Track when user starts application
      */
     started: (metadata: ConversionMetadata = {}): void => {
-      marketingEvents.trackEvent('application_started', 'Application Started', {
+      marketingEvents.trackEvent('custom', 'Application Started', {
         ...metadata,
         applicationStage: 'started'
       });
@@ -166,7 +166,7 @@ class ConversionTrackingService {
      * Track application step completion
      */
     stepCompleted: (stepNumber: number, stepName: string, metadata: ConversionMetadata = {}): void => {
-      marketingEvents.trackEvent('application_step_completed', `Application Step ${stepNumber} Complete: ${stepName}`, {
+      marketingEvents.trackEvent('custom', `Application Step ${stepNumber} Complete: ${stepName}`, {
         ...metadata,
         stepNumber,
         stepName,
@@ -195,7 +195,7 @@ class ConversionTrackingService {
      * Track document upload
      */
     documentUploaded: (documentType: string, metadata: ConversionMetadata = {}): void => {
-      marketingEvents.trackEvent('application_document_upload', documentType, metadata);
+      marketingEvents.trackEvent('custom', documentType, metadata);
     }
   };
 
@@ -207,7 +207,7 @@ class ConversionTrackingService {
      * Track OTP request
      */
     otpRequested: (email: string, metadata: ConversionMetadata = {}): void => {
-      marketingEvents.trackEvent('auth_otp_requested', email, {
+      marketingEvents.trackEvent('custom', email, {
         ...metadata,
         email
       });
@@ -248,7 +248,7 @@ class ConversionTrackingService {
      * Track logout
      */
     logout: (metadata: ConversionMetadata = {}): void => {
-      marketingEvents.trackEvent('auth_logout', 'user_logout', metadata);
+      marketingEvents.trackEvent('custom', 'user_logout', metadata);
     }
   };
 
@@ -356,7 +356,7 @@ class ConversionTrackingService {
     }
 
     // Also track to existing marketing events service (Supabase)
-    marketingEvents.trackEvent('conversion', eventName, {
+    marketingEvents.trackEvent('custom', eventName, {
       eventType,
       ...metadata,
       ...utmParams

@@ -11,7 +11,7 @@ export const ComparisonPreviewer: React.FC<ComparisonProps> = (props) => {
     const { addComparison } = useBuilderContext();
     
     const handleSave = (layout: 'table' | 'side-by-side' | 'pricing-boxes') => {
-        addComparison({ ...props, id: Date.now().toString(), layout });
+        addComparison({ ...props, layout });
     };
 
     return (

@@ -410,7 +410,7 @@ export class ValuationPDFServiceV2 {
     const techCategories = [
       {
         category: 'Frontend de Vanguardia',
-        color: [59, 130, 246],
+        color: [59, 130, 246] as [number, number, number],
         technologies: [
           { tech: 'React 18.2', desc: 'Concurrent rendering, Suspense, automatic batching' },
           { tech: 'TypeScript 5.2', desc: '100% type safety, decorators, satisfies operator' },
@@ -424,7 +424,7 @@ export class ValuationPDFServiceV2 {
       },
       {
         category: 'Backend Serverless Moderno',
-        color: [124, 58, 237],
+        color: [124, 58, 237] as [number, number, number],
         technologies: [
           { tech: 'Supabase (PostgreSQL 15)', desc: 'Base de datos relacional con Row Level Security' },
           { tech: '19 Edge Functions (Deno)', desc: 'Funciones serverless con ejecución global distribuida' },
@@ -435,7 +435,7 @@ export class ValuationPDFServiceV2 {
       },
       {
         category: 'Inteligencia Artificial',
-        color: [245, 158, 11],
+        color: [245, 158, 11] as [number, number, number],
         technologies: [
           { tech: 'Google Gemini AI', desc: 'Generación de contenido marketing con LLM de última generación' },
           { tech: 'Intelimotor API', desc: 'Valuación de vehículos con ML en tiempo real' },
@@ -444,7 +444,7 @@ export class ValuationPDFServiceV2 {
       },
       {
         category: 'Marketing & Analytics',
-        color: [5, 150, 105],
+        color: [5, 150, 105] as [number, number, number],
         technologies: [
           { tech: 'Google Tag Manager', desc: 'Event tracking centralizado sin modificar código' },
           { tech: 'Google Analytics 4', desc: 'Analytics de nueva generación con machine learning' },
@@ -454,7 +454,7 @@ export class ValuationPDFServiceV2 {
       },
       {
         category: 'Seguridad & Compliance',
-        color: [220, 38, 38],
+        color: [220, 38, 38] as [number, number, number],
         technologies: [
           { tech: 'Row Level Security (RLS)', desc: '100% cobertura en todas las tablas PostgreSQL' },
           { tech: 'OAuth 2.0 + OTP', desc: 'Autenticación passwordless moderna' },
@@ -521,7 +521,7 @@ export class ValuationPDFServiceV2 {
           'Validacion automatica: 0% errores',
         ],
         impact: '70% reduccion en tiempo - 40% mejor conversion - $50K ahorro anual',
-        color: [5, 150, 105]
+        color: [5, 150, 105] as [number, number, number]
       },
       {
         problem: 'Inventario Invisible y Desactualizado',
@@ -533,7 +533,7 @@ export class ValuationPDFServiceV2 {
           'Alcance nacional: todo Mexico',
         ],
         impact: '10x mayor alcance - 99.9% disponibilidad - 200% mejor engagement visual',
-        color: [59, 130, 246]
+        color: [59, 130, 246] as [number, number, number]
       },
       {
         problem: 'Gestion Caotica de Leads',
@@ -545,7 +545,7 @@ export class ValuationPDFServiceV2 {
           'Notificaciones automaticas por email',
         ],
         impact: '0% leads perdidos - 35% mejor cierre - 50% menos tiempo respuesta',
-        color: [124, 58, 237]
+        color: [124, 58, 237] as [number, number, number]
       },
       {
         problem: 'Marketing Fragmentado y Costoso',
@@ -557,7 +557,7 @@ export class ValuationPDFServiceV2 {
           'ROI medible con GA4 + GTM + Pixel',
         ],
         impact: '60% reduccion tiempo - $9.6K ahorro/ano - 25% mejor conversion',
-        color: [245, 158, 11]
+        color: [245, 158, 11] as [number, number, number]
       },
       {
         problem: 'Valuacion Lenta y Subjetiva',
@@ -569,7 +569,7 @@ export class ValuationPDFServiceV2 {
           'Transparencia total con fuente Intelimotor',
         ],
         impact: '95% reduccion tiempo - 300% mas solicitudes - 100% consistencia',
-        color: [220, 38, 38]
+        color: [220, 38, 38] as [number, number, number]
       },
     ];
 

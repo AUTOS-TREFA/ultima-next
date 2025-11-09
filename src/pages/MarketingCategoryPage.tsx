@@ -1,17 +1,19 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { useVehicles } from '../context/VehicleContext';
 import { useFilters } from '../context/FilterContext';
 import VehicleGridCard from '../components/VehicleGridCard';
-import useSEO from '../hooks/useSEO';
 import { Loader2, AlertTriangle, Car } from 'lucide-react';
 
 import { getCategoryImage } from '../utils/categoryImages';
 
 const MarketingCategoryPage: React.FC = () => {
-    const { marca, carroceria } = useParams<{ marca?: string; carroceria?: string }>();
+    const params = useParams<{ marca?: string; carroceria?: string }>();
+    const marca = params?.marca;
+    const carroceria = params?.carroceria;
     const { vehicles: allVehicles, isLoading } = useVehicles();
     const [error] = useState<string | null>(null);
 
@@ -73,12 +75,7 @@ const MarketingCategoryPage: React.FC = () => {
 
         return { title, banner, description, keywords };
     });
-
-    useSEO({
-        title: `${seoContent.title} | Autos Seminuevos en TREFA`,
-        description: seoContent.description,
-        keywords: seoContent.keywords
-    });
+    // SEO metadata is handled in the page.tsx file in Next.js
 
     if (isLoading) {
         return (
@@ -122,7 +119,7 @@ const MarketingCategoryPage: React.FC = () => {
                         </div>
                         <div className="mt-12 text-center">
                             <Link 
-                                to={`/autos?${filterType}=${filterValue}`}
+                                href={`/autos?${filterType}=${filterValue}`}
                                 className="inline-block bg-primary-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-primary-700 transition-colors text-lg shadow-md"
                             >
                                 Ver todos los ({filteredVehicles.length}) resultados
@@ -135,7 +132,7 @@ const MarketingCategoryPage: React.FC = () => {
                         <h3 className="text-xl font-semibold text-gray-800">No se encontraron autos</h3>
                         <p className="text-gray-500 mt-2 mb-6">Actualmente no tenemos autos que coincidan con esta categoría. ¡Vuelve pronto!</p>
                         <Link
-                            to="/autos"
+                            href="/autos"
                             className="inline-block bg-primary-600 text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-primary-700 transition-colors"
                         >
                             Explorar todo el inventario

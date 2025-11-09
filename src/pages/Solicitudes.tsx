@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { 
   Clock, 
   Loader2, 
@@ -127,7 +128,9 @@ const ApplicationDetailView: React.FC<{ application: ApplicationData }> = ({ app
 
 
 const SolicitudesPage: React.FC = () => {
-  const { id: applicationIdFromUrl } = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>();
+    const vehicleId = params?.id;
+    const applicationIdFromUrl = params?.id;
   const { user, profile, loading: userLoading } = useAuth();
   const [applications, setApplications] = useState<ApplicationData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -250,7 +253,7 @@ const SolicitudesPage: React.FC = () => {
           <div className="space-y-8">
           {applicationIdFromUrl ? (
               <div>
-                  <Link to="/escritorio/seguimiento" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-semibold no-print">
+                  <Link href="/escritorio/seguimiento" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-semibold no-print">
                       <ArrowLeft className="w-4 h-4" />
                       Volver a Mis Solicitudes
                   </Link>
@@ -303,7 +306,7 @@ const SolicitudesPage: React.FC = () => {
                                 </p>
                                 <div className="mt-6">
                                   <Link
-                                    to="/escritorio/aplicacion"
+                                    href="/escritorio/aplicacion"
                                     className="inline-flex items-center px-5 py-2.5 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
                                   >
                                     <Plus className="w-4 h-4 mr-2" />
@@ -318,7 +321,7 @@ const SolicitudesPage: React.FC = () => {
                   </div>
 
                   <div className="w-full">
-                    <VehicleCarousel isBankProfileComplete={isBankProfileComplete} />
+                    <VehicleCarousel vehicles={[]} title="Vehículos Destacados" />
                   </div>
 
                   <div className="bg-white p-6 rounded-xl shadow-sm border">

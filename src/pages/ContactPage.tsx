@@ -1,6 +1,8 @@
+'use client';
+
 import React from 'react';
-import { Link } from 'react-router-dom';
-import useSEO from '../hooks/useSEO';
+import Link from 'next/link';
+// SEO is handled by metadata in Next.js app router
 import {
   PhoneIcon as Phone,
   MailIcon as Mail,
@@ -11,18 +13,7 @@ import {
 import LazyImage from '../components/LazyImage';
 
 const ContactPage: React.FC = () => {
-  useSEO({
-    title: 'Contacto | Habla con un Asesor | TREFA Monterrey',
-    description: 'Contáctanos para comprar o vender tu auto seminuevo en Monterrey. Atención personalizada vía WhatsApp, teléfono o correo. Horario extendido de lunes a domingo. Visítanos en nuestra agencia en el área metropolitana de Monterrey.',
-    keywords: 'contacto trefa, whatsapp trefa, teléfono trefa monterrey, dirección trefa, horario trefa, asesor autos monterrey, atención al cliente trefa',
-    canonical: 'https://trefa.mx/contacto',
-    openGraph: {
-      title: 'Contacto | Atención Personalizada en Monterrey | TREFA',
-      description: 'Comunícate con nosotros para recibir asesoría personalizada en la compra o venta de tu auto seminuevo. Disponible por WhatsApp, teléfono y correo.',
-      type: 'website',
-      url: 'https://trefa.mx/contacto'
-    }
-  });
+  // SEO metadata is handled in the page.tsx file in Next.js
 
   const contactMethods = [
     {
@@ -272,7 +263,7 @@ const ContactPage: React.FC = () => {
               ¿Tienes más preguntas?
             </p>
             <Link
-              to="/faq"
+              href="/faq"
               className="inline-block py-3 px-8 rounded-lg bg-gradient-to-r from-orange-500 to-amber-700 text-white font-semibold hover:opacity-90 transition-opacity"
             >
               Ver Todas las FAQ
@@ -292,7 +283,7 @@ const ContactPage: React.FC = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              to="/autos"
+              href="/autos"
               className="inline-block text-lg font-semibold transition-all duration-300 px-8 py-4 rounded-lg bg-white text-orange-600 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               Ver Inventario

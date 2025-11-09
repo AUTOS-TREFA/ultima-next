@@ -8,15 +8,10 @@ import { useVehicles } from '../context/VehicleContext';
 import type { WordPressVehicle } from '../types/types';
 import VehicleCard from '../components/VehicleCard';
 import { HeartIcon } from '../components/icons';
-import { Link } from 'react-router-dom';
-import useSEO from '../hooks/useSEO';
+import Link from 'next/link';
 
 const FavoritesPage: React.FC = () => {
-  useSEO({
-    title: 'Mis Favoritos | Autos TREFA',
-    description: 'Consulta tus autos seminuevos guardados como favoritos. Compara y decide cuál será tu próximo auto.',
-    keywords: 'favoritos, autos guardados, mis autos, trefa'
-  });
+  // SEO metadata is handled in the page.tsx file in Next.js
 
   const { favorites, isLoading: favoritesLoading } = useFavorites();
   const { vehicles: allVehicles, isLoading: vehiclesLoading } = useVehicles();
@@ -75,7 +70,7 @@ const FavoritesPage: React.FC = () => {
             Explora nuestro inventario y presiona el ícono del corazón para guardar los autos que más te gusten.
           </p>
           <Link
-            to="/autos"
+            href="/autos"
             className="mt-6 inline-block bg-primary-600 text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-primary-700 transition-colors shadow-md"
           >
             Ver Inventario

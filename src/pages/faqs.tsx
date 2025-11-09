@@ -1,6 +1,5 @@
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
-import useSEO from '../hooks/useSEO';
 import { proxyImage } from '../utils/proxyImage';
 
 const faqData = [
@@ -115,11 +114,7 @@ const FaqItem: React.FC<{ q: string; a: string }> = ({ q, a }) => (
 );
 
 const FaqPage: React.FC = () => {
-useSEO({
-    title: "Preguntas Frecuentes | TREFA",
-    description: "Encuentra respuestas a las preguntas más comunes sobre la compra, venta y financiamiento de autos seminuevos en TREFA.",
-    keywords: "preguntas frecuentes, faq, trefa, ayuda, soporte, dudas"
-  });
+    // SEO metadata is handled in the page.tsx file in Next.js
 
     return (
         <div className="max-w-4xl mx-auto">

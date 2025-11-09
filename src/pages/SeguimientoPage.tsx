@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { Clock, Loader2, AlertTriangle, FileText, Download, Trash2, Eye, ShieldAlert, CheckCircle, ArrowLeft } from 'lucide-react';
 import { ApplicationService } from '../services/ApplicationService';
 import { useAuth } from '../context/AuthContext';
@@ -111,7 +112,9 @@ const ApplicationDetailView: React.FC<{ application: ApplicationData }> = ({ app
 
 
 const SeguimientoPage: React.FC = () => {
-  const { id: applicationIdFromUrl } = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>();
+    const vehicleId = params?.id;
+    const applicationIdFromUrl = params?.id;
   const { user } = useAuth();
   const [applications, setApplications] = useState<ApplicationData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -171,7 +174,7 @@ const SeguimientoPage: React.FC = () => {
           <div className="space-y-8">
           {applicationIdFromUrl ? (
               <div>
-                  <Link to="/escritorio/seguimiento" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-semibold no-print">
+                  <Link href="/escritorio/seguimiento" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-semibold no-print">
                       <ArrowLeft className="w-4 h-4" />
                       Volver a Mis Solicitudes
                   </Link>
@@ -202,7 +205,7 @@ const SeguimientoPage: React.FC = () => {
                                         </span>
                                     </div>
                                     <Link 
-                                        to={app.status === 'draft' ? `/escritorio/aplicacion/${app.id}` : `/escritorio/seguimiento/${app.id}`} 
+                                        href={app.status === 'draft' ? `/escritorio/aplicacion/${app.id}` : `/escritorio/seguimiento/${app.id}`} 
                                         className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold bg-primary-600 text-white rounded-md hover:bg-primary-700"
                                     >
                                         <Eye className="w-4 h-4"/> {app.status === 'draft' ? 'Continuar' : 'Ver Detalles'}

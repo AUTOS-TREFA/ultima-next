@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useVehicles } from '../context/VehicleContext';
 import type { WordPressVehicle } from '../types/types';
 import { Loader2, Heart, X, ArrowLeft, RotateCcw, Grid3x3 } from 'lucide-react';
@@ -13,7 +13,7 @@ import TinderTutorialOverlay from '../components/TinderTutorialOverlay';
 type Direction = "left" | "right" | "up" | "down";
 
 const ResponsiveInventoryPage: React.FC = () => {
-    const navigate = useNavigate();
+    const router = useRouter();
     const { vehicles: allVehicles, isLoading, error } = useVehicles();
     const { isFavorite, toggleFavorite } = useFavorites();
     const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
@@ -118,7 +118,7 @@ const ResponsiveInventoryPage: React.FC = () => {
                         En este momento no tenemos vehículos en inventario. Por favor, vuelve más tarde.
                     </p>
                     <button
-                        onClick={() => navigate('/')}
+                        onClick={() => router.push('/')}
                         className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
                     >
                         Volver al inicio
@@ -135,7 +135,7 @@ const ResponsiveInventoryPage: React.FC = () => {
             {/* Header */}
             <div className="relative flex items-center justify-between px-6 py-4 bg-black/20 backdrop-blur-sm border-b border-white/5 z-20">
                 <button
-                    onClick={() => navigate('/escritorio')}
+                    onClick={() => router.push('/escritorio')}
                     className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
                 >
                     <ArrowLeft className="w-5 h-5" />
@@ -197,7 +197,7 @@ const ResponsiveInventoryPage: React.FC = () => {
                             </button>
 
                             <button
-                                onClick={() => navigate('/escritorio/favoritos')}
+                                onClick={() => router.push('/escritorio/favoritos')}
                                 className="w-full flex items-center justify-center gap-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold py-4 px-6 rounded-xl transition-all border border-white/10"
                             >
                                 <Heart className="w-5 h-5" />

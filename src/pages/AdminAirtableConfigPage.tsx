@@ -116,3 +116,5 @@ const AdminAirtableConfigPage: React.FC = () => {
         </div>
     );
 };
+
+export default AdminAirtableConfigPage;

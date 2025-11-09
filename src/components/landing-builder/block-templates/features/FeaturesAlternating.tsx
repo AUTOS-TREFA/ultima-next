@@ -42,11 +42,13 @@ export const FeaturesAlternating: React.FC<FeaturesProps> = ({ features, color }
                         </p>
                     </div>
                     <div className={`mt-6 @sm:mt-8 @lg:mt-0 ${index % 2 === 0 ? 'lg:order-1' : ''} transition-all duration-700 ease-out delay-200 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
-                        <img
-                            className="rounded-lg shadow-xl w-full h-auto object-cover"
-                            src={feature.image}
-                            alt={feature.title}
-                        />
+                        {feature.image && (
+                            <img
+                                className="rounded-lg shadow-xl w-full h-auto object-cover"
+                                src={feature.image}
+                                alt={feature.title}
+                            />
+                        )}
                     </div>
                 </div>
             )

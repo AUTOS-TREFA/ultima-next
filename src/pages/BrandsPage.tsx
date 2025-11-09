@@ -1,20 +1,13 @@
 'use client';
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { useVehicles } from '../context/VehicleContext';
 import { BRAND_LOGOS } from '../utils/constants';
-import useSEO from '../hooks/useSEO';
 import { Loader2 } from 'lucide-react';
 
 const BrandsPage: React.FC = () => {
-  useSEO({
-    title: 'Todas las Marcas de Autos Seminuevos | TREFA',
-    description:
-      'Explora todas las marcas de autos seminuevos disponibles en TREFA. Encuentra la marca que buscas y ve nuestro inventario.',
-    keywords:
-      'marcas de autos, autos por marca, inventario de autos, seminuevos, trefa',
-  });
+  // SEO metadata is handled in the page.tsx file in Next.js
 
   const { vehicles, isLoading } = useVehicles();
 
@@ -76,7 +69,7 @@ const BrandsPage: React.FC = () => {
             return (
               <Link
                 key={brand}
-                to={`/marcas/${displayName.toLowerCase()}`}
+                href={`/marcas/${displayName.toLowerCase()}`}
                 className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
               >
                 <img

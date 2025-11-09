@@ -114,7 +114,7 @@ const HeaderSearchBar: React.FC = () => {
           {results.map(vehicle => (
             <li key={vehicle.id}>
               <button onClick={() => handleResultClick(vehicle.slug)} className="w-full text-left flex items-center gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-gray-100 active:bg-gray-200 transition-colors">
-                <img src={vehicle.feature_image} alt={vehicle.titulo} className="w-20 h-16 sm:w-24 sm:h-18 object-cover rounded-md flex-shrink-0 shadow-sm" />
+                <img src={Array.isArray(vehicle.feature_image) ? vehicle.feature_image[0] : vehicle.feature_image} alt={vehicle.titulo} className="w-20 h-16 sm:w-24 sm:h-18 object-cover rounded-md flex-shrink-0 shadow-sm" />
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-base sm:text-sm text-gray-900 line-clamp-2">{vehicle.titulo}</p>
                   <p className="text-base sm:text-sm text-primary-600 font-bold mt-0.5">{formatPrice(vehicle.precio)}</p>

@@ -3,7 +3,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -83,8 +84,9 @@ const InspectionCategoryEditor: React.FC<CategoryEditorProps> = ({ categoryKey, 
 };
 
 const AdminInspectionPage: React.FC = () => {
-    const { id: vehicleId } = useParams<{ id: string }>();
-    const navigate = useNavigate();
+    const params = useParams<{ id: string }>();
+    const vehicleId = params?.id;
+    const router = useRouter();
     const { session, loading: authLoading } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -109,9 +111,9 @@ const AdminInspectionPage: React.FC = () => {
 
     useEffect(() => {
         if (!authLoading && !session) {
-            navigate('/login');
+            router.push('/login');
         }
-    }, [session, authLoading, navigate]);
+    }, [session, authLoading, router]);
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -194,7 +196,7 @@ const AdminInspectionPage: React.FC = () => {
     return (
         <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
             {vehicleSlug ? (
-                <Link to={`/autos/${vehicleSlug}`} className="flex items-center text-gray-600 hover:text-gray-900 mb-6 transition-colors">
+                <Link href={`/autos/${vehicleSlug}`} className="flex items-center text-gray-600 hover:text-gray-900 mb-6 transition-colors">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Volver a la página del auto
                 </Link>

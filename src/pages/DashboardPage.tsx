@@ -458,7 +458,7 @@ const Dashboard: React.FC = () => {
                 { <EbookCta /> }
             </div>
 
-            <VehicleCarousel isBankProfileComplete={isBankProfileComplete} />
+            <VehicleCarousel vehicles={[]} title="Vehículos Destacados" />
         </div>
 
 
