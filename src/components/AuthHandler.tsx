@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -62,7 +64,7 @@ const AuthHandler: React.FC = () => {
         localStorage.removeItem('loginRedirect');
 
         // If the user was trying to get to the application page, check if their profile is complete first.
-        if (redirectPath.startsWith('/escritorio/aplicacion')) {
+        if (redirectPath?.startsWith('/escritorio/aplicacion')) {
           if (!checkApplicationProfileCompleteness(profile)) {
             // If not complete, force them to the profile page first.
             navigate('/escritorio/profile', { replace: true });
@@ -71,7 +73,9 @@ const AuthHandler: React.FC = () => {
         }
 
         // Perform the redirect.
-        navigate(redirectPath, { replace: true });
+        if (redirectPath) {
+          navigate(redirectPath, { replace: true });
+        }
       }, redirectDelay);
     }
 

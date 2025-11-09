@@ -53,7 +53,7 @@ export const SectionsBuilder: React.FC = () => {
 
   useEffect(() => {
     // Check for Veo API key on initial load
-    window.aistudio?.hasSelectedApiKey().then(setIsApiKeySelected);
+    (window as any).aistudio?.hasSelectedApiKey()?.then(setIsApiKeySelected);
   }, []);
 
   const handleImageUpload = (file: File) => {
@@ -90,7 +90,7 @@ export const SectionsBuilder: React.FC = () => {
             }
         });
 
-        const resultText = response.text.trim();
+        const resultText = response.text?.trim() || '{}';
         const resultJson = JSON.parse(resultText);
 
         setContent(prev => ({ ...prev, ...resultJson }));
@@ -122,9 +122,11 @@ export const SectionsBuilder: React.FC = () => {
             },
         });
 
-        const base64Image = response.generatedImages[0].image.imageBytes;
-        const imageUrl = `data:image/png;base64,${base64Image}`;
-        setContent(prev => ({ ...prev, image: imageUrl }));
+        const base64Image = response.generatedImages?.[0]?.image?.imageBytes;
+        if (base64Image) {
+            const imageUrl = `data:image/png;base64,${base64Image}`;
+            setContent(prev => ({ ...prev, image: imageUrl }));
+        }
 
     } catch (e) {
         console.error(e);
@@ -135,7 +137,7 @@ export const SectionsBuilder: React.FC = () => {
   };
   
   const handleSelectApiKey = async () => {
-      await window.aistudio?.openSelectKey();
+      await (window as any).aistudio?.openSelectKey();
       // Assume success after dialog opens to avoid race condition
       setIsApiKeySelected(true);
   }

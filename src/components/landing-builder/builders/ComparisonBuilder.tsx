@@ -1,6 +1,8 @@
 
+'use client';
+
 import React, { useState } from 'react';
-import type { ComparisonProps, ComparisonFeature, ComparisonItem } from '../../types/landing-builder';
+import type { ComparisonProps, ComparisonFeature, ComparisonItem } from '../../../types/landing-builder';
 import { useBuilderContext } from '../../../context/LandingBuilderContext';
 import { ComparisonInputPanel } from '../ComparisonInputPanel';
 import { ComparisonPreviewer } from '../ComparisonPreviewer';

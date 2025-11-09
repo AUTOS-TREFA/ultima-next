@@ -1,94 +1,64 @@
-ARG VITE_SUPABASE_URL
-ARG VITE_SUPABASE_ANON_KEY
-ARG VITE_APP_VERSION
-ARG VITE_GIT_COMMIT
-ARG VITE_BUILD_DATE
-ARG VITE_INTELIMOTOR_BUSINESS_UNIT_ID
-ARG VITE_INTELIMOTOR_API_KEY
-ARG VITE_INTELIMOTOR_API_SECRET
-ARG VITE_AIRTABLE_VALUATION_API_KEY
-ARG VITE_AIRTABLE_VALUATION_BASE_ID
-ARG VITE_AIRTABLE_VALUATION_TABLE_ID
-ARG VITE_AIRTABLE_VALUATION_VIEW
-ARG VITE_AIRTABLE_VALUATIONS_STORAGE_TABLE_ID
-ARG VITE_AIRTABLE_LEAD_CAPTURE_API_KEY
-ARG VITE_AIRTABLE_LEAD_CAPTURE_BASE_ID
-ARG VITE_AIRTABLE_LEAD_CAPTURE_TABLE_ID
-ARG VITE_IMAGE_CDN_URL
-ARG VITE_CLOUDFLARE_R2_PUBLIC_URL
+# Multi-stage build for Next.js on Cloud Run
+# Optimized for production deployment
 
-# Stage 1: Build the application
-FROM node:18-alpine AS builder
-
+# Stage 1: Dependencies
+FROM node:18-alpine AS deps
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy source code
-COPY . .
+# Copy package files
+COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci --only=production && \
+    npm cache clean --force
 
-# Re-declare build args in this stage so they're available as ENV vars during build
-ARG VITE_SUPABASE_URL
-ARG VITE_SUPABASE_ANON_KEY
-ARG VITE_APP_VERSION
-ARG VITE_GIT_COMMIT
-ARG VITE_BUILD_DATE
-ARG VITE_INTELIMOTOR_BUSINESS_UNIT_ID
-ARG VITE_INTELIMOTOR_API_KEY
-ARG VITE_INTELIMOTOR_API_SECRET
-ARG VITE_AIRTABLE_VALUATION_API_KEY
-ARG VITE_AIRTABLE_VALUATION_BASE_ID
-ARG VITE_AIRTABLE_VALUATION_TABLE_ID
-ARG VITE_AIRTABLE_VALUATION_VIEW
-ARG VITE_AIRTABLE_VALUATIONS_STORAGE_TABLE_ID
-ARG VITE_AIRTABLE_LEAD_CAPTURE_API_KEY
-ARG VITE_AIRTABLE_LEAD_CAPTURE_BASE_ID
-ARG VITE_AIRTABLE_LEAD_CAPTURE_TABLE_ID
-ARG VITE_IMAGE_CDN_URL
-ARG VITE_CLOUDFLARE_R2_PUBLIC_URL
-
-ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
-ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
-ENV VITE_APP_VERSION=$VITE_APP_VERSION
-ENV VITE_GIT_COMMIT=$VITE_GIT_COMMIT
-ENV VITE_IMAGE_CDN_URL=$VITE_IMAGE_CDN_URL
-ENV VITE_CLOUDFLARE_R2_PUBLIC_URL=$VITE_CLOUDFLARE_R2_PUBLIC_URL
-ENV VITE_BUILD_DATE=$VITE_BUILD_DATE
-ENV VITE_INTELIMOTOR_BUSINESS_UNIT_ID=$VITE_INTELIMOTOR_BUSINESS_UNIT_ID
-ENV VITE_INTELIMOTOR_API_KEY=$VITE_INTELIMOTOR_API_KEY
-ENV VITE_INTELIMOTOR_API_SECRET=$VITE_INTELIMOTOR_API_SECRET
-ENV VITE_AIRTABLE_VALUATION_API_KEY=$VITE_AIRTABLE_VALUATION_API_KEY
-ENV VITE_AIRTABLE_VALUATION_BASE_ID=$VITE_AIRTABLE_VALUATION_BASE_ID
-ENV VITE_AIRTABLE_VALUATION_TABLE_ID=$VITE_AIRTABLE_VALUATION_TABLE_ID
-ENV VITE_AIRTABLE_VALUATION_VIEW=$VITE_AIRTABLE_VALUATION_VIEW
-ENV VITE_AIRTABLE_VALUATIONS_STORAGE_TABLE_ID=$VITE_AIRTABLE_VALUATIONS_STORAGE_TABLE_ID
-ENV VITE_AIRTABLE_LEAD_CAPTURE_API_KEY=$VITE_AIRTABLE_LEAD_CAPTURE_API_KEY
-ENV VITE_AIRTABLE_LEAD_CAPTURE_BASE_ID=$VITE_AIRTABLE_LEAD_CAPTURE_BASE_ID
-ENV VITE_AIRTABLE_LEAD_CAPTURE_TABLE_ID=$VITE_AIRTABLE_LEAD_CAPTURE_TABLE_ID
-
-# Build the application with environment variables
-RUN npm run build
-
-# Stage 2: Serve the application from a lightweight server
-FROM node:18-alpine
-
+# Stage 2: Builder
+FROM node:18-alpine AS builder
 WORKDIR /app
 
-# Copy built assets from the builder stage
-COPY --from=builder /app/dist ./dist
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
 
-# Copy server files
-COPY server/server.js .
-COPY server/package.json .
-COPY server/package-lock.json .
-COPY server/config.js .
+# Copy all source files
+COPY . .
 
-# Install server dependencies
-RUN npm install --production
+# Set environment variables for build
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
 
-# Expose the port the server will run on
+# Build Next.js application
+RUN npm run build
+
+# Stage 3: Runner
+FROM node:18-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=8080
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy necessary files from builder
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Set correct permissions
+RUN chown -R nextjs:nodejs /app
+
+# Switch to non-root user
+USER nextjs
+
+# Expose port
 EXPOSE 8080
 
-# Start the server
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:8080/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+
+# Start the application
 CMD ["node", "server.js"]

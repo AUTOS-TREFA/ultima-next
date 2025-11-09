@@ -57,7 +57,7 @@ export const HeroBuilder: React.FC = () => {
                     }
                 }
             });
-            const resultJson = JSON.parse(response.text.trim());
+            const resultJson = JSON.parse(response.text?.trim() || '{}');
             setContent(prev => ({ ...prev, ...resultJson }));
         } catch (e) {
             console.error(e);
@@ -77,8 +77,11 @@ export const HeroBuilder: React.FC = () => {
                 prompt: imagePrompt,
                 config: { numberOfImages: 1, aspectRatio: '16:9' },
             });
-            const imageUrl = `data:image/png;base64,${response.generatedImages[0].image.imageBytes}`;
-            setContent(prev => ({ ...prev, image: imageUrl }));
+            const imageBytes = response.generatedImages?.[0]?.image?.imageBytes;
+            if (imageBytes) {
+                const imageUrl = `data:image/png;base64,${imageBytes}`;
+                setContent(prev => ({ ...prev, image: imageUrl }));
+            }
         } catch (e) {
             console.error(e);
             setImageError("No se pudo generar la imagen.");

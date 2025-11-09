@@ -1,4 +1,6 @@
 
+'use client';
+
 import React, { useState } from 'react';
 import type { CarouselProps, CarouselImage } from '../../types/landing-builder';
 

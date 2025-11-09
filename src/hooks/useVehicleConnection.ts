@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import type { Vehicle } from '../types/types';
 import VehicleService from '../services/VehicleService';

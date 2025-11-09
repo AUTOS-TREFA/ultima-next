@@ -1,0 +1,518 @@
+{
+  "routes": [
+    {
+      "path": "/",
+      "component": "HomePage",
+      "nextPath": "app/(public)/page.tsx",
+      "layout": "public",
+      "requiresAuth": false
+    },
+    {
+      "path": "/autos",
+      "component": "VehicleListPage",
+      "nextPath": "app/(public)/autos/page.tsx",
+      "layout": "public",
+      "requiresAuth": false
+    },
+    {
+      "path": "/autos/:slug",
+      "component": "VehicleDetailPage",
+      "nextPath": "app/(public)/autos/[slug]/page.tsx",
+      "layout": "public",
+      "requiresAuth": false,
+      "dynamic": true
+    },
+    {
+      "path": "/explorar",
+      "component": "ExplorarPage",
+      "nextPath": "app/(standalone)/explorar/page.tsx",
+      "layout": "standalone",
+      "requiresAuth": false
+    },
+    {
+      "path": "/financiamientos",
+      "component": "FinanciamientosPage",
+      "nextPath": "app/(standalone)/financiamientos/page.tsx",
+      "layout": "standalone",
+      "requiresAuth": false
+    },
+    {
+      "path": "/acceder",
+      "component": "AuthPage",
+      "nextPath": "app/(auth)/acceder/page.tsx",
+      "layout": "auth",
+      "requiresAuth": false,
+      "publicOnly": true
+    },
+    {
+      "path": "/admin/login",
+      "component": "AdminLoginPage",
+      "nextPath": "app/(auth)/admin/login/page.tsx",
+      "layout": "auth",
+      "requiresAuth": false,
+      "publicOnly": true
+    },
+    {
+      "path": "/vender-mi-auto",
+      "component": "GetAQuotePage",
+      "nextPath": "app/(public)/vender-mi-auto/page.tsx",
+      "layout": "public",
+      "requiresAuth": false
+    },
+    {
+      "path": "/promociones",
+      "component": "PromotionsPage",
+      "nextPath": "app/(public)/promociones/page.tsx",
+      "layout": "public",
+      "requiresAuth": false
+    },
+    {
+      "path": "/faq",
+      "component": "FaqPage",
+      "nextPath": "app/(public)/faq/page.tsx",
+      "layout": "public",
+      "requiresAuth": false
+    },
+    {
+      "path": "/kit-trefa",
+      "component": "KitTrefaPage",
+      "nextPath": "app/(public)/kit-trefa/page.tsx",
+      "layout": "public",
+      "requiresAuth": false
+    },
+    {
+      "path": "/politica-de-privacidad",
+      "component": "PrivacyPolicyPage",
+      "nextPath": "app/(public)/politica-de-privacidad/page.tsx",
+      "layout": "public",
+      "requiresAuth": false
+    },
+    {
+      "path": "/vacantes",
+      "component": "VacanciesListPage",
+      "nextPath": "app/(public)/vacantes/page.tsx",
+      "layout": "public",
+      "requiresAuth": false
+    },
+    {
+      "path": "/vacantes/:id",
+      "component": "VacancyDetailPage",
+      "nextPath": "app/(public)/vacantes/[id]/page.tsx",
+      "layout": "public",
+      "requiresAuth": false,
+      "dynamic": true
+    },
+    {
+      "path": "/asesor/:id",
+      "component": "AsesorProfilePage",
+      "nextPath": "app/(public)/asesor/[id]/page.tsx",
+      "layout": "public",
+      "requiresAuth": false,
+      "dynamic": true
+    },
+    {
+      "path": "/marcas",
+      "component": "BrandsPage",
+      "nextPath": "app/(public)/marcas/page.tsx",
+      "layout": "public",
+      "requiresAuth": false
+    },
+    {
+      "path": "/marcas/:marca",
+      "component": "MarketingCategoryPage",
+      "nextPath": "app/(public)/marcas/[marca]/page.tsx",
+      "layout": "public",
+      "requiresAuth": false,
+      "dynamic": true
+    },
+    {
+      "path": "/carroceria/:carroceria",
+      "component": "MarketingCategoryPage",
+      "nextPath": "app/(public)/carroceria/[carroceria]/page.tsx",
+      "layout": "public",
+      "requiresAuth": false,
+      "dynamic": true
+    },
+    {
+      "path": "/changelog",
+      "component": "ChangelogPage",
+      "nextPath": "app/(public)/changelog/page.tsx",
+      "layout": "public",
+      "requiresAuth": false
+    },
+    {
+      "path": "/intel",
+      "component": "IntelPage",
+      "nextPath": "app/(public)/intel/page.tsx",
+      "layout": "public",
+      "requiresAuth": false
+    },
+    {
+      "path": "/conocenos",
+      "component": "AboutPage",
+      "nextPath": "app/(public)/conocenos/page.tsx",
+      "layout": "public",
+      "requiresAuth": false
+    },
+    {
+      "path": "/contacto",
+      "component": "ContactPage",
+      "nextPath": "app/(public)/contacto/page.tsx",
+      "layout": "public",
+      "requiresAuth": false
+    },
+    {
+      "path": "/landing",
+      "component": "LandingPage",
+      "nextPath": "app/(public)/landing/page.tsx",
+      "layout": "public",
+      "requiresAuth": false
+    },
+    {
+      "path": "/:slug",
+      "component": "DynamicLandingPage",
+      "nextPath": "app/(public)/[slug]/page.tsx",
+      "layout": "public",
+      "requiresAuth": false,
+      "dynamic": true,
+      "catchAll": true
+    },
+    {
+      "path": "/escritorio",
+      "component": "DashboardPage",
+      "nextPath": "app/escritorio/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true
+    },
+    {
+      "path": "/escritorio/profile",
+      "component": "ProfilePage",
+      "nextPath": "app/escritorio/profile/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true
+    },
+    {
+      "path": "/escritorio/perfilacion-bancaria",
+      "component": "PerfilacionBancariaPage",
+      "nextPath": "app/escritorio/perfilacion-bancaria/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true
+    },
+    {
+      "path": "/escritorio/aplicacion",
+      "component": "Application",
+      "nextPath": "app/escritorio/aplicacion/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true
+    },
+    {
+      "path": "/escritorio/aplicacion/:id",
+      "component": "Application",
+      "nextPath": "app/escritorio/aplicacion/[id]/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "dynamic": true
+    },
+    {
+      "path": "/escritorio/seguimiento",
+      "component": "SeguimientoPage",
+      "nextPath": "app/escritorio/seguimiento/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true
+    },
+    {
+      "path": "/escritorio/seguimiento/:id",
+      "component": "Application",
+      "nextPath": "app/escritorio/seguimiento/[id]/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "dynamic": true
+    },
+    {
+      "path": "/escritorio/favoritos",
+      "component": "FavoritesPage",
+      "nextPath": "app/escritorio/favoritos/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true
+    },
+    {
+      "path": "/escritorio/beta-v.0.1",
+      "component": "BetaPollPage",
+      "nextPath": "app/escritorio/beta-v.0.1/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true
+    },
+    {
+      "path": "/escritorio/encuesta",
+      "component": "SurveyPage",
+      "nextPath": "app/escritorio/encuesta/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true
+    },
+    {
+      "path": "/escritorio/citas",
+      "component": "VisitasPage",
+      "nextPath": "app/escritorio/citas/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true
+    },
+    {
+      "path": "/escritorio/autos",
+      "component": "VehicleListPage",
+      "nextPath": "app/escritorio/autos/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true
+    },
+    {
+      "path": "/escritorio/mis-aplicaciones",
+      "component": "UserApplicationsPage",
+      "nextPath": "app/escritorio/mis-aplicaciones/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true
+    },
+    {
+      "path": "/escritorio/solicitudes",
+      "component": "UserApplicationsPage",
+      "nextPath": "app/escritorio/solicitudes/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true
+    },
+    {
+      "path": "/escritorio/vende-tu-auto",
+      "component": "SellMyCarPage",
+      "nextPath": "app/escritorio/vende-tu-auto/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true
+    },
+    {
+      "path": "/escritorio/dashboard",
+      "component": "AdminSalesDashboard",
+      "nextPath": "app/escritorio/dashboard/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "sales"
+    },
+    {
+      "path": "/escritorio/admin/dashboard",
+      "component": "AdminSalesDashboard",
+      "nextPath": "app/escritorio/admin/dashboard/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/admin/crm",
+      "component": "SimpleCRMPage",
+      "nextPath": "app/escritorio/admin/crm/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/admin/leads",
+      "component": "AdminLeadsDashboardPage",
+      "nextPath": "app/escritorio/admin/leads/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/admin/client/:id",
+      "component": "AdminClientProfilePage",
+      "nextPath": "app/escritorio/admin/client/[id]/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin",
+      "dynamic": true
+    },
+    {
+      "path": "/escritorio/admin/cliente/:id",
+      "component": "AdminClientProfilePage",
+      "nextPath": "app/escritorio/admin/cliente/[id]/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin",
+      "dynamic": true
+    },
+    {
+      "path": "/escritorio/admin/compras",
+      "component": "AdminComprasDashboardPage",
+      "nextPath": "app/escritorio/admin/compras/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/admin/compras/:listingId",
+      "component": "AutosConOfertaPage",
+      "nextPath": "app/escritorio/admin/compras/[listingId]/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin",
+      "dynamic": true
+    },
+    {
+      "path": "/escritorio/admin/airtable",
+      "component": "AdminAirtableConfigPage",
+      "nextPath": "app/escritorio/admin/airtable/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/admin/valuation",
+      "component": "AdminValuationPage",
+      "nextPath": "app/escritorio/admin/valuation/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/admin/inspections",
+      "component": "AdminInspectionsListPage",
+      "nextPath": "app/escritorio/admin/inspections/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/admin/inspections/:id",
+      "component": "AdminInspectionPage",
+      "nextPath": "app/escritorio/admin/inspections/[id]/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin",
+      "dynamic": true
+    },
+    {
+      "path": "/escritorio/admin/vacantes",
+      "component": "AdminVacanciesPage",
+      "nextPath": "app/escritorio/admin/vacantes/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/admin/vacantes/:id/candidatos",
+      "component": "AdminCandidatesPage",
+      "nextPath": "app/escritorio/admin/vacantes/[id]/candidatos/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin",
+      "dynamic": true
+    },
+    {
+      "path": "/escritorio/admin/usuarios",
+      "component": "AdminUserManagementPage",
+      "nextPath": "app/escritorio/admin/usuarios/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/admin/logs",
+      "component": "AdminLogsPage",
+      "nextPath": "app/escritorio/admin/logs/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/admin/config",
+      "component": "AdminConfigPage",
+      "nextPath": "app/escritorio/admin/config/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/admin/marketing",
+      "component": "MarketingHubPage",
+      "nextPath": "app/escritorio/admin/marketing/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/admin/marketing-config",
+      "component": "MarketingConfigPage",
+      "nextPath": "app/escritorio/admin/marketing-config/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/admin/marketing-analytics",
+      "component": "MarketingAnalyticsDashboardPage",
+      "nextPath": "app/escritorio/admin/marketing-analytics/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/admin/r2-images",
+      "component": "R2ImageManagerPage",
+      "nextPath": "app/escritorio/admin/r2-images/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/marketing",
+      "component": "MarketingHubPage",
+      "nextPath": "app/escritorio/marketing/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/marketing/constructor",
+      "component": "ConstructorPage",
+      "nextPath": "app/escritorio/marketing/constructor/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/car-studio",
+      "component": "CarStudioPage",
+      "nextPath": "app/escritorio/car-studio/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "admin"
+    },
+    {
+      "path": "/escritorio/ventas/dashboard",
+      "component": "AdminSalesDashboard",
+      "nextPath": "app/escritorio/ventas/dashboard/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "sales"
+    },
+    {
+      "path": "/escritorio/ventas/crm",
+      "component": "SimpleCRMPage",
+      "nextPath": "app/escritorio/ventas/crm/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "sales"
+    },
+    {
+      "path": "/escritorio/ventas/leads",
+      "component": "SalesLeadsDashboardPage",
+      "nextPath": "app/escritorio/ventas/leads/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "sales"
+    },
+    {
+      "path": "/escritorio/ventas/cliente/:id",
+      "component": "AdminClientProfilePage",
+      "nextPath": "app/escritorio/ventas/cliente/[id]/page.tsx",
+      "layout": "dashboard",
+      "requiresAuth": true,
+      "requiresRole": "sales",
+      "dynamic": true
+    }
+  ]
+}

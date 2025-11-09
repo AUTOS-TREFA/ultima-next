@@ -344,11 +344,12 @@ export function filterVehicles(
 ): WordPressVehicle[] {
   let filteredVehicles = vehicles;
 
-  if (filters.recienLlegados) {
-    const maxId = Math.max(...vehicles.map(v => v.id));
-    const threshold = maxId * 0.95; // Consider top 5% of IDs as "new" 
-    filteredVehicles = filteredVehicles.filter(vehicle => vehicle.id > threshold);
-  }
+  // Removed recienLlegados filter as it's not part of VehicleFilters interface
+  // if (filters.recienLlegados) {
+  //   const maxId = Math.max(...vehicles.map(v => v.id));
+  //   const threshold = maxId * 0.95; // Consider top 5% of IDs as "new"
+  //   filteredVehicles = filteredVehicles.filter(vehicle => vehicle.id > threshold);
+  // }
 
   return filteredVehicles.filter(vehicle => {
     // Ocultar separados
@@ -706,8 +707,8 @@ export function sortVehicles(
   vehicles: WordPressVehicle[],
   sortBy: string
 ): WordPressVehicle[] {
-  const withImage = vehicles.filter(v => v.feature_image && v.feature_image !== DEFAULT_PLACEHOLDER_IMAGE);
-  const withoutImage = vehicles.filter(v => !v.feature_image || v.feature_image === DEFAULT_PLACEHOLDER_IMAGE);
+  const withImage = vehicles.filter(v => v.feature_image && v.feature_image.length > 0 && v.feature_image[0] !== DEFAULT_PLACEHOLDER_IMAGE);
+  const withoutImage = vehicles.filter(v => !v.feature_image || v.feature_image.length === 0 || v.feature_image[0] === DEFAULT_PLACEHOLDER_IMAGE);
 
   const sortedWithImage = [...withImage].sort((a, b) => compareVehicles(a, b, sortBy));
   const sortedWithoutImage = [...withoutImage].sort((a, b) => compareVehicles(a, b, sortBy));

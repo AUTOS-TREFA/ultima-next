@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 

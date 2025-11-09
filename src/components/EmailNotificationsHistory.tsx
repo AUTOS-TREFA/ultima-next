@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { Mail, CheckCircle, XCircle, Clock } from 'lucide-react';
 
@@ -7,7 +9,7 @@ interface EmailNotificationsHistoryProps {
 }
 
 // Brevo API key should be stored in environment variables in production
-const BREVO_API_KEY = import.meta.env.VITE_BREVO_API_KEY || '';
+const BREVO_API_KEY = process.env.NEXT_PUBLIC_BREVO_API_KEY || '';
 
 const EmailNotificationsHistory: React.FC<EmailNotificationsHistoryProps> = ({ userId, recipientEmail }) => {
     const [emails, setEmails] = useState<any[]>([]);

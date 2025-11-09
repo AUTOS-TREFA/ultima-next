@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 
 // FIX: Removed the ConfettiPiece component and inlined the div to resolve the key prop type error.

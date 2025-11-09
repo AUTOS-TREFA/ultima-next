@@ -1,4 +1,6 @@
 
+'use client';
+
 import React from 'react';
 import type { ComparisonProps } from '../../types/landing-builder';
 

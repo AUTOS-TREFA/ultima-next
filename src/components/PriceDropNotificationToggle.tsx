@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { BellIcon } from './icons';
 import { usePriceWatch } from '../hooks/usePriceWatch';

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useMemo } from 'react';
 import type { WordPressVehicle } from '../types/types';
 import { useVehicles } from '../context/VehicleContext';
@@ -52,8 +54,8 @@ const VehicleImage: React.FC<{vehicle: WordPressVehicle}> = ({ vehicle }) => {
     return (
         // FIX: Corrected property access from `ligawp` to `slug`
         <Link to={`/autos/${vehicle.slug}`} className="flex-shrink-0 w-64 h-48 rounded-2xl overflow-hidden group relative bg-gray-200">
-            <img 
-                src={vehicle.feature_image} 
+            <img
+                src={Array.isArray(vehicle.feature_image) ? vehicle.feature_image[0] : vehicle.feature_image} 
                 alt={vehicle.titulo} 
                 className={`w-full h-full object-cover transition-all duration-500 ease-in-out group-hover:scale-110 ${isLoaded ? 'blur-0 scale-100' : 'blur-lg scale-110'}`}
                 loading="lazy"

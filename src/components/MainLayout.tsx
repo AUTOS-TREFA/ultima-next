@@ -1,16 +1,22 @@
+'use client';
+
 import React from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { usePathname } from 'next/navigation';
 import Header from './Header';
 import Footer from './Footer';
 import BottomNav from './BottomNav';
 import AnimatedBlobs from './AnimatedBlobs';
 
-const MainLayout: React.FC = () => {
-    const location = useLocation();
-    const isExplorarPage = location.pathname.startsWith('/explorar');
+interface MainLayoutProps {
+    children: React.ReactNode;
+}
+
+const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+    const pathname = usePathname();
+    const isExplorarPage = pathname?.startsWith('/explorar');
 
     if (isExplorarPage) {
-        return <Outlet />; // Render only the page content for a full-screen experience
+        return <>{children}</>; // Render only the page content for a full-screen experience
     }
 
     return (
@@ -18,7 +24,7 @@ const MainLayout: React.FC = () => {
             <AnimatedBlobs />
             <Header />
             <main className="flex-grow pt-24 lg:pt-28 pb-36 lg:pb-0 relative z-10">
-                <Outlet />
+                {children}
             </main>
             <Footer />
             <BottomNav />

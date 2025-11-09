@@ -1,3 +1,5 @@
+'use client';
+
 import React, { createContext, useContext, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import VehicleService from '../services/VehicleService';
@@ -32,7 +34,7 @@ export function VehicleProvider({ children }: { children: React.ReactNode }) {
 
     const transformedVehicles = vehicles.map(vehicle => ({
       ...vehicle,
-      feature_image: getVehicleImage(vehicle),
+      feature_image: [getVehicleImage(vehicle)],
     }));
 
     return {
@@ -53,3 +55,5 @@ export function useVehicles() {
   }
   return context;
 }
+// Alias para compatibilidad con layouts de Next.js
+export { VehicleProvider as InventoryProvider };

@@ -1,8 +1,10 @@
+'use client';
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRightIcon } from './icons';
 import { searchVehiclesWithAI } from '../Valuation/services/valuationService';
-import { config } from '../pages/config';
+import { config } from '@/config';
 import type { Vehicle } from '../types/types';
 import { Search, Loader2 } from 'lucide-react';
 

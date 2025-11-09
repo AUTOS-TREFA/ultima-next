@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo, useCallback, forwardRef, useImperativeHandle, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useSprings, animated, to as interpolate } from 'react-spring';

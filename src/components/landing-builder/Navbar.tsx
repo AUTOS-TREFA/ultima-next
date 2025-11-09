@@ -1,6 +1,8 @@
 
+'use client';
+
 import React from 'react';
-import type { BuilderType } from '../App';
+import type { BuilderType } from '../../page-components/ConstructorPage';
 
 interface NavbarProps {
     active: BuilderType;

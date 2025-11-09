@@ -1,4 +1,6 @@
 
+'use client';
+
 import React, { useState } from 'react';
 import type { SavedHeroProps, SavedBlockProps, SavedFeaturesProps, SavedCarouselProps, SavedComparisonProps } from '../../types/landing-builder';
 import { useBuilderContext } from '../../context/LandingBuilderContext';

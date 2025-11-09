@@ -1,3 +1,5 @@
+'use client';
+
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle } from 'lucide-react';
 
@@ -31,10 +33,10 @@ class ErrorBoundary extends Component<Props, State> {
 
     // Log environment info for debugging
     console.log("Environment:", {
-      mode: import.meta.env.MODE,
-      version: import.meta.env.VITE_APP_VERSION,
-      hasSupabaseUrl: !!import.meta.env.VITE_SUPABASE_URL,
-      hasSupabaseKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+      mode: process.env.NODE_ENV,
+      version: process.env.NEXT_PUBLIC_APP_VERSION,
+      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     });
 
     // Store error details in state for display
@@ -43,7 +45,7 @@ class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
-      const isDev = import.meta.env.MODE === 'development';
+      const isDev = process.env.NODE_ENV === 'development';
 
       return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-center p-4">

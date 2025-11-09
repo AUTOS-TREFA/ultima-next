@@ -1,4 +1,4 @@
-import { config } from '../pages/config';
+import { config } from '@/config';
 
 interface LeadData {
     fullName: string;

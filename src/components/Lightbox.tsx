@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon, XIcon } from './icons';
 import { getVideoEmbedUrl } from '../utils/formatters';

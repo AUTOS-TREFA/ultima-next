@@ -20,7 +20,7 @@ export const FeaturesPreviewer: React.FC<FeaturesProps> = (props) => {
     };
     
     const handleSave = (layout: 'cards' | 'alternating' | 'grid') => {
-        addSavedFeature({ ...props, id: Date.now().toString(), layout });
+        addSavedFeature({ ...props, layout });
     };
 
     return (

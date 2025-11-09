@@ -1,3 +1,5 @@
+'use client';
+
 import React, { createContext, useContext } from 'react';
 import { useVehicleFilters } from '../hooks/useVehicleFilters';
 import type { VehicleFilters } from '../types/types';

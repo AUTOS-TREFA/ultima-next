@@ -1,4 +1,6 @@
 
+'use client';
+
 import React from 'react';
 import type { HeroProps, Roundness } from '../../types/landing-builder';
 

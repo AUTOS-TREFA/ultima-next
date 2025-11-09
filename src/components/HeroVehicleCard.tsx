@@ -1,4 +1,6 @@
 
+'use client';
+
 import React, { useMemo } from 'react';
 
 import { Link } from 'react-router-dom';
@@ -62,8 +64,6 @@ const HeroVehicleCard: React.FC<HeroVehicleCardProps> = ({ vehicle }) => {
                         carroceria={vehicle.carroceria}
 
                         className="align-center h-full w-full"
-
-                        objectFit="cover"
 
                     />
 

@@ -1,4 +1,4 @@
-import { config } from '../pages/config';
+import { config } from '@/config';
 
 /**
  * SAFETY NOTE: This service is designed to be READ-ONLY for existing Kommo data.

@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import type { FeaturesProps } from '../../types/landing-builder';
 

@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -21,7 +23,7 @@ import {
     DocumentDuplicateIcon,
     CheckIcon
 } from '../components/icons';
-import { config } from '../pages/config';
+import { config } from '@/config';
 import StepIndicator from './components/StepIndicator';
 import { BrevoEmailService } from '../services/BrevoEmailService';
 
@@ -864,4 +866,3 @@ export default ValuationApp;
 // }
 
 // export default ValuationApp;
-

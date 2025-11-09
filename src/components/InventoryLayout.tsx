@@ -1,13 +1,18 @@
+'use client';
+
 import React from 'react';
-import { Outlet } from 'react-router-dom';
 import { FilterProvider } from '../context/FilterContext';
 import { VehicleProvider } from '../context/VehicleContext';
 
-const InventoryLayout: React.FC = () => {
+interface InventoryLayoutProps {
+  children: React.ReactNode;
+}
+
+const InventoryLayout: React.FC<InventoryLayoutProps> = ({ children }) => {
   return (
     <FilterProvider>
       <VehicleProvider>
-        <Outlet />
+        {children}
       </VehicleProvider>
     </FilterProvider>
   );

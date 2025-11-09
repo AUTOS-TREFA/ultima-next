@@ -5,7 +5,7 @@
  * as a robust fallback when Supabase cache tables are empty or smooth-handler fails.
  */
 
-import { config } from '../pages/config';
+import { config } from '@/config';
 
 const AIRTABLE_API_BASE = 'https://api.airtable.com/v0';
 const AIRTABLE_BASE_ID = config.airtable.valuation.baseId;
@@ -415,10 +415,11 @@ export default class AirtableDirectService {
         do {
             const params = new URLSearchParams({
                 filterByFormula: formula,
-                fields: ['OrdenCompra', 'ordencompra'],
                 pageSize: '100',
                 sort: '[{ "field": "ordencompra", "direction": "desc"}]'
             });
+            params.append('fields', 'OrdenCompra');
+            params.append('fields', 'ordencompra');
             if (offset) {
                 params.append('offset', offset);
             }

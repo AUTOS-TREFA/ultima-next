@@ -1,10 +1,13 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ApplicationService } from '../services/ApplicationService';
-import type { ApplicationListItem } from '../types/types';
 
-interface Application extends ApplicationListItem {
+interface Application {
+    id: string;
+    status?: string;
     car_info?: {
         _vehicleTitle?: string;
     };

@@ -11,7 +11,7 @@ export const CarouselPreviewer: React.FC<CarouselProps> = (props) => {
     const { addCarousel } = useBuilderContext();
     
     const handleSave = (layout: 'horizontal' | 'centered-slider' | 'gallery') => {
-        addCarousel({ ...props, id: Date.now().toString(), layout });
+        addCarousel({ ...props, layout });
     };
 
     return (

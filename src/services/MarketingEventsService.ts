@@ -75,6 +75,12 @@ class MarketingEventsService {
    * Get or create a session ID for tracking
    */
   private getOrCreateSessionId(): string {
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined') {
+      // Return a placeholder ID for server-side rendering
+      return 'server-side-render';
+    }
+
     const key = 'trefa_session_id';
     let sessionId = sessionStorage.getItem(key);
 
@@ -89,8 +95,10 @@ class MarketingEventsService {
   /**
    * Extract tracking parameters from URL
    */
-  private extractTrackingParams(url: string = window.location.href): Partial<MarketingEvent> {
-    const urlObj = new URL(url);
+  private extractTrackingParams(url?: string): Partial<MarketingEvent> {
+    // Use provided URL or fallback to current location in browser
+    const targetUrl = url || (typeof window !== 'undefined' ? window.location.href : 'https://trefa.mx');
+    const urlObj = new URL(targetUrl);
     const params = new URLSearchParams(urlObj.search);
 
     return {
@@ -123,12 +131,20 @@ class MarketingEventsService {
       const event: Omit<MarketingEvent, 'id' | 'created_at'> = {
         event_type: eventType,
         event_name: eventName,
-        page_url: window.location.href,
-        referrer: document.referrer || null,
-        ...trackingParams,
+        page_url: typeof window !== 'undefined' ? window.location.href : '',
+        referrer: typeof document !== 'undefined' ? (document.referrer || null) : null,
+        utm_source: trackingParams.utm_source || null,
+        utm_medium: trackingParams.utm_medium || null,
+        utm_campaign: trackingParams.utm_campaign || null,
+        utm_term: trackingParams.utm_term || null,
+        utm_content: trackingParams.utm_content || null,
+        fbclid: trackingParams.fbclid || null,
+        gclid: trackingParams.gclid || null,
+        msclkid: trackingParams.msclkid || null,
+        rfdm: trackingParams.rfdm || null,
         user_id: user?.id || null,
         session_id: this.sessionId,
-        user_agent: navigator.userAgent,
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
         ip_address: null, // Will be set server-side
         country: null, // Can be set from IP geolocation
         city: null,
@@ -153,9 +169,9 @@ class MarketingEventsService {
   async trackPageView(pageName?: string): Promise<void> {
     await this.trackEvent(
       'page_view',
-      pageName || document.title,
+      pageName || (typeof document !== 'undefined' ? document.title : ''),
       {
-        pathname: window.location.pathname,
+        pathname: typeof window !== 'undefined' ? window.location.pathname : '',
       }
     );
   }

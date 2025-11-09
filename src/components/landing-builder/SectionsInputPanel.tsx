@@ -1,4 +1,6 @@
 
+'use client';
+
 import React from 'react';
 import type { BlockProps, Roundness } from '../../types/landing-builder';
 

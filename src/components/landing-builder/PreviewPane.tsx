@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { DeviceSwitcher } from './DeviceSwitcher';
 import { CodeBlock } from './CodeBlock';

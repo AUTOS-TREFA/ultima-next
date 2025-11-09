@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Navigation } from 'lucide-react';
 import type { WordPressVehicle } from '../types/types';
