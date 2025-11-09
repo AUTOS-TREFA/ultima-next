@@ -664,11 +664,8 @@ const VehicleDetailPage: React.FC = () => {
         else if (vehicle) setActiveMedia({ type: 'image', src: getVehicleImage(vehicle), thumbnail: getVehicleImage(vehicle) });
     }, [mediaItems, vehicle]);
 
-    useSEO({
-        title: vehicle ? `${vehicle.titulo} en Venta | TREFA` : 'Detalles del Auto | TREFA',
-        description: vehicle ? (vehicle.metadescripcion || `Encuentra el ${vehicle.titulo}, año ${vehicle.autoano} con ${formatMileage(vehicle.autokilometraje)} en TREFA. ¡Ofrecemos las mejores opciones de financiamiento para este ${vehicle.automarca}!`) : 'Cargando detalles del auto...',
-        keywords: vehicle ? (vehicle.seo_keywords || `${vehicle.automarca}, ${vehicle.autosubmarcaversion}, ${vehicle.autoano}, seminuevo, en venta, financiamiento, TREFA`) : 'auto, seminuevo, TREFA'
-    });
+    // SEO metadata is handled in the page.tsx file in Next.js
+
 
     const handleFinancingClick = () => {
         if (!vehicle) return;

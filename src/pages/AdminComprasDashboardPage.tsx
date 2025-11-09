@@ -7,7 +7,7 @@ import { SellCarService } from '../services/SellCarService';
 import { Loader2, AlertTriangle, Car, ShoppingCart, Clock, CheckCircle, Search, Trash2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import StatsCard from '../components/StatsCard';
-import { config } from './config';
+import { config } from '@/config';
 import { toast } from 'react-hot-toast';
 
 type TabType = 'generated' | 'accepted';

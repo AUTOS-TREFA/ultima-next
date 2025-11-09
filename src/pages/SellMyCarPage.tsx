@@ -135,7 +135,7 @@ const SellMyCarPage: React.FC = () => {
 
             // Redirect to Citas page with Cita de Inspección pre-selected after a short delay
             setTimeout(() => {
-                router.push('/escritorio/citas', { state: { activeTab: 'cita-inspeccion' } });
+                router.push('/escritorio/citas?tab=cita-inspeccion');
             }, 2000);
         } catch (error: any) {
             console.error("Failed to submit sell car form:", error);

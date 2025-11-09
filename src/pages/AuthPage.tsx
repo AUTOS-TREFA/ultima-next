@@ -10,7 +10,7 @@ import type { WordPressVehicle } from '../types/types';
 import VehicleService from '../services/VehicleService';
 import { formatPrice } from '../utils/formatters';
 import { getVehicleImage } from '../utils/getVehicleImage';
-import { getEmailRedirectUrl } from './config';
+import { getEmailRedirectUrl } from '@/config';
 import { proxyImage } from '../utils/proxyImage';
 import { conversionTracking } from '../services/ConversionTrackingService';
 

@@ -15,7 +15,9 @@ const applicationSchema = z.object({
   candidate_name: z.string().min(2, "El nombre es requerido"),
   candidate_email: z.string().email("Email inválido"),
   candidate_phone: z.string().min(10, "El teléfono debe tener 10 dígitos"),
-  cvFile: z.instanceof(FileList).refine(files => files.length > 0, "El CV es requerido."),
+  cvFile: typeof FileList !== 'undefined'
+    ? z.instanceof(FileList).refine(files => files.length > 0, "El CV es requerido.")
+    : z.any().refine((files: any) => files && files.length > 0, "El CV es requerido."),
 });
 
 type ApplicationFormData = z.infer<typeof applicationSchema>;
@@ -124,11 +126,8 @@ const VacancyDetailPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    useSEO({
-        title: vacancy ? `${vacancy.title} | Vacantes en TREFA` : 'Vacante en TREFA',
-        description: vacancy ? (vacancy.description?.substring(0, 160) || 'Oportunidad de carrera en TREFA.') : 'Oportunidad de carrera en TREFA.',
-        keywords: vacancy ? `${vacancy.title}, vacante, empleo, trefa, ${vacancy.location}` : 'vacantes, trefa, empleo',
-    });
+    // SEO metadata is handled in the page.tsx file in Next.js
+
 
     useEffect(() => {
         if (!id) {

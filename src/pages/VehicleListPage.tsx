@@ -24,6 +24,8 @@ import { animated, useSpring } from 'react-spring';
 const VehicleListPage: React.FC = () => {
   const params = useParams<{ marca?: string; carroceria?: string }>();
   const searchParams = useSearchParams();
+  const marca = params?.marca;
+  const carroceria = params?.carroceria;
   const router = useRouter();
   const { vehicles, totalCount, isLoading: vehiclesLoading, error: vehiclesError } = useVehicles();
   const { filters, handleFiltersChange, onRemoveFilter, handleClearFilters, currentPage, handlePageChange } = useFilters();
@@ -188,7 +190,7 @@ const generateDynamicTitle = (count: number, filters: VehicleFilters) => {
     if (marca) initialFilters.marca = [marca];
     if (carroceria) initialFilters.carroceria = [carroceria];
     
-    searchParams.forEach((value, key) => {
+    searchParams?.forEach((value, key) => {
         const filterKey = key as keyof VehicleFilters;
         const existing = initialFilters[filterKey] || [];
         // @ts-ignore

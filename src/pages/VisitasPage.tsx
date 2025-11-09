@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { config } from './config';
+import { config } from '@/config';
 import { useAuth } from '../context/AuthContext';
 import {
     Building as BuildingIcon,

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Save, Loader2, Database, AlertTriangle, CheckCircle } from 'lucide-react';
-import { config } from './config';
+import { config } from '@/config';
 import AirtableImageUploader from '../components/AirtableImageUploader';
 
 const InputField: React.FC<any> = ({ id, label, register, placeholder, type = "text", isSecret = false }) => (

@@ -23,7 +23,7 @@ import {
     DocumentDuplicateIcon,
     CheckIcon
 } from '../components/icons';
-import { config } from '../pages/config';
+import { config } from '@/config';
 import StepIndicator from './components/StepIndicator';
 import { BrevoEmailService } from '../services/BrevoEmailService';
 

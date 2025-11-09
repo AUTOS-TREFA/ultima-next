@@ -24,7 +24,7 @@ const vacancyFormSchema = z.object({
   requirements: z.string().optional(),
   benefits: z.string().optional(),
   status: z.enum(['draft', 'published', 'archived']),
-  imageFile: z.instanceof(FileList).optional(),
+  imageFile: typeof FileList !== 'undefined' ? z.instanceof(FileList).optional() : z.any().optional(),
 });
 
 type VacancyFormData = z.infer<typeof vacancyFormSchema>;

@@ -5,7 +5,7 @@
  * as a robust fallback when Supabase cache tables are empty or smooth-handler fails.
  */
 
-import { config } from '../pages/config';
+import { config } from '@/config';
 
 const AIRTABLE_API_BASE = 'https://api.airtable.com/v0';
 const AIRTABLE_BASE_ID = config.airtable.valuation.baseId;
