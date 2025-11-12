@@ -43,27 +43,51 @@ MIGRATION_LOG="${BACKUP_DIR}/migration_${TIMESTAMP}.log"
 # ═══════════════════════════════════════════════════════════════════════
 
 log() {
-    echo -e "${CYAN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1" | tee -a "$MIGRATION_LOG"
+    if [ -f "$MIGRATION_LOG" ]; then
+        echo -e "${CYAN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1" | tee -a "$MIGRATION_LOG"
+    else
+        echo -e "${CYAN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"
+    fi
 }
 
 log_success() {
-    echo -e "${GREEN}✓${NC} $1" | tee -a "$MIGRATION_LOG"
+    if [ -f "$MIGRATION_LOG" ]; then
+        echo -e "${GREEN}✓${NC} $1" | tee -a "$MIGRATION_LOG"
+    else
+        echo -e "${GREEN}✓${NC} $1"
+    fi
 }
 
 log_warning() {
-    echo -e "${YELLOW}⚠${NC} $1" | tee -a "$MIGRATION_LOG"
+    if [ -f "$MIGRATION_LOG" ]; then
+        echo -e "${YELLOW}⚠${NC} $1" | tee -a "$MIGRATION_LOG"
+    else
+        echo -e "${YELLOW}⚠${NC} $1"
+    fi
 }
 
 log_error() {
-    echo -e "${RED}✗${NC} $1" | tee -a "$MIGRATION_LOG"
+    if [ -f "$MIGRATION_LOG" ]; then
+        echo -e "${RED}✗${NC} $1" | tee -a "$MIGRATION_LOG"
+    else
+        echo -e "${RED}✗${NC} $1"
+    fi
 }
 
 log_step() {
-    echo "" | tee -a "$MIGRATION_LOG"
-    echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}" | tee -a "$MIGRATION_LOG"
-    echo -e "${BLUE}$1${NC}" | tee -a "$MIGRATION_LOG"
-    echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}" | tee -a "$MIGRATION_LOG"
-    echo "" | tee -a "$MIGRATION_LOG"
+    if [ -f "$MIGRATION_LOG" ]; then
+        echo "" | tee -a "$MIGRATION_LOG"
+        echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}" | tee -a "$MIGRATION_LOG"
+        echo -e "${BLUE}$1${NC}" | tee -a "$MIGRATION_LOG"
+        echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}" | tee -a "$MIGRATION_LOG"
+        echo "" | tee -a "$MIGRATION_LOG"
+    else
+        echo ""
+        echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"
+        echo -e "${BLUE}$1${NC}"
+        echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"
+        echo ""
+    fi
 }
 
 # ═══════════════════════════════════════════════════════════════════════
