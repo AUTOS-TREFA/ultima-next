@@ -4,6 +4,8 @@ import React from 'react';
 import { BookOpen, Rocket } from 'lucide-react';
 import AdminRoadmapManager from '../components/AdminRoadmapManager';
 import DynamicRoadmapDisplay from '../components/DynamicRoadmapDisplay';
+import AdminChangelogManager from '../components/AdminChangelogManager';
+import DynamicChangelogDisplay from '../components/DynamicChangelogDisplay';
 
 const ChangelogPage: React.FC = () => {
     // SEO metadata is handled in the page.tsx file in Next.js
@@ -30,6 +32,12 @@ const ChangelogPage: React.FC = () => {
 
           {/* Content - Scrollable */}
           <div className="px-8 py-10 space-y-12 overflow-y-auto flex-1">
+
+            {/* Admin Changelog Manager */}
+            <AdminChangelogManager />
+
+            {/* Dynamic Changelog Content */}
+            <DynamicChangelogDisplay />
 
           {/* Version 1.9.0 */}
           <div className="border-l-4 border-purple-500 pl-8">

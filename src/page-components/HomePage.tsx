@@ -554,7 +554,7 @@ const CTACardsSection: React.FC = () => {
               </Link>
             </div>
             <img
-              src="https://ioewyambpjlqnsbzvbvd.supabase.co/storage/v1/object/public/fotos_airtable/app/klipartz.com.png"
+              src="https://wmtlzfodmrchgqdbxjln.supabase.co/storage/v1/object/public/fotos_airtable/app/klipartz.com.png"
               alt="Vende tu auto"
               className="absolute bottom-0 right-0 w-1/2 max-w-[200px] object-contain pointer-events-none opacity-90 group-hover:opacity-80 transition-all duration-300 group-hover:scale-110"
             />
@@ -603,7 +603,7 @@ const CTACardsSection: React.FC = () => {
             </div>
             <div className="relative md:w-1/2 lg:w-2/5 mt-8 md:mt-0 h-50 md:h-64">
               <img
-                src="https://ioewyambpjlqnsbzvbvd.supabase.co/storage/v1/object/public/fotos_airtable/app/financiamiento.png"
+                src="https://wmtlzfodmrchgqdbxjln.supabase.co/storage/v1/object/public/fotos_airtable/app/financiamiento.png"
                 alt="Financiamiento en línea"
                 className="absolute bottom-0 right-0 w-full h-auto max-h-[90%] md:max-h-full object-contain transition-transform duration-300 group-hover:scale-105"
               />

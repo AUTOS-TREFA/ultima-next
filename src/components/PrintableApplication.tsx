@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
+import { BankProfilingService } from '../services/BankProfilingService';
+import type { BankProfileData } from '../types/types';
 
 const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
     <h3 className="text-sm font-bold uppercase tracking-wider text-white bg-trefa-blue p-2 rounded-t-md mt-3">{title}</h3>
@@ -19,6 +21,9 @@ const PrintableApplication: React.FC<{ application: any }> = ({ application }) =
     const appData = application.application_data || {};
     const carInfo = application.car_info || {};
     const [advisorName, setAdvisorName] = useState<string | null>(null);
+    const [hasDocuments, setHasDocuments] = useState<boolean>(false);
+    const [isCheckingDocuments, setIsCheckingDocuments] = useState<boolean>(true);
+    const [bankProfile, setBankProfile] = useState<BankProfileData | null>(null);
 
     // Fetch advisor name if we have an asesor_asignado_id
     useEffect(() => {
@@ -50,19 +55,90 @@ const PrintableApplication: React.FC<{ application: any }> = ({ application }) =
         fetchAdvisorName();
     }, [profile.asesor_asignado_id, profile.asesor_asignado_name]);
 
-    // Format currency
+    // Check if documents are uploaded
+    useEffect(() => {
+        const checkDocuments = async () => {
+            if (!application.user_id) {
+                setIsCheckingDocuments(false);
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('uploaded_documents')
+                    .select('id')
+                    .eq('user_id', application.user_id)
+                    .limit(1);
+
+                if (!error && data && data.length > 0) {
+                    setHasDocuments(true);
+                } else {
+                    setHasDocuments(false);
+                }
+            } catch (err) {
+                console.error('Error checking documents:', err);
+                setHasDocuments(false);
+            } finally {
+                setIsCheckingDocuments(false);
+            }
+        };
+
+        checkDocuments();
+    }, [application.user_id]);
+
+    // Fetch banking profile data
+    useEffect(() => {
+        const fetchBankProfile = async () => {
+            if (!application.user_id) return;
+
+            try {
+                const profile = await BankProfilingService.getUserBankProfile(application.user_id);
+                setBankProfile(profile);
+            } catch (err) {
+                console.error('Error fetching bank profile:', err);
+            }
+        };
+
+        fetchBankProfile();
+    }, [application.user_id]);
+
+    // Format currency - handles both numeric values and formatted strings like "25,000"
     const formatCurrency = (amount: any) => {
-        if (!amount || isNaN(Number(amount))) return 'N/A';
-        return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(Number(amount));
+        if (!amount) return 'N/A';
+
+        // If it's already a formatted string with commas, convert to number first
+        const cleanedAmount = typeof amount === 'string'
+            ? amount.replace(/[^0-9]/g, '')
+            : amount;
+
+        if (!cleanedAmount || isNaN(Number(cleanedAmount))) return 'N/A';
+
+        return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(Number(cleanedAmount));
     };
 
-    // Capitalize names properly
+    // Capitalize names properly with Spanish grammar rules
     const capitalizeName = (name: string | undefined) => {
         if (!name) return 'N/A';
+
+        // List of Spanish prepositions and articles that should stay lowercase
+        const lowercaseWords = ['de', 'del', 'la', 'los', 'las', 'y', 'e', 'van', 'von', 'da', 'di'];
+
         return name
+            .trim()
             .toLowerCase()
             .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .map((word, index) => {
+                // First word should always be capitalized
+                if (index === 0) {
+                    return word.charAt(0).toUpperCase() + word.slice(1);
+                }
+                // Check if word should stay lowercase
+                if (lowercaseWords.includes(word)) {
+                    return word;
+                }
+                // Capitalize first letter
+                return word.charAt(0).toUpperCase() + word.slice(1);
+            })
             .join(' ');
     };
 
@@ -127,6 +203,43 @@ const PrintableApplication: React.FC<{ application: any }> = ({ application }) =
                 </div>
                 <img src="/images/trefalogo.png" alt="TREFA Logo" className="h-10" />
             </header>
+
+            {/* Document Completion Status Warning */}
+            {!isCheckingDocuments && (
+                <div className={`mt-4 p-3 rounded-lg border-2 flex items-center gap-3 ${
+                    hasDocuments
+                        ? 'bg-green-50 border-green-500'
+                        : 'bg-yellow-50 border-yellow-500'
+                }`}>
+                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+                        hasDocuments ? 'bg-green-500' : 'bg-yellow-500'
+                    }`}>
+                        {hasDocuments ? (
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                        ) : (
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        )}
+                    </div>
+                    <div className="flex-1">
+                        <p className={`text-sm font-bold ${
+                            hasDocuments ? 'text-green-900' : 'text-yellow-900'
+                        }`}>
+                            {hasDocuments ? '✓ Documentos Completos' : '⚠ Documentos Incompletos'}
+                        </p>
+                        <p className={`text-xs ${
+                            hasDocuments ? 'text-green-700' : 'text-yellow-700'
+                        }`}>
+                            {hasDocuments
+                                ? 'Esta solicitud cuenta con documentos cargados.'
+                                : 'Esta solicitud no tiene documentos cargados. Se requiere solicitar documentos al cliente.'}
+                        </p>
+                    </div>
+                </div>
+            )}
 
             <main className="mt-4 space-y-3">
                 {/* Vehicle Information */}

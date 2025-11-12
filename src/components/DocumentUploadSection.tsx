@@ -17,6 +17,7 @@ const allRequiredDocuments = [
     { id: 'ine_back', name: 'INE (Reverso)', required: true },
     { id: 'proof_address', name: 'Comprobante de Domicilio', required: true },
     { id: 'proof_income', name: 'Comprobante de Ingresos (últimos 3 meses)', required: true },
+    { id: 'constancia_fiscal', name: 'Constancia de Situación Fiscal', required: true },
 ];
 
 const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({

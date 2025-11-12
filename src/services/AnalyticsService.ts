@@ -7,6 +7,8 @@ export interface DashboardMetrics {
     processedApplications: number;
     approvedApplications: number;
     completedLast24Hours: number; // NEW: Applications approved or completed in last 24 hours
+    submittedWithDocuments: number; // Applications with status 'submitted' that have documents
+    submittedWithoutDocuments: number; // Applications with status 'submitted' without documents
 
     // Website Lead Metrics (from profiles - users who registered on website)
     websiteLeads: {
@@ -62,7 +64,6 @@ export interface TrendComparisons {
 }
 
 export interface DashboardFilters {
-    dateRange?: 'last7days' | 'last30days' | 'last90days' | 'thisMonth' | 'lastMonth' | 'custom' | 'all';
     startDate?: Date;
     endDate?: Date;
     source?: 'all' | 'facebook' | 'google' | 'bot' | 'direct' | 'other';
@@ -116,14 +117,12 @@ export class AnalyticsService {
             ] = await Promise.all([
                 leadQuery,
                 appQuery,
-                (async () => {
-                    try {
-                        return await remindersQuery;
-                    } catch (error) {
+                remindersQuery
+                    .then(result => result)
+                    .catch(error => {
                         console.warn('[Analytics] lead_reminders table not found, skipping reminders:', error);
                         return { data: [], error: null };
-                    }
-                })()
+                    })
             ]);
 
             // Try to fetch Kommo leads if the table exists
@@ -245,6 +244,41 @@ export class AnalyticsService {
                 const createdAt = new Date(app.created_at);
                 return isSubmitted && createdAt >= twentyFourHoursAgo;
             }).length;
+
+            // Calculate submitted applications with/without documents
+            const submittedApps = applications.filter(app => app.status === 'submitted');
+            let submittedWithDocuments = 0;
+            let submittedWithoutDocuments = 0;
+
+            // Check document status for each submitted application
+            if (submittedApps.length > 0) {
+                try {
+                    // Get all user_ids from submitted applications
+                    const userIds = submittedApps.map(app => app.user_id).filter(Boolean);
+
+                    // Query uploaded_documents table to find which users have uploaded documents
+                    const { data: documentsData } = await supabase
+                        .from('uploaded_documents')
+                        .select('user_id')
+                        .in('user_id', userIds);
+
+                    // Create a Set of user_ids that have documents
+                    const userIdsWithDocs = new Set(documentsData?.map(doc => doc.user_id) || []);
+
+                    // Count applications with and without documents
+                    submittedApps.forEach(app => {
+                        if (app.user_id && userIdsWithDocs.has(app.user_id)) {
+                            submittedWithDocuments++;
+                        } else {
+                            submittedWithoutDocuments++;
+                        }
+                    });
+                } catch (error) {
+                    console.error('[Analytics] Error checking document status:', error);
+                    // If there's an error, count all submitted apps as without documents
+                    submittedWithoutDocuments = submittedApps.length;
+                }
+            }
 
             // Calculate lead metrics
             const contactedLeads = leads.filter(lead => lead.contactado === true);
@@ -403,6 +437,8 @@ export class AnalyticsService {
                 processedApplications: processedApps.length,
                 approvedApplications: approvedApps.length,
                 completedLast24Hours, // NEW METRIC
+                submittedWithDocuments,
+                submittedWithoutDocuments,
 
                 // Website leads metrics
                 websiteLeads: {

@@ -238,5 +238,26 @@ export const BrevoEmailService = {
             console.error('[BrevoEmailService] Exception fetching email history:', err);
             return [];
         }
+    },
+
+    /**
+     * Send vehicle unavailable notification to client
+     */
+    async sendVehicleUnavailableEmail(params: {
+        email: string;
+        name: string;
+        vehicleTitle: string;
+    }): Promise<boolean> {
+        return this.sendEmail({
+            to: params.email,
+            toName: params.name,
+            subject: '⚠️ Actualización sobre tu Solicitud - Vehículo No Disponible',
+            templateType: 'admin_notification' as any,
+            templateData: {
+                clientName: params.name,
+                vehicleTitle: params.vehicleTitle,
+                message: `Lamentamos informarte que el vehículo "${params.vehicleTitle}" que seleccionaste en tu solicitud ya no está disponible. Nuestro equipo se pondrá en contacto contigo para ofrecerte opciones similares o alternativas que se ajusten a tus necesidades.`
+            }
+        });
     }
 };

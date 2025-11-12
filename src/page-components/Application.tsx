@@ -9,9 +9,9 @@ import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { useVehicles } from '../context/VehicleContext';
 import { WordPressVehicle, Profile } from '../types/types';
-import { 
+import {
   FileText, CheckCircle, Building2, User, AlertTriangle, Loader2, Users, PenSquare,
-  ArrowLeft, ArrowRight, Edit, Info
+  ArrowLeft, ArrowRight, Edit, Info, DollarSign
 } from 'lucide-react';
 import StepIndicator from '../components/StepIndicator';
 import { ApplicationService } from '../services/ApplicationService';
@@ -31,6 +31,7 @@ const MEXICAN_STATES = [ 'Aguascalientes', 'Baja California', 'Baja California S
 
 const baseApplicationObject = z.object({
   // Step 1: Personal Info & Address
+  // cellphone_company removed - now collected in profile only
   current_address: z.string().optional(),
   current_colony: z.string().optional(),
   current_city: z.string().optional(),
@@ -56,14 +57,20 @@ const baseApplicationObject = z.object({
   job_title: z.string().min(2, "El puesto es obligatorio"),
   job_seniority: z.string().min(1, "La antigüedad es obligatoria"),
   net_monthly_income: z.string().min(1, "El salario neto es obligatorio"),
-  
+
   // Step 3: References
   parentesco: z.string().min(3, "El parentesco es obligatorio"),
   friend_reference_name: z.string().min(2, "El nombre de referencia de amistad es obligatorio"),
   friend_reference_phone: z.string().default('').transform(val => val.replace(/\D/g, '')).pipe(z.string().length(10, "El teléfono de referencia de amistad debe tener 10 dígitos")),
+  friend_reference_relationship: z.string().min(2, "La relación de referencia de amistad es obligatoria"),
   family_reference_name: z.string().min(2, "El nombre de referencia familiar es obligatorio"),
   family_reference_phone: z.string().default('').transform(val => val.replace(/\D/g, '')).pipe(z.string().length(10, "El teléfono de referencia familiar debe tener 10 dígitos")),
-  
+
+  // Financing Preferences (optional fields, calculated dynamically)
+  loan_term_months: z.number().optional(),
+  down_payment_amount: z.number().optional(),
+  estimated_monthly_payment: z.number().optional(),
+
   // Step 5: Consent
   terms_and_conditions: z.boolean().refine(val => val === true, {
     message: "Debes aceptar los términos y condiciones para continuar."
@@ -99,11 +106,12 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
 
     const applicationSchema = baseApplicationSchema;
 
-    const form = useForm<ApplicationFormData>({ 
+    const form = useForm<ApplicationFormData>({
       resolver: zodResolver(applicationSchema),
       defaultValues: {
         terms_and_conditions: false,
         consent_survey: false,
+        loan_term_months: 60, // Default to 60 months
       }
     });
     const { control, handleSubmit, formState: { errors, isValid }, reset, trigger, getValues, setValue } = form;
@@ -188,7 +196,16 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
                         const vehicle = vehicles.find(v => v.ordencompra === finalOrdenCompra);
                         if (vehicle) {
                             const featureImage = vehicle.thumbnail_webp || vehicle.thumbnail || vehicle.feature_image_webp || vehicle.feature_image || DEFAULT_PLACEHOLDER_IMAGE;
-                            const carData = { _vehicleTitle: vehicle.titulo, _ordenCompra: vehicle.ordencompra, _featureImage: featureImage };
+                            const carData = {
+                                _vehicleTitle: vehicle.titulo,
+                                _ordenCompra: vehicle.ordencompra,
+                                _featureImage: featureImage,
+                                precio: vehicle.precio,
+                                enganche_recomendado: vehicle.enganche_recomendado,
+                                enganchemin: vehicle.enganchemin,
+                                mensualidad_recomendada: vehicle.mensualidad_recomendada,
+                                plazomax: vehicle.plazomax
+                            };
                             initialData.car_info = carData;
                             initialData.application_data = { ordencompra: finalOrdenCompra };
                             setVehicleInfo(carData);
@@ -220,7 +237,16 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
     const handleVehicleSelect = async (vehicle: WordPressVehicle) => {
         if (!applicationId) return;
         const featureImage = vehicle.thumbnail_webp || vehicle.thumbnail || vehicle.feature_image_webp || vehicle.feature_image || DEFAULT_PLACEHOLDER_IMAGE;
-        const carData = { _vehicleTitle: vehicle.titulo, _ordenCompra: vehicle.ordencompra, _featureImage: featureImage };
+        const carData = {
+            _vehicleTitle: vehicle.titulo,
+            _ordenCompra: vehicle.ordencompra,
+            _featureImage: featureImage,
+            precio: vehicle.precio,
+            enganche_recomendado: vehicle.enganche_recomendado,
+            enganchemin: vehicle.enganchemin,
+            mensualidad_recomendada: vehicle.mensualidad_recomendada,
+            plazomax: vehicle.plazomax
+        };
         setVehicleInfo(carData);
         setValue('ordencompra', vehicle.ordencompra);
         await ApplicationService.saveApplicationDraft(applicationId, { car_info: carData });
@@ -230,7 +256,7 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
     const steps = [
         { title: 'Personal', icon: User, fields: ['current_address', 'current_colony', 'current_city', 'current_state', 'current_zip_code', 'time_at_address', 'housing_type', 'dependents', 'grado_de_estudios'] },
         { title: 'Empleo', icon: Building2, fields: ['fiscal_classification', 'company_name', 'company_phone', 'supervisor_name', 'company_address', 'company_industry', 'job_title', 'job_seniority', 'net_monthly_income'] },
-        { title: 'Referencias', icon: Users, fields: ['friend_reference_name', 'friend_reference_phone', 'family_reference_name', 'family_reference_phone', 'parentesco'] },
+        { title: 'Referencias', icon: Users, fields: ['friend_reference_name', 'friend_reference_phone', 'friend_reference_relationship', 'family_reference_name', 'family_reference_phone', 'parentesco'] },
         { title: 'Documentos', icon: FileText, fields: [] },
         { title: 'Consentimiento', icon: PenSquare, fields: ['terms_and_conditions'] },
         { title: 'Resumen', icon: CheckCircle, fields: [] },
@@ -293,27 +319,12 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
     
     const handlePrev = () => { if(currentStep > 0) setCurrentStep(s => s - 1); };
 
+    // Documents are optional - users can upload later from dashboard
+    // Validation function kept for potential future use but not enforced
     const validateDocuments = useCallback(() => {
-        const requiredDocs: Record<string, string> = {
-            'ine_front': 'INE (Frente)',
-            'ine_back': 'INE (Reverso)',
-            'proof_address': 'Comprobante de Domicilio',
-        };
-
-        for (const [type, name] of Object.entries(requiredDocs)) {
-            if (!uploadedDocuments[type] || uploadedDocuments[type].length === 0) {
-                return `Falta el documento: ${name}. Por favor, súbelo en el paso de 'Documentos'.`;
-            }
-        }
-
-        const incomeDocs = uploadedDocuments['proof_income'] || [];
-        const hasZip = incomeDocs.some(doc => doc.fileName.toLowerCase().endsWith('.zip'));
-
-        if (incomeDocs.length < 3 && !hasZip) {
-            return `Debes subir al menos 3 comprobantes de ingresos, o un solo archivo .zip que los contenga. Actualmente tienes ${incomeDocs.length}.`;
-        }
+        // Document validation is disabled - users can submit without uploading documents
         return null;
-    }, [uploadedDocuments]);
+    }, []);
 
 
     const onSubmit: SubmitHandler<ApplicationFormData> = async (data) => {
@@ -328,6 +339,24 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
             setSubmissionError("No has seleccionado un auto para tu solicitud.");
             setShowVehicleSelector(true);
             return;
+        }
+
+        // Validate that spouse is not used as a reference
+        if (profile?.spouse_name) {
+            const normalizeName = (name: string) => {
+                if (!name) return '';
+                return name.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            };
+
+            const normalizedSpouse = normalizeName(profile.spouse_name);
+            const normalizedFriend = normalizeName(data.friend_reference_name || '');
+            const normalizedFamily = normalizeName(data.family_reference_name || '');
+
+            if (normalizedSpouse && (normalizedSpouse === normalizedFriend || normalizedSpouse === normalizedFamily)) {
+                setSubmissionError("Tu cónyuge no puede ser usado como referencia. Por favor, corrige la información en el paso de Referencias.");
+                setCurrentStep(2); // Go back to references step
+                return;
+            }
         }
 
         // Documents are optional - users can upload later from dashboard
@@ -578,7 +607,7 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
                                 <div className="bg-white p-8 rounded-xl shadow-sm border">
                                     {currentStep === 0 && <PersonalInfoStep control={control} errors={errors} isMarried={isMarried} profile={profile} setValue={setValue} trigger={trigger} />}
                                     {currentStep === 1 && <EmploymentStep control={control} errors={errors} setValue={setValue} />}
-                                    {currentStep === 2 && <ReferencesStep control={control} errors={errors} />}
+                                    {currentStep === 2 && <ReferencesStep control={control} errors={errors} profile={profile} getValues={getValues} />}
                                     {currentStep === 3 && applicationId && user && <DocumentUploadStep applicationId={applicationId} userId={user.id} onDocumentsChange={setUploadedDocuments} />}
                                     {currentStep === 4 && <ConsentStep control={control} errors={errors} setValue={setValue}/>}
                                     {currentStep === 5 && (
@@ -830,25 +859,46 @@ const FAMILY_RELATIONSHIPS = [
     'Nieto/Nieta'
 ];
 
-const ReferencesStep: React.FC<{ control: any, errors: any }> = ({ control, errors }) => (
-    <div className="space-y-8">
-        <div>
-            <h2 className="text-lg font-semibold">Referencia de Amistad</h2>
-            <div className="grid md:grid-cols-2 gap-6 mt-4">
-                <FormInput control={control} name="friend_reference_name" label="Nombre Completo" error={errors.friend_reference_name?.message} />
-                <FormInput control={control} name="friend_reference_phone" label="Teléfono" error={errors.friend_reference_phone?.message} />
+const ReferencesStep: React.FC<{ control: any, errors: any, profile: Profile | null, getValues: any }> = ({ control, errors, profile, getValues }) => {
+    const normalizeNameToTitleCase = (name: string): string => {
+        if (!name) return '';
+        const lowercaseWords = ['de', 'del', 'la', 'los', 'las', 'y', 'e', 'van', 'von', 'da', 'di'];
+        return name.trim().toLowerCase().split(' ').map((word, index) => {
+            if (index === 0) return word.charAt(0).toUpperCase() + word.slice(1);
+            if (lowercaseWords.includes(word)) return word;
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(' ');
+    };
+
+    return (
+        <div className="space-y-8">
+            {profile?.spouse_name && (
+                <div className="p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
+                    <p className="text-sm text-yellow-800 font-semibold">
+                        <AlertTriangle className="w-4 h-4 inline mr-2" />
+                        Importante: No puedes usar a tu cónyuge ({normalizeNameToTitleCase(profile.spouse_name)}) como referencia.
+                    </p>
+                </div>
+            )}
+            <div>
+                <h2 className="text-lg font-semibold">Referencia de Amistad</h2>
+                <div className="grid md:grid-cols-3 gap-6 mt-4">
+                    <FormInput control={control} name="friend_reference_name" label="Nombre Completo" error={errors.friend_reference_name?.message} />
+                    <FormInput control={control} name="friend_reference_phone" label="Teléfono" error={errors.friend_reference_phone?.message} />
+                    <FormInput control={control} name="friend_reference_relationship" label="Relación" error={errors.friend_reference_relationship?.message} placeholder="Ej: Amigo, Compañero de trabajo" />
+                </div>
+            </div>
+            <div>
+                <h2 className="text-lg font-semibold">Referencia Familiar</h2>
+                <div className="grid md:grid-cols-3 gap-6 mt-4">
+                    <FormInput control={control} name="family_reference_name" label="Nombre Completo" error={errors.family_reference_name?.message} />
+                    <FormInput control={control} name="family_reference_phone" label="Teléfono" error={errors.family_reference_phone?.message} />
+                    <FormSelect control={control} name="parentesco" label="Parentesco" options={FAMILY_RELATIONSHIPS} error={errors.parentesco?.message} />
+                </div>
             </div>
         </div>
-        <div>
-            <h2 className="text-lg font-semibold">Referencia Familiar</h2>
-            <div className="grid md:grid-cols-3 gap-6 mt-4">
-                <FormInput control={control} name="family_reference_name" label="Nombre Completo" error={errors.family_reference_name?.message} />
-                <FormInput control={control} name="family_reference_phone" label="Teléfono" error={errors.family_reference_phone?.message} />
-                <FormSelect control={control} name="parentesco" label="Parentesco" options={FAMILY_RELATIONSHIPS} error={errors.parentesco?.message} />
-            </div>
-        </div>
-    </div>
-);
+    );
+};
 
 const DocumentRequirements: React.FC = () => (
     <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">

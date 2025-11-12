@@ -17,12 +17,50 @@ import { conversionTracking } from '../services/ConversionTrackingService';
 
 const MEXICAN_STATES = [ 'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 'Chihuahua', 'Coahuila', 'Colima', 'Durango', 'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco', 'México', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla', 'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas', ];
 
+const CELLPHONE_COMPANIES = [
+  'Telcel',
+  'AT&T',
+  'Movistar',
+  'Unefon',
+  'Virgin Mobile',
+  'Weex (Dish)',
+  'Pillofon',
+  'Otro',
+];
+
+// Utility function to normalize names to Title Case
+const normalizeNameToTitleCase = (name: string): string => {
+  if (!name) return '';
+
+  // List of Spanish prepositions and articles that should stay lowercase
+  const lowercaseWords = ['de', 'del', 'la', 'los', 'las', 'y', 'e', 'van', 'von', 'da', 'di'];
+
+  return name
+    .trim()
+    .toLowerCase()
+    .split(' ')
+    .map((word, index) => {
+      // First word should always be capitalized
+      if (index === 0) {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      }
+      // Check if word should stay lowercase
+      if (lowercaseWords.includes(word)) {
+        return word;
+      }
+      // Capitalize first letter
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+};
+
 // Schemas
 const profileSchema = z.object({
   first_name: z.string().min(2, 'Nombre es requerido'),
   last_name: z.string().min(2, 'Apellido paterno es requerido'),
   mother_last_name: z.string().min(2, 'Apellido materno es requerido'),
   phone: z.string().min(10, 'Teléfono debe tener 10 dígitos'),
+  cellphone_company: z.string().optional().or(z.literal('')),
   birth_date: z.string().min(1, 'Fecha de nacimiento es requerida'),
   homoclave: z.string().length(3, 'Homoclave debe tener 3 caracteres'),
   fiscal_situation: z.string().min(1, 'Situación fiscal es requerida'),
@@ -93,6 +131,7 @@ const ProfilePage: React.FC = () => {
         last_name: profile.last_name || '',
         mother_last_name: profile.mother_last_name || '',
         phone: profile.phone || '',
+        cellphone_company: profile.cellphone_company || '',
         birth_date: profile.birth_date || '',
         homoclave: profile.homoclave || '',
         fiscal_situation: profile.fiscal_situation || '',
@@ -143,11 +182,20 @@ const ProfilePage: React.FC = () => {
         pictureUrl = await ProfileService.uploadProfilePicture(user.id, profilePictureFile);
       }
 
-      const finalRfc = calculateRFC(data);
+      // Normalize names to Title Case
+      const normalizedData = {
+        ...data,
+        first_name: normalizeNameToTitleCase(data.first_name),
+        last_name: normalizeNameToTitleCase(data.last_name),
+        mother_last_name: normalizeNameToTitleCase(data.mother_last_name),
+        spouse_name: data.spouse_name ? normalizeNameToTitleCase(data.spouse_name) : undefined,
+      };
+
+      const finalRfc = calculateRFC(normalizedData);
       const payload: Partial<Profile> = {
         id: user.id,
         email: user.email, // Ensure email is always included
-        ...data,
+        ...normalizedData,
         rfc: finalRfc ?? undefined,
         asesor_autorizado_acceso: asesorAutorizadoAcceso,
         picture_url: pictureUrl

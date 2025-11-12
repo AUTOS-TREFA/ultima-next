@@ -143,6 +143,7 @@ export interface Profile {
     first_name?: string;
     last_name?: string;
     phone?: string;
+    cellphone_company?: string;
     role: 'user' | 'admin' | 'sales';
     asesor_asignado_id?: string;
     asesor_asignado_name?: string;
