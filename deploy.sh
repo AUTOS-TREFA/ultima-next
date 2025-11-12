@@ -17,12 +17,11 @@ IMAGE_NAME="app"
 STAGING_DOMAIN="${STAGING_DOMAIN:-}"  # e.g., "https://staging.trefa.mx"
 
 # Set service name and image tag based on environment
+SERVICE_NAME="next-js-trefa"  # Single Cloud Run service name
 if [ "$ENVIRONMENT" = "production" ]; then
-    SERVICE_NAME="app"
     IMAGE_TAG="production"
     FRONTEND_URL_OVERRIDE="https://trefa.mx"
 else
-    SERVICE_NAME="app-staging"
     IMAGE_TAG="staging"
     FRONTEND_URL_OVERRIDE="$STAGING_DOMAIN"  # Use custom staging domain if set
 fi
@@ -100,8 +99,42 @@ else
 fi
 echo ""
 
+# === Step 0.5: Git Commit ===
+echo -e "${YELLOW}[0.5/7] Committing all changes...${NC}"
+
+# Check if there are uncommitted changes
+if [ -n "$(git status --porcelain)" ]; then
+    echo "Uncommitted changes detected. Staging all changes..."
+
+    # Stage all changes
+    git add -A
+
+    # Get current git commit for commit message
+    PREV_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
+    # Create commit with deployment message
+    git commit -m "$(cat <<EOF
+chore: Pre-deployment commit for Cloud Run
+
+Automated commit before deploying to $SERVICE_NAME ($ENVIRONMENT environment).
+Previous commit: $PREV_COMMIT
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)" || {
+        echo -e "${YELLOW}⚠️  No changes to commit or commit failed${NC}"
+    }
+
+    echo -e "${GREEN}✓ Changes committed${NC}"
+else
+    echo -e "${GREEN}✓ No uncommitted changes${NC}"
+fi
+echo ""
+
 # === Step 1: Verify Prerequisites ===
-echo -e "${YELLOW}[1/6] Verifying prerequisites...${NC}"
+echo -e "${YELLOW}[1/7] Verifying prerequisites...${NC}"
 
 if ! command -v gcloud &> /dev/null; then
     echo -e "${RED}✗ gcloud CLI not found. Please install it first.${NC}"
@@ -117,13 +150,13 @@ echo -e "${GREEN}✓ Prerequisites verified${NC}"
 echo ""
 
 # === Step 2: Set GCloud Project ===
-echo -e "${YELLOW}[2/6] Setting GCloud project...${NC}"
+echo -e "${YELLOW}[2/7] Setting GCloud project...${NC}"
 gcloud config set project $PROJECT_ID
 echo -e "${GREEN}✓ Project set to: $PROJECT_ID${NC}"
 echo ""
 
 # === Step 3: Build Docker Image ===
-echo -e "${YELLOW}[3/6] Building Docker image...${NC}"
+echo -e "${YELLOW}[3/7] Building Docker image...${NC}"
 
 # Read build-time credentials from cloud-build-vars.yaml
 VITE_SUPABASE_URL=$(grep "VITE_SUPABASE_URL:" cloud-build-vars.yaml | cut -d'"' -f2)
@@ -186,7 +219,7 @@ fi
 echo ""
 
 # === Step 4: Push to Artifact Registry ===
-echo -e "${YELLOW}[4/6] Pushing image to Artifact Registry...${NC}"
+echo -e "${YELLOW}[4/7] Pushing image to Artifact Registry...${NC}"
 
 # Configure Docker auth for Artifact Registry
 gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
@@ -203,7 +236,7 @@ fi
 echo ""
 
 # === Step 5: Deploy to Cloud Run ===
-echo -e "${YELLOW}[5/6] Deploying to Cloud Run...${NC}"
+echo -e "${YELLOW}[5/7] Deploying to Cloud Run...${NC}"
 
 # Read all environment variables from cloud-build-vars.yaml
 ENV_VARS=""
@@ -300,6 +333,20 @@ if [ $? -eq 0 ]; then
         echo -e "${GREEN}✓ FRONTEND_URL updated${NC}"
         echo ""
     fi
+
+    # === Step 6: Push Git Commits ===
+    echo -e "${YELLOW}[6/7] Pushing commits to remote repository...${NC}"
+
+    # Get current branch
+    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
+
+    # Push to remote
+    if git push origin "$CURRENT_BRANCH" 2>/dev/null; then
+        echo -e "${GREEN}✓ Commits pushed to origin/$CURRENT_BRANCH${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Could not push to remote (might be already up to date or no remote configured)${NC}"
+    fi
+    echo ""
 
     # Environment-specific next steps
     if [ "$ENVIRONMENT" = "staging" ]; then
