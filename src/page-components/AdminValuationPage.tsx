@@ -1,15 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FileText, Download, Loader2, CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
+import { FileText, Download, Loader2, CheckCircle, AlertCircle, Sparkles, Building2 } from 'lucide-react';
 import ValuationPDFService, { RecentCommit } from '../services/ValuationPDFService';
 import ValuationPDFServiceV2 from '../services/ValuationPDFServiceV2';
+import PlatformValuationService from '../services/PlatformValuationService';
 
 const AdminValuationPage: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedVersion, setSelectedVersion] = useState<'v1' | 'v2'>('v2');
+  const [selectedVersion, setSelectedVersion] = useState<'v1' | 'v2' | 'platform'>('platform');
 
   const handleGeneratePDF = async () => {
     setIsGenerating(true);
@@ -261,10 +262,15 @@ const AdminValuationPage: React.FC = () => {
         },
       ];
 
-      const pdfService = selectedVersion === 'v2'
-        ? new ValuationPDFServiceV2()
-        : new ValuationPDFService();
-      await pdfService.generateValuationPDF(recentCommits);
+      if (selectedVersion === 'platform') {
+        const platformService = new PlatformValuationService();
+        await platformService.generatePlatformValuation();
+      } else {
+        const pdfService = selectedVersion === 'v2'
+          ? new ValuationPDFServiceV2()
+          : new ValuationPDFService();
+        await pdfService.generateValuationPDF(recentCommits);
+      }
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 5000);
@@ -298,8 +304,36 @@ const AdminValuationPage: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
           {/* Version Selector */}
           <div className="px-8 py-6 bg-gray-50 border-b border-gray-200">
-            <h3 className="text-sm font-bold text-gray-700 mb-3">Selecciona la Versión del Reporte</h3>
-            <div className="grid md:grid-cols-2 gap-4">
+            <h3 className="text-sm font-bold text-gray-700 mb-3">Selecciona el Tipo de Valuación</h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              {/* Platform Valuation Option */}
+              <button
+                onClick={() => setSelectedVersion('platform')}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  selectedVersion === 'platform'
+                    ? 'border-emerald-600 bg-emerald-50'
+                    : 'border-gray-300 bg-white hover:border-gray-400'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`mt-1 ${selectedVersion === 'platform' ? 'text-emerald-600' : 'text-gray-400'}`}>
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                      Valuación de Plataforma
+                      <span className="px-2 py-0.5 bg-emerald-600 text-white text-xs rounded">RECOMENDADO</span>
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      Valuación completa del stack tecnológico, análisis de mercado mexicano, y valor comercial. Formato bancario profesional. ~10 páginas.
+                    </div>
+                  </div>
+                  {selectedVersion === 'platform' && (
+                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                  )}
+                </div>
+              </button>
+
               {/* V1 Option */}
               <button
                 onClick={() => setSelectedVersion('v1')}
@@ -314,9 +348,9 @@ const AdminValuationPage: React.FC = () => {
                     <FileText className="w-5 h-5" />
                   </div>
                   <div className="text-left flex-1">
-                    <div className="font-semibold text-gray-900 mb-1">Versión 1.0 (Estándar)</div>
+                    <div className="font-semibold text-gray-900 mb-1">Desarrollo v1.0</div>
                     <div className="text-xs text-gray-600">
-                      Reporte profesional completo con valuación, métricas técnicas, y análisis financiero. ~20 páginas.
+                      Reporte de desarrollo con commits recientes y métricas técnicas. ~20 páginas.
                     </div>
                   </div>
                   {selectedVersion === 'v1' && (
@@ -339,12 +373,9 @@ const AdminValuationPage: React.FC = () => {
                     <Sparkles className="w-5 h-5" />
                   </div>
                   <div className="text-left flex-1">
-                    <div className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
-                      Versión 2.0 Enhanced
-                      <span className="px-2 py-0.5 bg-amber-600 text-white text-xs rounded">NUEVO</span>
-                    </div>
+                    <div className="font-semibold text-gray-900 mb-1">Desarrollo v2.0</div>
                     <div className="text-xs text-gray-600">
-                      Incluye tecnologías de vanguardia, problemas resueltos, arquitectura backend completa, y catálogo de 31 servicios. ~25-30 páginas.
+                      Incluye arquitectura completa y catálogo de servicios. ~25-30 páginas.
                     </div>
                   </div>
                   {selectedVersion === 'v2' && (
@@ -356,55 +387,100 @@ const AdminValuationPage: React.FC = () => {
           </div>
 
           {/* Info Section */}
-          <div className={`${selectedVersion === 'v2' ? 'bg-gradient-to-r from-amber-600 to-amber-800' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-8 py-6`}>
+          <div className={`${
+            selectedVersion === 'platform' ? 'bg-gradient-to-r from-emerald-600 to-emerald-800' :
+            selectedVersion === 'v2' ? 'bg-gradient-to-r from-amber-600 to-amber-800' :
+            'bg-gradient-to-r from-blue-600 to-blue-800'
+          } text-white px-8 py-6`}>
             <h2 className="text-2xl font-bold mb-3">
-              Características del Reporte {selectedVersion === 'v2' && 'v2.0 Enhanced'}
+              {selectedVersion === 'platform' ? 'Valuación Integral de la Plataforma' :
+               selectedVersion === 'v2' ? 'Características del Reporte v2.0 Enhanced' :
+               'Características del Reporte v1.0'}
             </h2>
             <ul className="space-y-2">
-              <li className="flex items-start">
-                <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
-                <span>Formato profesional estilo bancario para el mercado mexicano</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
-                <span>Valuación completa en MXN ($7,492,500 MXN)</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
-                <span>Incluye {48} commits recientes de los últimos 4 días</span>
-              </li>
-              {selectedVersion === 'v2' && (
+              {selectedVersion === 'platform' ? (
                 <>
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="font-semibold">✨ NUEVO: Análisis de tecnologías de vanguardia</span>
+                    <span className="font-semibold">📊 Valuación profesional: MXN $2,500,000 - $4,000,000</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="font-semibold">✨ NUEVO: Sección completa de problemas resueltos con métricas antes/después</span>
+                    <span>Análisis completo del stack tecnológico Next.js 14 + Supabase</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="font-semibold">✨ NUEVO: Arquitectura backend completa con diagramas</span>
+                    <span>Estudio de mercado automotriz mexicano (TAM $450B MXN)</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="font-semibold">✨ NUEVO: Catálogo completo de 31 servicios especializados</span>
+                    <span>Evaluación de problemas resueltos y valor generado</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
+                    <span>Ventajas competitivas vs. Kavak, Nexu, y mercado tradicional</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
+                    <span>Valoración financiera con 3 metodologías complementarias</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
+                    <span>Evaluación de riesgos y estrategia de mitigación</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
+                    <span>Recomendaciones estratégicas y plan de crecimiento</span>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li className="flex items-start">
+                    <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
+                    <span>Formato profesional estilo bancario para el mercado mexicano</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
+                    <span>Valuación completa en MXN ($7,492,500 MXN)</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
+                    <span>Incluye {48} commits recientes de los últimos 4 días</span>
+                  </li>
+                  {selectedVersion === 'v2' && (
+                    <>
+                      <li className="flex items-start">
+                        <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
+                        <span className="font-semibold">✨ NUEVO: Análisis de tecnologías de vanguardia</span>
+                      </li>
+                      <li className="flex items-start">
+                        <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
+                        <span className="font-semibold">✨ NUEVO: Sección completa de problemas resueltos con métricas antes/después</span>
+                      </li>
+                      <li className="flex items-start">
+                        <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
+                        <span className="font-semibold">✨ NUEVO: Arquitectura backend completa con diagramas</span>
+                      </li>
+                      <li className="flex items-start">
+                        <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
+                        <span className="font-semibold">✨ NUEVO: Catálogo completo de 31 servicios especializados</span>
+                      </li>
+                    </>
+                  )}
+                  <li className="flex items-start">
+                    <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
+                    <span>Análisis técnico detallado con métricas y proyecciones financieras</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
+                    <span>Ventajas competitivas y recomendaciones estratégicas</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
+                    <span>Análisis de riesgos y plan de mitigación</span>
                   </li>
                 </>
               )}
-              <li className="flex items-start">
-                <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
-                <span>Análisis técnico detallado con métricas y proyecciones financieras</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
-                <span>Ventajas competitivas y recomendaciones estratégicas</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
-                <span>Análisis de riesgos y plan de mitigación</span>
-              </li>
             </ul>
           </div>
 
