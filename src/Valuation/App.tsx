@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -45,7 +45,7 @@ const VALUATION_FORM_STATE_KEY = 'trefaValuationFormState';
 
 
 function ValuationApp({ initialSearchQuery, onComplete }: { initialSearchQuery?: string | null; onComplete?: () => void }) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { user } = useAuth();
   const [step, setStep] = useState<'vehicle' | 'contact' | 'valuating' | 'success'>('vehicle');
   const [error, setError] = useState<string | null>(null);
@@ -291,12 +291,14 @@ function ValuationApp({ initialSearchQuery, onComplete }: { initialSearchQuery?:
       // Store redirect path
       localStorage.setItem('redirectAfterLogin', '/escritorio/vende-tu-auto');
       // Redirect to auth page with a message
-      navigate('/auth?message=Por favor inicia sesión para continuar con la venta de tu vehículo&redirect=/escritorio/vende-tu-auto');
+      router.push('/auth?message=Por favor inicia sesión para continuar con la venta de tu vehículo&redirect=/escritorio/vende-tu-auto');
       return;
     }
 
     // User is authenticated, proceed normally
-    navigate('/escritorio/vende-tu-auto', { state: { valuationData } });
+    // Note: Next.js doesn't support state in router.push. Storing in localStorage instead
+    localStorage.setItem('pendingValuationData', JSON.stringify(valuationData));
+    router.push('/escritorio/vende-tu-auto');
   };
   
   const steps = [
@@ -501,8 +503,9 @@ function ValuationApp({ initialSearchQuery, onComplete }: { initialSearchQuery?:
 
 export default ValuationApp;
 
+// Old imports - migrated to Next.js
 // import { useState, useEffect, useRef } from 'react';
-// import { useNavigate } from 'react-router-dom';
+// import { useRouter } from 'next/navigation';
 // import { useForm } from 'react-hook-form';
 // import { zodResolver } from '@hookform/resolvers/zod';
 // import { z } from 'zod';

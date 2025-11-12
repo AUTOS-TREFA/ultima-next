@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import type { Vehicle } from '../types/types';
 import LazyImage from './LazyImage';
 import { getVehicleImage } from '../utils/getVehicleImage';
@@ -12,7 +12,7 @@ const SimpleVehicleCard: React.FC<SimpleVehicleCardProps> = ({ vehicle }) => {
   const imageSrc = getVehicleImage(vehicle);
 
   return (
-    <Link to={`/autos/${vehicle.slug}`} className="relative aspect-[4/3] w-full group rounded-lg overflow-hidden shadow-sm">
+    <Link href={`/autos/${vehicle.slug}`} className="relative aspect-[4/3] w-full group rounded-lg overflow-hidden shadow-sm">
       <LazyImage
         src={imageSrc}
         alt={vehicle.titulo}

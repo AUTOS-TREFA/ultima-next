@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useCallback, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import AccordionItem from './AccordionItem';
 import PriceRangeSlider from './PriceRangeSlider';
 import { FilterIcon, CheckIcon, XCircleIcon, XIcon } from './icons';

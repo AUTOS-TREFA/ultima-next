@@ -10,5 +10,5 @@ interface PageProps {
 }
 
 export default function Page({ params, searchParams }: PageProps) {
-  return <VehicleDetailPage />;
+  return <VehicleDetailPage slug={params.slug} />;
 }

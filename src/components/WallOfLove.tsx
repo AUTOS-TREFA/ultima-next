@@ -42,9 +42,12 @@ const simulatedReviews: Review[] = [
 ];
 
 const WallOfLove: React.FC = () => {
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
+        // Initialize on client side
+        setIsMobile(window.innerWidth < 640);
+
         const handleResize = () => {
             setIsMobile(window.innerWidth < 640); // sm breakpoint is 640px
         };

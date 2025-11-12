@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -116,11 +115,11 @@ const InputField: React.FC<{name: any, label: string, type?: string, register: a
     </div>
 );
 
-const VacancyDetailPage: React.FC = () => {
-    const params = useParams<{ id: string }>();
-    const vehicleId = params?.id;
-    const applicationIdFromUrl = params?.id;
-    const id = params?.id;
+interface VacancyDetailPageProps {
+    id: string;
+}
+
+const VacancyDetailPage: React.FC<VacancyDetailPageProps> = ({ id }) => {
     const [vacancy, setVacancy] = useState<Vacancy | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

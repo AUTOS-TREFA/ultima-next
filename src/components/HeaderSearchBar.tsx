@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Search as SearchIcon, Loader2 } from 'lucide-react';
 import type { WordPressVehicle } from '../types/types';
 import { useVehicles } from '../context/VehicleContext';
@@ -14,7 +14,7 @@ const HeaderSearchBar: React.FC = () => {
   const [results, setResults] = useState<WordPressVehicle[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-  const navigate = useNavigate();
+  const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -78,14 +78,14 @@ const HeaderSearchBar: React.FC = () => {
     e.preventDefault();
     setIsDropdownVisible(false);
     if (query.trim()) {
-      navigate(`/autos?search=${encodeURIComponent(query.trim())}`);
+      router.push(`/autos?search=${encodeURIComponent(query.trim())}`);
     }
   };
 
   const handleResultClick = (slug: string) => {
     setIsDropdownVisible(false);
     setQuery('');
-    navigate(`/autos/${slug}`);
+    router.push(`/autos/${slug}`);
   };
 
   return (

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useCallback, forwardRef, useImperativeHandle, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { useSprings, animated, to as interpolate } from 'react-spring';
 import { useDrag } from '@use-gesture/react';
 import { WordPressVehicle } from '../types/types';

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { UserIcon, LogOutIcon, ChevronDownIcon } from './icons';
 import { useAuth } from '../context/AuthContext';
 import MegaMenu from './MegaMenu';
@@ -21,9 +22,9 @@ const Header: React.FC = () => {
     const [profileMenuOpen, setProfileMenuOpen] = useState(false);
     const profileMenuRef = useRef<HTMLDivElement>(null);
     const menuButtonRef = useRef<HTMLButtonElement>(null);
-    const location = useLocation();
-    const navigate = useNavigate();
-    const isListPage = location.pathname === '/autos';
+    const pathname = usePathname();
+    const router = useRouter();
+    const isListPage = pathname === '/autos';
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -45,7 +46,7 @@ const Header: React.FC = () => {
 
     const handleMobileLinkClick = (path: string) => {
         setMobileMenuOpen(false);
-        navigate(path);
+        router.push(path);
     };
 
     return (
@@ -64,7 +65,7 @@ const Header: React.FC = () => {
             {/* Left Section */}
             <div className={`flex justify-start items-center flex-shrink-0 ${!isListPage ? 'w-auto lg:w-1/3' : ''}`}>
                 <div className="flex items-center">
-                    <Link to="/" className="flex items-center">
+                    <Link href="/" className="flex items-center">
                       <img
                         src={"/images/trefalogo.png"}
                         alt="TREFA"
@@ -102,7 +103,7 @@ const Header: React.FC = () => {
                         {profileMenuOpen && (
                             <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-40 bg-white">
                                 <Link
-                                    to="/escritorio"
+                                    href="/escritorio"
                                     onClick={() => setProfileMenuOpen(false)}
                                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                 >
@@ -119,7 +120,7 @@ const Header: React.FC = () => {
                     </div>
                   ) : (
                     <Link
-                      to="/acceder"
+                      href="/acceder"
                       data-gtm-id="header-login-button"
                       className="hidden lg:block text-base font-semibold transition-all duration-300 px-5 py-2.5 rounded-lg text-white shadow-sm hover:shadow-md bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 transform-gpu active:scale-95"
                     >

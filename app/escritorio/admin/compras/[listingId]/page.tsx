@@ -10,5 +10,5 @@ interface PageProps {
 }
 
 export default function Page({ params, searchParams }: PageProps) {
-  return <AutosConOfertaPage />;
+  return <AutosConOfertaPage listingId={params.listingId} />;
 }

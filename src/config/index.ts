@@ -14,8 +14,8 @@ const getEnvVar = (key: string, fallback: string): string => {
 };
 
 // --- Supabase Configuration ---
-const SUPABASE_URL = getEnvVar('SUPABASE_URL', 'https://jjepfehmuybpctdzipnu.supabase.co');
-const SUPABASE_ANON_KEY = getEnvVar('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqZXBmZWhtdXlicGN0ZHppcG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQxOTk2MDMsImV4cCI6MjA1OTc3NTYwM30.yaMESZqaoLvkbVSgdHxpU-Vb7q-naxj95QxcpRYPrX4');
+const SUPABASE_URL = getEnvVar('SUPABASE_URL', 'https://ioewyambpjlqnsbzvbvd.supabase.co');
+const SUPABASE_ANON_KEY = getEnvVar('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZXd5YW1icGpscW5zYnp2YnZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMjU3NTcsImV4cCI6MjA1OTkwMTc1N30.a7bPhdy5xR8skbdagOSATk-RHf9vtq5TGPiESTEIsb4');
 
 // --- Airtable Configuration ---
 // Using environment variables with fallbacks for development

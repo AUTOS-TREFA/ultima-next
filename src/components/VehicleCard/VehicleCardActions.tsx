@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { WhatsAppIcon, HeartIcon, SolidHeartIcon } from '../icons';
 
@@ -21,7 +21,7 @@ const VehicleCardActions: React.FC<VehicleCardActionsProps> = ({
   isFavorite,
 }) => {
   const { session } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleFinancingClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -30,12 +30,12 @@ const VehicleCardActions: React.FC<VehicleCardActionsProps> = ({
 
     if (session) {
       const urlWithParams = ordencompra ? `/escritorio/aplicacion?ordencompra=${ordencompra}` : '/escritorio/aplicacion';
-      navigate(urlWithParams);
+      router.push(urlWithParams);
     } else {
       const redirectPath = ordencompra ? `/escritorio/aplicacion?ordencompra=${ordencompra}` : '/escritorio/aplicacion';
       localStorage.setItem('loginRedirect', redirectPath);
       const loginUrl = ordencompra ? `/acceder?ordencompra=${ordencompra}` : '/acceder';
-      navigate(loginUrl);
+      router.push(loginUrl);
     }
   };
 

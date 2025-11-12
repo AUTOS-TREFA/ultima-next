@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -33,10 +33,10 @@ const valuationSchema = z.object({
 type ValuationFormData = z.infer<typeof valuationSchema>;
 
 const VALUATION_FORM_STATE_KEY = 'trefaValuationFormState';
-const navigate = useNavigate();
 
 
 function ValuationApp({ initialSearchQuery }: { initialSearchQuery?: string | null }) {
+  const router = useRouter();
   const [step, setStep] = useState<'vehicle' | 'contact' | 'valuating' | 'success'>('vehicle');
   const [error, setError] = useState<string | null>(null);
   
@@ -219,7 +219,8 @@ function ValuationApp({ initialSearchQuery }: { initialSearchQuery?: string | nu
   const whatsappUrl = `https://wa.me/528187049079?text=${encodeURIComponent(whatsappText)}`;
 
   const handleContinueToSellForm = () => {
-    navigate('/escritorio/vende-mi-auto', { state: { valuationData: { vehicle: selectedVehicle, valuation } } });
+    // Note: Next.js doesn't support state in router.push. You'll need to use query params or state management
+    router.push('/escritorio/vende-mi-auto');
   };
   
   const steps = [

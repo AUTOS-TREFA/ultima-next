@@ -2,7 +2,7 @@ import { proxyImage } from './proxyImage';
 import { getCdnUrl } from './imageUrl';
 
 // Base Supabase URLs for placeholder images
-const SUPABASE_BASE = 'https://jjepfehmuybpctdzipnu.supabase.co/storage/v1/object/public/fotos_airtable/app';
+const SUPABASE_BASE = 'https://ioewyambpjlqnsbzvbvd.supabase.co/storage/v1/object/public/fotos_airtable/app';
 
 // Raw placeholder URLs (before CDN transformation)
 const RAW_PLACEHOLDER_IMAGES: Record<string, string> = {

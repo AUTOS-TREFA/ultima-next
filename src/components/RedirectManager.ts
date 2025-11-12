@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useRouter, usePathname } from 'next/navigation';
 import { getRedirects, Redirect } from '../services/RedirectService';
 
 const RedirectManager: React.FC = () => {
   const [redirects, setRedirects] = useState<Redirect[]>([]);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     getRedirects().then(setRedirects).catch(() => {
@@ -19,19 +19,19 @@ const RedirectManager: React.FC = () => {
   useEffect(() => {
     // Skip redirect logic for Google AI Studio preview paths
     const isGoogleStudioPreview = window.location.hostname.includes('scf.usercontent.goog');
-    if (isGoogleStudioPreview && location.pathname.match(/^\/[a-f0-9-]{36}$/)) {
-      navigate('/', { replace: true });
+    if (isGoogleStudioPreview && pathname.match(/^\/[a-f0-9-]{36}$/)) {
+      router.replace('/');
       return;
     }
 
     if (redirects.length > 0) {
-      const currentPath = location.pathname;
+      const currentPath = pathname;
       const redirect = redirects.find(r => r.from === currentPath);
       if (redirect) {
-        navigate(redirect.to, { replace: true });
+        router.replace(redirect.to);
       }
     }
-  }, [location, redirects, navigate]);
+  }, [pathname, redirects, router]);
 
   return null;
 };

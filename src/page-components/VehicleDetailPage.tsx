@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import VehicleService from '../services/VehicleService';
 import { useVehicles } from '../context/VehicleContext';
@@ -604,9 +604,11 @@ const TabsSection: React.FC<{
 // MAIN COMPONENT
 // =================================================================================
 
-const VehicleDetailPage: React.FC = () => {
-    const params = useParams<{ slug: string }>();
-    const slug = params?.slug;
+interface VehicleDetailPageProps {
+    slug: string;
+}
+
+const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
     const router = useRouter();
     const { session, user } = useAuth();
     const { vehicles: allVehicles } = useVehicles();

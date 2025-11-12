@@ -16,8 +16,7 @@ import {
   MessageCircle,
   UserCircle
 } from 'lucide-react';
-// FIX: Changed single quotes to double quotes to address potential module resolution issues.
-import { Link } from "react-router-dom";
+import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { ApplicationService } from '../services/ApplicationService';
 import FinancialProjection from '../components/FinancialProjection';
@@ -479,7 +478,7 @@ const Dashboard: React.FC = () => {
                                     <p className="text-xs text-gray-500 mt-1">Última modificación: {new Date(draft.updated_at).toLocaleDateString('es-MX')}</p>
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
-                                    <Link to={`/escritorio/aplicacion/${draft.id}`} className="px-3 py-1.5 text-xs font-semibold bg-primary-600 text-white rounded-md hover:bg-primary-700">
+                                    <Link href={`/escritorio/aplicacion/${draft.id}`} className="px-3 py-1.5 text-xs font-semibold bg-primary-600 text-white rounded-md hover:bg-primary-700">
                                         Continuar
                                     </Link>
                                     <button onClick={() => handleDeleteDraft(draft.id)} className="p-2 text-gray-500 hover:text-red-600 rounded-md hover:bg-red-50">

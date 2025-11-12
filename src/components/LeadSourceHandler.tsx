@@ -1,11 +1,10 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useSearchParams, useLocation } from 'react-router-dom';
+import { useSearchParams } from 'next/navigation';
 
 const LeadSourceHandler: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const location = useLocation();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     // Check if we already have captured source data

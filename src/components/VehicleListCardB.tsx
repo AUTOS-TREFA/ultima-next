@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import type { WordPressVehicle } from '../types/types';
 import { formatPrice } from '../utils/formatters';
 import { UsersIcon, CheckCircleIcon, StarIcon } from './icons';
@@ -22,7 +22,7 @@ const VehicleListCardB: React.FC<VehicleListCardBProps> = ({ vehicle }) => {
   );
 
   return (
-    <Link to={`/autos-b/${vehicle.slug}`} className="block bg-white p-4 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200/80 group">
+    <Link href={`/autos-b/${vehicle.slug}`} className="block bg-white p-4 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200/80 group">
       <div className="flex flex-col sm:flex-row gap-5">
         <div className="flex-shrink-0 w-full sm:w-48">
           <LazyImage src={imageSrc} alt={vehicle.titulo} className="w-full h-40 sm:h-full rounded-lg" />

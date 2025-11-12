@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Building2, ArrowRight } from 'lucide-react';
 import type { Profile } from '../types/types';
 import { PenSquareIcon } from './icons'; // Assuming PenSquareIcon is from a separate icons file

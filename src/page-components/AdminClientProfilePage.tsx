@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { AdminService } from '../services/AdminService';
@@ -548,11 +547,11 @@ const KommoDataDisplay: React.FC<{ kommoData: any; lastSynced: string }> = ({ ko
     );
 };
 
-const AdminClientProfilePage: React.FC = () => {
-    const params = useParams<{ id: string }>();
-    const vehicleId = params?.id;
-    const applicationIdFromUrl = params?.id;
-    const id = params?.id;
+interface AdminClientProfilePageProps {
+    id: string;
+}
+
+const AdminClientProfilePage: React.FC<AdminClientProfilePageProps> = ({ id }) => {
     const { user } = useAuth();
     const [clientData, setClientData] = useState<{ profile: Profile; applications: any[]; tags: any[]; reminders: any[]; documents: any[] } | null>(null);
     const [loading, setLoading] = useState(true);

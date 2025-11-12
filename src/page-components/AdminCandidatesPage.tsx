@@ -1,15 +1,16 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { VacancyService } from '../services/VacancyService';
 import type { JobApplication, Vacancy } from '../types/types';
 import { Loader2, AlertTriangle, Users, ArrowLeft, Download } from 'lucide-react';
 
-const AdminCandidatesPage: React.FC = () => {
-    const params = useParams<{ vacancyId: string }>();
-    const vacancyId = params?.vacancyId;
+interface AdminCandidatesPageProps {
+    id: string;
+}
+
+const AdminCandidatesPage: React.FC<AdminCandidatesPageProps> = ({ id: vacancyId }) => {
     const [vacancy, setVacancy] = useState<Vacancy | null>(null);
     const [applications, setApplications] = useState<JobApplication[]>([]);
     const [loading, setLoading] = useState(true);

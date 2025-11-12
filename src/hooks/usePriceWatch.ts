@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { PriceWatchService } from '../services/PriceWatchService';
 
@@ -9,8 +9,9 @@ export const usePriceWatch = () => {
     const [watchedVehicles, setWatchedVehicles] = useState<number[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { user } = useAuth();
-    const navigate = useNavigate();
-    const location = useLocation();
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
 
     useEffect(() => {
         const fetchWatches = async () => {
@@ -33,8 +34,9 @@ export const usePriceWatch = () => {
 
     const toggleWatch = useCallback(async (vehicleId: number) => {
         if (!user) {
-            localStorage.setItem('loginRedirect', location.pathname + location.search);
-            navigate('/acceder');
+            const search = searchParams.toString();
+            localStorage.setItem('loginRedirect', pathname + (search ? `?${search}` : ''));
+            router.push('/acceder');
             return;
         }
 
@@ -53,7 +55,7 @@ export const usePriceWatch = () => {
                 setWatchedVehicles(prev => prev.filter(id => id !== vehicleId));
             });
         }
-    }, [watchedVehicles, user, navigate, location]);
+    }, [watchedVehicles, user, router, pathname, searchParams]);
 
     return { isWatched, toggleWatch, isLoading };
 };

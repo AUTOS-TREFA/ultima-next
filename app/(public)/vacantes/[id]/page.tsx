@@ -10,5 +10,5 @@ interface PageProps {
 }
 
 export default function Page({ params, searchParams }: PageProps) {
-  return <VacancyDetailPage />;
+  return <VacancyDetailPage id={params.id} />;
 }

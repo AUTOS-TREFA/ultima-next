@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { SellCarService } from '../services/SellCarService';
@@ -20,9 +20,11 @@ const ProfileDataItem: React.FC<{ label: string, value: any, icon?: React.ReactN
     </div>
 );
 
-const AutosConOfertaPage: React.FC = () => {
-    const params = useParams<{ listingId: string }>();
-    const listingId = params?.listingId;
+interface AutosConOfertaPageProps {
+    listingId: string;
+}
+
+const AutosConOfertaPage: React.FC<AutosConOfertaPageProps> = ({ listingId }) => {
     const { user } = useAuth();
     const router = useRouter();
     const queryClient = useQueryClient();

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { ArrowRight, X } from 'lucide-react';
 
 const BetaSurveyInvitation: React.FC<{ onClose: () => void }> = ({ onClose }) => (

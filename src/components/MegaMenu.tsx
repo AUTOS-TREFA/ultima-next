@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { useVehicles } from '../context/VehicleContext';
 import {
@@ -111,7 +111,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose, triggerRef }) => {
     const { session, profile, signOut, isAdmin } = useAuth();
     const { vehicles: allVehicles } = useVehicles();
     const { config } = useConfig();
-    const navigate = useNavigate();
+    const router = useRouter();
     const menuRef = useRef<HTMLDivElement>(null);
     const classifications = [
         { name: 'SUV', slug: 'suv', icon: SuvIcon, imageUrl: '/images/suv-filter.png' },
@@ -163,24 +163,24 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose, triggerRef }) => {
         onClose();
         if (authRequired && !session) {
             localStorage.setItem('loginRedirect', to);
-            navigate('/acceder');
+            router.push('/acceder');
         } else {
-            navigate(to);
+            router.push(to);
         }
     };
 
     const handleFilterClick = (filterKey: string, filterValue: string) => {
         onClose();
         if (filterKey === 'automarca') {
-            navigate(`/marcas/${filterValue.toLowerCase()}`);
+            router.push(`/marcas/${filterValue.toLowerCase()}`);
         } else if (filterKey === 'classification') {
-            navigate(`/carroceria/${filterValue.toLowerCase()}`);
+            router.push(`/carroceria/${filterValue.toLowerCase()}`);
         } else {
             const params = new URLSearchParams();
             if (filterValue) {
                  params.set(filterKey, filterValue);
             }
-            navigate(`/autos?${params.toString()}`);
+            router.push(`/autos?${params.toString()}`);
         }
     };
     

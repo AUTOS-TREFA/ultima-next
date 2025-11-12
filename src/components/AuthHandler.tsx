@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import type { Profile } from '../types/types';
 import { conversionTracking } from '../services/ConversionTrackingService';
@@ -32,7 +32,7 @@ export const checkApplicationProfileCompleteness = (p: Profile | null): boolean 
 
 const AuthHandler: React.FC = () => {
   const { session, profile, loading } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
   const hasTrackedRef = useRef(false);
 
   useEffect(() => {
@@ -67,14 +67,14 @@ const AuthHandler: React.FC = () => {
         if (redirectPath?.startsWith('/escritorio/aplicacion')) {
           if (!checkApplicationProfileCompleteness(profile)) {
             // If not complete, force them to the profile page first.
-            navigate('/escritorio/profile', { replace: true });
+            router.replace('/escritorio/profile');
             return;
           }
         }
 
         // Perform the redirect.
         if (redirectPath) {
-          navigate(redirectPath, { replace: true });
+          router.replace(redirectPath);
         }
       }, redirectDelay);
     }
@@ -96,7 +96,7 @@ const AuthHandler: React.FC = () => {
         hasTrackedRef.current = true;
       }
     }
-  }, [session, profile, loading, navigate]);
+  }, [session, profile, loading, router]);
 
   return null;
 };

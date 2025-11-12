@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { ArrowRightIcon } from './icons';
 import { searchVehiclesWithAI } from '../Valuation/services/valuationService';
 import { config } from '@/config';
@@ -18,7 +18,7 @@ const MiniValuationForm: React.FC<MiniValuationFormProps> = ({ onClose }) => {
   const [isSearching, setIsSearching] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
-  const navigate = useNavigate();
+  const router = useRouter();
   const dropdownRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -63,11 +63,11 @@ const MiniValuationForm: React.FC<MiniValuationFormProps> = ({ onClose }) => {
     e.preventDefault();
     onClose();
     if (selectedVehicle?.ordencompra) {
-      navigate(`/escritorio/aplicacion?ordencompra=${encodeURIComponent(selectedVehicle.ordencompra)}`);
+      router.push(`/escritorio/aplicacion?ordencompra=${encodeURIComponent(selectedVehicle.ordencompra)}`);
     } else if (searchQuery.trim()) {
-      navigate(`/vender-mi-auto?search=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/vender-mi-auto?search=${encodeURIComponent(searchQuery.trim())}`);
     } else {
-      navigate('/vender-mi-auto');
+      router.push('/vender-mi-auto');
     }
   };
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Clock, TrendingUp, UserPlus, FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 export interface KeyEvent {
   id: string;

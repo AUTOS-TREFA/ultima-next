@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,8 +10,9 @@ export const useFavorites = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isToggling, setIsToggling] = useState<number | null>(null); // Track which vehicle is being toggled
     const { user } = useAuth();
-    const navigate = useNavigate();
-    const location = useLocation();
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
 
     useEffect(() => {
         const fetchFavorites = async () => {
@@ -46,8 +47,9 @@ export const useFavorites = () => {
         if (isToggling === vehicleId) return; // Prevent multiple clicks
 
         if (!user) {
-            localStorage.setItem('loginRedirect', location.pathname + location.search);
-            navigate('/acceder');
+            const search = searchParams.toString();
+            localStorage.setItem('loginRedirect', pathname + (search ? `?${search}` : ''));
+            router.push('/acceder');
             return;
         }
 
@@ -77,7 +79,7 @@ export const useFavorites = () => {
             }
         }
         setIsToggling(null);
-    }, [favorites, user, navigate, location, isToggling]);
+    }, [favorites, user, router, pathname, searchParams, isToggling]);
 
     return { favorites, isFavorite, toggleFavorite, isLoading, isToggling };
 };

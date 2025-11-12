@@ -1,6 +1,6 @@
 import React from 'react';
 import { Clock, CheckCircle, AlertTriangle, FileText } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 type ApplicationStatus = 'draft' | 'submitted' | 'reviewing' | 'pending_docs' | 'approved' | 'rejected' | 'pending' | 'in_progress';
 

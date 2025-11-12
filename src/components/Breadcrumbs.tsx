@@ -1,7 +1,7 @@
 
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { ChevronRightIcon } from './icons';
 
 interface Crumb {
@@ -24,7 +24,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ crumbs }) => {
                                 <ChevronRightIcon className="h-4 w-4 text-gray-400 flex-shrink-0 mx-2" />
                             )}
                             {crumb.href ? (
-                                <Link to={crumb.href} className="text-gray-500 hover:text-gray-700 font-medium">
+                                <Link href={crumb.href} className="text-gray-500 hover:text-gray-700 font-medium">
                                     {crumb.name}
                                 </Link>
                             ) : (

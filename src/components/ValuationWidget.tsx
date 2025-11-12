@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Car } from 'lucide-react';
 
 const ValuationWidget: React.FC = () => {

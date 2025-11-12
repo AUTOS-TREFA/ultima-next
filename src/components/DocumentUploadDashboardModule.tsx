@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { ApplicationService } from '../services/ApplicationService';
 import { DocumentService, UploadedDocument } from '../services/documentService';
 import FileUpload from './FileUpload';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Loader2, AlertTriangle } from 'lucide-react';
 
 interface DocumentUploadDashboardModuleProps {
@@ -168,7 +168,7 @@ const DocumentUploadDashboardModule: React.FC<DocumentUploadDashboardModuleProps
       </div>
 
       <div className="mt-6 text-right">
-        <Link to={`/escritorio/aplicacion/${applicationId}`} className="text-sm font-semibold text-primary-600 hover:underline">
+        <Link href={`/escritorio/aplicacion/${applicationId}`} className="text-sm font-semibold text-primary-600 hover:underline">
           Ver mi solicitud completa
         </Link>
       </div>

@@ -3,7 +3,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -83,9 +83,11 @@ const InspectionCategoryEditor: React.FC<CategoryEditorProps> = ({ categoryKey, 
     );
 };
 
-const AdminInspectionPage: React.FC = () => {
-    const params = useParams<{ id: string }>();
-    const vehicleId = params?.id;
+interface AdminInspectionPageProps {
+    id: string;
+}
+
+const AdminInspectionPage: React.FC<AdminInspectionPageProps> = ({ id: vehicleId }) => {
     const router = useRouter();
     const { session, loading: authLoading } = useAuth();
     const [isLoading, setIsLoading] = useState(true);

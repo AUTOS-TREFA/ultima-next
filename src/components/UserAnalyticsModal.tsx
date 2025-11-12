@@ -16,7 +16,7 @@ import {
     Phone,
     Clock
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 interface UserAnalyticsModalProps {
     userId: string;

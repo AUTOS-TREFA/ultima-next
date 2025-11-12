@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import LandingPageService, { type LandingPageWithComponents } from '../services/LandingPageService';
 import { generateSEOFromSections } from '../utils/seoGenerator';
 import type {
@@ -77,9 +77,11 @@ const renderSection = (
   }
 };
 
-const DynamicLandingPage: React.FC = () => {
-  const params = useParams<{ slug: string }>();
-    const slug = params?.slug;
+interface DynamicLandingPageProps {
+  slug: string;
+}
+
+const DynamicLandingPage: React.FC<DynamicLandingPageProps> = ({ slug }) => {
   const router = useRouter();
   const [page, setPage] = useState<LandingPageWithComponents | null>(null);
   const [loading, setLoading] = useState(true);

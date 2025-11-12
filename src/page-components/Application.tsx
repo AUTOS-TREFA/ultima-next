@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, Suspense, lazy, useCallback } from
 import { useForm, Controller, useController, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRouter, useSearchParams, useParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { useVehicles } from '../context/VehicleContext';
@@ -76,14 +76,15 @@ const baseApplicationSchema = baseApplicationObject;
 
 type ApplicationFormData = z.infer<typeof baseApplicationSchema>;
 
-const Application: React.FC = () => {
+interface ApplicationProps {
+    id?: string;
+}
+
+const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) => {
     const router = useRouter();
     const { user, profile, loading: authLoading } = useAuth();
     const { vehicles } = useVehicles();
     const searchParams = useSearchParams();
-    const params = useParams<{ id: string }>();
-    const vehicleId = params?.id;
-    const applicationIdFromUrl = params?.id;
     
     const [pageStatus, setPageStatus] = useState<'initializing' | 'loading' | 'checking_profile' | 'profile_incomplete' | 'bank_profile_incomplete' | 'active_application_exists' | 'ready' | 'error' | 'success'>('initializing');
     const [pageError, setPageError] = useState<string | null>(null);

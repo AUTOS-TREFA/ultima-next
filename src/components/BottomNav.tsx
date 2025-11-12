@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import {
     HomeIcon,
     SellCarIcon,
@@ -40,12 +41,12 @@ const BottomNav: React.FC = () => {
     const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
-    const navigate = useNavigate();
-    const location = useLocation();
+    const router = useRouter();
+    const pathname = usePathname();
     const isListPage = useMemo(() => {
         const listPageRegex = /^\/(autos|marcas\/[^\/]+|carroceria\/[^\/]+)$/;
-        return listPageRegex.test(location.pathname);
-    }, [location.pathname]);
+        return listPageRegex.test(pathname);
+    }, [pathname]);
 
 
     useEffect(() => {
@@ -100,14 +101,14 @@ const BottomNav: React.FC = () => {
         setIsMenuOpen(false);
         if (isSignOut) {
             signOut();
-            navigate('/');
+            router.push('/');
             return;
         }
         if (authRequired && !session) {
             localStorage.setItem('loginRedirect', to);
-            navigate('/acceder');
+            router.push('/acceder');
         } else {
-            navigate(to);
+            router.push(to);
         }
     };
 
@@ -121,16 +122,18 @@ const BottomNav: React.FC = () => {
 
     const accountLink = session ? '/escritorio' : '/acceder';
 
-    const NavItem: React.FC<{ to: string; icon: React.FC<any>; label: string; end?: boolean }> = ({ to, icon: Icon, label, end = false }) => (
-        <NavLink
-            to={to}
-            end={end}
-            className={({ isActive }) => `${baseLinkClass} ${isActive ? activeLinkClass : inactiveLinkClass}`}
-        >
-            <Icon className="w-6 h-6" />
-            <span className="text-xs font-medium">{label}</span>
-        </NavLink>
-    );
+    const NavItem: React.FC<{ to: string; icon: React.FC<any>; label: string; end?: boolean }> = ({ to, icon: Icon, label, end = false }) => {
+        const isActive = end ? pathname === to : pathname.startsWith(to);
+        return (
+            <Link
+                href={to}
+                className={`${baseLinkClass} ${isActive ? activeLinkClass : inactiveLinkClass}`}
+            >
+                <Icon className="w-6 h-6" />
+                <span className="text-xs font-medium">{label}</span>
+            </Link>
+        );
+    };
 
     const visibleMenuLinks = menuLinks.filter(link => !link.authRequired || session);
 

@@ -1,16 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
 import { ProfileService } from '../services/profileService';
 import type { Profile } from '../types/types';
 import { Mail, Phone, MapPin } from 'lucide-react';
 
-const AsesorProfilePage: React.FC = () => {
-    const params = useParams<{ id: string }>();
-    const vehicleId = params?.id;
-    const applicationIdFromUrl = params?.id;
-    const id = params?.id;
+interface AsesorProfilePageProps {
+    id: string;
+}
+
+const AsesorProfilePage: React.FC<AsesorProfilePageProps> = ({ id }) => {
 const [asesor, setAsesor] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

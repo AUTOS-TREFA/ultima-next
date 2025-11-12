@@ -3,7 +3,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import type { Vehicle } from '../types/types';
 import { HeartIcon, TagIcon, ShieldCheckIcon, FuelIcon, GaugeIcon, CogIcon } from './icons';
 import ImageCarousel from './ImageCarousel'; // Import the new ImageCarousel
@@ -136,7 +136,7 @@ const VehicleGridCard: React.FC<VehicleGridCardProps> = ({ vehicle }) => {
         </div>
 
         {hasSlug && (
-          <Link to={`/autos/${vehicle.slug}`} data-gtm-id="card-grid-view-details" className="absolute inset-0 z-10">
+          <Link href={`/autos/${vehicle.slug}`} data-gtm-id="card-grid-view-details" className="absolute inset-0 z-10">
             <span className="sr-only">Ver detalles de {vehicle.title}</span>
           </Link>
         )}

@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { FacebookIcon, InstagramIcon, LinkedInIcon, GoogleIcon } from './icons';
 import { useAuth } from '../context/AuthContext';
 
@@ -15,7 +16,7 @@ const Footer: React.FC = () => {
     ];
 
     const { session } = useAuth();
-    const navigate = useNavigate();
+    const router = useRouter();
 
     // Get app version from git commit hash
     const appVersion = process.env.NEXT_PUBLIC_GIT_COMMIT || process.env.NEXT_PUBLIC_APP_VERSION || 'dev';
@@ -24,14 +25,14 @@ const Footer: React.FC = () => {
         if (authRequired && !session) {
             e.preventDefault();
             localStorage.setItem('loginRedirect', to);
-            navigate('/acceder');
+            router.push('/acceder');
         }
     };
 
     const LinkItem: React.FC<{ to: string; children: React.ReactNode; authRequired?: boolean }> = ({ to, children, authRequired = false }) => (
         <li>
-            <Link 
-                to={to} 
+            <Link
+                href={to}
                 className="text-base text-gray-400 hover:text-white transition-colors"
                 onClick={(e) => handleLinkClick(e, to, authRequired)}
             >
@@ -46,11 +47,11 @@ const Footer: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* Logo and mission */}
                     <div className="space-y-4">
-                        <Link to="/" aria-label="Volver a la página de inicio">
-                            <img 
-                                src="/images/logoblanco.png" 
-                                alt="TREFA Logo" 
-                                className="h-20 lg:h-24 w-auto" 
+                        <Link href="/" aria-label="Volver a la página de inicio">
+                            <img
+                                src="/images/logoblanco.png"
+                                alt="TREFA Logo"
+                                className="h-20 lg:h-24 w-auto"
                                 loading="lazy"
                                 decoding="async"
                             />
@@ -110,7 +111,7 @@ const Footer: React.FC = () => {
                     <p className="text-sm text-gray-400">&copy; {new Date().getFullYear()} Grupo TREFA </p>
                     <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 pt-2 sm:pt-0">
                         <span className="text-sm text-gray-500">Versión: {appVersion}</span>
-                        <Link to="/beta-v.0.1" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-white"> Danos tu opinión </Link>
+                        <Link href="/beta-v.0.1" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-white"> Danos tu opinión </Link>
                     </div>
                     <div className="flex items-right space-x-6 mt-4 sm:mt-0">
                         {socialLinks.map((item) => (

@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import {
     LayoutDashboard,
@@ -16,6 +17,7 @@ import {
 
 const TopMenu: React.FC = () => {
     const { isAdmin, isSales, signOut } = useAuth();
+    const pathname = usePathname();
 
     const handleSignOut = async () => {
         await signOut();
@@ -50,26 +52,27 @@ const TopMenu: React.FC = () => {
                 <div className="flex items-center justify-between h-14">
                     {/* Navigation Items */}
                     <nav className="flex items-center gap-1">
-                        {menuItems.map((item, index) => (
-                            <React.Fragment key={item.to}>
-                                <NavLink
-                                    to={item.to}
-                                    className={({ isActive }) =>
-                                        `flex items-center px-4 py-2 rounded-md text-sm font-semibold transition-all ${
+                        {menuItems.map((item, index) => {
+                            const isActive = pathname.startsWith(item.to);
+                            return (
+                                <React.Fragment key={item.to}>
+                                    <Link
+                                        href={item.to}
+                                        className={`flex items-center px-4 py-2 rounded-md text-sm font-semibold transition-all ${
                                             isActive
                                                 ? 'bg-white/20 text-white shadow-sm backdrop-blur-sm'
                                                 : 'text-white/90 hover:bg-white/10 hover:text-white hover:shadow-sm'
-                                        }`
-                                    }
-                                >
-                                    <item.icon className="w-4 h-4 mr-2" />
-                                    <span className="drop-shadow-sm">{item.label}</span>
-                                </NavLink>
-                                {index < menuItems.length - 1 && (
-                                    <div className="h-6 w-px bg-white/20 mx-1" />
-                                )}
-                            </React.Fragment>
-                        ))}
+                                        }`}
+                                    >
+                                        <item.icon className="w-4 h-4 mr-2" />
+                                        <span className="drop-shadow-sm">{item.label}</span>
+                                    </Link>
+                                    {index < menuItems.length - 1 && (
+                                        <div className="h-6 w-px bg-white/20 mx-1" />
+                                    )}
+                                </React.Fragment>
+                            );
+                        })}
                     </nav>
 
                     {/* Logout Button */}

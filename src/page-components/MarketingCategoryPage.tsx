@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useVehicles } from '../context/VehicleContext';
 import { useFilters } from '../context/FilterContext';
@@ -10,10 +9,12 @@ import { Loader2, AlertTriangle, Car } from 'lucide-react';
 
 import { getCategoryImage } from '../utils/categoryImages';
 
-const MarketingCategoryPage: React.FC = () => {
-    const params = useParams<{ marca?: string; carroceria?: string }>();
-    const marca = params?.marca;
-    const carroceria = params?.carroceria;
+interface MarketingCategoryPageProps {
+    marca?: string;
+    carroceria?: string;
+}
+
+const MarketingCategoryPage: React.FC<MarketingCategoryPageProps> = ({ marca, carroceria }) => {
     const { vehicles: allVehicles, isLoading } = useVehicles();
     const [error] = useState<string | null>(null);
 

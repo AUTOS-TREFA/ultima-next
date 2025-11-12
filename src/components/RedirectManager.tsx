@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useRouter, usePathname } from 'next/navigation';
 import { getRedirects, Redirect } from '../services/RedirectService';
 
 const RedirectManager: React.FC = () => {
   const [redirects, setRedirects] = useState<Redirect[]>([]);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const pathname = usePathname();
+  const router = useRouter();
   const [isReady, setIsReady] = useState(false);
 
   const fetchRedirects = useCallback(async () => {
@@ -30,22 +30,22 @@ const RedirectManager: React.FC = () => {
       // Create a dummy URL to easily parse the pathname
       const targetPath = new URL(`http://localhost${pathFrom404}`).pathname;
       const redirect = redirects.find(r => r.from === targetPath);
-      
+
       if (redirect) {
-        navigate(redirect.to, { replace: true });
+        router.replace(redirect.to);
         return; // Redirect handled
       }
-      
+
       // If no specific redirect rule, navigate to the path so the router can show a 404
-      navigate(targetPath, { replace: true });
+      router.replace(targetPath);
       return;
     }
-    
+
     // Regular client-side redirect check for internal navigation
-    const currentPath = location.pathname.endsWith('/') && location.pathname.length > 1 
-      ? location.pathname.slice(0, -1) 
-      : location.pathname;
-      
+    const currentPath = pathname?.endsWith('/') && pathname.length > 1
+      ? pathname.slice(0, -1)
+      : pathname;
+
     // *** FIX: Do not attempt to redirect if we are already at the root path ***
     if (currentPath === '/') {
       return;
@@ -53,10 +53,10 @@ const RedirectManager: React.FC = () => {
 
     const redirect = redirects.find(r => r.from === currentPath);
     if (redirect) {
-      navigate(redirect.to, { replace: true });
+      router.replace(redirect.to);
     }
-    
-  }, [location, redirects, navigate, isReady]);
+
+  }, [pathname, redirects, router, isReady]);
 
   return null;
 };

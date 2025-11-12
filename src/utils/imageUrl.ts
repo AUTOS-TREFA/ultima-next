@@ -7,7 +7,7 @@
  * - Fallback to direct Supabase URLs
  */
 
-const SUPABASE_STORAGE_BASE = 'https://jjepfehmuybpctdzipnu.supabase.co/storage/v1/object/public';
+const SUPABASE_STORAGE_BASE = 'https://ioewyambpjlqnsbzvbvd.supabase.co/storage/v1/object/public';
 const IMAGE_CDN_URL = process.env.NEXT_PUBLIC_IMAGE_CDN_URL || '';
 const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || '';
 

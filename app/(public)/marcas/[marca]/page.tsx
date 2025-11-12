@@ -10,5 +10,5 @@ interface PageProps {
 }
 
 export default function Page({ params, searchParams }: PageProps) {
-  return <MarketingCategoryPage />;
+  return <MarketingCategoryPage marca={params.marca} />;
 }
