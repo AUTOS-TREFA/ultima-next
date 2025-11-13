@@ -23,7 +23,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ crumbs }) => {
                             {index > 0 && (
                                 <ChevronRightIcon className="h-4 w-4 text-gray-400 flex-shrink-0 mx-2" />
                             )}
-                            {crumb.href ? (
+                            {crumb.href && crumb.href.trim() !== '' ? (
                                 <Link href={crumb.href} className="text-gray-500 hover:text-gray-700 font-medium">
                                     {crumb.name}
                                 </Link>

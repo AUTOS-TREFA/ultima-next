@@ -560,7 +560,7 @@ const TabsSection: React.FC<{
                     <tab.icon className="w-4 h-4" /> {tab.label}
                 </button>
             ))}
-            {isAdmin && <Link href={`/escritorio/admin/inspections/${vehicleId}`} className="ml-auto px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-md flex items-center gap-2"><EditIcon className="w-4 h-4"/> Editar</Link>}
+            {isAdmin && vehicleId && <Link href={`/escritorio/admin/inspections/${vehicleId}`} className="ml-auto px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-md flex items-center gap-2"><EditIcon className="w-4 h-4"/> Editar</Link>}
         </div>
 
         <div className="mt-6">
@@ -812,7 +812,7 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
 
         <nav className="no-print flex items-center justify-between bg-gray-100 p-1.5 sm:p-2 rounded-lg sm:rounded-xl mb-4 sm:mb-8 border border-gray-200">
           {/* Previous Vehicle */}
-          {prevVehicle ? (() => {
+          {prevVehicle && prevVehicle.slug ? (() => {
             const prevImage = getVehicleImage(prevVehicle);
             return (
               <Link href={`/autos/${prevVehicle.slug}`} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-white/60 transition-colors">
@@ -829,7 +829,7 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
           {prevVehicle && nextVehicle && <div className="h-12 border-r border-gray-200 mx-2 hidden sm:block"></div>}
 
           {/* Next Vehicle */}
-          {nextVehicle ? (() => {
+          {nextVehicle && nextVehicle.slug ? (() => {
             const nextImage = getVehicleImage(nextVehicle);
             return (
               <Link href={`/autos/${nextVehicle.slug}`} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-white/60 transition-colors">
