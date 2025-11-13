@@ -14,21 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <head>
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            body { opacity: 0; }
-            body.loaded { opacity: 1; transition: opacity 0.3s ease-in; }
-          `
-        }} />
-      </head>
       <body>
         <RootClientLayout>
           {children}
         </RootClientLayout>
-        <script dangerouslySetInnerHTML={{
-          __html: `document.body.classList.add('loaded');`
-        }} />
       </body>
     </html>
   );
