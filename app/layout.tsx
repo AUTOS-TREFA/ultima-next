@@ -1,63 +1,34 @@
-'use client';
-
-import { Toaster } from 'sonner';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from '@/context/AuthContext';
-import { FilterProvider } from '@/context/FilterContext';
-import { ConfigProvider } from '@/context/ConfigContext';
-import ErrorBoundary from '@/components/ErrorBoundary';
-import AuthHandler from '@/components/AuthHandler';
-import RedirectManager from '@/components/RedirectManager';
-import LeadSourceHandler from '@/components/LeadSourceHandler';
-import { conversionTracking } from '@/services/ConversionTrackingService';
+import { Metadata } from 'next';
+import RootClientLayout from './RootClientLayout';
 import '../index.css';
-import { useEffect } from 'react';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 2,
-      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 30000),
-      refetchOnWindowFocus: true,
-      staleTime: 5 * 60 * 1000,
-      gcTime: 10 * 60 * 1000,
-      networkMode: 'online',
-    },
-  },
-});
+export const metadata: Metadata = {
+  title: 'TREFA - Financiamiento Automotriz',
+  description: 'Compra el auto de tus sueños con el mejor financiamiento en México',
+};
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Initialize conversion tracking on mount
-  useEffect(() => {
-    conversionTracking.initialize();
-  }, []);
-
   return (
     <html lang="es">
       <head>
-        <title>TREFA - Financiamiento Automotriz</title>
-        <meta name="description" content="Compra el auto de tus sueños con el mejor financiamiento en México" />
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            body { opacity: 0; }
+            body.loaded { opacity: 1; transition: opacity 0.3s ease-in; }
+          `
+        }} />
       </head>
       <body>
-        <ErrorBoundary>
-          <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-              <FilterProvider>
-                <ConfigProvider>
-                  <Toaster position="top-right" richColors closeButton />
-                  <AuthHandler />
-                  <RedirectManager />
-                  <LeadSourceHandler />
-                  {children}
-                </ConfigProvider>
-              </FilterProvider>
-            </AuthProvider>
-          </QueryClientProvider>
-        </ErrorBoundary>
+        <RootClientLayout>
+          {children}
+        </RootClientLayout>
+        <script dangerouslySetInnerHTML={{
+          __html: `document.body.classList.add('loaded');`
+        }} />
       </body>
     </html>
   );
