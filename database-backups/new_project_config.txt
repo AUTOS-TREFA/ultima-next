@@ -1,0 +1,11 @@
+# New Supabase Project Configuration
+# Generated: Wed Nov 12 18:04:18 CST 2025
+
+NEW_PROJECT_REF=pemgwyymodlwabaexxrb
+NEW_PROJECT_URL=https://pemgwyymodlwabaexxrb.supabase.co
+
+# Next steps:
+# 1. Get your API keys from: https://supabase.com/dashboard/project/pemgwyymodlwabaexxrb/settings/api
+# 2. Run: ./scripts/update-env-with-new-project.sh
+# 3. Test: npm run dev
+
