@@ -20,7 +20,7 @@ STAGING_DOMAIN="${STAGING_DOMAIN:-}"  # e.g., "https://staging.trefa.mx"
 SERVICE_NAME="next-js-trefa"  # Single Cloud Run service name
 if [ "$ENVIRONMENT" = "production" ]; then
     IMAGE_TAG="production"
-    FRONTEND_URL_OVERRIDE="https://trefa.mx"
+    FRONTEND_URL_OVERRIDE="https://autostrefa.mx"
 else
     IMAGE_TAG="staging"
     FRONTEND_URL_OVERRIDE="$STAGING_DOMAIN"  # Use custom staging domain if set
@@ -259,7 +259,7 @@ if [ "$ENVIRONMENT" = "staging" ]; then
     # We'll set this after deployment when we get the URL
     FRONTEND_URL_OVERRIDE=""
 else
-    FRONTEND_URL_OVERRIDE="https://trefa.mx"
+    FRONTEND_URL_OVERRIDE="https://autostrefa.mx"
 fi
 
 # Add all environment variables
@@ -379,16 +379,16 @@ if [ $? -eq 0 ]; then
         echo "Verify the deployment:"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo "1. Health check:"
-        echo "   curl https://trefa.mx/healthz"
+        echo "   curl https://autostrefa.mx/healthz"
         echo ""
         echo "2. Visit main site:"
-        echo "   ${GREEN}https://trefa.mx${NC}"
+        echo "   ${GREEN}https://autostrefa.mx${NC}"
         echo ""
         echo "3. Test Explorar page on mobile:"
-        echo "   ${GREEN}https://trefa.mx/explorar${NC}"
+        echo "   ${GREEN}https://autostrefa.mx/explorar${NC}"
         echo ""
         echo "4. Test Application flow:"
-        echo "   ${GREEN}https://trefa.mx/escritorio/aplicacion${NC}"
+        echo "   ${GREEN}https://autostrefa.mx/escritorio/aplicacion${NC}"
         echo ""
         echo "5. Monitor logs:"
         echo "   gcloud run logs tail $SERVICE_NAME --region=$REGION"

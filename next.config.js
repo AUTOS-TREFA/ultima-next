@@ -6,7 +6,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'wmtlzfodmrchgqdbxjln.supabase.co',
+        hostname: 'pemgwyymodlwabaexxrb.supabase.co',
       },
       {
         protocol: 'https',
@@ -18,15 +18,15 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'trefa.mx',
+        hostname: 'autostrefa.mx',
       },
       {
         protocol: 'https',
-        hostname: 'www.trefa.mx',
+        hostname: 'www.autostrefa.mx',
       },
       {
         protocol: 'https',
-        hostname: 'autos.trefa.mx',
+        hostname: 'autos.autostrefa.mx',
       },
       {
         protocol: 'https',
