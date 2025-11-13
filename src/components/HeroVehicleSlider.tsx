@@ -15,9 +15,9 @@ const HeroVehicleCard: React.FC<{ vehicle: WordPressVehicle }> = ({ vehicle }) =
         <div className="relative h-full">
             <div className="h-full bg-white rounded-xl shadow-md overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col">
                 <div className="relative aspect-[4/3] bg-gray-200">
-                    <img 
-                        src={imageSrc} 
-                        alt={vehicle.titulo} 
+                    <img
+                        src={imageSrc}
+                        alt={vehicle.titulo}
                         className={`w-full h-full object-cover transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                         loading="lazy"
                         onLoad={() => setIsLoaded(true)}
@@ -33,9 +33,11 @@ const HeroVehicleCard: React.FC<{ vehicle: WordPressVehicle }> = ({ vehicle }) =
                     <p className="text-gray-900 font-semibold text-base mt-1">{formatPrice(vehicle.precio)}</p>
                 </div>
             </div>
-            <Link href={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10">
-                <span className="sr-only">Ver detalles de {vehicle.titulo}</span>
-            </Link>
+            {vehicle.slug && vehicle.slug.trim() !== '' && (
+                <Link href={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10">
+                    <span className="sr-only">Ver detalles de {vehicle.titulo}</span>
+                </Link>
+            )}
         </div>
     );
 };

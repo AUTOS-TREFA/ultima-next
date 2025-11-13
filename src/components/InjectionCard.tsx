@@ -4,7 +4,7 @@ import Link from 'next/link';
 const FinanciamientoCard = () => {
   return (
     <Link
-      to="/acceder"
+      href="/acceder"
       className="block w-full h-full relative rounded-2xl overflow-hidden transition-transform duration-200 hover:scale-[1.02] no-underline"
     >
       <img

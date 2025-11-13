@@ -62,11 +62,25 @@ export async function middleware(req: NextRequest) {
     }
 
     // Get user profile for role checking
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
       .select('role')
       .eq('id', session.user.id)
       .single();
+
+    // If profile doesn't exist, create a default one
+    if (profileError || !profile) {
+      console.log('No user profile found, creating default profile for user:', session.user.id);
+      await supabase
+        .from('user_profiles')
+        .insert({
+          id: session.user.id,
+          email: session.user.email,
+          role: 'user',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+    }
 
     const userRole = profile?.role || 'user';
 

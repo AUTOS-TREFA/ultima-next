@@ -85,11 +85,13 @@ const HeroVehicleCard: React.FC<HeroVehicleCardProps> = ({ vehicle }) => {
 
             </div>
 
-            <Link href={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10" aria-label={`Ver detalles de ${vehicle.titulo}`}>
+            {vehicle.slug && vehicle.slug.trim() !== '' && (
+                <Link href={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10" aria-label={`Ver detalles de ${vehicle.titulo}`}>
 
-                <span className="sr-only">Ver detalles de ${vehicle.titulo}</span>
+                    <span className="sr-only">Ver detalles de ${vehicle.titulo}</span>
 
-            </Link>
+                </Link>
+            )}
 
         </div>
 
