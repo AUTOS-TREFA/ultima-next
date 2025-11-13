@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { BusinessAnalyticsService, BusinessMetrics } from '../services/BusinessAnalyticsService';
 import { BrevoEmailService } from '../services/BrevoEmailService';
@@ -21,7 +23,7 @@ const COLORS = ['#f97316', '#ea580c', '#c2410c', '#9a3412', '#7c2d12', '#431407'
 
 export default function AdminBusinessAnalyticsDashboard() {
     const { user, profile } = useAuth();
-    const navigate = useNavigate();
+    const router = useRouter();
     const [metrics, setMetrics] = useState<BusinessMetrics | null>(null);
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
