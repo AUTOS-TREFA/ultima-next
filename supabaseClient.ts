@@ -5,8 +5,8 @@ import { createClient } from '@supabase/supabase-js';
 // For example:
 // NEXT_PUBLIC_SUPABASE_URL="https://wmtlzfodmrchgqdbxjln.supabase.co"
 // ...
-const FALLBACK_URL = 'https://wmtlzfodmrchgqdbxjln.supabase.co';
-const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtdGx6Zm9kbXJjaGdxZGJ4amxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NTk4MjgsImV4cCI6MjA3ODUzNTgyOH0.xyEVB9ra_TKkcRY1MxGEMv5emsf8xLNKh_qCIu0bPBY';
+const FALLBACK_URL = 'https://pemgwyymodlwabaexxrb.supabase.co';
+const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlbWd3eXltb2Rsd2FiYWV4eHJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEwNDY3MjQsImV4cCI6MjA0NjYyMjcyNH0.2SLPuO-YvNPfcgfBRvKVwgW4eBBUi4OvHd_J3_fwgCQ';
 
 // Next.js environment variables - supports both NEXT_PUBLIC_ and VITE_ prefixes
 const envUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
