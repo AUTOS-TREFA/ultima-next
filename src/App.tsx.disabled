@@ -49,6 +49,7 @@ const AdminAirtableConfigPage = lazy(() => import('./pages/AdminAirtableConfigPa
 const AdminValuationPage = lazy(() => import('./pages/AdminValuationPage'));
 const SalesLeadsDashboardPage = lazy(() => import('./pages/SalesLeadsDashboardPage'));
 const SalesClientProfilePage = lazy(() => import('./pages/SalesClientProfilePage'));
+const SalesPerformanceDashboard = lazy(() => import('./pages/SalesPerformanceDashboard'));
 const VacanciesListPage = lazy(() => import('./pages/VacanciesListPage'));
 const VacancyDetailPage = lazy(() => import('./pages/VacancyDetailPage'));
 const AdminVacanciesPage = lazy(() => import('./pages/AdminVacanciesPage'));
@@ -72,11 +73,14 @@ const DynamicLandingPage = lazy(() => import('./pages/DynamicLandingPage'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const FinanciamientosPage = lazy(() => import('./pages/FinanciamientosPage'));
 const AdminUserManagementPage = lazy(() => import('./pages/AdminUserManagementPage'));
+const ApplicationAnalyticsPage = lazy(() => import('./pages/ApplicationAnalyticsPage'));
 const MarketingConfigPage = lazy(() => import('./pages/MarketingConfigPage'));
 const AdminSalesDashboard = lazy(() => import('./pages/AdminSalesDashboard'));
 const AdminLogsPage = lazy(() => import('./pages/AdminLogsPage'));
+const AdminBusinessAnalyticsDashboard = lazy(() => import('./pages/AdminBusinessAnalyticsDashboard'));
 
 import ConfigService from './services/ConfigService';
+import PageViewTracker from './components/PageViewTracker';
 
 function App(): React.JSX.Element {
   useEffect(() => {
@@ -92,6 +96,7 @@ function App(): React.JSX.Element {
   return (
     <>
       <Toaster position="top-right" richColors closeButton />
+      <PageViewTracker />
       <LeadSourceHandler />
       <AuthHandler />
       <RedirectManager />
@@ -160,6 +165,7 @@ function App(): React.JSX.Element {
                 {/* Admin-only routes nested under protected dashboard */}
                 <Route element={<AdminRoute />}>
                   <Route path="admin/dashboard" element={<AdminSalesDashboard />} />
+                  <Route path="admin/business-analytics" element={<AdminBusinessAnalyticsDashboard />} />
                   <Route path="admin/crm" element={<SimpleCRMPage />} />
                   <Route path="admin/leads" element={<AdminLeadsDashboardPage />} />
                   <Route path="admin/client/:id" element={<AdminClientProfilePage />} />
@@ -173,6 +179,7 @@ function App(): React.JSX.Element {
                   <Route path="admin/vacantes" element={<AdminVacanciesPage />} />
                   <Route path="admin/vacantes/:id/candidatos" element={<AdminCandidatesPage />} />
                   <Route path="admin/usuarios" element={<AdminUserManagementPage />} />
+                  <Route path="admin/solicitudes" element={<ApplicationAnalyticsPage />} />
                   <Route path="admin/logs" element={<AdminLogsPage />} />
                   <Route path="admin/config" element={<AdminConfigPage />} />
                   <Route path="admin/marketing" element={<MarketingHubPage />} />
@@ -187,6 +194,7 @@ function App(): React.JSX.Element {
                 {/* Sales routes - accessible by sales and admin roles */}
                 <Route element={<SalesRoute />}>
                   <Route path="ventas/dashboard" element={<AdminSalesDashboard />} />
+                  <Route path="ventas/performance" element={<SalesPerformanceDashboard />} />
                   <Route path="ventas/crm" element={<SimpleCRMPage />} />
                   <Route path="ventas/leads" element={<SalesLeadsDashboardPage />} />
                   <Route path="ventas/cliente/:id" element={<AdminClientProfilePage />} />

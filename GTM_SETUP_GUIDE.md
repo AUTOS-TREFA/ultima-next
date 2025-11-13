@@ -1,130 +1,144 @@
-# Google Tag Manager Setup Guide for ConversionLandingPage Event
+# Google Tag Manager Setup Guide for TREFA
 
-## Overview
-The Financiamientos landing page now fires a custom `ConversionLandingPage` event when users submit the registration form. This guide shows you how to set up tracking in Google Tag Manager.
+This guide will help you configure Google Tag Manager (GTM) to capture all conversion events from your app.
 
-## Event Details
-**Event Name:** `ConversionLandingPage`
+## 📊 Events Being Tracked
 
-**Data Layer Variables Available:**
-- `event`: "ConversionLandingPage"
-- `formType`: "financing_request"
-- `monthlyIncome`: User's selected monthly income
-- `source`: Lead source attribution (e.g., "financiamientos-facebook", "financiamientos-google-cpc-spring-campaign")
-- `email`: User's email address
-- `phone`: User's phone number
+Your app now automatically tracks these events:
 
-## Setup Instructions
+1. **PageView** - Every page/route change
+2. **ConversionLandingPage** - User registration on /financiamientos  
+3. **PersonalInformationComplete** - User profile completion
+4. **LeadComplete** - Application submission
+5. **InitialRegistration** - User authentication (OTP/Google)
 
-### Step 1: Create Custom Event Trigger
+## 🔧 GTM Container ID
 
-1. Go to **Google Tag Manager** → **Triggers** → **New**
-2. Click on **Trigger Configuration**
-3. Select **Custom Event**
-4. Configure:
-   - **Event name:** `ConversionLandingPage`
-   - **This trigger fires on:** All Custom Events
-5. **Save** the trigger as "ConversionLandingPage - Form Submission"
+Your GTM Container ID: **GTM-KDVDMB4X**
 
-### Step 2: Create Data Layer Variables (Optional but Recommended)
+## 📝 Step-by-Step Setup in GTM
 
-Create variables to capture the event data:
+### 1. Create Custom Events (Triggers)
 
-1. Go to **Variables** → **User-Defined Variables** → **New**
-2. Choose **Data Layer Variable**
-3. Create the following variables:
+For each event, create a Custom Event trigger in GTM:
 
-| Variable Name | Data Layer Variable Name |
-|--------------|-------------------------|
-| DLV - Form Type | formType |
-| DLV - Monthly Income | monthlyIncome |
-| DLV - Lead Source | source |
-| DLV - User Email | email |
-| DLV - User Phone | phone |
+#### PageView Event Trigger
+```
+Trigger Type: Custom Event
+Event name: page_view
+This trigger fires on: All Custom Events
+```
 
-### Step 3: Create Google Analytics 4 Event Tag
+#### ConversionLandingPage Event Trigger
+```
+Trigger Type: Custom Event  
+Event name: conversion_landing_page
+This trigger fires on: All Custom Events
+```
 
-1. Go to **Tags** → **New**
-2. Click on **Tag Configuration**
-3. Select **Google Analytics: GA4 Event**
-4. Configure:
-   - **Configuration Tag:** Select your GA4 Configuration tag
-   - **Event Name:** `conversion_landing_page`
-   - **Event Parameters:** (Add these)
-     - `form_type`: {{DLV - Form Type}}
-     - `monthly_income`: {{DLV - Monthly Income}}
-     - `lead_source`: {{DLV - Lead Source}}
-     - `user_email`: {{DLV - User Email}}
-     - `user_phone`: {{DLV - User Phone}}
-5. **Triggering:** Select "ConversionLandingPage - Form Submission"
-6. **Save** the tag
+#### PersonalInformationComplete Event Trigger
+```
+Trigger Type: Custom Event
+Event name: personal_information_complete
+This trigger fires on: All Custom Events
+```
 
-### Step 4: Create Google Ads Conversion Tag (If Applicable)
+#### LeadComplete Event Trigger
+```
+Trigger Type: Custom Event
+Event name: lead_complete
+This trigger fires on: All Custom Events
+```
 
-1. Go to **Tags** → **New**
-2. Select **Google Ads Conversion Tracking**
-3. Configure:
-   - **Conversion ID:** Your Google Ads Conversion ID
-   - **Conversion Label:** Your Conversion Label
-   - **Conversion Value:** {{DLV - Monthly Income}} (optional)
-4. **Triggering:** Select "ConversionLandingPage - Form Submission"
-5. **Save** the tag
+### 2. Create Data Layer Variables
 
-### Step 5: Test in Preview Mode
+In GTM, create these Data Layer Variables to access event metadata:
 
-1. Click **Preview** in GTM
-2. Navigate to your Financiamientos page
-3. Fill out and submit the form
-4. In GTM Preview:
-   - Verify the `ConversionLandingPage` event fires
-   - Check that all data layer variables populate correctly
-   - Confirm your tags fire on this trigger
+- **eventType**: Data Layer Variable = `eventType`
+- **page**: Data Layer Variable = `page`
+- **utm_source**: Data Layer Variable = `utm_source`
+- **utm_medium**: Data Layer Variable = `utm_medium`
+- **utm_campaign**: Data Layer Variable = `utm_campaign`
+- **value**: Data Layer Variable = `value`
+- **currency**: Data Layer Variable = `currency`
 
-### Step 6: Publish
+### 3. Create GA4 Event Tags (if using Google Analytics 4)
 
-1. Click **Submit** in GTM
-2. Add a **Version Name:** "Add ConversionLandingPage tracking"
-3. Add a **Version Description:** "Track form submissions on Financiamientos landing page"
-4. Click **Publish**
+For each trigger, create a GA4 Event tag. Example:
 
-## Facebook Pixel Setup
+#### ConversionLandingPage GA4 Event
+```
+Tag Type: Google Analytics: GA4 Event
+Configuration Tag: [Your GA4 Configuration Tag]
+Event Name: conversion_landing_page
 
-**No additional setup required!**
+Event Parameters:
+- page: {{page}}
+- event_type: {{eventType}}
+- utm_source: {{utm_source}}
+- utm_medium: {{utm_medium}}
+- utm_campaign: {{utm_campaign}}
 
-The Facebook Pixel events are already configured and firing automatically:
-- **InitiateCheckout:** Fires when form is submitted
-- **Lead:** Fires when OTP is verified and account is created
+Triggering: ConversionLandingPage Custom Event
+```
 
-Both events include the `source` parameter for attribution tracking.
+## 🎯 Example dataLayer Events
 
-## Lead Source Attribution
+### PageView
+```javascript
+dataLayer.push({
+  event: 'page_view',
+  eventName: 'PageView',
+  eventType: 'PageView',
+  page: '/financiamientos',
+  url: 'https://trefa.mx/financiamientos',
+  utm_source: 'google',
+  utm_medium: 'cpc',
+  timestamp: '2025-11-12T10:30:00.000Z'
+});
+```
 
-The system automatically determines the lead source from:
+### ConversionLandingPage
+```javascript
+dataLayer.push({
+  event: 'conversion_landing_page',
+  eventName: 'Conversion Landing Page',
+  eventType: 'ConversionLandingPage',
+  page: '/financiamientos',
+  status: 'completed',
+  utm_source: 'google',
+  timestamp: '2025-11-12T10:30:00.000Z'
+});
+```
 
-1. **UTM Parameters:** `utm_source`, `utm_medium`, `utm_campaign`
-   - Example: `financiamientos-google-cpc-spring-campaign`
+## 🔍 Testing & Debugging
 
-2. **Ad Platform Click IDs:**
-   - `fbclid` → `financiamientos-facebook`
-   - `gclid` → `financiamientos-google`
+### Test in GTM Preview Mode:
+1. In GTM, click **Preview**
+2. Enter: https://trefa.mx
+3. Navigate and trigger events
+4. Verify events fire in GTM Preview window
 
-3. **Custom Source Parameter:** `?source=instagram`
-   - Example: `financiamientos-instagram`
+### Check Browser Console:
+Open DevTools (F12) → Console, look for:
+- ✅ GTM Event: [event name]
+- ✅ Facebook Pixel Event: [event type]
+- ✅ Saved to tracking_events
 
-4. **Referrer Domain:** If no other parameters present
-   - Example: `financiamientos-referrer-instagram.com`
+### View All dataLayer Events:
+```javascript
+console.log(window.dataLayer);
+```
 
-5. **Default:** `financiamientos-landing-direct` (for direct traffic)
+## 📊 View Data in Dashboard
 
-## Verification
+Visit: https://trefa.mx/escritorio/admin/marketing-analytics
 
-After setup, you can verify tracking is working by:
+The "Embudo" tab will show:
+1. Visitas Landing - PageView to /financiamientos
+2. Registro - ConversionLandingPage events
+3. Perfil Completo - PersonalInformationComplete  
+4. Aplicación Iniciada - Application page views
+5. Solicitud Enviada - LeadComplete events
 
-1. Checking **Real-Time** reports in Google Analytics
-2. Viewing the **ConversionLandingPage** event in GA4 DebugView
-3. Confirming conversions appear in Google Ads (if applicable)
-4. Checking Facebook Events Manager for pixel events
-
-## Support
-
-If you need help with GTM setup, consult the [Google Tag Manager documentation](https://support.google.com/tagmanager) or contact your analytics team.
+All events are automatically saved to Supabase `tracking_events` table!

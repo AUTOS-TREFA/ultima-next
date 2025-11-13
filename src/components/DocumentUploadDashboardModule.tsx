@@ -23,7 +23,8 @@ const DocumentUploadDashboardModule: React.FC<DocumentUploadDashboardModuleProps
     { type: 'ine_front', label: 'INE (Frente)', allowCameraScan: true },
     { type: 'ine_back', label: 'INE (Reverso)', allowCameraScan: true },
     { type: 'proof_address', label: 'Comprobante de Domicilio', allowCameraScan: false },
-    { type: 'proof_income', label: 'Comprobante de Ingresos', description: 'Sube tus 3 estados de cuenta o recibos de nómina más recientes (3 archivos PDF distintos). También puedes subir un solo archivo .ZIP con todos los documentos. Máximo 12 archivos.', allowCameraScan: false, multiple: true, maxFiles: 12, maxTotalSizeMB: 10 }
+    { type: 'proof_income', label: 'Comprobante de Ingresos', description: 'Sube tus 3 estados de cuenta o recibos de nómina más recientes (3 archivos PDF distintos). También puedes subir un solo archivo .ZIP con todos los documentos. Máximo 12 archivos.', allowCameraScan: false, multiple: true, maxFiles: 12, maxTotalSizeMB: 10 },
+    { type: 'constancia_fiscal', label: 'Constancia de Situación Fiscal', allowCameraScan: false }
   ];
 
   const validateDocuments = useCallback((docs: Record<string, UploadedDocument[]>) => {

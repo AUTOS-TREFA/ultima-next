@@ -41,7 +41,8 @@ import {
     Grid3x3,
     HelpCircle,
     Search,
-    DollarSign
+    DollarSign,
+    BarChart3
 } from 'lucide-react';
 
 // @ts-ignore
@@ -110,13 +111,6 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
         { to: '/escritorio/citas', label: 'Citas', icon: CalendarIcon, iconColor: 'text-gray-600', bgColor: 'bg-gray-50/50' },
         { to: '/escritorio/vende-tu-auto', label: 'Vender', icon: VenderIcon, iconColor: 'text-green-600', bgColor: 'bg-green-50/50', isCustomIcon: true },
         { to: '/escritorio/autos', label: 'Comprar', icon: ComprarIcon, iconColor: 'text-blue-600', bgColor: 'bg-blue-50/50', isCustomIcon: true },
-        // Admin role specific links (items not in top menu)
-        ...((isAdmin) ? [
-            { to: '/escritorio/admin/vacantes', label: 'Vacantes', icon: BriefcaseIcon, iconColor: 'text-gray-600', bgColor: 'bg-gray-50/50' },
-            { to: '/escritorio/car-studio', label: 'Car Studio', icon: Camera, iconColor: 'text-gray-600', bgColor: 'bg-gray-50/50' },
-            { to: '/escritorio/admin/inspections', label: 'Inspecciones', icon: FileText, iconColor: 'text-gray-600', bgColor: 'bg-gray-50/50' },
-            { to: '/changelog', label: 'Registro de Cambios', icon: BookOpen, iconColor: 'text-gray-600', bgColor: 'bg-gray-50/50' },
-        ] : []),
         // Help/FAQ for everyone at the end
         { to: '/faq', label: 'Ayuda', icon: HelpCircle, iconColor: 'text-gray-400', bgColor: 'bg-gray-50/50' },
     ];

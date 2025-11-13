@@ -3,6 +3,8 @@ import { BookOpen, Rocket } from 'lucide-react';
 import useSEO from '../hooks/useSEO';
 import AdminRoadmapManager from '../components/AdminRoadmapManager';
 import DynamicRoadmapDisplay from '../components/DynamicRoadmapDisplay';
+import AdminChangelogManager from '../components/AdminChangelogManager';
+import DynamicChangelogDisplay from '../components/DynamicChangelogDisplay';
 
 const ChangelogPage: React.FC = () => {
   useSEO({
@@ -32,6 +34,12 @@ const ChangelogPage: React.FC = () => {
 
           {/* Content - Scrollable */}
           <div className="px-8 py-10 space-y-12 overflow-y-auto flex-1">
+
+            {/* Admin Changelog Manager */}
+            <AdminChangelogManager />
+
+            {/* Dynamic Changelog Content */}
+            <DynamicChangelogDisplay />
 
           {/* Version 1.9.0 */}
           <div className="border-l-4 border-purple-500 pl-8">

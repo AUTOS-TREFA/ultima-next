@@ -205,7 +205,7 @@ export class BusinessAnalyticsService {
 
             const { data: vehicles, error: vehicleError } = await supabase
                 .from('inventario_cache')
-                .select('id, ordencompra, title, ordenstatus, precio, view_count, thumbnail')
+                .select('id, ordencompra, title, ordenstatus, precio, view_count, feature_image')
                 .in('ordencompra', topOrdenCompras);
 
             if (vehicleError) throw vehicleError;
@@ -225,7 +225,7 @@ export class BusinessAnalyticsService {
                     activeApplications: activeApps,
                     viewCount: viewCount,
                     conversionRate: Math.round(conversionRate * 100) / 100,
-                    thumbnail: vehicle.thumbnail
+                    thumbnail: vehicle.feature_image
                 };
             }).sort((a, b) => b.applicationCount - a.applicationCount) || [];
 

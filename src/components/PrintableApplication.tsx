@@ -249,12 +249,30 @@ const PrintableApplication: React.FC<{ application: any }> = ({ application }) =
                     <DataRow label="ID del Auto" value={carInfo._ordenCompra} />
                 </div>
 
+                {/* Financing Preferences */}
+                {(appData.loan_term_months || appData.down_payment_amount || appData.estimated_monthly_payment) && (
+                    <>
+                        <SectionHeader title="Preferencias de Financiamiento" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 rounded-b-md overflow-hidden">
+                            <DataRow label="Plazo del Crédito" value={appData.loan_term_months ? `${appData.loan_term_months} meses` : 'N/A'} />
+                            <DataRow label="Enganche" value={formatCurrency(appData.down_payment_amount)} />
+                            <DataRow label="Mensualidad Estimada" value={formatCurrency(appData.estimated_monthly_payment)} />
+                        </div>
+                        <div className="py-2 px-3 border-b border-x border-gray-200 bg-yellow-50">
+                            <p className="text-xs text-gray-700">*Cálculo estimado con tasa de interés promedio del 15% anual. La tasa final será determinada por el banco.</p>
+                        </div>
+                    </>
+                )}
+
                 {/* Recommended Bank */}
-                {appData.recommended_bank && (
+                {(bankProfile?.banco_recomendado || appData.recommended_bank) && (
                     <>
                         <SectionHeader title="Banco Recomendado" />
                         <div className="rounded-b-md overflow-hidden">
-                            <DataRow label="Institución Financiera" value={appData.recommended_bank} />
+                            <DataRow label="Institución Financiera" value={bankProfile?.banco_recomendado || appData.recommended_bank} />
+                            {bankProfile?.banco_segunda_opcion && (
+                                <DataRow label="Segunda Opción" value={bankProfile.banco_segunda_opcion} />
+                            )}
                         </div>
                     </>
                 )}
@@ -267,13 +285,14 @@ const PrintableApplication: React.FC<{ application: any }> = ({ application }) =
                     <DataRow label="Apellido Materno" value={capitalizeName(profile.mother_last_name)} />
                     <DataRow label="Email" value={profile.email} />
                     <DataRow label="Teléfono" value={profile.phone} />
+                    <DataRow label="Compañía Telefónica" value={profile.cellphone_company} />
                     <DataRow label="RFC" value={profile.rfc} />
                     <DataRow label="Fecha de Nacimiento" value={profile.birth_date} />
                     <DataRow label="Estado Civil" value={normalizeCivilStatus(profile.civil_status)} />
-                    <DataRow label="Nombre del Cónyuge" value={getSpouseName()} />
+                    <DataRow label="Nombre del Cónyuge" value={capitalizeName(getSpouseName())} />
                     <DataRow label="Género" value={profile.gender} />
-                    <DataRow label="Nivel de Estudios" value={profile.education_level || appData.education_level || 'N/A'} />
-                    <DataRow label="Número de Dependientes" value={profile.dependents || appData.dependents || appData.number_of_dependents || 'N/A'} />
+                    <DataRow label="Nivel de Estudios" value={appData.grado_de_estudios || profile.education_level || appData.education_level || 'N/A'} />
+                    <DataRow label="Número de Dependientes" value={appData.dependents || profile.dependents || appData.number_of_dependents || 'N/A'} />
                 </div>
 
                 {/* Current Address */}
@@ -315,30 +334,44 @@ const PrintableApplication: React.FC<{ application: any }> = ({ application }) =
                     <DataRow label="Ingreso Mensual Neto" value={formatCurrency(appData.net_monthly_income)} />
                 </div>
 
-                {/* Banking Profile */}
-                {(appData.bank_name || appData.account_type || appData.has_savings_account || appData.has_credit_card) && (
+                {/* Banking Profile - From Perfilación Bancaria */}
+                {bankProfile && bankProfile.respuestas && (
                     <>
                         <SectionHeader title="Perfilación Bancaria" />
                         <div className="grid grid-cols-1 md:grid-cols-2 rounded-b-md overflow-hidden">
-                            <DataRow label="Banco Principal" value={appData.bank_name} />
-                            <DataRow label="Tipo de Cuenta" value={appData.account_type} />
-                            <DataRow label="Cuenta de Ahorro" value={appData.has_savings_account ? 'Sí' : 'No'} />
-                            <DataRow label="Tarjeta de Crédito" value={appData.has_credit_card ? 'Sí' : 'No'} />
-                            <DataRow label="Institución de Crédito" value={appData.credit_card_bank} />
-                            <DataRow label="Límite de Crédito" value={formatCurrency(appData.credit_limit)} />
+                            <DataRow label="Antigüedad en el Empleo" value={bankProfile.respuestas?.trabajo_tiempo || 'N/A'} />
+                            <DataRow label="Banco de Nómina" value={bankProfile.respuestas?.banco_nomina || 'N/A'} />
+                            <DataRow label="Historial Crediticio" value={bankProfile.respuestas?.historial_crediticio || 'N/A'} />
+                            <DataRow label="Créditos Vigentes" value={bankProfile.respuestas?.creditos_vigentes || 'N/A'} />
+                            <DataRow label="Atrasos en Últimos 12 Meses" value={bankProfile.respuestas?.atrasos_12_meses || 'N/A'} />
+                            <DataRow label="Enganche Planeado" value={bankProfile.respuestas?.enganche || 'N/A'} />
+                            <DataRow label="Prioridad en Financiamiento" value={bankProfile.respuestas?.prioridad_financiamiento || 'N/A'} />
+                            <DataRow label="Ingresos Mensuales Comprobables" value={bankProfile.respuestas?.ingreso_mensual || 'N/A'} />
                         </div>
                     </>
                 )}
 
                 {/* References */}
                 <SectionHeader title="Referencias Personales" />
-                <div className="grid grid-cols-1 md:grid-cols-2 rounded-b-md overflow-hidden">
-                    <DataRow label="Referencia Familiar - Nombre" value={appData.family_reference_name} />
-                    <DataRow label="Referencia Familiar - Teléfono" value={appData.family_reference_phone} />
-                    <DataRow label="Referencia Familiar - Parentesco" value={appData.family_reference_relationship} />
-                    <DataRow label="Referencia Personal - Nombre" value={appData.friend_reference_name} />
-                    <DataRow label="Referencia Personal - Teléfono" value={appData.friend_reference_phone} />
-                    <DataRow label="Referencia Personal - Relación" value={appData.friend_reference_relationship} />
+                <div className="rounded-b-md overflow-hidden space-y-3">
+                    {/* Family Reference */}
+                    <div>
+                        <h4 className="text-xs font-bold text-gray-700 bg-gray-100 px-3 py-2 border-x border-t border-gray-200">Referencia Familiar</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3">
+                            <DataRow label="Nombre" value={appData.family_reference_name} />
+                            <DataRow label="Teléfono" value={appData.family_reference_phone} />
+                            <DataRow label="Parentesco" value={appData.parentesco || appData.family_reference_relationship} />
+                        </div>
+                    </div>
+                    {/* Personal Reference */}
+                    <div>
+                        <h4 className="text-xs font-bold text-gray-700 bg-gray-100 px-3 py-2 border-x border-t border-gray-200">Referencia Personal</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3">
+                            <DataRow label="Nombre" value={appData.friend_reference_name} />
+                            <DataRow label="Teléfono" value={appData.friend_reference_phone} />
+                            <DataRow label="Relación" value={appData.friend_reference_relationship} />
+                        </div>
+                    </div>
                 </div>
 
                 {/* Additional Information */}

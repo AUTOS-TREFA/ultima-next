@@ -94,6 +94,20 @@ class ConversionTrackingService {
   }
 
   /**
+   * Track ConversionLandingPage - User registration on financiamientos landing page
+   * Página: /financiamientos
+   * Cuándo: Usuario completa el formulario de registro en landing page
+   */
+  trackConversionLandingPage(metadata: ConversionMetadata = {}): void {
+    this.track('ConversionLandingPage', 'Conversion Landing Page', {
+      ...metadata,
+      page: '/financiamientos',
+      content_name: 'Conversion Landing Page',
+      status: 'completed'
+    });
+  }
+
+  /**
    * Track page view
    */
   trackPageView(pageName?: string, metadata: ConversionMetadata = {}): void {

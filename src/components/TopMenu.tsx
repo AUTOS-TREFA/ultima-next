@@ -1,9 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { SalesService } from '../services/SalesService';
 import {
     LayoutDashboard,
     Users,
@@ -12,12 +14,44 @@ import {
     UserCog,
     TrendingUp,
     LogOut,
-    Activity
+    Activity,
+    ClipboardList,
+    BarChart3,
+    FileText,
+    User as UserIcon,
+    Clock,
+    ChevronDown,
+    Camera,
+    BriefcaseIcon,
+    WrenchIcon,
+    BookOpen
 } from 'lucide-react';
 
 const TopMenu: React.FC = () => {
-    const { isAdmin, isSales, signOut } = useAuth();
+    const { isAdmin, isSales, signOut, user } = useAuth();
     const pathname = usePathname();
+    const [herramientasOpen, setHerramientasOpen] = useState(false);
+    const herramientasRef = useRef<HTMLDivElement>(null);
+
+    // Fetch stats for sales users
+    const { data: stats } = useQuery<any, Error>({
+        queryKey: ['salesDashboardStats', user?.id],
+        queryFn: () => SalesService.getMyLeadsStats(user?.id || ''),
+        enabled: isSales && !!user?.id,
+    });
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (herramientasRef.current && !herramientasRef.current.contains(event.target as Node)) {
+                setHerramientasOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     const handleSignOut = async () => {
         await signOut();
@@ -27,22 +61,33 @@ const TopMenu: React.FC = () => {
     if (!isAdmin && !isSales) return null;
 
     const menuItems = [
-        { to: '/escritorio/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        // Panel Administrativo (Marketing Hub) - First item for admin
+        ...(isAdmin ? [
+            { to: '/escritorio/marketing', label: 'Panel Administrativo', icon: LayoutDashboard },
+        ] : []),
+        // Leads section
         ...(isAdmin ? [
             { to: '/escritorio/admin/crm', label: 'Leads', icon: Users },
         ] : []),
         ...(isSales ? [
-            { to: '/escritorio/ventas/crm', label: 'Leads', icon: Users },
+            { to: '/escritorio/ventas/crm', label: 'Mis Leads', icon: Users },
         ] : []),
-        ...(isSales || isAdmin ? [
-            { to: isSales ? '/escritorio/ventas/leads' : '/escritorio/admin/leads', label: 'Mis Leads', icon: TrendingUp },
-        ] : []),
+        // Asesores - for admin
         ...(isAdmin ? [
-            { to: '/escritorio/marketing', label: 'Marketing Hub', icon: Settings },
-            { to: '/escritorio/admin/compras', label: 'Compras', icon: ShoppingCart },
-            { to: '/escritorio/admin/usuarios', label: 'Usuarios', icon: UserCog },
-            { to: '/escritorio/admin/logs', label: 'Logs', icon: Activity },
+            { to: '/escritorio/admin/usuarios', label: 'Asesores', icon: UserCog },
         ] : []),
+        // Performance dashboard for sales users
+        ...(isSales ? [
+            { to: '/escritorio/ventas/performance', label: 'Mi Desempeño', icon: TrendingUp },
+        ] : []),
+    ];
+
+    const herramientasItems = [
+        { to: '/escritorio/car-studio', label: 'Car Studio', icon: Camera },
+        { to: '/escritorio/admin/vacantes', label: 'Vacantes', icon: BriefcaseIcon },
+        { to: '/escritorio/admin/inspections', label: 'Inspecciones', icon: FileText },
+        { to: '/escritorio/admin/logs', label: 'Logs', icon: Activity },
+        { to: '/changelog', label: 'Registro de Cambios', icon: BookOpen },
     ];
 
     return (
@@ -73,16 +118,90 @@ const TopMenu: React.FC = () => {
                                 </React.Fragment>
                             );
                         })}
+
+                        {/* Herramientas Dropdown - Only for admin */}
+                        {isAdmin && (
+                            <>
+                                <div className="h-6 w-px bg-white/20 mx-1" />
+                                <div
+                                    className="relative group"
+                                    ref={herramientasRef}
+                                >
+                                    <button
+                                        onMouseEnter={() => setHerramientasOpen(true)}
+                                        className={`flex items-center px-4 py-2 rounded-md text-sm font-semibold transition-all ${
+                                            herramientasOpen
+                                                ? 'bg-white/20 text-white shadow-sm backdrop-blur-sm'
+                                                : 'text-white/90 hover:bg-white/10 hover:text-white hover:shadow-sm'
+                                        }`}
+                                    >
+                                        <WrenchIcon className="w-4 h-4 mr-2" />
+                                        <span className="drop-shadow-sm">Herramientas</span>
+                                        <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${herramientasOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                    {herramientasOpen && (
+                                        <>
+                                            {/* Invisible bridge to prevent gap */}
+                                            <div
+                                                className="absolute top-full left-0 w-60 h-2 z-[9999]"
+                                                onMouseEnter={() => setHerramientasOpen(true)}
+                                                onMouseLeave={() => setHerramientasOpen(false)}
+                                            />
+                                            <div
+                                                className="absolute top-full left-0 mt-2 w-60 bg-white rounded-lg shadow-xl py-2 z-[9999] border border-gray-200"
+                                                onMouseEnter={() => setHerramientasOpen(true)}
+                                                onMouseLeave={() => setHerramientasOpen(false)}
+                                            >
+                                                {herramientasItems.map((item) => (
+                                                    <Link
+                                                        key={item.to}
+                                                        href={item.to}
+                                                        className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition-colors"
+                                                        onClick={() => setHerramientasOpen(false)}
+                                                    >
+                                                        <item.icon className="w-4 h-4 mr-3 text-gray-500" />
+                                                        <span className="font-medium">{item.label}</span>
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </>
+                        )}
                     </nav>
 
-                    {/* Logout Button */}
-                    <button
-                        onClick={handleSignOut}
-                        className="flex items-center px-4 py-2 rounded-md text-sm font-semibold bg-white text-[#FF6801] hover:bg-white/95 transition-all shadow-md hover:shadow-lg"
-                    >
-                        <LogOut className="w-4 h-4 mr-2" />
-                        <span>Cerrar sesión</span>
-                    </button>
+                    <div className="flex items-center gap-4">
+                        {/* Performance Stats for Sales Users */}
+                        {isSales && stats && (
+                            <div className="flex items-center gap-3 text-white/95">
+                                <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-md backdrop-blur-sm">
+                                    <Users className="w-4 h-4" />
+                                    <span className="text-sm font-semibold">{stats.total_leads || 0}</span>
+                                    <span className="text-xs opacity-90">Total</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-md backdrop-blur-sm">
+                                    <FileText className="w-4 h-4" />
+                                    <span className="text-sm font-semibold">{stats.leads_with_active_app || 0}</span>
+                                    <span className="text-xs opacity-90">Activas</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-md backdrop-blur-sm">
+                                    <Clock className="w-4 h-4" />
+                                    <span className="text-sm font-semibold">{stats.leads_needing_follow_up || 0}</span>
+                                    <span className="text-xs opacity-90">Seguimiento</span>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Logout Button */}
+                        <button
+                            onClick={handleSignOut}
+                            className="flex items-center px-4 py-2 rounded-md text-sm font-semibold bg-white text-[#FF6801] hover:bg-white/95 transition-all shadow-md hover:shadow-lg"
+                        >
+                            <LogOut className="w-4 h-4 mr-2" />
+                            <span>Cerrar sesión</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

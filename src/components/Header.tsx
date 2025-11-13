@@ -25,6 +25,7 @@ const Header: React.FC = () => {
     const pathname = usePathname();
     const router = useRouter();
     const isListPage = pathname === '/autos';
+    const isSalesUser = profile?.role === 'sales';
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -102,13 +103,23 @@ const Header: React.FC = () => {
                         </button>
                         {profileMenuOpen && (
                             <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-40 bg-white">
-                                <Link
-                                    href="/escritorio"
-                                    onClick={() => setProfileMenuOpen(false)}
-                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                >
-                                    Dashboard
-                                </Link>
+                                {isSalesUser ? (
+                                    <Link
+                                        href="/escritorio/ventas/crm"
+                                        onClick={() => setProfileMenuOpen(false)}
+                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    >
+                                        Mis Leads
+                                    </Link>
+                                ) : (
+                                    <Link
+                                        href="/escritorio"
+                                        onClick={() => setProfileMenuOpen(false)}
+                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    >
+                                        Dashboard
+                                    </Link>
+                                )}
                                 <button
                                     onClick={handleSignOut}
                                     className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-600 font-semibold hover:bg-red-50 active:bg-red-100"
@@ -152,12 +163,21 @@ const Header: React.FC = () => {
                                     <p className="text-sm text-gray-500">Conectado como</p>
                                     <p className="font-semibold text-gray-900">{profile?.first_name || profile?.email}</p>
                                 </div>
-                                <button
-                                    onClick={() => handleMobileLinkClick('/escritorio')}
-                                    className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 font-medium text-gray-700"
-                                >
-                                    Mi Escritorio
-                                </button>
+                                {isSalesUser ? (
+                                    <button
+                                        onClick={() => handleMobileLinkClick('/escritorio/ventas/crm')}
+                                        className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 font-medium text-gray-700"
+                                    >
+                                        Mis Leads
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => handleMobileLinkClick('/escritorio')}
+                                        className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 font-medium text-gray-700"
+                                    >
+                                        Mi Escritorio
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => handleMobileLinkClick('/escritorio/profile')}
                                     className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 font-medium text-gray-700"

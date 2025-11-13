@@ -1,7 +1,5 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { BusinessAnalyticsService, BusinessMetrics } from '../services/BusinessAnalyticsService';
 import { BrevoEmailService } from '../services/BrevoEmailService';
@@ -23,32 +21,61 @@ const COLORS = ['#f97316', '#ea580c', '#c2410c', '#9a3412', '#7c2d12', '#431407'
 
 export default function AdminBusinessAnalyticsDashboard() {
     const { user, profile } = useAuth();
-    const router = useRouter();
+    const navigate = useNavigate();
     const [metrics, setMetrics] = useState<BusinessMetrics | null>(null);
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
     const [refreshing, setRefreshing] = useState(false);
     const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const isAdmin = profile?.role === 'admin';
 
     useEffect(() => {
+        console.log('[Business Analytics Page] Component mounted');
+        console.log('[Business Analytics Page] User:', user?.id);
+        console.log('[Business Analytics Page] Profile role:', profile?.role);
         loadBusinessData();
     }, []);
 
     const loadBusinessData = async (silent = false) => {
         try {
-            if (!silent) setLoading(true);
-            else setRefreshing(true);
+            if (!silent) {
+                setLoading(true);
+                setError(null);
+            } else {
+                setRefreshing(true);
+            }
 
-            console.log('[Business Analytics] Starting to load data...');
+            console.log('[Business Analytics Page] Starting to load data...');
+            console.log('[Business Analytics Page] Calling BusinessAnalyticsService.getBusinessMetrics()...');
+
             const businessMetrics = await BusinessAnalyticsService.getBusinessMetrics();
-            console.log('[Business Analytics] Data loaded:', businessMetrics);
+
+            console.log('[Business Analytics Page] Data loaded successfully:', {
+                hasVehicleInsights: businessMetrics?.vehicleInsights?.length > 0,
+                hasPriceRangeInsights: businessMetrics?.priceRangeInsights?.length > 0,
+                hasLeadPersonaInsights: businessMetrics?.leadPersonaInsights?.length > 0,
+                totalActiveApplications: businessMetrics?.totalActiveApplications
+            });
+
             setMetrics(businessMetrics);
             setLastUpdated(new Date());
+            setError(null);
         } catch (error) {
-            console.error('[Business Analytics] Error loading metrics:', error);
-            alert(`Error cargando datos: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+            console.error('[Business Analytics Page] Error loading metrics:', error);
+            console.error('[Business Analytics Page] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            setError(`Error cargando datos: ${errorMessage}`);
+
+            // Don't use alert - show error in UI instead
+            console.error('[Business Analytics Page] Error details:', {
+                error,
+                errorMessage,
+                errorType: typeof error,
+                errorKeys: error && typeof error === 'object' ? Object.keys(error) : []
+            });
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -82,6 +109,35 @@ export default function AdminBusinessAnalyticsDashboard() {
                 <div className="text-center">
                     <RefreshCw className="w-12 h-12 animate-spin text-orange-600 mx-auto mb-4" />
                     <p className="text-gray-600">Cargando análisis de negocio...</p>
+                    <p className="text-xs text-gray-400 mt-2">Esto puede tomar unos segundos</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-50">
+                <div className="text-center max-w-2xl mx-auto p-8">
+                    <AlertTriangle className="w-16 h-16 text-red-600 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Error al cargar datos</h2>
+                    <p className="text-gray-600 mb-4">{error}</p>
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-left">
+                        <p className="text-sm text-red-800 font-semibold mb-2">Pasos para resolver:</p>
+                        <ul className="text-sm text-red-700 space-y-1 list-disc list-inside">
+                            <li>Verifica tu conexión a internet</li>
+                            <li>Asegúrate de tener permisos de administrador</li>
+                            <li>Revisa la consola del navegador (F12) para más detalles</li>
+                            <li>Si el problema persiste, contacta a soporte técnico</li>
+                        </ul>
+                    </div>
+                    <button
+                        onClick={() => loadBusinessData(false)}
+                        className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center gap-2 mx-auto"
+                    >
+                        <RefreshCw className="w-5 h-5" />
+                        Reintentar
+                    </button>
                 </div>
             </div>
         );
@@ -91,7 +147,8 @@ export default function AdminBusinessAnalyticsDashboard() {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-50">
                 <div className="text-center">
-                    <p className="text-gray-600">No se pudieron cargar los datos</p>
+                    <AlertTriangle className="w-12 h-12 text-yellow-600 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-4">No se pudieron cargar los datos</p>
                     <button
                         onClick={() => loadBusinessData(false)}
                         className="mt-4 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
@@ -337,7 +394,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                                 >
                                     <div className="flex items-center gap-4 flex-1 min-w-0">
                                         <span className="text-sm font-mono text-gray-500 flex-shrink-0">
-                                            #{vehicle.id.slice(0, 8)}
+                                            #{String(vehicle.id).slice(0, 8)}
                                         </span>
                                         <div className="flex-1 min-w-0">
                                             <span className="text-sm font-medium text-gray-900 truncate block">

@@ -25,7 +25,9 @@ import {
     Bot,
     MousePointerClick,
     Mail,
-    Zap
+    Zap,
+    FileCheck,
+    FileX
 } from 'lucide-react';
 
 export default function AdminSalesDashboard() {
@@ -219,7 +221,7 @@ export default function AdminSalesDashboard() {
                 </div>
 
                 {/* Key Metrics Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     {/* Total Applications */}
                     <MetricCard
                         title="Solicitudes Totales"
@@ -254,6 +256,25 @@ export default function AdminSalesDashboard() {
                         icon={<CheckCircle className="w-6 h-6" />}
                         color="green"
                         subtitle={`${metrics.approvalRate}% tasa de aprobación`}
+                    />
+
+                    {/* Submitted With Documents */}
+                    <MetricCard
+                        title="Enviadas con Documentos"
+                        value={metrics.submittedWithDocuments}
+                        icon={<FileCheck className="w-6 h-6" />}
+                        color="green"
+                        subtitle="Solicitudes completas"
+                    />
+
+                    {/* Submitted Without Documents */}
+                    <MetricCard
+                        title="Enviadas sin Documentos"
+                        value={metrics.submittedWithoutDocuments}
+                        icon={<FileX className="w-6 h-6" />}
+                        color="red"
+                        subtitle="Requieren documentos"
+                        urgent={metrics.submittedWithoutDocuments > 5}
                     />
                 </div>
 

@@ -31,6 +31,7 @@ import { getVehicleImage } from '../utils/getVehicleImage';
 import { DEFAULT_PLACEHOLDER_IMAGE } from '../utils/constants';
 import LazyImage from '../components/LazyImage';
 import { formatPrice } from '../utils/formatters';
+import { conversionTracking } from '../services/ConversionTrackingService';
 
 // Form validation schema - checkboxes validate but don't save to database
 const formSchema = z.object({
@@ -282,29 +283,6 @@ const FinanciamientosPage: React.FC = () => {
     try {
       console.log('📧 Sending OTP to:', data.email);
 
-      // Track ConversionLandingPage event with Facebook Pixel
-      if (typeof window !== 'undefined' && (window as any).fbq) {
-        (window as any).fbq('track', 'InitiateCheckout', {
-          content_name: 'Financing Request',
-          content_category: 'Lead Generation',
-          value: parseFloat(data.monthlyIncome),
-          currency: 'MXN',
-          source: leadSource
-        });
-      }
-
-      // Track ConversionLandingPage event with Google Tag Manager
-      if (typeof window !== 'undefined' && (window as any).dataLayer) {
-        (window as any).dataLayer.push({
-          event: 'ConversionLandingPage',
-          formType: 'financing_request',
-          monthlyIncome: data.monthlyIncome,
-          source: leadSource,
-          email: data.email,
-          phone: data.phone
-        });
-      }
-
       // Send OTP via Supabase Auth
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: data.email,
@@ -405,6 +383,15 @@ const FinanciamientosPage: React.FC = () => {
         ])
         .select()
         .single();
+
+      // Track ConversionLandingPage event - user completed registration
+      conversionTracking.trackConversionLandingPage({
+        userId: authData.user?.id,
+        email: formDataCache.email,
+        monthlyIncome: parseInt(formDataCache.monthlyIncome),
+        source: leadSource,
+        leadId: leadData?.id
+      });
 
       // Track successful lead creation with Facebook Pixel
       if (typeof window !== 'undefined' && (window as any).fbq) {

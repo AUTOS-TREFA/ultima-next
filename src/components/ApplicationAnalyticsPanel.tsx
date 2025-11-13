@@ -357,7 +357,7 @@ const ApplicationAnalyticsPanel: React.FC = () => {
                                         <td className="px-4 py-3">
                                             <div className="flex items-center gap-2">
                                                 <Link
-                                                    to={`/escritorio/admin/cliente/${app.lead_id}`}
+                                                    href={`/escritorio/admin/cliente/${app.lead_id}`}
                                                     className="inline-flex items-center text-primary-600 hover:text-primary-700 text-sm"
                                                 >
                                                     <User className="w-4 h-4 mr-1" />

@@ -62,12 +62,20 @@ const SalesLeadsDashboardPage: React.FC = () => {
     // Toggle contactado status
     const toggleContactado = async (leadId: string, currentValue: boolean) => {
         try {
-            const { error } = await supabase
+            console.log('[SalesLeads] Updating contactado:', { leadId, currentValue, newValue: !currentValue, userId: user?.id });
+
+            const { data, error } = await supabase
                 .from('profiles')
                 .update({ contactado: !currentValue })
-                .eq('id', leadId);
+                .eq('id', leadId)
+                .select();
 
-            if (error) throw error;
+            if (error) {
+                console.error('[SalesLeads] Update error:', error);
+                throw error;
+            }
+
+            console.log('[SalesLeads] Update successful:', data);
 
             // Invalidate and refetch
             await queryClient.invalidateQueries({ queryKey: ['salesAssignedLeads', user?.id] });
@@ -75,7 +83,7 @@ const SalesLeadsDashboardPage: React.FC = () => {
 
             toast.success(`Marcado como ${!currentValue ? 'contactado' : 'no contactado'}`);
         } catch (err: any) {
-            console.error('Error toggling contactado:', err);
+            console.error('[SalesLeads] Toggle contactado failed:', err);
             toast.error(`Error: ${err.message}`);
         }
     };

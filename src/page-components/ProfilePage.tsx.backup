@@ -14,12 +14,50 @@ import { conversionTracking } from '../services/ConversionTrackingService';
 
 const MEXICAN_STATES = [ 'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 'Chihuahua', 'Coahuila', 'Colima', 'Durango', 'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco', 'México', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla', 'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas', ];
 
+const CELLPHONE_COMPANIES = [
+  'Telcel',
+  'AT&T',
+  'Movistar',
+  'Unefon',
+  'Virgin Mobile',
+  'Weex (Dish)',
+  'Pillofon',
+  'Otro',
+];
+
+// Utility function to normalize names to Title Case
+const normalizeNameToTitleCase = (name: string): string => {
+  if (!name) return '';
+
+  // List of Spanish prepositions and articles that should stay lowercase
+  const lowercaseWords = ['de', 'del', 'la', 'los', 'las', 'y', 'e', 'van', 'von', 'da', 'di'];
+
+  return name
+    .trim()
+    .toLowerCase()
+    .split(' ')
+    .map((word, index) => {
+      // First word should always be capitalized
+      if (index === 0) {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      }
+      // Check if word should stay lowercase
+      if (lowercaseWords.includes(word)) {
+        return word;
+      }
+      // Capitalize first letter
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+};
+
 // Schemas
 const profileSchema = z.object({
   first_name: z.string().min(2, 'Nombre es requerido'),
   last_name: z.string().min(2, 'Apellido paterno es requerido'),
   mother_last_name: z.string().min(2, 'Apellido materno es requerido'),
   phone: z.string().min(10, 'Teléfono debe tener 10 dígitos'),
+  cellphone_company: z.string().optional().or(z.literal('')),
   birth_date: z.string().min(1, 'Fecha de nacimiento es requerida'),
   homoclave: z.string().length(3, 'Homoclave debe tener 3 caracteres'),
   fiscal_situation: z.string().min(1, 'Situación fiscal es requerida'),
@@ -90,6 +128,7 @@ const ProfilePage: React.FC = () => {
         last_name: profile.last_name || '',
         mother_last_name: profile.mother_last_name || '',
         phone: profile.phone || '',
+        cellphone_company: profile.cellphone_company || '',
         birth_date: profile.birth_date || '',
         homoclave: profile.homoclave || '',
         fiscal_situation: profile.fiscal_situation || '',
@@ -140,11 +179,20 @@ const ProfilePage: React.FC = () => {
         pictureUrl = await ProfileService.uploadProfilePicture(user.id, profilePictureFile);
       }
 
-      const finalRfc = calculateRFC(data);
+      // Normalize names to Title Case
+      const normalizedData = {
+        ...data,
+        first_name: normalizeNameToTitleCase(data.first_name),
+        last_name: normalizeNameToTitleCase(data.last_name),
+        mother_last_name: normalizeNameToTitleCase(data.mother_last_name),
+        spouse_name: data.spouse_name ? normalizeNameToTitleCase(data.spouse_name) : undefined,
+      };
+
+      const finalRfc = calculateRFC(normalizedData);
       const payload: Partial<Profile> = {
         id: user.id,
         email: user.email, // Ensure email is always included
-        ...data,
+        ...normalizedData,
         rfc: finalRfc ?? undefined,
         asesor_autorizado_acceso: asesorAutorizadoAcceso,
         picture_url: pictureUrl
@@ -248,102 +296,176 @@ const ProfilePage: React.FC = () => {
             </div>
           ) : null}
 
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Teléfono</label>
-                <div className="flex mt-1">
-                  <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">MX +52</span>
-                  <input id="phone" {...profileForm.register('phone')} className={phoneInputClassName} />
+          {/* Profile Summary Card */}
+          {profile && (
+            <div className="mb-6 p-6 bg-gradient-to-br from-primary-50 to-primary-100 border-2 border-primary-300 rounded-xl">
+              <h3 className="text-lg font-bold text-primary-900 mb-4">Resumen de tu Perfil</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-primary-600 font-medium">Nombre Completo</p>
+                  <p className="text-primary-900 font-semibold">
+                    {normalizeNameToTitleCase(profile.first_name || '')} {normalizeNameToTitleCase(profile.last_name || '')} {normalizeNameToTitleCase(profile.mother_last_name || '')}
+                  </p>
                 </div>
-                {profileForm.formState.errors.phone && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.phone?.message as React.ReactNode}</p>}
+                <div>
+                  <p className="text-primary-600 font-medium">Correo Electrónico</p>
+                  <p className="text-primary-900 font-semibold">{profile.email || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-primary-600 font-medium">Teléfono</p>
+                  <p className="text-primary-900 font-semibold">{profile.phone || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-primary-600 font-medium">RFC</p>
+                  <p className="text-primary-900 font-semibold">{profile.rfc || 'Completa tu perfil para calcular'}</p>
+                </div>
               </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Correo Electrónico</label>
-                <input id="email" type="email" value={user?.email || ''} readOnly disabled className={inputClassName} />
-              </div>
-              <div>
-                <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">Nombre(s)</label>
-                <input id="first_name" {...profileForm.register('first_name')} className={inputClassName} />
-                {profileForm.formState.errors.first_name && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.first_name?.message as React.ReactNode}</p>}
+            </div>
+          )}
+
+          <div className="space-y-6">
+            {/* Contact Information Section */}
+            <div className="bg-gray-50 p-6 rounded-xl border-2 border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <span className="bg-primary-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">1</span>
+                Información de Contacto
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-white text-gray-500 text-sm font-semibold">MX +52</span>
+                    <input id="phone" {...profileForm.register('phone')} className={phoneInputClassName} placeholder="10 dígitos" />
+                  </div>
+                  {profileForm.formState.errors.phone && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.phone?.message as React.ReactNode}</p>}
+                </div>
+                <div>
+                  <label htmlFor="cellphone_company" className="block text-sm font-medium text-gray-700 mb-1">Compañía Telefónica</label>
+                  <select id="cellphone_company" {...profileForm.register('cellphone_company')} className={inputClassName}>
+                    <option value="">Seleccionar...</option>
+                    {CELLPHONE_COMPANIES.map((company) => (
+                      <option key={company} value={company}>{company}</option>
+                    ))}
+                  </select>
+                  {profileForm.formState.errors.cellphone_company && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.cellphone_company?.message as React.ReactNode}</p>}
+                </div>
+                <div className="md:col-span-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                  <input id="email" type="email" value={user?.email || ''} readOnly disabled className={inputClassName} />
+                  <p className="text-xs text-gray-500 mt-1">Este correo está vinculado a tu cuenta y no puede ser modificado.</p>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">Apellido Paterno</label>
-                <input id="last_name" {...profileForm.register('last_name')} className={inputClassName} />
-                {profileForm.formState.errors.last_name && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.last_name?.message as React.ReactNode}</p>}
+            {/* Personal Information Section */}
+            <div className="bg-gray-50 p-6 rounded-xl border-2 border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <span className="bg-primary-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">2</span>
+                Datos Personales
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-1">Nombre(s)</label>
+                  <input id="first_name" {...profileForm.register('first_name')} className={inputClassName} placeholder="Tu(s) nombre(s)" />
+                  {profileForm.formState.errors.first_name && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.first_name?.message as React.ReactNode}</p>}
+                </div>
+                <div>
+                  <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">Apellido Paterno</label>
+                  <input id="last_name" {...profileForm.register('last_name')} className={inputClassName} placeholder="Apellido paterno" />
+                  {profileForm.formState.errors.last_name && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.last_name?.message as React.ReactNode}</p>}
+                </div>
+                <div>
+                  <label htmlFor="mother_last_name" className="block text-sm font-medium text-gray-700 mb-1">Apellido Materno</label>
+                  <input id="mother_last_name" {...profileForm.register('mother_last_name')} className={inputClassName} placeholder="Apellido materno" />
+                  {profileForm.formState.errors.mother_last_name && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.mother_last_name?.message as React.ReactNode}</p>}
+                </div>
               </div>
-              <div>
-                <label htmlFor="mother_last_name" className="block text-sm font-medium text-gray-700">Apellido Materno</label>
-                <input id="mother_last_name" {...profileForm.register('mother_last_name')} className={inputClassName} />
-                {profileForm.formState.errors.mother_last_name && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.mother_last_name?.message as React.ReactNode}</p>}
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="birth_date" className="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
-                <input id="birth_date" type="date" {...profileForm.register('birth_date')} className={inputClassName} />
-                {profileForm.formState.errors.birth_date && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.birth_date.message as React.ReactNode}</p>}
-              </div>
-              <div>
-                <label htmlFor="homoclave" className="block text-sm font-medium text-gray-700">Homoclave (RFC)</label>
-                <input id="homoclave" {...profileForm.register('homoclave')} className={inputClassName} maxLength={3} placeholder="Últimos 3 dígitos del RFC" />
-                {profileForm.formState.errors.homoclave && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.homoclave.message as React.ReactNode}</p>}
-              </div>
-            </div>
-            
-            <div>
-              <label htmlFor="rfc" className="block text-sm font-medium text-gray-700">RFC Calculado</label>
-              <input 
-                id="rfc" 
-                type="text" 
-                value={calculatedRfc} 
-                readOnly 
-                disabled 
-                className={inputClassName} 
-              />
-              <p className="text-xs text-gray-500 mt-1">Este campo se calcula automáticamente al guardar tu perfil con todos los datos requeridos.</p>
+              <p className="text-xs text-blue-600 mt-2 flex items-center">
+                <Info className="w-4 h-4 mr-1" />
+                Los nombres se formatearán automáticamente con mayúsculas y minúsculas apropiadas.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <FormField label="Situación Fiscal" error={profileForm.formState.errors.fiscal_situation?.message as React.ReactNode}>
-                <select {...profileForm.register('fiscal_situation')} className={inputClassName}>
-                  <option value="">Seleccionar...</option>
-                  <option value="asalariado">Empleado con nónima</option>
-                  <option value="honorarios">Honorarios</option>
-                  <option value="dividendos">Dividendos o acciones</option>
-                  <option value="pensionado">Pensionado</option>
-                  <option value="actividad_empresarial">Persona Física con Actividad Empresarial</option>
-                </select>
-              </FormField>
-              <FormField label="Estado Civil" error={profileForm.formState.errors.civil_status?.message as React.ReactNode}>
-                <select {...profileForm.register('civil_status')} className={inputClassName}>
-                  <option value="">Seleccionar...</option>
-                  <option value="soltero">Soltero(a)</option>
-                  <option value="casado">Casado(a)</option>
-                  <option value="viudo">Viudo(a)</option>
-                  <option value="union">Unión Libre</option>
-                </select>
-              </FormField>
-              <FormField label="Género" error={profileForm.formState.errors.gender?.message as React.ReactNode}>
-                <select {...profileForm.register('gender')} className={inputClassName}>
-                  <option value="">Seleccionar...</option>
-                  <option value="Masculino">Masculino</option>
-                  <option value="Femenino">Femenino</option>
-                </select>
-              </FormField>
+            {/* RFC and Fiscal Information Section */}
+            <div className="bg-gray-50 p-6 rounded-xl border-2 border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <span className="bg-primary-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">3</span>
+                Información Fiscal
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="birth_date" className="block text-sm font-medium text-gray-700 mb-1">Fecha de Nacimiento</label>
+                  <input id="birth_date" type="date" {...profileForm.register('birth_date')} className={inputClassName} />
+                  {profileForm.formState.errors.birth_date && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.birth_date.message as React.ReactNode}</p>}
+                </div>
+                <div>
+                  <label htmlFor="homoclave" className="block text-sm font-medium text-gray-700 mb-1">Homoclave (RFC)</label>
+                  <input id="homoclave" {...profileForm.register('homoclave')} className={inputClassName} maxLength={3} placeholder="Últimos 3 dígitos" />
+                  {profileForm.formState.errors.homoclave && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.homoclave.message as React.ReactNode}</p>}
+                </div>
+                <div className="md:col-span-2">
+                  <label htmlFor="rfc" className="block text-sm font-medium text-gray-700 mb-1">RFC Calculado</label>
+                  <input
+                    id="rfc"
+                    type="text"
+                    value={calculatedRfc}
+                    readOnly
+                    disabled
+                    className={`${inputClassName} bg-gray-100 font-mono font-bold text-primary-700`}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Este campo se calcula automáticamente con los datos proporcionados.</p>
+                </div>
+                <div className="md:col-span-2">
+                  <label htmlFor="fiscal_situation" className="block text-sm font-medium text-gray-700 mb-1">Situación Fiscal</label>
+                  <select {...profileForm.register('fiscal_situation')} className={inputClassName}>
+                    <option value="">Seleccionar...</option>
+                    <option value="asalariado">Empleado con nómina</option>
+                    <option value="honorarios">Honorarios</option>
+                    <option value="dividendos">Dividendos o acciones</option>
+                    <option value="pensionado">Pensionado</option>
+                    <option value="actividad_empresarial">Persona Física con Actividad Empresarial</option>
+                  </select>
+                  {profileForm.formState.errors.fiscal_situation && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.fiscal_situation?.message as React.ReactNode}</p>}
+                </div>
+              </div>
             </div>
 
-            {isMarried && (
-              <div>
-                <label htmlFor="spouse_name" className="block text-sm font-medium text-gray-700">Nombre Completo del Cónyuge</label>
-                <input id="spouse_name" {...profileForm.register('spouse_name')} className={inputClassName} placeholder="Nombre completo" />
-                {profileForm.formState.errors.spouse_name && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.spouse_name.message as React.ReactNode}</p>}
+            {/* Family Status Section */}
+            <div className="bg-gray-50 p-6 rounded-xl border-2 border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <span className="bg-primary-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">4</span>
+                Estado Civil y Género
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="civil_status" className="block text-sm font-medium text-gray-700 mb-1">Estado Civil</label>
+                  <select {...profileForm.register('civil_status')} className={inputClassName}>
+                    <option value="">Seleccionar...</option>
+                    <option value="soltero">Soltero(a)</option>
+                    <option value="casado">Casado(a)</option>
+                    <option value="viudo">Viudo(a)</option>
+                    <option value="union">Unión Libre</option>
+                  </select>
+                  {profileForm.formState.errors.civil_status && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.civil_status?.message as React.ReactNode}</p>}
+                </div>
+                <div>
+                  <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">Género</label>
+                  <select {...profileForm.register('gender')} className={inputClassName}>
+                    <option value="">Seleccionar...</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
+                  </select>
+                  {profileForm.formState.errors.gender && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.gender?.message as React.ReactNode}</p>}
+                </div>
+                {isMarried && (
+                  <div className="md:col-span-2">
+                    <label htmlFor="spouse_name" className="block text-sm font-medium text-gray-700 mb-1">Nombre Completo del Cónyuge</label>
+                    <input id="spouse_name" {...profileForm.register('spouse_name')} className={inputClassName} placeholder="Nombre completo del cónyuge" />
+                    {profileForm.formState.errors.spouse_name && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.spouse_name.message as React.ReactNode}</p>}
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
             <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <label className="flex items-start cursor-pointer">

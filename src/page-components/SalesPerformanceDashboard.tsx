@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
@@ -30,7 +28,7 @@ import {
     Calendar,
     ExternalLink
 } from 'lucide-react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import StatsCard from '../components/StatsCard';
 import { Bar, BarChart as RechartsBarChart, Pie, PieChart as RechartsPieChart, Cell, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid, Line, LineChart } from 'recharts';
 

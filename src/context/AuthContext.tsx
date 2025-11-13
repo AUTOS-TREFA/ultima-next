@@ -186,6 +186,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 role: role,
                 metadata: combinedMetadata,
                 source: primarySource,
+                // Save all tracking fields to dedicated columns
+                utm_source: leadSourceData.utm_source || null,
+                utm_medium: leadSourceData.utm_medium || null,
+                utm_campaign: leadSourceData.utm_campaign || null,
+                utm_term: leadSourceData.utm_term || null,
+                utm_content: leadSourceData.utm_content || null,
+                rfdm: leadSourceData.rfdm || null,
+                referrer: leadSourceData.referrer || null,
+                fbclid: leadSourceData.fbclid || null,
+                landing_page: leadSourceData.landing_page || null,
             };
 
             const { data: createdProfile, error: createError } = await supabase

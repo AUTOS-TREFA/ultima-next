@@ -185,23 +185,85 @@ const generateDynamicTitle = (count: number, filters: VehicleFilters) => {
     { from: () => [0, y.get()], bounds: { top: 0 }, rubberband: true }
   );
   
-  // Effect to sync URL params to filter state on initial load
+  // Effect to sync URL params to filter state on initial load ONLY
   useEffect(() => {
+    if (!isInitialMount.current) return;
+
     const initialFilters: Partial<VehicleFilters> = {};
+
+    // Handle path params (marca, carroceria from route)
     if (marca) initialFilters.marca = [marca];
     if (carroceria) initialFilters.carroceria = [carroceria];
-    
+
+    // Handle query params
     searchParams.forEach((value, key) => {
         const filterKey = key as keyof VehicleFilters;
-        const existing = initialFilters[filterKey] || [];
-        // @ts-ignore
-        initialFilters[filterKey] = [...existing, value];
-    });
-    
-    handleFiltersChange(initialFilters);
-  }, [marca, carroceria, searchParams]);
 
-  // Effect to sync filter state to URL params
+        // Skip if already set by path params
+        if (initialFilters[filterKey]) return;
+
+        // Parse array values (marca, carroceria, etc.)
+        if (['marca', 'carroceria', 'autoano', 'ubicacion', 'transmision', 'combustible', 'garantia', 'promotion'].includes(filterKey)) {
+            const existing = initialFilters[filterKey] as string[] || [];
+            // @ts-ignore
+            initialFilters[filterKey] = [...existing, value];
+        }
+        // Parse numeric values
+        else if (['minPrice', 'maxPrice', 'enganchemin', 'maxEnganche'].includes(filterKey)) {
+            // @ts-ignore
+            initialFilters[filterKey] = parseFloat(value);
+        }
+        // Parse boolean values
+        else if (['hideSeparado', 'recienLlegados'].includes(filterKey)) {
+            // @ts-ignore
+            initialFilters[filterKey] = value === 'true';
+        }
+        // String values (search, orderby)
+        else {
+            // @ts-ignore
+            initialFilters[filterKey] = value;
+        }
+    });
+
+    // Only apply if we have filters from URL
+    if (Object.keys(initialFilters).length > 0) {
+      handleFiltersChange(initialFilters);
+    }
+
+    isInitialMount.current = false;
+  }, []); // Run only once on mount
+
+  // Effect to sync filter state to URL params (bidirectional sync)
+  useEffect(() => {
+    // Skip on initial mount - let the above effect handle that
+    if (isInitialMount.current) return;
+
+    const params = new URLSearchParams();
+
+    // Build URL params from current filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value === undefined || value === null) return;
+
+      if (Array.isArray(value) && value.length > 0) {
+        // For arrays, add multiple params with same key
+        value.forEach(v => params.append(key, String(v)));
+      } else if (typeof value === 'boolean') {
+        if (value === true) params.set(key, 'true');
+      } else if (typeof value === 'number') {
+        params.set(key, String(value));
+      } else if (typeof value === 'string' && value !== '') {
+        params.set(key, value);
+      }
+    });
+
+    // Update URL without adding to history
+    const newSearch = params.toString();
+    const currentSearch = searchParams.toString();
+
+    if (newSearch !== currentSearch) {
+      navigate(`?${newSearch}`, { replace: true });
+    }
+  }, [filters, navigate])
   
 
   const [searchTerm, setSearchTerm] = useState(filters.search || '');

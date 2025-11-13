@@ -258,12 +258,20 @@ const SimpleCRMPage: React.FC = () => {
 
     const toggleContactado = async (leadId: string, currentValue: boolean) => {
         try {
-            const { error } = await supabase
+            console.log('[SimpleCRM] Updating contactado:', { leadId, currentValue, newValue: !currentValue });
+
+            const { data, error } = await supabase
                 .from('profiles')
                 .update({ contactado: !currentValue })
-                .eq('id', leadId);
+                .eq('id', leadId)
+                .select();
 
-            if (error) throw error;
+            if (error) {
+                console.error('[SimpleCRM] Update error:', error);
+                throw error;
+            }
+
+            console.log('[SimpleCRM] Update successful:', data);
 
             setClients(prev => prev.map(l =>
                 l.id === leadId ? { ...l, contactado: !currentValue } : l
@@ -271,6 +279,7 @@ const SimpleCRMPage: React.FC = () => {
 
             toast.success(`Marcado como ${!currentValue ? 'contactado' : 'no contactado'}`);
         } catch (err: any) {
+            console.error('[SimpleCRM] Toggle contactado failed:', err);
             toast.error(`Error: ${err.message}`);
         }
     };

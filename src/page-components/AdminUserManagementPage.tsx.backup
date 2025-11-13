@@ -14,11 +14,13 @@ import {
     Mail,
     Calendar,
     TrendingUp,
-    Eye
+    Eye,
+    FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
 import CreateUserModal from '../components/CreateUserModal';
 import UserAnalyticsModal from '../components/UserAnalyticsModal';
+import ApplicationAnalyticsPanel from '../components/ApplicationAnalyticsPanel';
 
 interface SalesUser {
     id: string;
@@ -40,6 +42,7 @@ interface SalesUser {
 }
 
 const AdminUserManagementPage: React.FC = () => {
+    const [activeTab, setActiveTab] = useState<'users' | 'applications'>('users');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const queryClient = useQueryClient();
@@ -213,22 +216,59 @@ const AdminUserManagementPage: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios y Solicitudes</h1>
                     <p className="text-gray-600 mt-1">
-                        Administra el equipo de ventas y monitorea su desempeño
+                        Administra el equipo de ventas y analiza las solicitudes de financiamiento
                     </p>
                 </div>
-                <button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
-                >
-                    <UserPlus className="w-5 h-5" />
-                    Crear Usuario de Ventas
-                </button>
+                {activeTab === 'users' && (
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
+                    >
+                        <UserPlus className="w-5 h-5" />
+                        Crear Usuario de Ventas
+                    </button>
+                )}
             </div>
 
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            {/* Tabs */}
+            <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+                <div className="flex border-b">
+                    <button
+                        onClick={() => setActiveTab('users')}
+                        className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
+                            activeTab === 'users'
+                                ? 'bg-primary-50 text-primary-700 border-b-2 border-primary-600'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        }`}
+                    >
+                        <div className="flex items-center justify-center gap-2">
+                            <Users className="w-5 h-5" />
+                            <span>Usuarios de Ventas</span>
+                        </div>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('applications')}
+                        className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
+                            activeTab === 'applications'
+                                ? 'bg-primary-50 text-primary-700 border-b-2 border-primary-600'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        }`}
+                    >
+                        <div className="flex items-center justify-center gap-2">
+                            <FileText className="w-5 h-5" />
+                            <span>Análisis de Solicitudes</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            {/* Tab Content */}
+            {activeTab === 'users' && (
+                <>
+                    {/* Stats Overview */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
                 <div className="bg-white p-4 rounded-xl shadow-sm border">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-100 rounded-lg">
@@ -430,6 +470,13 @@ const AdminUserManagementPage: React.FC = () => {
                     </table>
                 </div>
             </div>
+                </>
+            )}
+
+            {/* Applications Analytics Tab */}
+            {activeTab === 'applications' && (
+                <ApplicationAnalyticsPanel />
+            )}
 
             {/* Modals */}
             <CreateUserModal
