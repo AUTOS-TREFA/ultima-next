@@ -30,7 +30,7 @@ import {
     Calendar,
     ExternalLink
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import StatsCard from '../components/StatsCard';
 import { Bar, BarChart as RechartsBarChart, Pie, PieChart as RechartsPieChart, Cell, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid, Line, LineChart } from 'recharts';
 
