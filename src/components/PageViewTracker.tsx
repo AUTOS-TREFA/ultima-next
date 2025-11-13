@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { conversionTracking } from '../services/ConversionTrackingService';
 
@@ -14,7 +14,7 @@ import { conversionTracking } from '../services/ConversionTrackingService';
  *
  * Place this component once at the top level of your app (in layout.tsx)
  */
-export default function PageViewTracker() {
+function PageViewTrackerContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -42,4 +42,12 @@ export default function PageViewTracker() {
   }, [pathname, searchParams]); // Re-run on route or query string change
 
   return null; // This component doesn't render anything
+}
+
+export default function PageViewTracker() {
+  return (
+    <Suspense fallback={null}>
+      <PageViewTrackerContent />
+    </Suspense>
+  );
 }
