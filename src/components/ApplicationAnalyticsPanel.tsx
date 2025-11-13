@@ -15,7 +15,7 @@ import {
     Loader2,
     AlertTriangle
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 interface DetailedApplication {
     application_id: string;
