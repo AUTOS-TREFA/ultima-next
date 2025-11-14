@@ -5,11 +5,8 @@ import type { NextRequest } from 'next/server';
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
 
-  // Explicitly provide Supabase credentials to avoid environment variable issues
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://pemgwyymodlwabaexxrb.supabase.co';
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlbWd3eXltb2Rsd2FiYWV4eHJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5OTE1MTYsImV4cCI6MjA3ODU2NzUxNn0.wfwBKfCuDYmBX_Hi5KvqtNmLLpbgQllPnUaPfoDrYok';
-
-  const supabase = createMiddlewareClient({ req, res }, { supabaseUrl, supabaseKey });
+  // Create middleware client - this will automatically read/write cookies
+  const supabase = createMiddlewareClient({ req, res });
 
   // Refresh session if expired
   const { data: { session } } = await supabase.auth.getSession();
