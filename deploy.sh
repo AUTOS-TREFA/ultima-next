@@ -188,12 +188,25 @@ echo "  - NEXT_PUBLIC_GIT_COMMIT: $NEXT_PUBLIC_GIT_COMMIT"
 echo "  - NEXT_PUBLIC_BUILD_DATE: $NEXT_PUBLIC_BUILD_DATE"
 echo "  - Image URL: $IMAGE_URL"
 
+# Read additional build args from cloud-build-vars.yaml
+NEXT_PUBLIC_CAR_STUDIO_API_KEY=$(grep "NEXT_PUBLIC_CAR_STUDIO_API_KEY:" cloud-build-vars.yaml | cut -d'"' -f2)
+NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL=$(grep "NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL:" cloud-build-vars.yaml | cut -d'"' -f2)
+NEXT_PUBLIC_LANDING_WEBHOOK_URL=$(grep "NEXT_PUBLIC_LANDING_WEBHOOK_URL:" cloud-build-vars.yaml | cut -d'"' -f2)
+NEXT_PUBLIC_APPLICATION_WEBHOOK_URL=$(grep "NEXT_PUBLIC_APPLICATION_WEBHOOK_URL:" cloud-build-vars.yaml | cut -d'"' -f2)
+NEXT_PUBLIC_PROXY_URL=$(grep "NEXT_PUBLIC_PROXY_URL:" cloud-build-vars.yaml | cut -d'"' -f2)
+NEXT_PUBLIC_CALENDLY_URL_MTY=$(grep "NEXT_PUBLIC_CALENDLY_URL_MTY:" cloud-build-vars.yaml | cut -d'"' -f2)
+NEXT_PUBLIC_CALENDLY_URL_TMPS=$(grep "NEXT_PUBLIC_CALENDLY_URL_TMPS:" cloud-build-vars.yaml | cut -d'"' -f2)
+NEXT_PUBLIC_CALENDLY_URL_COAH=$(grep "NEXT_PUBLIC_CALENDLY_URL_COAH:" cloud-build-vars.yaml | cut -d'"' -f2)
+NEXT_PUBLIC_CALENDLY_URL_GPE=$(grep "NEXT_PUBLIC_CALENDLY_URL_GPE:" cloud-build-vars.yaml | cut -d'"' -f2)
+NEXT_PUBLIC_CLOUD_RUN_URL=$(grep "NEXT_PUBLIC_CLOUD_RUN_URL:" cloud-build-vars.yaml | cut -d'"' -f2)
+
 docker build \
   --platform linux/amd64 \
   --build-arg NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
   --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$NEXT_PUBLIC_SUPABASE_ANON_KEY" \
   --build-arg NEXT_PUBLIC_GIT_COMMIT="$NEXT_PUBLIC_GIT_COMMIT" \
   --build-arg NEXT_PUBLIC_BUILD_DATE="$NEXT_PUBLIC_BUILD_DATE" \
+  --build-arg NEXT_PUBLIC_ENVIRONMENT="$ENVIRONMENT" \
   --build-arg NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID="$NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID" \
   --build-arg NEXT_PUBLIC_INTELIMOTOR_API_KEY="$NEXT_PUBLIC_INTELIMOTOR_API_KEY" \
   --build-arg NEXT_PUBLIC_INTELIMOTOR_API_SECRET="$NEXT_PUBLIC_INTELIMOTOR_API_SECRET" \
@@ -207,6 +220,17 @@ docker build \
   --build-arg NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_TABLE_ID="$NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_TABLE_ID" \
   --build-arg NEXT_PUBLIC_IMAGE_CDN_URL="$NEXT_PUBLIC_IMAGE_CDN_URL" \
   --build-arg NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL="$NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL" \
+  --build-arg NEXT_PUBLIC_CAR_STUDIO_API_KEY="$NEXT_PUBLIC_CAR_STUDIO_API_KEY" \
+  --build-arg NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL="$NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL" \
+  --build-arg NEXT_PUBLIC_LANDING_WEBHOOK_URL="$NEXT_PUBLIC_LANDING_WEBHOOK_URL" \
+  --build-arg NEXT_PUBLIC_APPLICATION_WEBHOOK_URL="$NEXT_PUBLIC_APPLICATION_WEBHOOK_URL" \
+  --build-arg NEXT_PUBLIC_PROXY_URL="$NEXT_PUBLIC_PROXY_URL" \
+  --build-arg NEXT_PUBLIC_CALENDLY_URL_MTY="$NEXT_PUBLIC_CALENDLY_URL_MTY" \
+  --build-arg NEXT_PUBLIC_CALENDLY_URL_TMPS="$NEXT_PUBLIC_CALENDLY_URL_TMPS" \
+  --build-arg NEXT_PUBLIC_CALENDLY_URL_COAH="$NEXT_PUBLIC_CALENDLY_URL_COAH" \
+  --build-arg NEXT_PUBLIC_CALENDLY_URL_GPE="$NEXT_PUBLIC_CALENDLY_URL_GPE" \
+  --build-arg NEXT_PUBLIC_CLOUD_RUN_URL="$NEXT_PUBLIC_CLOUD_RUN_URL" \
+  --build-arg NEXT_PUBLIC_FRONTEND_URL="$FRONTEND_URL_OVERRIDE" \
   -t $IMAGE_URL \
   .
 
@@ -262,40 +286,22 @@ else
     FRONTEND_URL_OVERRIDE="https://autostrefa.mx"
 fi
 
-# Add all environment variables
+# Add runtime environment variables (for server-side use only)
+# Note: NEXT_PUBLIC_ variables are already baked into the build, no need to set them at runtime
 if [ ! -z "$FRONTEND_URL_OVERRIDE" ]; then
     # Production: Use custom domain
-    ENV_VARS="FRONTEND_URL=$FRONTEND_URL_OVERRIDE"
+    ENV_VARS="NEXT_PUBLIC_FRONTEND_URL=$FRONTEND_URL_OVERRIDE"
 else
     # Staging: Will use Cloud Run URL (set after deployment)
-    add_env_var "FRONTEND_URL"
+    ENV_VARS=""
 fi
-add_env_var "CLOUD_RUN_URL"
-add_env_var "SUPABASE_URL"
-add_env_var "VITE_SUPABASE_URL"
-add_env_var "VITE_SUPABASE_ANON_KEY"
-add_env_var "NEXT_PUBLIC_SUPABASE_URL"
-add_env_var "NEXT_PUBLIC_SUPABASE_ANON_KEY"
-add_env_var "AIRTABLE_VALUATION_API_KEY"
-add_env_var "AIRTABLE_VALUATION_BASE_ID"
-add_env_var "AIRTABLE_VALUATION_TABLE_ID"
-add_env_var "AIRTABLE_VALUATION_VIEW"
-add_env_var "AIRTABLE_VALUATIONS_STORAGE_TABLE_ID"
-add_env_var "AIRTABLE_LEAD_CAPTURE_API_KEY"
-add_env_var "AIRTABLE_LEAD_CAPTURE_BASE_ID"
-add_env_var "AIRTABLE_LEAD_CAPTURE_TABLE_ID"
-add_env_var "VITE_INTELIMOTOR_BUSINESS_UNIT_ID"
-add_env_var "VITE_INTELIMOTOR_API_KEY"
-add_env_var "VITE_INTELIMOTOR_API_SECRET"
-add_env_var "CAR_STUDIO_API_KEY"
-add_env_var "LEAD_CONNECTOR_WEBHOOK_URL"
-add_env_var "LANDING_WEBHOOK_URL"
-add_env_var "APPLICATION_WEBHOOK_URL"
-add_env_var "PROXY_URL"
-add_env_var "CALENDLY_URL_MTY"
-add_env_var "CALENDLY_URL_TMPS"
-add_env_var "CALENDLY_URL_COAH"
-add_env_var "CALENDLY_URL_GPE"
+
+# Add version information for runtime
+if [ -z "$ENV_VARS" ]; then
+    ENV_VARS="NEXT_PUBLIC_GIT_COMMIT=$NEXT_PUBLIC_GIT_COMMIT,NEXT_PUBLIC_BUILD_DATE=$NEXT_PUBLIC_BUILD_DATE,NEXT_PUBLIC_ENVIRONMENT=$ENVIRONMENT"
+else
+    ENV_VARS="$ENV_VARS,NEXT_PUBLIC_GIT_COMMIT=$NEXT_PUBLIC_GIT_COMMIT,NEXT_PUBLIC_BUILD_DATE=$NEXT_PUBLIC_BUILD_DATE,NEXT_PUBLIC_ENVIRONMENT=$ENVIRONMENT"
+fi
 
 echo "Deploying service: $SERVICE_NAME"
 echo "Region: $REGION"
@@ -327,12 +333,12 @@ if [ $? -eq 0 ]; then
 
     # Update FRONTEND_URL for staging if needed
     if [ "$ENVIRONMENT" = "staging" ] && [ -z "$FRONTEND_URL_OVERRIDE" ]; then
-        echo -e "${YELLOW}Updating staging FRONTEND_URL to Cloud Run URL...${NC}"
+        echo -e "${YELLOW}Updating staging NEXT_PUBLIC_FRONTEND_URL to Cloud Run URL...${NC}"
         gcloud run services update $SERVICE_NAME \
             --region=$REGION \
-            --update-env-vars="FRONTEND_URL=$SERVICE_URL" \
+            --update-env-vars="NEXT_PUBLIC_FRONTEND_URL=$SERVICE_URL" \
             --quiet
-        echo -e "${GREEN}✓ FRONTEND_URL updated${NC}"
+        echo -e "${GREEN}✓ NEXT_PUBLIC_FRONTEND_URL updated${NC}"
         echo ""
     fi
 

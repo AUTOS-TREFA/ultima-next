@@ -1,43 +1,57 @@
 # This file is a template for cloud-build-vars.yaml.
 # Copy this file to cloud-build-vars.yaml and replace the placeholders with your actual secrets.
 # The cloud-build-vars.yaml file is ignored by Git.
+#
+# IMPORTANT: This project uses Next.js, which requires NEXT_PUBLIC_ prefix for client-side environment variables.
+# These variables are embedded into the JavaScript bundle at BUILD TIME and cannot be changed at runtime.
 
-FRONTEND_URL: "https://trefa.mx"
-CLOUD_RUN_URL: "https://app-1052659336338.us-central1.run.app"
-SUPABASE_URL: "https://jjepfehmuybpctdzipnu.supabase.co"
+# --- Frontend URL Configuration ---
+NEXT_PUBLIC_FRONTEND_URL: "https://trefa.mx"
+NEXT_PUBLIC_CLOUD_RUN_URL: "https://app-1052659336338.us-central1.run.app"
 
-# --- Frontend (Vite) Environment Variables ---
-VITE_SUPABASE_URL: "https://jjepfehmuybpctdzipnu.supabase.co"
-VITE_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqZXBmZWhtdXlicGN0ZHppcG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQxOTk2MDMsImV4cCI6MjA1OTc3NTYwM30.yaMESZqaoLvkbVSgdHxpU-Vb7q-naxj95QxcpRYPrX4"
+# --- Supabase Configuration ---
+# Get these from: https://supabase.com/dashboard/project/_/settings/api
+NEXT_PUBLIC_SUPABASE_URL: "https://pemgwyymodlwabaexxrb.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlbWd3eXltb2Rsd2FiYWV4eHJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5OTE1MTYsImV4cCI6MjA3ODU2NzUxNn0.wfwBKfCuDYmBX_Hi5KvqtNmLLpbgQllPnUaPfoDrYok"
 
 # --- Airtable API Credentials ---
-AIRTABLE_VALUATION_API_KEY: "<YOUR_AIRTABLE_API_KEY>"
-AIRTABLE_VALUATION_BASE_ID: "appbOPKYqQRW2HgyB"
-AIRTABLE_VALUATION_TABLE_ID: "tblGuvYLMnZXr6o8f"
-AIRTABLE_VALUATION_VIEW: "viwEQ9YuMH4Y7XMs9"
-AIRTABLE_VALUATIONS_STORAGE_TABLE_ID: "tbl66UyGNcOfOxQUm"
-AIRTABLE_LEAD_CAPTURE_API_KEY: "<YOUR_AIRTABLE_API_KEY>"
-AIRTABLE_LEAD_CAPTURE_BASE_ID: "appbOPKYqQRW2HgyB"
-AIRTABLE_LEAD_CAPTURE_TABLE_ID: "tblLFY58uCrcX7dPK"
+# Get your API key from: https://airtable.com/account
+NEXT_PUBLIC_AIRTABLE_VALUATION_API_KEY: "patgjhCDUrCQ915MV.8595dc00077c25d786992f793e5370e4a45af5b6929668beb47ff49511ddb414"
+NEXT_PUBLIC_AIRTABLE_VALUATION_BASE_ID: "appbOPKYqQRW2HgyB"
+NEXT_PUBLIC_AIRTABLE_VALUATION_TABLE_ID: "tblGuvYLMnZXr6o8f"
+NEXT_PUBLIC_AIRTABLE_VALUATION_VIEW: "viwEQ9YuMH4Y7XMs9"
+NEXT_PUBLIC_AIRTABLE_VALUATIONS_STORAGE_TABLE_ID: "tbl66UyGNcOfOxQUm"
+NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_API_KEY: "patgjhCDUrCQ915MV.8595dc00077c25d786992f793e5370e4a45af5b6929668beb47ff49511ddb414"
+NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_BASE_ID: "appbOPKYqQRW2HgyB"
+NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_TABLE_ID: "tblLFY58uCrcX7dPK"
 
 # --- Intelimotor API Credentials ---
-VITE_INTELIMOTOR_BUSINESS_UNIT_ID: "629f91e85853b40012e58308"
-VITE_INTELIMOTOR_API_KEY: "920b45727bb711069c950bbda204182f883d5bd1b17a6d0c6ccd0d673dace457"
-VITE_INTELIMOTOR_API_SECRET: "ee4b975fb97eb1573624adfe45cb5c78ca53f3a002729e61b499dd182cb23a6a"
+NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID: "629f91e85853b40012e58308"
+NEXT_PUBLIC_INTELIMOTOR_API_KEY: "920b45727bb711069c950bbda204182f883d5bd1b17a6d0c6ccd0d673dace457"
+NEXT_PUBLIC_INTELIMOTOR_API_SECRET: "ee4b975fb97eb1573624adfe45cb5c78ca53f3a002729e61b499dd182cb23a6a"
 
 # --- Car Studio API Key ---
-CAR_STUDIO_API_KEY: "AIzaSyBzx6k35qkY0FzG8RAwwDgMazCzdyA-AZ8"
+NEXT_PUBLIC_CAR_STUDIO_API_KEY: "e3c31fe81d1345b9a91996043d452d91"
 
 # --- Webhook URLs ---
-LEAD_CONNECTOR_WEBHOOK_URL: "https://services.leadconnectorhq.com/hooks/LJhjk6eFZEHwptjuIF0a/webhook-trigger/eprKrEBZDa2DNegPGQ3T"
-LANDING_WEBHOOK_URL: "https://hooks.airtable.com/workflows/v1/genericWebhook/appbOPKYqQRW2HgyB/wflQkAdsDbWeyGSIm/wtrb8ZF0GxoaZk2bf"
-APPLICATION_WEBHOOK_URL: "https://services.leadconnectorhq.com/hooks/LJhjk6eFZEHwptjuIF0a/webhook-trigger/eprKrEBZDa2DNegPGQ3T"
+NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL: "https://services.leadconnectorhq.com/hooks/LJhjk6eFZEHwptjuIF0a/webhook-trigger/eprKrEBZDa2DNegPGQ3T"
+NEXT_PUBLIC_LANDING_WEBHOOK_URL: "https://hooks.airtable.com/workflows/v1/genericWebhook/appbOPKYqQRW2HgyB/wflQkAdsDbWeyGSIm/wtrb8ZF0GxoaZk2bf"
+NEXT_PUBLIC_APPLICATION_WEBHOOK_URL: "https://services.leadconnectorhq.com/hooks/LJhjk6eFZEHwptjuIF0a/webhook-trigger/eprKrEBZDa2DNegPGQ3T"
 
 # --- CORS Proxy ---
-PROXY_URL: "https://proxy.cors.sh/"
+NEXT_PUBLIC_PROXY_URL: "https://proxy.cors.sh/"
 
 # --- Calendly URLs ---
-CALENDLY_URL_MTY: "https://calendly.com/trefa-monterrey/cita-monterrey?month=2025-09"
-CALENDLY_URL_TMPS: "https://calendly.com/trefa-reynosa/cita-reynosa?month=2025-09"
-CALENDLY_URL_COAH: "https://calendly.com/trefa-saltillo/cita-saltillo?month=2025-09"
-CALENDLY_URL_GPE: "https://calendly.com/trefa-guadalupe/cita-guadalupe?month=2025-09"
+NEXT_PUBLIC_CALENDLY_URL_MTY: "https://calendly.com/trefa-monterrey/cita-monterrey?month=2025-09"
+NEXT_PUBLIC_CALENDLY_URL_TMPS: "https://calendly.com/trefa-reynosa/cita-reynosa?month=2025-09"
+NEXT_PUBLIC_CALENDLY_URL_COAH: "https://calendly.com/trefa-saltillo/cita-saltillo?month=2025-09"
+NEXT_PUBLIC_CALENDLY_URL_GPE: "https://calendly.com/trefa-guadalupe/cita-guadalupe?month=2025-09"
+
+# --- CDN & Image Configuration ---
+NEXT_PUBLIC_IMAGE_CDN_URL: ""
+NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ""
+
+# --- Version Information (Auto-generated during deployment) ---
+# NEXT_PUBLIC_GIT_COMMIT: "<auto-generated>"
+# NEXT_PUBLIC_BUILD_DATE: "<auto-generated>"
+# NEXT_PUBLIC_ENVIRONMENT: "staging" or "production"
