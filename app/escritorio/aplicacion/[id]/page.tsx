@@ -9,6 +9,6 @@ interface PageProps {
   searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export default function Page({ params, searchParams }: PageProps) {
+export default function Page({ params }: PageProps) {
   return <Application id={params.id} />;
 }

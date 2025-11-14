@@ -186,28 +186,70 @@ function deploy_staging() {
     echo -e "${YELLOW}[2/6] Building Docker image with version info...${NC}"
 
     # Read build-time credentials from cloud-build-vars.yaml
-    VITE_SUPABASE_URL=$(grep "^VITE_SUPABASE_URL:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
-    VITE_SUPABASE_ANON_KEY=$(grep "^VITE_SUPABASE_ANON_KEY:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
-    VITE_INTELIMOTOR_BUSINESS_UNIT_ID=$(grep "^VITE_INTELIMOTOR_BUSINESS_UNIT_ID:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
-    VITE_INTELIMOTOR_API_KEY=$(grep "^VITE_INTELIMOTOR_API_KEY:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
-    VITE_INTELIMOTOR_API_SECRET=$(grep "^VITE_INTELIMOTOR_API_SECRET:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    # Next.js requires NEXT_PUBLIC_ prefix for client-side environment variables
+    NEXT_PUBLIC_SUPABASE_URL=$(grep "^NEXT_PUBLIC_SUPABASE_URL:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=$(grep "^NEXT_PUBLIC_SUPABASE_ANON_KEY:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID=$(grep "^NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_INTELIMOTOR_API_KEY=$(grep "^NEXT_PUBLIC_INTELIMOTOR_API_KEY:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_INTELIMOTOR_API_SECRET=$(grep "^NEXT_PUBLIC_INTELIMOTOR_API_SECRET:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_AIRTABLE_VALUATION_API_KEY=$(grep "^NEXT_PUBLIC_AIRTABLE_VALUATION_API_KEY:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_AIRTABLE_VALUATION_BASE_ID=$(grep "^NEXT_PUBLIC_AIRTABLE_VALUATION_BASE_ID:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_AIRTABLE_VALUATION_TABLE_ID=$(grep "^NEXT_PUBLIC_AIRTABLE_VALUATION_TABLE_ID:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_AIRTABLE_VALUATION_VIEW=$(grep "^NEXT_PUBLIC_AIRTABLE_VALUATION_VIEW:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_AIRTABLE_VALUATIONS_STORAGE_TABLE_ID=$(grep "^NEXT_PUBLIC_AIRTABLE_VALUATIONS_STORAGE_TABLE_ID:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_API_KEY=$(grep "^NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_API_KEY:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_BASE_ID=$(grep "^NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_BASE_ID:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_TABLE_ID=$(grep "^NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_TABLE_ID:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_IMAGE_CDN_URL=$(grep "^NEXT_PUBLIC_IMAGE_CDN_URL:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL=$(grep "^NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_CAR_STUDIO_API_KEY=$(grep "^NEXT_PUBLIC_CAR_STUDIO_API_KEY:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL=$(grep "^NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_LANDING_WEBHOOK_URL=$(grep "^NEXT_PUBLIC_LANDING_WEBHOOK_URL:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_APPLICATION_WEBHOOK_URL=$(grep "^NEXT_PUBLIC_APPLICATION_WEBHOOK_URL:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_PROXY_URL=$(grep "^NEXT_PUBLIC_PROXY_URL:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_CALENDLY_URL_MTY=$(grep "^NEXT_PUBLIC_CALENDLY_URL_MTY:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_CALENDLY_URL_TMPS=$(grep "^NEXT_PUBLIC_CALENDLY_URL_TMPS:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_CALENDLY_URL_COAH=$(grep "^NEXT_PUBLIC_CALENDLY_URL_COAH:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_CALENDLY_URL_GPE=$(grep "^NEXT_PUBLIC_CALENDLY_URL_GPE:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
+    NEXT_PUBLIC_CLOUD_RUN_URL=$(grep "^NEXT_PUBLIC_CLOUD_RUN_URL:" cloud-build-vars.yaml | sed 's/^[^:]*: *"\?\(.*\)"\?$/\1/' | xargs)
 
     echo "Building with:"
     echo "  • Git Commit: $git_commit_short"
     echo "  • Build Date: $build_date"
-    echo "  • Supabase URL: $VITE_SUPABASE_URL"
-    echo "  • Intelimotor Business Unit: $VITE_INTELIMOTOR_BUSINESS_UNIT_ID"
+    echo "  • Supabase URL: $NEXT_PUBLIC_SUPABASE_URL"
+    echo "  • Intelimotor Business Unit: $NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID"
     echo ""
 
     docker build \
       --platform linux/amd64 \
-      --build-arg VITE_SUPABASE_URL="$VITE_SUPABASE_URL" \
-      --build-arg VITE_SUPABASE_ANON_KEY="$VITE_SUPABASE_ANON_KEY" \
-      --build-arg VITE_INTELIMOTOR_BUSINESS_UNIT_ID="$VITE_INTELIMOTOR_BUSINESS_UNIT_ID" \
-      --build-arg VITE_INTELIMOTOR_API_KEY="$VITE_INTELIMOTOR_API_KEY" \
-      --build-arg VITE_INTELIMOTOR_API_SECRET="$VITE_INTELIMOTOR_API_SECRET" \
-      --build-arg VITE_GIT_COMMIT="$git_commit_short" \
-      --build-arg VITE_BUILD_DATE="$build_date" \
+      --build-arg NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
+      --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+      --build-arg NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID="$NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID" \
+      --build-arg NEXT_PUBLIC_INTELIMOTOR_API_KEY="$NEXT_PUBLIC_INTELIMOTOR_API_KEY" \
+      --build-arg NEXT_PUBLIC_INTELIMOTOR_API_SECRET="$NEXT_PUBLIC_INTELIMOTOR_API_SECRET" \
+      --build-arg NEXT_PUBLIC_AIRTABLE_VALUATION_API_KEY="$NEXT_PUBLIC_AIRTABLE_VALUATION_API_KEY" \
+      --build-arg NEXT_PUBLIC_AIRTABLE_VALUATION_BASE_ID="$NEXT_PUBLIC_AIRTABLE_VALUATION_BASE_ID" \
+      --build-arg NEXT_PUBLIC_AIRTABLE_VALUATION_TABLE_ID="$NEXT_PUBLIC_AIRTABLE_VALUATION_TABLE_ID" \
+      --build-arg NEXT_PUBLIC_AIRTABLE_VALUATION_VIEW="$NEXT_PUBLIC_AIRTABLE_VALUATION_VIEW" \
+      --build-arg NEXT_PUBLIC_AIRTABLE_VALUATIONS_STORAGE_TABLE_ID="$NEXT_PUBLIC_AIRTABLE_VALUATIONS_STORAGE_TABLE_ID" \
+      --build-arg NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_API_KEY="$NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_API_KEY" \
+      --build-arg NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_BASE_ID="$NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_BASE_ID" \
+      --build-arg NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_TABLE_ID="$NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_TABLE_ID" \
+      --build-arg NEXT_PUBLIC_IMAGE_CDN_URL="$NEXT_PUBLIC_IMAGE_CDN_URL" \
+      --build-arg NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL="$NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL" \
+      --build-arg NEXT_PUBLIC_CAR_STUDIO_API_KEY="$NEXT_PUBLIC_CAR_STUDIO_API_KEY" \
+      --build-arg NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL="$NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL" \
+      --build-arg NEXT_PUBLIC_LANDING_WEBHOOK_URL="$NEXT_PUBLIC_LANDING_WEBHOOK_URL" \
+      --build-arg NEXT_PUBLIC_APPLICATION_WEBHOOK_URL="$NEXT_PUBLIC_APPLICATION_WEBHOOK_URL" \
+      --build-arg NEXT_PUBLIC_PROXY_URL="$NEXT_PUBLIC_PROXY_URL" \
+      --build-arg NEXT_PUBLIC_CALENDLY_URL_MTY="$NEXT_PUBLIC_CALENDLY_URL_MTY" \
+      --build-arg NEXT_PUBLIC_CALENDLY_URL_TMPS="$NEXT_PUBLIC_CALENDLY_URL_TMPS" \
+      --build-arg NEXT_PUBLIC_CALENDLY_URL_COAH="$NEXT_PUBLIC_CALENDLY_URL_COAH" \
+      --build-arg NEXT_PUBLIC_CALENDLY_URL_GPE="$NEXT_PUBLIC_CALENDLY_URL_GPE" \
+      --build-arg NEXT_PUBLIC_CLOUD_RUN_URL="$NEXT_PUBLIC_CLOUD_RUN_URL" \
+      --build-arg NEXT_PUBLIC_GIT_COMMIT="$git_commit_short" \
+      --build-arg NEXT_PUBLIC_BUILD_DATE="$build_date" \
+      --build-arg NEXT_PUBLIC_ENVIRONMENT="staging" \
       -t "$image_url" \
       .
     echo -e "${GREEN}✓ Docker image built successfully.${NC}"
@@ -231,8 +273,8 @@ function deploy_staging() {
     # Parse environment variables properly
     local env_vars=$(parse_env_vars)
 
-    # Add version metadata
-    env_vars="$env_vars,VITE_GIT_COMMIT=$git_commit_short,VITE_BUILD_DATE=$build_date,VITE_ENVIRONMENT=staging"
+    # Add version metadata (Next.js environment variables)
+    env_vars="$env_vars,NEXT_PUBLIC_GIT_COMMIT=$git_commit_short,NEXT_PUBLIC_BUILD_DATE=$build_date,NEXT_PUBLIC_ENVIRONMENT=staging"
 
     gcloud run deploy "$STAGING_SERVICE_NAME" \
       --image="$image_url" \
@@ -253,7 +295,7 @@ function deploy_staging() {
     echo -e "${YELLOW}[5/6] Updating staging environment with its own URL...${NC}"
     gcloud run services update "$STAGING_SERVICE_NAME" \
         --region="$REGION" \
-        --update-env-vars="FRONTEND_URL=$service_url" \
+        --update-env-vars="NEXT_PUBLIC_FRONTEND_URL=$service_url" \
         --quiet
     echo -e "${GREEN}✓ Staging service updated.${NC}"
     echo ""
@@ -346,8 +388,8 @@ function promote_to_production() {
     # Get the build date from the environment or use current date
     local build_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-    # Add production-specific environment variables
-    env_vars="FRONTEND_URL=https://trefa.mx,$env_vars,VITE_GIT_COMMIT=$git_commit_short,VITE_BUILD_DATE=$build_date,VITE_ENVIRONMENT=production"
+    # Add production-specific environment variables (Next.js)
+    env_vars="NEXT_PUBLIC_FRONTEND_URL=https://trefa.mx,$env_vars,NEXT_PUBLIC_GIT_COMMIT=$git_commit_short,NEXT_PUBLIC_BUILD_DATE=$build_date,NEXT_PUBLIC_ENVIRONMENT=production"
 
     echo -e "${GREEN}✓ Environment variables parsed.${NC}"
     echo ""
