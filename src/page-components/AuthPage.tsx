@@ -107,8 +107,9 @@ const AuthPage: React.FC = () => {
         }
 
         if (session) {
-            // Check if there's a pending redirect
-            let redirectPath = localStorage.getItem('loginRedirect');
+            // First check URL redirect parameter
+            const urlRedirect = searchParams?.get('redirect');
+            let redirectPath = urlRedirect || localStorage.getItem('loginRedirect');
 
             // If no redirect is set, determine default based on email or role
             if (!redirectPath) {
@@ -125,7 +126,7 @@ const AuthPage: React.FC = () => {
             localStorage.removeItem('loginRedirect'); // Clean up after use
             router.replace(redirectPath);
         }
-    }, [session, profile, router]);
+    }, [session, profile, router, searchParams]);
 
     useEffect(() => {
         const ordenCompraFromUrl = searchParams?.get('ordencompra');

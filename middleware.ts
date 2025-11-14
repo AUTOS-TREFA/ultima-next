@@ -50,9 +50,13 @@ export async function middleware(req: NextRequest) {
   const isAuthOnlyRoute = authOnlyRoutes.some(route => pathname.startsWith(route));
 
   if (isAuthOnlyRoute && session) {
-    // Redirect to dashboard if already logged in
+    // Check for redirect parameter in URL
+    const redirectParam = req.nextUrl.searchParams.get('redirect');
+
+    // If there's a redirect parameter, use it; otherwise default to /escritorio
     const url = req.nextUrl.clone();
-    url.pathname = '/escritorio';
+    url.pathname = redirectParam || '/escritorio';
+    url.searchParams.delete('redirect'); // Remove redirect param to avoid loops
     return NextResponse.redirect(url);
   }
 
