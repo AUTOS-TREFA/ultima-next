@@ -30,6 +30,8 @@ const PROXY_URL = config?.proxy?.url || "https://proxy.cors.sh";
 const ALLOWED_ORIGINS = [
   FRONTEND_URL,
   CLOUD_RUN_URL,
+  "https://autostrefa.mx",
+  "https://www.autostrefa.mx",
   "https://trefa.mx",
   "https://www.trefa.mx",
   "https://staging.trefa.mx",
@@ -58,6 +60,8 @@ app.use(
           "'self'",
           "data:",
           "blob:",
+          "https://autostrefa.mx",
+          "https://www.autostrefa.mx",
           "https://trefa.mx",
           "https://www.trefa.mx",
           "https://autos.trefa.mx",
@@ -70,6 +74,8 @@ app.use(
         ],
         "connect-src": [
           "'self'",
+          "https://autostrefa.mx",
+          "https://www.autostrefa.mx",
           "https://trefa.mx",
           "https://www.trefa.mx",
           "https://autos.trefa.mx",
