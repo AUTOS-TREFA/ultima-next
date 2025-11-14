@@ -13,14 +13,14 @@ export function errorResponse(message: string, status: number = 500) {
 /**
  * Standard API Success Response
  */
-export function successResponse(data: any, status: number = 200) {
+export function successResponse(data: Record<string, unknown> | unknown[], status: number = 200) {
   return NextResponse.json(data, { status });
 }
 
 /**
  * Validate Required Fields
  */
-export function validateRequired(body: any, fields: string[]) {
+export function validateRequired(body: Record<string, unknown>, fields: string[]) {
   const missing = fields.filter(field => !body[field]);
 
   if (missing.length > 0) {
