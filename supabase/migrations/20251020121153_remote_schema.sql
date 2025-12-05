@@ -2529,11 +2529,11 @@ CREATE OR REPLACE VIEW "public"."comprado_autos_v" WITH ("security_invoker"='on'
     "a"."slug",
     NULLIF("a"."feature_image", ''::"text") AS "feature_image_path",
         CASE
-            WHEN (NULLIF("a"."feature_image", ''::"text") IS NOT NULL) THEN ('https://jjepfehmuybpctdzipnu.supabase.co/storage/v1/object/public/fotos_airtable/'::"text" || NULLIF("a"."feature_image", ''::"text"))
+            WHEN (NULLIF("a"."feature_image", ''::"text") IS NOT NULL) THEN ('https://pemgwyymodlwabaexxrb.supabase.co/storage/v1/object/public/fotos_airtable/'::"text" || NULLIF("a"."feature_image", ''::"text"))
             ELSE NULL::"text"
         END AS "feature_image_url",
     (COALESCE("a"."fotos_exterior", '[]'::"jsonb") || COALESCE("a"."fotos_interior", '[]'::"jsonb")) AS "raw_gallery_paths",
-    ( SELECT "jsonb_agg"(('https://jjepfehmuybpctdzipnu.supabase.co/storage/v1/object/public/fotos_airtable/'::"text" || "t"."elem")) AS "jsonb_agg"
+    ( SELECT "jsonb_agg"(('https://pemgwyymodlwabaexxrb.supabase.co/storage/v1/object/public/fotos_airtable/'::"text" || "t"."elem")) AS "jsonb_agg"
            FROM "jsonb_array_elements_text"((COALESCE("a"."fotos_exterior", '[]'::"jsonb") || COALESCE("a"."fotos_interior", '[]'::"jsonb"))) "t"("elem")) AS "gallery_image_urls"
    FROM "public"."autos_normalizados_cache" "a"
   WHERE ("a"."ordenstatus" = 'Comprado'::"text");

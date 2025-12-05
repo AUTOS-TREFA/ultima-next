@@ -32,8 +32,7 @@ export default class AirtableDirectService {
 
         if (!AIRTABLE_API_KEY) {
             console.error('❌ [Airtable] AIRTABLE_API_KEY not configured in environment variables');
-            console.error('❌ [Airtable] Make sure VITE_AIRTABLE_API_KEY is in .env file and restart dev server');
-            console.error('❌ [Airtable] Current import.meta.env:', (import.meta as any).env);
+            console.error('❌ [Airtable] Make sure NEXT_PUBLIC_AIRTABLE_API_KEY is in .env file and restart dev server');
             return [];
         }
 

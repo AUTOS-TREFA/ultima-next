@@ -57,10 +57,10 @@ BEGIN
         -- Call the Edge Function to send email (async, fire and forget)
         PERFORM
             net.http_post(
-                url := 'https://jjepfehmuybpctdzipnu.supabase.co/functions/v1/send-brevo-email',
+                url := 'https://pemgwyymodlwabaexxrb.supabase.co/functions/v1/send-brevo-email',
                 headers := jsonb_build_object(
                     'Content-Type', 'application/json',
-                    'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqZXBmZWhtdXlicGN0ZHppcG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQxOTk2MDMsImV4cCI6MjA1OTc3NTYwM30.yaMESZqaoLvkbVSgdHxpU-Vb7q-naxj95QxcpRYPrX4'
+                    'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlbWd3eXltb2Rsd2FiYWV4eHJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5OTE1MTYsImV4cCI6MjA3ODU2NzUxNn0.DZ5YDQpTjpWs3RXqzTzQjy4FZmrwGUqTjKkQjgc9XTw'
                 ),
                 body := jsonb_build_object(
                     'to', user_email,
@@ -113,10 +113,10 @@ BEGIN
         -- Call the Edge Function to send email (async, fire and forget)
         PERFORM
             net.http_post(
-                url := 'https://jjepfehmuybpctdzipnu.supabase.co/functions/v1/send-brevo-email',
+                url := 'https://pemgwyymodlwabaexxrb.supabase.co/functions/v1/send-brevo-email',
                 headers := jsonb_build_object(
                     'Content-Type', 'application/json',
-                    'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqZXBmZWhtdXlicGN0ZHppcG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQxOTk2MDMsImV4cCI6MjA1OTc3NTYwM30.yaMESZqaoLvkbVSgdHxpU-Vb7q-naxj95QxcpRYPrX4'
+                    'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlbWd3eXltb2Rsd2FiYWV4eHJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5OTE1MTYsImV4cCI6MjA3ODU2NzUxNn0.DZ5YDQpTjpWs3RXqzTzQjy4FZmrwGUqTjKkQjgc9XTw'
                 ),
                 body := jsonb_build_object(
                     'to', user_email,
@@ -171,10 +171,10 @@ BEGIN
         -- Call the Edge Function to send email (async, fire and forget)
         PERFORM
             net.http_post(
-                url := 'https://jjepfehmuybpctdzipnu.supabase.co/functions/v1/send-brevo-email',
+                url := 'https://pemgwyymodlwabaexxrb.supabase.co/functions/v1/send-brevo-email',
                 headers := jsonb_build_object(
                     'Content-Type', 'application/json',
-                    'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqZXBmZWhtdXlicGN0ZHppcG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQxOTk2MDMsImV4cCI6MjA1OTc3NTYwM30.yaMESZqaoLvkbVSgdHxpU-Vb7q-naxj95QxcpRYPrX4'
+                    'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlbWd3eXltb2Rsd2FiYWV4eHJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5OTE1MTYsImV4cCI6MjA3ODU2NzUxNn0.DZ5YDQpTjpWs3RXqzTzQjy4FZmrwGUqTjKkQjgc9XTw'
                 ),
                 body := jsonb_build_object(
                     'to', user_email,

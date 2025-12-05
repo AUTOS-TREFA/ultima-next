@@ -14,7 +14,7 @@ const Footer = () => {
   const router = useRouter()
 
   // Get app version from git commit hash
-  const appVersion = import.meta.env.VITE_GIT_COMMIT || import.meta.env.VITE_APP_VERSION || 'dev'
+  const appVersion = process.env.NEXT_PUBLIC_GIT_COMMIT || process.env.NEXT_PUBLIC_APP_VERSION || 'dev'
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, to: string, authRequired: boolean) => {
     if (authRequired && !session) {
