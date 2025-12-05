@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { LogOutIcon, Search as SearchIcon, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useVehicles } from '../context/VehicleContext';
@@ -20,7 +23,7 @@ const MobileHeader: React.FC = () => {
     const [isSearching, setIsSearching] = useState(false);
     const { session, profile, signOut } = useAuth();
     const { vehicles: allVehicles } = useVehicles();
-    const navigate = useNavigate();
+    const router = useRouter();
     const searchInputRef = useRef<HTMLInputElement>(null);
     const isSalesUser = profile?.role === 'sales';
 
@@ -31,7 +34,7 @@ const MobileHeader: React.FC = () => {
 
     const handleMobileLinkClick = (path: string) => {
         setMobileMenuOpen(false);
-        navigate(path);
+        router.push(path);
     };
 
     // Auto-focus search input when search opens
@@ -73,14 +76,14 @@ const MobileHeader: React.FC = () => {
         if (query.trim()) {
             setSearchOpen(false);
             setQuery('');
-            navigate(`/autos?search=${encodeURIComponent(query.trim())}`);
+            router.push(`/autos?search=${encodeURIComponent(query.trim())}`);
         }
     };
 
     const handleResultClick = (slug: string) => {
         setSearchOpen(false);
         setQuery('');
-        navigate(`/autos/${slug}`);
+        router.push(`/autos/${slug}`);
     };
 
     return (
@@ -89,7 +92,7 @@ const MobileHeader: React.FC = () => {
             <header className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-white shadow-sm border-b border-gray-200">
                 <div className="flex items-center justify-between h-16 px-3">
                     {/* Logo */}
-                    <Link to="/" className="flex-shrink-0">
+                    <Link href="/" className="flex-shrink-0">
                         <img
                             src="/images/trefalogo.png"
                             alt="TREFA"
@@ -187,7 +190,7 @@ const MobileHeader: React.FC = () => {
                                         onClick={() => {
                                             setSearchOpen(false);
                                             setQuery('');
-                                            navigate(`/autos?search=${encodeURIComponent(query)}`);
+                                            router.push(`/autos?search=${encodeURIComponent(query)}`);
                                         }}
                                         className="w-full text-center py-4 text-sm font-semibold text-primary-600 hover:bg-gray-50"
                                     >

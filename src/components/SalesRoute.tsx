@@ -1,14 +1,21 @@
+'use client';
+
 import React from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { redirect } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 
 /**
  * Route guard component that only allows access to users with 'sales' or 'admin' role.
  * Admins can access all sales routes for oversight purposes.
  */
-const SalesRoute: React.FC = () => {
+interface SalesRouteProps {
+    children: React.ReactNode;
+}
+
+const SalesRoute: React.FC<SalesRouteProps> = ({ children }) => {
     const { isAdmin, isSales, loading } = useAuth();
-    const location = useLocation();
+    const pathname = usePathname();
 
     if (loading) {
         return (
@@ -20,10 +27,10 @@ const SalesRoute: React.FC = () => {
 
     // Allow both sales and admin roles
     if (!isSales && !isAdmin) {
-        return <Navigate to="/escritorio" state={{ from: location }} replace />;
+        redirect('/escritorio');
     }
 
-    return <Outlet />;
+    return <>{children}</>;
 };
 
 export default SalesRoute;

@@ -1,7 +1,9 @@
+'use client';
+
 import React, { useState, useEffect, useMemo } from 'react';
 import type { WordPressVehicle } from '../types/types';
 import { useVehicles } from '../context/VehicleContext';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 const HeroVehicleScroller: React.FC = () => {
     const { vehicles: allVehicles } = useVehicles();
@@ -51,7 +53,7 @@ const VehicleImage: React.FC<{vehicle: WordPressVehicle}> = ({ vehicle }) => {
     const [isLoaded, setIsLoaded] = useState(false);
     return (
         // FIX: Corrected property access from `ligawp` to `slug`
-        <Link to={`/autos/${vehicle.slug}`} className="flex-shrink-0 w-64 h-48 rounded-2xl overflow-hidden group relative bg-gray-200">
+        <Link href={`/autos/${vehicle.slug}`} className="flex-shrink-0 w-64 h-48 rounded-2xl overflow-hidden group relative bg-gray-200">
             <img 
                 src={vehicle.feature_image} 
                 alt={vehicle.titulo} 

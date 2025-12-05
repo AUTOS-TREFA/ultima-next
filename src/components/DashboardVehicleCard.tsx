@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import type { WordPressVehicle } from '../types/types';
 import ImageCarousel from './ImageCarousel';
 import { formatPrice } from '../utils/formatters';
@@ -43,7 +45,7 @@ const DashboardVehicleCard: React.FC<DashboardVehicleCardProps> = ({ vehicle }) 
   );
 
   return hasSlug ? (
-    <Link to={`/autos/${vehicle.slug}`} aria-label={`Ver detalles de ${vehicle.titulo}`} className="contents">
+    <Link href={`/autos/${vehicle.slug}`} aria-label={`Ver detalles de ${vehicle.titulo}`} className="contents">
         <CardContent />
     </Link>
   ) : (

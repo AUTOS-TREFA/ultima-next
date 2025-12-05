@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { redirect } from 'next/navigation';
 import { supabase } from '../../supabaseClient';
 import { BankService } from '../services/BankService';
 import { Loader2 } from 'lucide-react';
@@ -8,7 +10,11 @@ import { Loader2 } from 'lucide-react';
  * BankRoute Component
  * Protects routes that should only be accessible to approved bank representatives or admins
  */
-const BankRoute: React.FC = () => {
+interface BankRouteProps {
+  children: React.ReactNode;
+}
+
+const BankRoute: React.FC<BankRouteProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isBankRep, setIsBankRep] = useState(false);
@@ -84,17 +90,17 @@ const BankRoute: React.FC = () => {
 
   // Not authenticated at all - redirect to bank login
   if (!isAuthenticated) {
-    return <Navigate to="/bancos" replace />;
+    redirect('/bancos');
   }
 
   // Admin bypass - allow access without bank rep check
   if (isAdmin) {
-    return <Outlet />;
+    return <>{children}</>;
   }
 
   // Authenticated but not a bank rep - redirect to regular user dashboard
   if (!isBankRep) {
-    return <Navigate to="/escritorio" replace />;
+    redirect('/escritorio');
   }
 
   // Bank rep but not approved - show pending message
@@ -124,7 +130,7 @@ const BankRoute: React.FC = () => {
   }
 
   // All checks passed - render the protected content
-  return <Outlet />;
+  return <>{children}</>;
 };
 
 export default BankRoute;

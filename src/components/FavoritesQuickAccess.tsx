@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { useFavorites } from '../hooks/useFavorites';
 import { useVehicles } from '../context/VehicleContext';
 import type { Vehicle } from '../types/types';
@@ -61,7 +63,7 @@ const FavoritesQuickAccess: React.FC<FavoritesQuickAccessProps> = ({ variant = '
               {favoriteVehicles.map(vehicle => (
                 <Link
                   key={vehicle.id}
-                  to={`/autos/${vehicle.slug}`}
+                  href={`/autos/${vehicle.slug}`}
                   className="group block bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md hover:border-primary-300 transition-all duration-200"
                 >
                   <div className="relative aspect-[4/3]">
@@ -84,7 +86,7 @@ const FavoritesQuickAccess: React.FC<FavoritesQuickAccessProps> = ({ variant = '
               ))}
             </div>
             <Link
-              to="/escritorio/favoritos"
+              href="/escritorio/favoritos"
               className="text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline block text-center"
             >
               Ver todos mis favoritos →
@@ -109,7 +111,7 @@ const FavoritesQuickAccess: React.FC<FavoritesQuickAccessProps> = ({ variant = '
             {favoriteVehicles.map(vehicle => (
               <Link
                 key={vehicle.id}
-                to={`/autos/${vehicle.slug}`}
+                href={`/autos/${vehicle.slug}`}
                 className="group block bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 flex-shrink-0 w-36"
               >
                 <div className="relative aspect-[4/3]">

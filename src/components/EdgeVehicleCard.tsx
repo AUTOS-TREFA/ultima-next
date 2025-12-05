@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import type { WordPressVehicle } from '../types/types';
 import ImageCarousel from './ImageCarousel';
 import { useFavorites } from '../hooks/useFavorites';
@@ -105,7 +107,7 @@ const EdgeVehicleCard: React.FC<EdgeVehicleCardProps> = ({ vehicle }) => {
         </div>
 
         {hasSlug && (
-          <Link to={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10">
+          <Link href={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10">
             <span className="sr-only">Ver detalles de {vehicle.titulo}</span>
           </Link>
         )}

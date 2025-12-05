@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import {
     LayoutDashboard,
     User,
@@ -35,10 +38,14 @@ import BottomNav from './BottomNav';
 import { motion } from 'framer-motion';
 import type { Profile } from '../types/types';
 
-const UserDashboardLayout: React.FC = () => {
+interface UserDashboardLayoutProps {
+  children: React.ReactNode;
+}
+
+const UserDashboardLayout: React.FC<UserDashboardLayoutProps> = ({ children }) => {
     const { profile, signOut, isAdmin } = useAuth();
-    const location = useLocation();
-    const navigate = useNavigate();
+    const pathname = usePathname();
+    const router = useRouter();
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(true); // Default abierta
     const [isAdminSidebarExpanded, setIsAdminSidebarExpanded] = useState(false); // Admin sidebar collapsed by default
@@ -53,22 +60,22 @@ const UserDashboardLayout: React.FC = () => {
         if (isAdmin) {
             // Admin tiene acceso a todo: opciones de usuario + opciones de admin
             return [
-                { to: '/escritorio', label: 'Mi Dashboard', icon: LayoutDashboard, end: true },
-                { to: '/escritorio/profile', label: 'Mi Perfil', icon: User },
-                { to: '/escritorio/dashboard', label: 'Dashboard Admin', icon: BarChart3, end: true },
-                { to: '/escritorio/admin/marketing', label: 'Marketing Hub', icon: BarChart3 },
-                { to: '/escritorio/admin/crm', label: 'CRM', icon: User },
-                { to: '/escritorio/admin/usuarios', label: 'Usuarios', icon: User },
-                { to: '/changelog', label: 'Changelog', icon: FileText },
+                { href: '/escritorio', label: 'Mi Dashboard', icon: LayoutDashboard, end: true },
+                { href: '/escritorio/profile', label: 'Mi Perfil', icon: User },
+                { href: '/escritorio/dashboard', label: 'Dashboard Admin', icon: BarChart3, end: true },
+                { href: '/escritorio/admin/marketing', label: 'Marketing Hub', icon: BarChart3 },
+                { href: '/escritorio/admin/crm', label: 'CRM', icon: User },
+                { href: '/escritorio/admin/usuarios', label: 'Usuarios', icon: User },
+                { href: '/changelog', label: 'Changelog', icon: FileText },
             ];
         } else {
             // Usuario regular
             return [
-                { to: '/escritorio', label: 'Escritorio', icon: LayoutDashboard, end: true },
-                { to: '/escritorio/profile', label: 'Perfil', icon: User },
-                { to: '/escritorio/seguimiento', label: 'Solicitudes', icon: FileText },
-                { to: '/autos', label: 'Inventario', icon: Car },
-                { to: '/contacto', label: 'Contacto', icon: Building2 },
+                { href: '/escritorio', label: 'Escritorio', icon: LayoutDashboard, end: true },
+                { href: '/escritorio/profile', label: 'Perfil', icon: User },
+                { href: '/escritorio/seguimiento', label: 'Solicitudes', icon: FileText },
+                { href: '/autos', label: 'Inventario', icon: Car },
+                { href: '/contacto', label: 'Contacto', icon: Building2 },
             ];
         }
     };
@@ -76,32 +83,32 @@ const UserDashboardLayout: React.FC = () => {
     const navItems = getNavItems();
 
     const adminNavItems = [
-        { to: '/escritorio/admin/marketing', label: 'Marketing Hub', icon: BarChart3 },
-        { to: '/escritorio/admin/crm', label: 'CRM', icon: User },
-        { to: '/escritorio/admin/usuarios', label: 'Usuarios', icon: User },
-        { to: '/changelog', label: 'Changelog', icon: FileText },
+        { href: '/escritorio/admin/marketing', label: 'Marketing Hub', icon: BarChart3 },
+        { href: '/escritorio/admin/crm', label: 'CRM', icon: User },
+        { href: '/escritorio/admin/usuarios', label: 'Usuarios', icon: User },
+        { href: '/changelog', label: 'Changelog', icon: FileText },
     ];
 
     const secondaryNav = [
-        { to: '/faq', label: 'Ayuda', icon: HelpCircle },
+        { href: '/faq', label: 'Ayuda', icon: HelpCircle },
     ];
 
     const isActiveLink = (path: string, end?: boolean) => {
         if (end) {
-            return location.pathname === path;
+            return pathname === path;
         }
-        return location.pathname.startsWith(path);
+        return pathname.startsWith(path);
     };
 
     // Generate breadcrumbs from current path
     const generateBreadcrumbs = () => {
-        const paths = location.pathname.split('/').filter(Boolean);
+        const paths = pathname.split('/').filter(Boolean);
         const breadcrumbs = [{ label: 'Inicio', href: '/' }];
 
         let currentPath = '';
         paths.forEach((path, index) => {
             currentPath += `/${path}`;
-            const navItem = [...navItems, ...secondaryNav].find(item => item.to === currentPath);
+            const navItem = [...navItems, ...secondaryNav].find(item => item.href === currentPath);
 
             if (navItem) {
                 breadcrumbs.push({ label: navItem.label, href: currentPath });
@@ -145,17 +152,17 @@ const UserDashboardLayout: React.FC = () => {
     useEffect(() => {
         // Only attempt redirect once and only if we haven't already redirected
         if (profile && !isProfileComplete &&
-            location.pathname !== '/escritorio/profile' &&
+            pathname !== '/escritorio/profile' &&
             !hasAttemptedRedirect.current) {
             hasAttemptedRedirect.current = true;
-            navigate('/escritorio/profile', { replace: true });
+            router.push('/escritorio/profile', { replace: true });
         }
 
         // Reset redirect flag when navigating away from profile page
-        if (location.pathname === '/escritorio/profile') {
+        if (pathname === '/escritorio/profile') {
             hasAttemptedRedirect.current = false;
         }
-    }, [profile, isProfileComplete, location.pathname, navigate]);
+    }, [profile, isProfileComplete, pathname, navigate]);
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-gray-50">
@@ -172,8 +179,7 @@ const UserDashboardLayout: React.FC = () => {
                 <nav className="flex flex-col gap-4 px-4 py-6 h-full">
                     {/* Toggle Button */}
                     <div className="flex items-center justify-between h-10">
-                        <Link
-                            to="/"
+                        <Link href="/"
                             className={cn("flex items-center", isSidebarExpanded ? "flex-1" : "justify-center w-full")}
                         >
                             <img
@@ -234,12 +240,12 @@ const UserDashboardLayout: React.FC = () => {
                     <div className="flex-1 space-y-1">
                         {navItems.map((item) => {
                             const Icon = item.icon;
-                            const active = isActiveLink(item.to, item.end);
+                            const active = isActiveLink(item.href, item.end);
 
                             return (
                                 <Link
-                                    key={item.to}
-                                    to={item.to}
+                                    key={item.href}
+                                    href={item.href}
                                     className={cn(
                                         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all",
                                         !isSidebarExpanded
@@ -272,12 +278,12 @@ const UserDashboardLayout: React.FC = () => {
                     <div className="space-y-1">
                         {secondaryNav.map((item) => {
                             const Icon = item.icon;
-                            const active = isActiveLink(item.to);
+                            const active = isActiveLink(item.href);
 
                             return (
                                 <Link
-                                    key={item.to}
-                                    to={item.to}
+                                    key={item.href}
+                                    href={item.href}
                                     className={cn(
                                         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all",
                                         !isSidebarExpanded
@@ -362,12 +368,12 @@ const UserDashboardLayout: React.FC = () => {
                             )}
                             {adminNavItems.map((item) => {
                                 const Icon = item.icon;
-                                const active = isActiveLink(item.to);
+                                const active = isActiveLink(item.href);
 
                                 return (
                                     <Link
-                                        key={item.to}
-                                        to={item.to}
+                                        key={item.href}
+                                        href={item.href}
                                         className={cn(
                                             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",
                                             active
@@ -408,7 +414,7 @@ const UserDashboardLayout: React.FC = () => {
                                             <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
                                         ) : (
                                             <BreadcrumbLink asChild>
-                                                <Link to={crumb.href}>{crumb.label}</Link>
+                                                <Link href={crumb.href}>{crumb.label}</Link>
                                             </BreadcrumbLink>
                                         )}
                                     </BreadcrumbItem>
@@ -436,7 +442,7 @@ const UserDashboardLayout: React.FC = () => {
                                 </span>
                             </div>
                         </div>
-                        <Link to="/" className="flex-shrink-0">
+                        <Link href="/" className="flex-shrink-0">
                             <img
                                 src="/images/trefalogo.png"
                                 alt="TREFA"
@@ -448,7 +454,7 @@ const UserDashboardLayout: React.FC = () => {
 
                 {/* Page Content */}
                 <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 pb-20 sm:pb-4 w-full max-w-full overflow-x-hidden">
-                    <Outlet />
+                    {children}
                 </main>
             </div>
 
@@ -473,8 +479,7 @@ const UserDashboardLayout: React.FC = () => {
                     <nav className="flex flex-col gap-4 px-4 py-6">
                         {/* Close Button */}
                         <div className="flex items-center justify-between">
-                            <Link
-                                to="/"
+                            <Link href="/"
                                 className="flex items-center gap-2"
                                 onClick={() => setIsMobileSidebarOpen(false)}
                             >
@@ -515,12 +520,12 @@ const UserDashboardLayout: React.FC = () => {
                         <div className="flex-1 space-y-1">
                             {navItems.map((item) => {
                                 const Icon = item.icon;
-                                const active = isActiveLink(item.to, item.end);
+                                const active = isActiveLink(item.href, item.end);
 
                                 return (
                                     <Link
-                                        key={item.to}
-                                        to={item.to}
+                                        key={item.href}
+                                        href={item.href}
                                         onClick={() => setIsMobileSidebarOpen(false)}
                                         className={cn(
                                             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",
@@ -542,12 +547,12 @@ const UserDashboardLayout: React.FC = () => {
                         <div className="space-y-1">
                             {secondaryNav.map((item) => {
                                 const Icon = item.icon;
-                                const active = isActiveLink(item.to);
+                                const active = isActiveLink(item.href);
 
                                 return (
                                     <Link
-                                        key={item.to}
-                                        to={item.to}
+                                        key={item.href}
+                                        href={item.href}
                                         onClick={() => setIsMobileSidebarOpen(false)}
                                         className={cn(
                                             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",

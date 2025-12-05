@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import * as Stepperize from '@stepperize/react';
 import {
@@ -7,7 +9,7 @@ import {
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
+import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { useVehicles } from '../../context/VehicleContext';
 import { WordPressVehicle } from '../../types/types';
@@ -109,11 +111,12 @@ const { useStepper, utils } = Stepperize.defineStepper(
 export type StepperType = ReturnType<typeof useStepper>;
 
 const EnhancedApplication: React.FC = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { user, profile, loading: authLoading, isAdmin } = useAuth();
   const { vehicles } = useVehicles();
-  const [searchParams] = useSearchParams();
-  const { id: applicationIdFromUrl } = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
+  const params = useParams();
+  const applicationIdFromUrl = params?.id as string | undefined;
 
   const [pageStatus, setPageStatus] = useState<'initializing' | 'loading' | 'checking_profile' | 'profile_incomplete' | 'bank_profile_incomplete' | 'active_application_exists' | 'ready' | 'error' | 'success'>('initializing');
   const [pageError, setPageError] = useState<string | null>(null);
@@ -248,7 +251,7 @@ const EnhancedApplication: React.FC = () => {
           const newDraft = await ApplicationService.createDraftApplication(user.id, initialData);
           if (newDraft && newDraft.id) {
             setApplicationId(newDraft.id);
-            navigate(`/escritorio/aplicacion/${newDraft.id}`, { replace: true });
+            router.replace(`/escritorio/aplicacion/${newDraft.id}`);
           } else {
             throw new Error('No pudimos crear el borrador de tu solicitud.');
           }
@@ -260,7 +263,7 @@ const EnhancedApplication: React.FC = () => {
     };
 
     loadOrCreateDraft();
-  }, [pageStatus, user, applicationIdFromUrl, vehicles, reset, searchParams, setValue, navigate, applicationData, applicationId]);
+  }, [pageStatus, user, applicationIdFromUrl, vehicles, reset, searchParams, setValue, router, applicationData, applicationId]);
 
   const handleVehicleSelect = async (vehicle: WordPressVehicle) => {
     if (!applicationId) return;
@@ -476,7 +479,7 @@ const EnhancedApplication: React.FC = () => {
       <Icon className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
       <h1 className="text-xl font-bold text-gray-900">{title}</h1>
       <p className="text-gray-600 mt-2">{message}</p>
-      <Button onClick={() => navigate(linkTo)} className="mt-6">
+      <Button onClick={() => router.push(linkTo)} className="mt-6">
         {linkText}
       </Button>
     </div>

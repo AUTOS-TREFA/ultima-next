@@ -1,6 +1,8 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import type { WordPressVehicle } from '../types/types';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { formatPrice, getPlaceholderImage } from '../utils/formatters';
 import { useVehicles } from '../context/VehicleContext';
 
@@ -30,7 +32,7 @@ const HeroVehicleCard: React.FC<{ vehicle: WordPressVehicle }> = ({ vehicle }) =
                     <p className="text-gray-900 font-semibold text-base mt-1">{formatPrice(vehicle.precio)}</p>
                 </div>
             </div>
-            <Link to={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10">
+            <Link href={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10">
                 <span className="sr-only">Ver detalles de {vehicle.titulo}</span>
             </Link>
         </div>

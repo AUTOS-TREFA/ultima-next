@@ -1,9 +1,11 @@
-import { Link } from 'react-router-dom'
+'use client';
+
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
 const TrefaLogo = ({ className }: { className?: string }) => {
   return (
-    <Link to="/" className={cn('flex items-center gap-2.5', className)}>
+    <Link href="/" className={cn('flex items-center gap-2.5', className)}>
       <img
         src="/images/logoblanco.png"
         alt="TREFA Logo"

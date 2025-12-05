@@ -1,10 +1,17 @@
+'use client';
+
 import React from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { redirect } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 
-const AdminRoute: React.FC = () => {
+interface AdminRouteProps {
+    children: React.ReactNode;
+}
+
+const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
     const { isAdmin, isSales, loading } = useAuth();
-    const location = useLocation();
+    const pathname = usePathname();
 
     if (loading) {
         return (
@@ -15,10 +22,10 @@ const AdminRoute: React.FC = () => {
     }
 
     if (!isAdmin && !isSales) {
-        return <Navigate to="/escritorio" state={{ from: location }} replace />;
+        redirect('/escritorio');
     }
 
-    return <Outlet />;
+    return <>{children}</>;
 };
 
 export default AdminRoute;

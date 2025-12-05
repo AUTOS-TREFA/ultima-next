@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { cn } from "../lib/utils";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 
 type Card = {
   title: string;
@@ -36,7 +36,7 @@ export const AppleCardsCarousel = ({
               onMouseLeave={() => setHoveredIndex(null)}
               className="last:pr-[5%] md:last:pr-[33%] rounded-3xl"
             >
-              <Link to={item.link}>
+              <Link href={item.link}>
                 <Card
                   card={item}
                   index={index}

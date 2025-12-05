@@ -1,10 +1,17 @@
+'use client';
+
 import React from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { redirect } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 
-const ProtectedRoute: React.FC = () => {
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { session, loading } = useAuth();
-  const location = useLocation();
+  const pathname = usePathname();
 
   if (loading) {
     // Show a loading spinner while the auth state is being resolved.
@@ -17,12 +24,12 @@ const ProtectedRoute: React.FC = () => {
 
   if (!session) {
     // If loading is finished and there's still no session, redirect to login.
-    localStorage.setItem('loginRedirect', location.pathname + location.search);
-    return <Navigate to="/acceder" replace />;
+    localStorage.setItem('loginRedirect', pathname);
+    redirect('/acceder');
   }
 
   // If loading is finished and a session exists, render the protected content.
-  return <Outlet />;
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;

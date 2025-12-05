@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { Menu, LogOut, ChevronDown, LayoutDashboard, User, Heart, FileText, Car, Settings, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import MegaMenu from './MegaMenu';
@@ -21,9 +24,9 @@ const Header: React.FC = () => {
     const [megaMenuOpen, setMegaMenuOpen] = useState(false);
     const { session, profile, signOut } = useAuth();
     const menuButtonRef = React.useRef<HTMLButtonElement>(null);
-    const location = useLocation();
-    const navigate = useNavigate();
-    const isListPage = location.pathname === '/autos';
+    const pathname = usePathname();
+    const router = useRouter();
+    const isListPage = pathname === '/autos';
     const isSalesUser = profile?.role === 'sales';
 
     const handleSignOut = async () => {
@@ -33,7 +36,7 @@ const Header: React.FC = () => {
     const MobileNav = () => (
         <nav className="grid gap-2 text-lg font-medium">
             <Link
-                to="/"
+                href="/"
                 className="flex items-center gap-2 text-lg font-semibold mb-4"
             >
                 <img
@@ -45,35 +48,35 @@ const Header: React.FC = () => {
             {session ? (
                 <>
                     <Link
-                        to="/escritorio"
+                        href="/escritorio"
                         className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
                     >
                         <LayoutDashboard className="h-5 w-5" />
                         Dashboard
                     </Link>
                     <Link
-                        to="/escritorio/profile"
+                        href="/escritorio/profile"
                         className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
                     >
                         <User className="h-5 w-5" />
                         Mi Perfil
                     </Link>
                     <Link
-                        to="/escritorio/favoritos"
+                        href="/escritorio/favoritos"
                         className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
                     >
                         <Heart className="h-5 w-5" />
                         Favoritos
                     </Link>
                     <Link
-                        to="/escritorio/seguimiento"
+                        href="/escritorio/seguimiento"
                         className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
                     >
                         <FileText className="h-5 w-5" />
                         Solicitudes
                     </Link>
                     <Link
-                        to="/autos"
+                        href="/autos"
                         className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
                     >
                         <Car className="h-5 w-5" />
@@ -82,7 +85,7 @@ const Header: React.FC = () => {
                 </>
             ) : (
                 <Link
-                    to="/acceder"
+                    href="/acceder"
                     className="mx-[-0.65rem] flex items-center gap-4 rounded-xl bg-primary px-3 py-2 text-primary-foreground hover:bg-primary/90"
                 >
                     Iniciar Sesión
@@ -95,7 +98,7 @@ const Header: React.FC = () => {
         <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
             <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
                 <Link
-                    to="/"
+                    href="/"
                     className="flex items-center gap-2 text-lg font-semibold md:text-base"
                 >
                     <img
@@ -186,7 +189,7 @@ const Header: React.FC = () => {
                                 <DropdownMenuSeparator />
                                 {isSalesUser ? (
                                     <DropdownMenuItem asChild>
-                                        <Link to="/escritorio/ventas/crm" className="cursor-pointer">
+                                        <Link href="/escritorio/ventas/crm" className="cursor-pointer">
                                             <LayoutDashboard className="mr-2 h-4 w-4" />
                                             <span>Mis Leads</span>
                                         </Link>
@@ -194,19 +197,19 @@ const Header: React.FC = () => {
                                 ) : (
                                     <>
                                         <DropdownMenuItem asChild>
-                                            <Link to="/escritorio" className="cursor-pointer">
+                                            <Link href="/escritorio" className="cursor-pointer">
                                                 <LayoutDashboard className="mr-2 h-4 w-4" />
                                                 <span>Dashboard</span>
                                             </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem asChild>
-                                            <Link to="/escritorio/profile" className="cursor-pointer">
+                                            <Link href="/escritorio/profile" className="cursor-pointer">
                                                 <User className="mr-2 h-4 w-4" />
                                                 <span>Mi Perfil</span>
                                             </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem asChild>
-                                            <Link to="/escritorio/settings" className="cursor-pointer">
+                                            <Link href="/escritorio/settings" className="cursor-pointer">
                                                 <Settings className="mr-2 h-4 w-4" />
                                                 <span>Configuración</span>
                                             </Link>
@@ -225,7 +228,7 @@ const Header: React.FC = () => {
                         </DropdownMenu>
                     ) : (
                         <Button asChild size="sm">
-                            <Link to="/acceder" data-gtm-id="header-login-button">
+                            <Link href="/acceder" data-gtm-id="header-login-button">
                                 Iniciar Sesión
                             </Link>
                         </Button>

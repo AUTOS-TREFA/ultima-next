@@ -1,5 +1,8 @@
+'use client';
+
 import React from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { redirect } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 
 /**
@@ -7,9 +10,13 @@ import { useAuth } from '../context/AuthContext';
  * Marketing users have restricted access to marketing tools and analytics only.
  * They cannot access sensitive customer data like financing applications or uploaded documents.
  */
-const MarketingRoute: React.FC = () => {
+interface MarketingRouteProps {
+    children: React.ReactNode;
+}
+
+const MarketingRoute: React.FC<MarketingRouteProps> = ({ children }) => {
     const { isAdmin, isMarketing, loading } = useAuth();
-    const location = useLocation();
+    const pathname = usePathname();
 
     if (loading) {
         return (
@@ -21,10 +28,10 @@ const MarketingRoute: React.FC = () => {
 
     // Allow both marketing and admin roles
     if (!isMarketing && !isAdmin) {
-        return <Navigate to="/escritorio" state={{ from: location }} replace />;
+        redirect('/escritorio');
     }
 
-    return <Outlet />;
+    return <>{children}</>;
 };
 
 export default MarketingRoute;

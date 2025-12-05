@@ -1,7 +1,8 @@
+'use client';
 
 import React, { useMemo } from 'react';
 
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 import type { WordPressVehicle } from '../types/types';
 
@@ -85,7 +86,7 @@ const HeroVehicleCard: React.FC<HeroVehicleCardProps> = ({ vehicle }) => {
 
             </div>
 
-            <Link to={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10" aria-label={`Ver detalles de ${vehicle.titulo}`}>
+            <Link href={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10" aria-label={`Ver detalles de ${vehicle.titulo}`}>
 
                 <span className="sr-only">Ver detalles de ${vehicle.titulo}</span>
 

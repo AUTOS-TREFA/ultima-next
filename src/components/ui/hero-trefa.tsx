@@ -6,7 +6,7 @@ import { ChevronRight, Shield, Star } from "lucide-react";
 import { motion, useAnimationControls } from "framer-motion";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import AnimatedVehicleGrid from "../AnimatedVehicleGrid";
 
 // Simple HighlightText component
@@ -208,7 +208,7 @@ function HeroTrefa({ isMobile = false }: HeroTrefaProps) {
       <section className="w-full pt-12 pb-16 md:pt-10 md:pb-20 md:grid md:grid-cols-2 flex flex-col md:items-start max-w-screen-xl xl:px-0 md:px-10 px-4 mx-auto text-black">
         <article className="space-y-5 flex-col flex justify-start text-left pb-10 md:pt-12">
           <Link
-            to="/financiamientos"
+            href="/financiamientos"
             className="bg-white/70 backdrop-blur-sm sm:text-sm text-xs w-fit p-1 flex gap-1.5 items-center shadow-[0px_1px_4px_rgba(0,0,0,0.1),_0px_1px_1px_rgba(0,0,0,0.15)] rounded-full hover:shadow-lg transition-shadow"
           >
             <span className="bg-[#FF6801] border-[#E65D00] border [box-shadow:inset_0px_-2px_6px_2px_#ff8533,inset_0px_4px_6px_2px_#ffa366] p-1 inline-block rounded-full px-2.5 text-white">
@@ -240,7 +240,7 @@ function HeroTrefa({ isMobile = false }: HeroTrefaProps) {
 
           <div className="flex gap-5 items-center">
             <TimelineContent as="div" animationNum={2} timelineRef={heroRef}>
-              <Link to="/autos">
+              <Link href="/autos">
                 <Button
                   className="bg-primary hover:bg-primary/90 text-white h-14 px-8 shadow-lg transition-all duration-200 hover:shadow-xl"
                   size="lg"
@@ -513,7 +513,7 @@ function HeroTrefa({ isMobile = false }: HeroTrefaProps) {
                 </article>
 
                 <Link
-                  to="/registro"
+                  href="/registro"
                   className="bg-primary text-white px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors font-semibold flex items-center gap-2 whitespace-nowrap"
                 >
                   Registrarme

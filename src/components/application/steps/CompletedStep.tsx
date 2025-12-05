@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckCircle, ArrowRight, FileText, Upload, Clock, AlertCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Button } from '../../ui/button';
 import { CardContent } from '../../ui/card';
 
@@ -116,7 +116,7 @@ const CompletedStep: React.FC<CompletedStepProps> = ({ vehicleInfo, applicationI
       {/* Action Buttons */}
       <div className="w-full max-w-lg space-y-3 mt-4">
         <Link
-          to={`/escritorio/seguimiento/${applicationId}`}
+          href={`/escritorio/seguimiento/${applicationId}`}
           className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white font-bold rounded-lg hover:bg-primary-700 transition-colors"
         >
           <Upload className="w-4 h-4" />
@@ -125,7 +125,7 @@ const CompletedStep: React.FC<CompletedStepProps> = ({ vehicleInfo, applicationI
         </Link>
 
         <Link
-          to="/escritorio/seguimiento"
+          href="/escritorio/seguimiento"
           className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
         >
           Ver Estado de Solicitud
@@ -147,7 +147,7 @@ const CompletedStep: React.FC<CompletedStepProps> = ({ vehicleInfo, applicationI
       {/* Secondary Actions */}
       <div className="w-full max-w-lg pt-4 border-t border-gray-200 text-center">
         <Link
-          to="/explorar"
+          href="/explorar"
           className="text-sm text-primary-600 hover:text-primary-700 font-semibold"
         >
           Explorar Más Vehículos →

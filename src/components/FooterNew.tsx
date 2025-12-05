@@ -1,5 +1,8 @@
+'use client';
+
 import { ArrowRightIcon, FacebookIcon as Facebook, InstagramIcon as Instagram, LinkedinIcon as Linkedin, MapPinIcon as MapPin, PhoneIcon as Phone } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,7 +11,7 @@ import TrefaLogo from '@/components/TrefaLogo'
 
 const Footer = () => {
   const { session } = useAuth()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   // Get app version from git commit hash
   const appVersion = import.meta.env.VITE_GIT_COMMIT || import.meta.env.VITE_APP_VERSION || 'dev'
@@ -17,7 +20,7 @@ const Footer = () => {
     if (authRequired && !session) {
       e.preventDefault()
       localStorage.setItem('loginRedirect', to)
-      navigate('/acceder')
+      router.push('/acceder')
     }
   }
 
@@ -93,25 +96,25 @@ const Footer = () => {
             <div className='text-lg font-medium text-gray-200'>Explorar</div>
             <ul className='text-gray-400 space-y-3'>
               <li>
-                <Link to='/' className="hover:text-white transition-colors">Inicio</Link>
+                <Link href='/' className="hover:text-white transition-colors">Inicio</Link>
               </li>
               <li>
-                <Link to='/autos' className="hover:text-white transition-colors">Inventario</Link>
+                <Link href='/autos' className="hover:text-white transition-colors">Inventario</Link>
               </li>
               <li>
-                <Link to='/vender-mi-auto' className="hover:text-white transition-colors">Vender mi Auto</Link>
+                <Link href='/vender-mi-auto' className="hover:text-white transition-colors">Vender mi Auto</Link>
               </li>
               <li>
-                <Link to='/financiamientos' className="hover:text-white transition-colors">Financiamientos</Link>
+                <Link href='/financiamientos' className="hover:text-white transition-colors">Financiamientos</Link>
               </li>
               <li>
-                <Link to='/promociones' className="hover:text-white transition-colors">Promociones</Link>
+                <Link href='/promociones' className="hover:text-white transition-colors">Promociones</Link>
               </li>
               <li>
-                <Link to='/kit-trefa' className="hover:text-white transition-colors">Kit de Confianza</Link>
+                <Link href='/kit-trefa' className="hover:text-white transition-colors">Kit de Confianza</Link>
               </li>
               <li>
-                <Link to='/conocenos' className="hover:text-white transition-colors">Conócenos</Link>
+                <Link href='/conocenos' className="hover:text-white transition-colors">Conócenos</Link>
               </li>
             </ul>
           </div>
@@ -121,11 +124,11 @@ const Footer = () => {
             <div className='text-lg font-medium text-gray-200'>Mi Cuenta</div>
             <ul className='text-gray-400 space-y-3'>
               <li>
-                <Link to='/acceder' className="hover:text-white transition-colors">Iniciar Sesión</Link>
+                <Link href='/acceder' className="hover:text-white transition-colors">Iniciar Sesión</Link>
               </li>
               <li>
                 <Link
-                  to='/escritorio'
+                  href='/escritorio'
                   className="hover:text-white transition-colors"
                   onClick={(e) => handleLinkClick(e, '/escritorio', true)}
                 >
@@ -134,7 +137,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to='/escritorio/favoritos'
+                  href='/escritorio/favoritos'
                   className="hover:text-white transition-colors"
                   onClick={(e) => handleLinkClick(e, '/escritorio/favoritos', true)}
                 >
@@ -143,7 +146,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to='/escritorio/aplicacion'
+                  href='/escritorio/aplicacion'
                   className="hover:text-white transition-colors"
                   onClick={(e) => handleLinkClick(e, '/escritorio/aplicacion', true)}
                 >
@@ -158,13 +161,13 @@ const Footer = () => {
             <div className='text-lg font-medium text-gray-200'>Soporte</div>
             <ul className='text-gray-400 space-y-3'>
               <li>
-                <Link to='/faq' className="hover:text-white transition-colors">Preguntas Frecuentes</Link>
+                <Link href='/faq' className="hover:text-white transition-colors">Preguntas Frecuentes</Link>
               </li>
               <li>
-                <Link to='/contacto' className="hover:text-white transition-colors">Contacto</Link>
+                <Link href='/contacto' className="hover:text-white transition-colors">Contacto</Link>
               </li>
               <li>
-                <Link to='/vacantes' className="hover:text-white transition-colors">Vacantes</Link>
+                <Link href='/vacantes' className="hover:text-white transition-colors">Vacantes</Link>
               </li>
               <li>
                 <a
@@ -177,7 +180,7 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <Link to='/politica-de-privacidad' className="hover:text-white transition-colors">
+                <Link href='/politica-de-privacidad' className="hover:text-white transition-colors">
                   Política de Privacidad
                 </Link>
               </li>
@@ -214,13 +217,13 @@ const Footer = () => {
 
       <div className='mx-auto flex max-w-7xl flex-col sm:flex-row justify-between items-center gap-4 px-4 py-6 sm:px-6'>
         <p className='text-center sm:text-left font-medium text-gray-400'>
-          {`© ${new Date().getFullYear()}`} <Link to="/" className="hover:text-white transition-colors">Grupo TREFA</Link>.
+          {`© ${new Date().getFullYear()}`} <Link href="/" className="hover:text-white transition-colors">Grupo TREFA</Link>.
           Todos los derechos reservados.
         </p>
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-500">Versión: {appVersion}</span>
           <Link
-            to="/beta-v.0.1"
+            href="/beta-v.0.1"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-gray-400 hover:text-white transition-colors"

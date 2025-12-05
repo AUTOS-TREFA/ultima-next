@@ -1,5 +1,7 @@
+'use client';
+
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { User, Building2, ArrowRight, Plus, FileText } from 'lucide-react';
 import type { Profile } from '../types/types';
 
@@ -75,7 +77,7 @@ const StatusCard: React.FC<{ Icon: React.ElementType, title: string, description
             <p className="text-sm text-primary-800 mt-1">{description}</p>
         </div>
         <Link
-            to={linkTo}
+            href={linkTo}
             className="inline-flex items-center justify-center px-5 py-2.5 bg-primary-600 text-white rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors shadow-md flex-shrink-0 mt-4 sm:mt-0"
         >
             {linkText} <ArrowRight className="w-4 h-4 ml-2" />

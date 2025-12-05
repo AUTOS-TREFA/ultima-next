@@ -1,8 +1,14 @@
+'use client';
+
 import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { redirect } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 
-const PublicRoute: React.FC = () => {
+interface PublicRouteProps {
+  children: React.ReactNode;
+}
+
+const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const { session, loading } = useAuth();
 
   if (loading) {
@@ -16,11 +22,11 @@ const PublicRoute: React.FC = () => {
   // If a session exists, redirect away from public pages.
   // This now only runs AFTER loading is complete, preventing the race condition.
   if (session) {
-    return <Navigate to="/escritorio" replace />;
+    redirect('/escritorio');
   }
 
   // If no session and loading is done, show the public page (e.g., login).
-  return <Outlet />;
+  return <>{children}</>;
 };
 
 export default PublicRoute;
