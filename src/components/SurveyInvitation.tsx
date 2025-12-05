@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { ArrowRight, X } from 'lucide-react';
 
@@ -12,9 +10,7 @@ const SurveyInvitation: React.FC<{ onClose: () => void }> = ({ onClose }) => (
             </p>
             <div className="mt-4">
                 <a
-                    href="https://trefa-buyer-persona-survey-analytics-898935312460.us-west1.run.app/#/survey"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href="/encuesta-anonima"
                     className="inline-flex items-center px-5 py-2 bg-white text-trefa-blue font-semibold rounded-lg text-sm hover:bg-gray-100 transition-colors shadow-md"
                 >
                     Realizar Encuesta <ArrowRight className="w-4 h-4 ml-2" />

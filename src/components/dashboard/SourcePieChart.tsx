@@ -79,64 +79,37 @@ const SourcePieChart: React.FC<SourcePieChartProps> = ({ data, height = 300 }) =
     };
 
     return (
-        <div>
-            <ResponsiveContainer width="100%" height={height}>
-                <PieChart>
-                    <Pie
-                        data={chartData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={renderCustomLabel}
-                        outerRadius={100}
-                        fill="#8884d8"
-                        dataKey="value"
-                        animationDuration={1000}
-                        animationBegin={0}
-                    >
-                        {chartData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend
-                        verticalAlign="bottom"
-                        height={36}
-                        iconType="circle"
-                        formatter={(value, entry: any) => {
-                            const item = chartData.find(d => d.name === value);
-                            return `${value} (${item?.value || 0})`;
-                        }}
-                    />
-                </PieChart>
-            </ResponsiveContainer>
-
-            {/* Source breakdown cards */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4">
-                {chartData.map((source) => {
-                    const percentage = ((source.value / total) * 100).toFixed(1);
-                    return (
-                        <div
-                            key={source.name}
-                            className="text-center p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors"
-                        >
-                            <div
-                                className="inline-flex p-2 rounded-full mb-2"
-                                style={{ backgroundColor: `${source.color}20` }}
-                            >
-                                {source.icon === 'facebook' && <Facebook className="w-4 h-4" style={{ color: source.color }} />}
-                                {source.icon === 'google' && <Globe className="w-4 h-4" style={{ color: source.color }} />}
-                                {source.icon === 'bot' && <Bot className="w-4 h-4" style={{ color: source.color }} />}
-                                {source.icon === 'direct' && <MousePointerClick className="w-4 h-4" style={{ color: source.color }} />}
-                                {source.icon === 'other' && <HelpCircle className="w-4 h-4" style={{ color: source.color }} />}
-                            </div>
-                            <p className="text-xs font-medium text-gray-600">{source.name}</p>
-                            <p className="text-lg font-bold text-gray-900">{source.value}</p>
-                            <p className="text-xs text-gray-500">{percentage}%</p>
-                        </div>
-                    );
-                })}
-            </div>
+        <div style={{ width: '100%', height, minHeight: height }}>
+          <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                  <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={renderCustomLabel}
+                      outerRadius={120}
+                      fill="#8884d8"
+                      dataKey="value"
+                      animationDuration={1000}
+                      animationBegin={0}
+                  >
+                      {chartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend
+                      verticalAlign="bottom"
+                      height={40}
+                      iconType="circle"
+                      formatter={(value, entry: any) => {
+                          const item = chartData.find(d => d.name === value);
+                          return `${value} (${item?.value || 0})`;
+                      }}
+                  />
+              </PieChart>
+          </ResponsiveContainer>
         </div>
     );
 };

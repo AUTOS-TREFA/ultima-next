@@ -29,7 +29,8 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({ data, height = 300 }) =
     }
 
     return (
-        <ResponsiveContainer width="100%" height={height}>
+        <div style={{ width: '100%', height, minHeight: height }}>
+          <ResponsiveContainer width="100%" height="100%">
             <LineChart
                 data={data}
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -78,7 +79,8 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({ data, height = 300 }) =
                     animationDuration={1000}
                 />
             </LineChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        </div>
     );
 };
 

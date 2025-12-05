@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useCallback, useEffect, lazy, Suspense, useRef } from 'react';
 import { Upload, Camera, CheckCircle, Trash2 } from 'lucide-react';
 import { DocumentService, UploadedDocument } from '../services/documentService';
@@ -140,8 +138,18 @@ const FileUpload: React.FC<FileUploadProps> = ({
       )}
       {canUploadMore && (
         <div className="flex items-center justify-center w-full">
-            <label className={`flex flex-col items-center justify-center w-full h-auto min-h-[8rem] p-4 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 ${isUploading ? 'cursor-wait' : 'hover:bg-gray-100'}`}>
-            <div className="flex flex-col items-center justify-center text-center">
+            <label
+                htmlFor={`file-upload-${documentType || 'default'}`}
+                className={`flex flex-col items-center justify-center w-full h-auto min-h-[8rem] p-4 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 ${isUploading ? 'cursor-wait' : 'hover:bg-gray-100'} touch-manipulation`}
+                onClick={(e) => {
+                    // Ensure click event propagates to the hidden input
+                    if (!isUploading && fileInputRef.current) {
+                        e.preventDefault();
+                        fileInputRef.current.click();
+                    }
+                }}
+            >
+            <div className="flex flex-col items-center justify-center text-center pointer-events-none">
                 {isUploading ? (
                 <>
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-3"></div>
@@ -153,14 +161,14 @@ const FileUpload: React.FC<FileUploadProps> = ({
                     <p className="mb-2 text-sm text-gray-500"><span className="font-semibold text-primary-600">Click para subir</span> o arrastra</p>
                     <p className="text-xs text-gray-400">PDF, JPG, PNG, ZIP ({maxFiles - existingDocuments.length} restantes)</p>
                     {allowCameraScan && isMobile && (
-                        <div className='mt-4 w-full'>
+                        <div className='mt-4 w-full pointer-events-auto'>
                             <div className="relative my-2">
                             <div className="absolute inset-0 flex items-center" aria-hidden="true"><div className="w-full border-t border-gray-300" /></div>
                             <div className="relative flex justify-center text-sm"><span className="bg-gray-50 px-2 text-gray-500">o</span></div>
                             </div>
                             <button
                                 type="button"
-                                onClick={(e) => { e.preventDefault(); setIsScannerOpen(true); }}
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsScannerOpen(true); }}
                                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-primary-600 bg-primary-100 rounded-lg hover:bg-primary-200 border border-primary-200 transition-colors"
                             >
                                 <Camera className="w-4 h-4" />
@@ -171,7 +179,16 @@ const FileUpload: React.FC<FileUploadProps> = ({
                 </>
                 )}
             </div>
-            <input ref={fileInputRef} type="file" className="hidden" accept={accept} multiple={multiple} onChange={e => onDrop(e.target.files)} disabled={isUploading} />
+            <input
+                ref={fileInputRef}
+                id={`file-upload-${documentType || 'default'}`}
+                type="file"
+                className="sr-only"
+                accept={accept}
+                multiple={multiple}
+                onChange={e => onDrop(e.target.files)}
+                disabled={isUploading}
+            />
             </label>
         </div>
       )}

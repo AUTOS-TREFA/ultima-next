@@ -12,23 +12,33 @@ const SimpleVehicleCard: React.FC<SimpleVehicleCardProps> = ({ vehicle }) => {
   const imageSrc = getVehicleImage(vehicle);
 
   return (
-    <>
-      {vehicle.slug && vehicle.slug.trim() !== '' && (
-        <Link href={`/autos/${vehicle.slug}`} className="relative aspect-[4/3] w-full group rounded-lg overflow-hidden shadow-sm">
+    <Link
+      href={`/autos/${vehicle.slug}`}
+      className="group block w-full h-full"
+    >
+      <div className="relative overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-all hover:shadow-md hover:border-ring">
+        {/* Image Container with fixed aspect ratio */}
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
           <LazyImage
             src={imageSrc}
             alt={vehicle.titulo}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-          <div className="absolute bottom-0 left-0 p-3">
-            <h3 className="text-white font-bold text-sm truncate drop-shadow-md" title={vehicle.titulo}>
-              {vehicle.titulo}
-            </h3>
-          </div>
-        </Link>
-      )}
-    </>
+          {/* Gradient overlay for better text contrast */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-90" />
+        </div>
+
+        {/* Content overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
+          <h3
+            className="text-sm sm:text-base font-semibold text-white line-clamp-2 leading-tight drop-shadow-lg"
+            title={vehicle.titulo}
+          >
+            {vehicle.titulo}
+          </h3>
+        </div>
+      </div>
+    </Link>
   );
 };
 

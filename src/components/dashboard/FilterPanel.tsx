@@ -1,9 +1,14 @@
-'use client';
-
 import React, { useState } from 'react';
 import { Calendar, Filter, RotateCcw, X } from 'lucide-react';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
-import type { DashboardFilters } from '../../services/AnalyticsService';
+
+export interface DashboardFilters {
+    dateRange: 'last7days' | 'last30days' | 'last90days' | 'thisMonth' | 'lastMonth' | 'custom';
+    startDate?: Date;
+    endDate?: Date;
+    source?: 'all' | 'facebook' | 'google' | 'bot' | 'direct' | 'other';
+    status?: 'all' | 'pending' | 'contacted' | 'uncontacted' | 'approved';
+}
 
 interface FilterPanelProps {
     filters: DashboardFilters;

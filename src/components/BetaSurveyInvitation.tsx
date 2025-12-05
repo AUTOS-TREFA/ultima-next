@@ -13,7 +13,7 @@ const BetaSurveyInvitation: React.FC<{ onClose: () => void }> = ({ onClose }) =>
             </p>
             <div className="mt-4">
                 <Link
-                    to="/beta-v.0.1"
+                    href="/beta-v.0.1"
                     className="inline-flex items-center px-5 py-2 bg-white text-indigo-700 font-semibold rounded-lg text-sm hover:bg-gray-100 transition-colors shadow-md"
                 >
                     Dar mi opinión <ArrowRight className="w-4 h-4 ml-2" />

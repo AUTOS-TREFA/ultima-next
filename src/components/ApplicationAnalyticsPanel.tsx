@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../supabaseClient';
+import DateRangeFilter, { DateRange } from './DateRangeFilter';
+import { APPLICATION_STATUS } from '../constants/applicationStatus';
 import {
     FileText,
     CheckCircle2,
@@ -60,6 +62,11 @@ const ApplicationAnalyticsPanel: React.FC = () => {
     const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
     const [completionFilter, setCompletionFilter] = useState<'all' | 'complete' | 'incomplete'>('all');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
+    const [dateRange, setDateRange] = useState<DateRange>({
+        startDate: null,
+        endDate: null,
+        preset: 'allTime'
+    });
 
     // Fetch overall analytics
     const { data: overallAnalytics, isLoading: loadingOverall } = useQuery<OverallAnalytics[]>({
@@ -97,6 +104,95 @@ const ApplicationAnalyticsPanel: React.FC = () => {
 
     const analytics = overallAnalytics?.[0];
 
+    // Filter applications by date range
+    const filteredApplications = useMemo(() => {
+        if (!detailedApplications) return [];
+        if (!dateRange.startDate || !dateRange.endDate) return detailedApplications;
+
+        return detailedApplications.filter(app => {
+            const appDate = new Date(app.application_created_at);
+            return appDate >= dateRange.startDate! && appDate <= dateRange.endDate!;
+        });
+    }, [detailedApplications, dateRange]);
+
+    // Recalculate analytics based on filtered applications
+    const filteredAnalytics = useMemo(() => {
+        if (!filteredApplications.length) {
+            return {
+                total_applications: 0,
+                submitted_applications: 0,
+                complete_applications: 0,
+                incomplete_applications: 0,
+                applications_with_documents: 0,
+                applications_by_status: {}
+            };
+        }
+
+        const total = filteredApplications.length;
+        // Count both legacy 'submitted' and new 'Completa' statuses
+        const submitted = filteredApplications.filter(app =>
+            app.application_status === APPLICATION_STATUS.SUBMITTED ||
+            app.application_status === APPLICATION_STATUS.COMPLETA
+        ).length;
+        const complete = filteredApplications.filter(app => app.is_complete).length;
+        const incomplete = filteredApplications.filter(app => !app.is_complete).length;
+        const withDocs = filteredApplications.filter(app => app.document_count > 0).length;
+
+        const byStatus = filteredApplications.reduce((acc, app) => {
+            acc[app.application_status] = (acc[app.application_status] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+
+        return {
+            total_applications: total,
+            submitted_applications: submitted,
+            complete_applications: complete,
+            incomplete_applications: incomplete,
+            applications_with_documents: withDocs,
+            applications_by_status: byStatus
+        };
+    }, [filteredApplications]);
+
+    // Recalculate agent applications based on filtered data
+    const filteredAgentApplications = useMemo(() => {
+        if (!agentApplications || !filteredApplications.length) return agentApplications || [];
+        if (!dateRange.startDate || !dateRange.endDate) return agentApplications;
+
+        // Recalculate each agent's metrics based on filtered applications
+        return agentApplications.map(agent => {
+            const agentApps = filteredApplications.filter(app => app.sales_agent_id === agent.sales_agent_id);
+
+            return {
+                ...agent,
+                total_applications: agentApps.length,
+                // Count both legacy 'submitted' and new 'Completa' statuses
+                submitted_applications: agentApps.filter(app =>
+                    app.application_status === APPLICATION_STATUS.SUBMITTED ||
+                    app.application_status === APPLICATION_STATUS.COMPLETA
+                ).length,
+                complete_applications: agentApps.filter(app => app.is_complete).length,
+                incomplete_applications: agentApps.filter(app => !app.is_complete).length,
+                // Count draft status
+                draft_applications: agentApps.filter(app =>
+                    app.application_status === APPLICATION_STATUS.DRAFT
+                ).length,
+                // Count both legacy 'approved' and new 'Aprobada' statuses
+                approved_applications: agentApps.filter(app =>
+                    app.application_status === APPLICATION_STATUS.APPROVED ||
+                    app.application_status === APPLICATION_STATUS.APROBADA
+                ).length,
+                // Count 'Rechazada' status (and legacy 'rejected' if exists)
+                rejected_applications: agentApps.filter(app =>
+                    app.application_status === APPLICATION_STATUS.RECHAZADA ||
+                    app.application_status === 'rejected'
+                ).length,
+            };
+        }).filter(agent => agent.total_applications > 0); // Only show agents with applications in the filtered range
+    }, [agentApplications, filteredApplications, dateRange]);
+
+    // Use filtered analytics when date range is active
+    const displayAnalytics = (dateRange.startDate && dateRange.endDate) ? filteredAnalytics : analytics;
+
     const getStatusBadge = (status: string) => {
         const statusConfig: Record<string, { color: string; label: string }> = {
             submitted: { color: 'bg-blue-100 text-blue-800', label: 'Enviada' },
@@ -126,12 +222,9 @@ const ApplicationAnalyticsPanel: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div>
-                <h2 className="text-2xl font-bold text-gray-900">Análisis de Solicitudes</h2>
-                <p className="text-gray-600 mt-1">
-                    Análisis detallado de solicitudes de financiamiento por estado y asesor
-                </p>
+            {/* Date Filter */}
+            <div className="flex justify-end">
+                <DateRangeFilter value={dateRange} onChange={setDateRange} />
             </div>
 
             {/* Overall Statistics */}
@@ -143,7 +236,7 @@ const ApplicationAnalyticsPanel: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-sm text-gray-600">Total Solicitudes</p>
-                            <p className="text-2xl font-bold text-gray-900">{analytics?.total_applications || 0}</p>
+                            <p className="text-2xl font-bold text-gray-900">{displayAnalytics?.total_applications || 0}</p>
                         </div>
                     </div>
                 </div>
@@ -155,7 +248,7 @@ const ApplicationAnalyticsPanel: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-sm text-gray-600">Enviadas</p>
-                            <p className="text-2xl font-bold text-gray-900">{analytics?.submitted_applications || 0}</p>
+                            <p className="text-2xl font-bold text-gray-900">{displayAnalytics?.submitted_applications || 0}</p>
                         </div>
                     </div>
                 </div>
@@ -167,7 +260,7 @@ const ApplicationAnalyticsPanel: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-sm text-gray-600">Completas</p>
-                            <p className="text-2xl font-bold text-gray-900">{analytics?.complete_applications || 0}</p>
+                            <p className="text-2xl font-bold text-gray-900">{displayAnalytics?.complete_applications || 0}</p>
                             <p className="text-xs text-gray-500">Con documentos</p>
                         </div>
                     </div>
@@ -180,7 +273,7 @@ const ApplicationAnalyticsPanel: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-sm text-gray-600">Incompletas</p>
-                            <p className="text-2xl font-bold text-gray-900">{analytics?.incomplete_applications || 0}</p>
+                            <p className="text-2xl font-bold text-gray-900">{displayAnalytics?.incomplete_applications || 0}</p>
                             <p className="text-xs text-gray-500">Sin documentos</p>
                         </div>
                     </div>
@@ -193,7 +286,7 @@ const ApplicationAnalyticsPanel: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-sm text-gray-600">Con Documentos</p>
-                            <p className="text-2xl font-bold text-gray-900">{analytics?.applications_with_documents || 0}</p>
+                            <p className="text-2xl font-bold text-gray-900">{displayAnalytics?.applications_with_documents || 0}</p>
                         </div>
                     </div>
                 </div>
@@ -203,44 +296,107 @@ const ApplicationAnalyticsPanel: React.FC = () => {
             <div className="bg-white rounded-xl shadow-sm border p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Solicitudes por Asesor</h3>
                 <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full text-sm">
                         <thead className="bg-gray-50 border-b">
                             <tr>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Asesor</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Enviadas</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Completas</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Incompletas</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aprobadas</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Asesor
+                                </th>
+                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Total
+                                </th>
+                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Borradores
+                                </th>
+                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Enviadas
+                                </th>
+                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Completas
+                                </th>
+                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Incompletas
+                                </th>
+                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Aprobadas
+                                </th>
+                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Rechazadas
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                            {agentApplications?.map((agent) => (
-                                <tr key={agent.sales_agent_id} className="hover:bg-gray-50">
+                            {filteredAgentApplications?.map((agent) => (
+                                <tr key={agent.sales_agent_id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-4 py-3">
                                         <div>
                                             <p className="font-medium text-gray-900">{agent.sales_agent_name}</p>
-                                            <p className="text-sm text-gray-500">{agent.sales_agent_email}</p>
+                                            <p className="text-xs text-gray-500">{agent.sales_agent_email}</p>
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3 font-semibold text-gray-900">{agent.total_applications}</td>
-                                    <td className="px-4 py-3 text-blue-600 font-medium">{agent.submitted_applications}</td>
-                                    <td className="px-4 py-3 text-green-600 font-medium">{agent.complete_applications}</td>
-                                    <td className="px-4 py-3 text-orange-600 font-medium">{agent.incomplete_applications}</td>
-                                    <td className="px-4 py-3 text-purple-600 font-medium">{agent.approved_applications}</td>
-                                    <td className="px-4 py-3">
+                                    <td className="px-4 py-3 text-center">
                                         <button
-                                            onClick={() => setSelectedAgent(agent.sales_agent_id)}
-                                            className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                                            onClick={() => {
+                                                setSelectedAgent(agent.sales_agent_id);
+                                                setCompletionFilter('all');
+                                                setStatusFilter(null);
+                                            }}
+                                            className="font-semibold text-gray-900 hover:text-primary-600 transition-colors"
                                         >
-                                            Ver Detalles
+                                            {agent.total_applications}
                                         </button>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <span className="text-gray-600 font-medium">{agent.draft_applications}</span>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <span className="text-blue-600 font-medium">{agent.submitted_applications}</span>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <button
+                                            onClick={() => {
+                                                setSelectedAgent(agent.sales_agent_id);
+                                                setCompletionFilter('complete');
+                                                setStatusFilter(null);
+                                                // Scroll to applications list
+                                                setTimeout(() => {
+                                                    document.querySelector('#applications-list')?.scrollIntoView({
+                                                        behavior: 'smooth',
+                                                        block: 'start'
+                                                    });
+                                                }, 100);
+                                            }}
+                                            className="text-green-600 hover:text-green-700 font-semibold hover:underline transition-colors"
+                                        >
+                                            {agent.complete_applications}
+                                        </button>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <button
+                                            onClick={() => {
+                                                setSelectedAgent(agent.sales_agent_id);
+                                                setCompletionFilter('incomplete');
+                                                setStatusFilter(null);
+                                            }}
+                                            className="text-orange-600 hover:text-orange-700 font-medium hover:underline transition-colors"
+                                        >
+                                            {agent.incomplete_applications}
+                                        </button>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <span className="text-purple-600 font-medium">{agent.approved_applications}</span>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <span className="text-red-600 font-medium">{agent.rejected_applications}</span>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+                </div>
+                <div className="mt-3 text-xs text-gray-500 flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    <span>Haz clic en los números para filtrar y ver esas solicitudes específicas</span>
                 </div>
             </div>
 
@@ -259,7 +415,7 @@ const ApplicationAnalyticsPanel: React.FC = () => {
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         >
                             <option value="">Todos los asesores</option>
-                            {agentApplications?.map((agent) => (
+                            {filteredAgentApplications?.map((agent) => (
                                 <option key={agent.sales_agent_id} value={agent.sales_agent_id}>
                                     {agent.sales_agent_name}
                                 </option>
@@ -298,10 +454,10 @@ const ApplicationAnalyticsPanel: React.FC = () => {
             </div>
 
             {/* Detailed Applications List */}
-            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+            <div id="applications-list" className="bg-white rounded-xl shadow-sm border overflow-hidden scroll-mt-6">
                 <div className="p-6 border-b">
                     <h3 className="text-lg font-semibold text-gray-900">
-                        Solicitudes Detalladas ({detailedApplications?.length || 0})
+                        Solicitudes Detalladas ({filteredApplications?.length || 0})
                     </h3>
                 </div>
                 <div className="overflow-x-auto">
@@ -309,7 +465,7 @@ const ApplicationAnalyticsPanel: React.FC = () => {
                         <div className="flex justify-center items-center p-8">
                             <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
                         </div>
-                    ) : detailedApplications && detailedApplications.length > 0 ? (
+                    ) : filteredApplications && filteredApplications.length > 0 ? (
                         <table className="w-full">
                             <thead className="bg-gray-50 border-b">
                                 <tr>
@@ -324,7 +480,7 @@ const ApplicationAnalyticsPanel: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                {detailedApplications.map((app) => (
+                                {filteredApplications.map((app) => (
                                     <tr key={app.application_id} className="hover:bg-gray-50">
                                         <td className="px-4 py-3">
                                             <div>

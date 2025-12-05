@@ -84,7 +84,7 @@ const CardContent: React.FC<{ car: WordPressVehicle; mediaIndex: number }> = Rea
             </div>
 
             <Link
-                to={`/autos/${car.slug}`}
+                href={`/autos/${car.slug}`}
                 onClick={e => e.stopPropagation()}
                 className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm text-gray-900 text-xs font-bold px-4 py-2 rounded-full hover:bg-white transition-all shadow-lg z-20"
             >

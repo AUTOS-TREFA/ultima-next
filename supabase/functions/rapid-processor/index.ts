@@ -6,7 +6,7 @@ const CACHE_TTL_MS = 3600_000; // 1 hour (was 1 min - reduces DB queries)
 
 // Cloudflare CDN URL for optimized image delivery (reduces Supabase egress by 70-90%)
 const IMAGE_CDN_URL = "https://images.trefa.mx";
-const SUPABASE_STORAGE_BASE = "https://jjepfehmuybpctdzipnu.supabase.co/storage/v1/object/public";
+const SUPABASE_STORAGE_BASE = "https://pemgwyymodlwabaexxrb.supabase.co/storage/v1/object/public";
 
 // Placeholder images by carroceria/clasificacionid (using CDN URLs with Supabase fallback)
 const DEFAULT_PLACEHOLDER_IMAGE = `${IMAGE_CDN_URL}/fotos_airtable/app/sedan-2Artboard-12-trefa.png`;

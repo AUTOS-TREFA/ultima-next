@@ -20,7 +20,7 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 const FRONTEND_URL = process.env.FRONTEND_URL || "https://trefa.mx";
 const CLOUD_RUN_URL = process.env.CLOUD_RUN_URL || "https://app-1052659336338.us-central1.run.app";
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://jjepfehmuybpctdzipnu.supabase.co";
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://pemgwyymodlwabaexxrb.supabase.co";
 const AIRTABLE_API_URL = process.env.AIRTABLE_API_URL || "https://api.airtable.com";
 const INTELIMOTOR_API_URL = process.env.INTELIMOTOR_API_URL || "https://api.intelimotor.com";
 const PROXY_URL = config?.proxy?.url || "https://proxy.cors.sh";
@@ -65,7 +65,7 @@ app.use(
           "https://trefa.mx",
           "https://www.trefa.mx",
           "https://autos.trefa.mx",
-          "https://jjepfehmuybpctdzipnu.supabase.co",
+          "https://pemgwyymodlwabaexxrb.supabase.co",
           "https://randomuser.me",
           "https://facebook.com",
           "https://cufm.mx",

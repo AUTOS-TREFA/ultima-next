@@ -18,7 +18,7 @@
  * - Image resizing on-the-fly
  */
 
-const SUPABASE_STORAGE_URL = 'https://jjepfehmuybpctdzipnu.supabase.co/storage/v1/object/public';
+const SUPABASE_STORAGE_URL = 'https://pemgwyymodlwabaexxrb.supabase.co/storage/v1/object/public';
 const CACHE_TTL = 60 * 60 * 24 * 30; // 30 days
 const BROWSER_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
 

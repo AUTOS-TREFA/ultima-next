@@ -6,7 +6,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const RAPID_PROCESSOR_URL = Deno.env.get("RAPID_PROCESSOR_URL");
 const RAPID_PROCESSOR_KEY = Deno.env.get("RAPID_PROCESSOR_KEY");
 const SERVICE_ACCESS_TOKEN = Deno.env.get("SERVICE_ACCESS_TOKEN") || "local-dev-token";
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://jjepfehmuybpctdzipnu.supabase.co";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://pemgwyymodlwabaexxrb.supabase.co";
 // Public bucket to use when entries are filenames only. Adjust if needed.
 const PUBLIC_BUCKET = Deno.env.get("PUBLIC_BUCKET") || "fotos_airtable";
 if (!SUPABASE_DB_URL || !SUPABASE_SERVICE_ROLE_KEY) {

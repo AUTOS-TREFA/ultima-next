@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'fs';
 
-const SUPABASE_URL = 'https://jjepfehmuybpctdzipnu.supabase.co';
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJJzdXBhYmFzZSIsInJlZiI6ImpqZXBmZWhtdXlicGN0ZHR6aXBudSIsInJvbGVzIjpbInNlcnZpY2Vfcm9sZSJdLCJpYXQiOjE2ODI2NTQ2NDUsImV4cCI6MTk0MTIxMDY0NX0.UJXbX5H1vX9j12K0G1b1x3rQ1g5c3F4Z2V5bHk';
+const SUPABASE_URL = 'https://pemgwyymodlwabaexxrb.supabase.co';
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlbWd3eXltb2Rsd2FiYWV4eHJiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Mjk5MTUxNiwiZXhwIjoyMDc4NTY3NTE2fQ.bHklvHfGuV00RNFO_KN4cpf1BhfhMfSrKR3TtMvaCNU';
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 

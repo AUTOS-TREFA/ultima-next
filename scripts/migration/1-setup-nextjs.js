@@ -54,7 +54,7 @@ const nextConfig = {
 
   images: {
     domains: [
-      'jjepfehmuybpctdzipnu.supabase.co',
+      'pemgwyymodlwabaexxrb.supabase.co',
       'randomuser.me',
       'cufm.mx',
       'trefa.mx',
