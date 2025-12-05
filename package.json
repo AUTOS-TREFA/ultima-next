@@ -47,6 +47,7 @@
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.378.0",
+    "motion": "^12.23.25",
     "next": "^14.2.0",
     "node-fetch": "^2.7.0",
     "papaparse": "^5.4.1",
