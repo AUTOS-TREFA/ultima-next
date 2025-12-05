@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { Toaster } from 'sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/context/AuthContext';
@@ -44,7 +45,10 @@ export default function RootClientLayout({
               <Toaster position="top-right" richColors closeButton />
               <AuthHandler />
               <RedirectManager />
-              <LeadSourceHandler />
+              {/* Wrap LeadSourceHandler in Suspense to prevent SSG bailout */}
+              <Suspense fallback={null}>
+                <LeadSourceHandler />
+              </Suspense>
               {children}
             </ConfigProvider>
           </FilterProvider>

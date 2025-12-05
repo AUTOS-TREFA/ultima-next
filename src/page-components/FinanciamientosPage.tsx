@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -33,34 +33,84 @@ import { getVehicleImage } from '../utils/getVehicleImage';
 import { DEFAULT_PLACEHOLDER_IMAGE } from '../utils/constants';
 import LazyImage from '../components/LazyImage';
 import { formatPrice } from '../utils/formatters';
+import { conversionTracking } from '../services/ConversionTrackingService';
+import WallOfLove from '../components/WallOfLove';
 
 // Form validation schema - checkboxes validate but don't save to database
 const formSchema = z.object({
   fullName: z.string().min(2, 'Nombre completo requerido'),
   email: z.string().email('Email inválido'),
   phone: z.string().min(10, 'Teléfono debe tener al menos 10 dígitos'),
-  monthlyIncome: z.string().min(1, 'Ingreso mensual requerido'),
   acceptTerms: z.boolean().refine(val => val === true, 'Debes aceptar los términos y condiciones'),
   isOver21: z.boolean().refine(val => val === true, 'Debes ser mayor de 21 años')
 });
 
 type FormData = z.infer<typeof formSchema>;
 
+// Helper function to parse full name into first, last, and mother's last name
+// Returns: { firstName, lastName, motherLastName }
+const parseFullName = (fullName: string): { firstName: string; lastName: string; motherLastName: string } => {
+  const parts = fullName.trim().split(/\s+/); // Split by whitespace
+
+  if (parts.length === 0) {
+    return { firstName: '', lastName: '', motherLastName: '' };
+  } else if (parts.length === 1) {
+    return { firstName: parts[0], lastName: '', motherLastName: '' };
+  } else if (parts.length === 2) {
+    return { firstName: parts[0], lastName: parts[1], motherLastName: '' };
+  } else {
+    // 3 or more parts: first part is firstName, last two are lastNames
+    return {
+      firstName: parts.slice(0, -2).join(' '),
+      lastName: parts[parts.length - 2],
+      motherLastName: parts[parts.length - 1]
+    };
+  }
+};
+
 // Data type for profile - only fields to save
 type ProfileData = {
   nombre: string;
   email: string;
   telefono: string;
-  ingreso_mensual: number;
+  phone: string; // Add phone field to be saved
 };
 
 // Vehicle Card Component
-const MasonryVehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
+const MasonryVehicleCard: React.FC<{ vehicle: Vehicle; urlParams?: string }> = ({ vehicle, urlParams }) => {
   const imageSrc = getVehicleImage(vehicle);
   const isPopular = vehicle.view_count >= 1000;
 
+  const handleClick = () => {
+    // Track vehicle click with Facebook Pixel
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', 'ViewContent', {
+        content_name: vehicle.titulo,
+        content_ids: [vehicle.id],
+        content_type: 'product',
+        value: vehicle.precio,
+        currency: 'MXN'
+      });
+    }
+
+    // Track with GTM
+    if (typeof window !== 'undefined' && (window as any).dataLayer) {
+      (window as any).dataLayer.push({
+        event: 'vehicle_click',
+        vehicleId: vehicle.id,
+        vehicleName: vehicle.titulo,
+        vehiclePrice: vehicle.precio,
+        source: 'financiamientos_inventory'
+      });
+    }
+  };
+
   return (
-    <Link href={`/autos/${vehicle.slug}`} className="group block relative z-10">
+    <Link
+      href={`/autos/${vehicle.slug}${urlParams ? `?${urlParams}` : ''}`}
+      className="group block relative z-10"
+      onClick={handleClick}
+    >
       <div className={`relative ${!isPopular ? 'overflow-hidden' : ''} rounded-lg shadow-md hover:shadow-xl transition-shadow ${isPopular ? 'popular-card' : ''}`}>
         <div className={`aspect-[4/3] bg-gray-100 ${isPopular ? 'overflow-hidden rounded-t-lg' : ''}`}>
           <LazyImage
@@ -84,7 +134,7 @@ const MasonryVehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
 };
 
 // Horizontal Slider Component
-const HorizontalSlider: React.FC<{ vehicles: Vehicle[] }> = ({ vehicles }) => {
+const HorizontalSlider: React.FC<{ vehicles: Vehicle[]; urlParams?: string }> = ({ vehicles, urlParams }) => {
   const [scrollPosition, setScrollPosition] = useState(0);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -132,7 +182,7 @@ const HorizontalSlider: React.FC<{ vehicles: Vehicle[] }> = ({ vehicles }) => {
       >
         {vehicles.map((vehicle) => (
           <div key={vehicle.id} className="flex-shrink-0 w-48 snap-start">
-            <MasonryVehicleCard vehicle={vehicle} />
+            <MasonryVehicleCard vehicle={vehicle} urlParams={urlParams} />
           </div>
         ))}
       </div>
@@ -144,14 +194,17 @@ const FinanciamientosPage: React.FC = () => {
   // SEO metadata is handled in the page.tsx file in Next.js
 
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'submitting' | 'success' | 'error' | 'otp'>('idle');
+  const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'submitting' | 'success' | 'error' | 'otp' | 'otp_error'>('idle');
   const { vehicles: allVehicles } = useVehicles();
   const [displayVehicles, setDisplayVehicles] = useState<Vehicle[]>([]);
   const [otp, setOtp] = useState('');
   const [formDataCache, setFormDataCache] = useState<FormData | null>(null);
   const [urlParams, setUrlParams] = useState('');
   const [leadSource, setLeadSource] = useState<string>('direct');
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [errorType, setErrorType] = useState<string>(''); // Track error type for styling
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
     resolver: zodResolver(formSchema)
@@ -201,30 +254,16 @@ const FinanciamientosPage: React.FC = () => {
 
     setLeadSource(source);
 
-    // Track with Facebook Pixel
-    if (typeof window !== 'undefined' && (window as any).fbq) {
-      (window as any).fbq('track', 'ViewContent', {
-        content_name: 'Financiamientos Landing Page',
-        content_category: 'Financial Services',
-        content_type: 'product',
-        source: source
-      });
-    }
-
-    // Track with Google Tag Manager
-    if (typeof window !== 'undefined' && (window as any).dataLayer) {
-      (window as any).dataLayer.push({
-        event: 'page_view',
-        pageType: 'financing_landing',
-        pageName: 'Financiamientos',
-        pageCategory: 'Lead Generation',
-        source: source,
-        utm_source: params.get('utm_source') || undefined,
-        utm_medium: params.get('utm_medium') || undefined,
-        utm_campaign: params.get('utm_campaign') || undefined,
-        referrer: document.referrer || undefined
-      });
-    }
+    // Track pageview with ConversionTrackingService (includes GTM, Facebook Pixel, and Supabase)
+    conversionTracking.trackPageView('Financiamientos Landing Page', {
+      source: source,
+      pageType: 'financing_landing',
+      pageCategory: 'Lead Generation',
+      utm_source: params.get('utm_source') || undefined,
+      utm_medium: params.get('utm_medium') || undefined,
+      utm_campaign: params.get('utm_campaign') || undefined,
+      referrer: document.referrer || undefined
+    });
   }, []);
 
   // Filter vehicles by body type
@@ -260,17 +299,110 @@ const FinanciamientosPage: React.FC = () => {
     [displayVehicles]
   );
 
-  // Combined vehicles for unified masonry grid - mix all categories
+  // Combined vehicles for unified masonry grid - mix all categories (reduced by 2)
   const allVehiclesMixed = useMemo(() => {
     const all = [
-      ...suvVehicles.slice(0, 8),
-      ...sedanVehicles.slice(0, 6),
-      ...hatchbackVehicles.slice(0, 6),
-      ...pickupVehicles.slice(0, 4)
+      ...suvVehicles.slice(0, 7),
+      ...sedanVehicles.slice(0, 5),
+      ...hatchbackVehicles.slice(0, 4),
+      ...pickupVehicles.slice(0, 2)
     ];
     // Shuffle for better visual distribution
-    return all.sort(() => Math.random() - 0.5).slice(0, 20);
+    return all.sort(() => Math.random() - 0.5).slice(0, 18);
   }, [suvVehicles, sedanVehicles, hatchbackVehicles, pickupVehicles]);
+
+  // Track form field interactions
+  const trackFieldInteraction = (fieldName: string, action: 'focus' | 'blur' | 'change') => {
+    // Facebook Pixel
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('trackCustom', 'FormFieldInteraction', {
+        field: fieldName,
+        action: action,
+        page: 'financiamientos',
+        source: leadSource
+      });
+    }
+
+    // GTM
+    if (typeof window !== 'undefined' && (window as any).dataLayer) {
+      (window as any).dataLayer.push({
+        event: 'form_field_interaction',
+        fieldName: fieldName,
+        action: action,
+        formType: 'financing_request',
+        source: leadSource
+      });
+    }
+  };
+
+  // Track CTA clicks
+  const trackCTAClick = (ctaName: string, ctaLocation: string) => {
+    // Facebook Pixel
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', 'InitiateCheckout', {
+        content_name: ctaName,
+        content_category: ctaLocation,
+        source: leadSource
+      });
+    }
+
+    // GTM
+    if (typeof window !== 'undefined' && (window as any).dataLayer) {
+      (window as any).dataLayer.push({
+        event: 'cta_click',
+        ctaName: ctaName,
+        ctaLocation: ctaLocation,
+        source: leadSource,
+        timestamp: new Date().toISOString()
+      });
+    }
+  };
+
+  // Track scroll depth
+  useEffect(() => {
+    let maxScrollDepth = 0;
+    const scrollThresholds = [25, 50, 75, 90, 100];
+    const trackedThresholds = new Set<number>();
+
+    const handleScroll = () => {
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY;
+      const scrollPercentage = ((scrollTop + windowHeight) / documentHeight) * 100;
+
+      if (scrollPercentage > maxScrollDepth) {
+        maxScrollDepth = scrollPercentage;
+      }
+
+      scrollThresholds.forEach(threshold => {
+        if (scrollPercentage >= threshold && !trackedThresholds.has(threshold)) {
+          trackedThresholds.add(threshold);
+
+          // Facebook Pixel
+          if (typeof window !== 'undefined' && (window as any).fbq) {
+            (window as any).fbq('trackCustom', 'ScrollDepth', {
+              depth: threshold,
+              page: 'financiamientos',
+              source: leadSource
+            });
+          }
+
+          // GTM
+          if (typeof window !== 'undefined' && (window as any).dataLayer) {
+            (window as any).dataLayer.push({
+              event: 'scroll_depth',
+              scrollDepth: threshold,
+              page: 'financiamientos',
+              source: leadSource
+            });
+          }
+        }
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [leadSource]);
 
   // Step 1: Send OTP to user's email
   const onSubmit = async (data: FormData) => {
@@ -278,61 +410,118 @@ const FinanciamientosPage: React.FC = () => {
     setFormDataCache(data); // Cache form data for after OTP verification
 
     try {
-      console.log('📧 Sending OTP to:', data.email);
+      console.log('📱 Procesando solicitud para:', data.email);
 
-      // Track ConversionLandingPage event with Facebook Pixel
-      if (typeof window !== 'undefined' && (window as any).fbq) {
-        (window as any).fbq('track', 'InitiateCheckout', {
-          content_name: 'Financing Request',
-          content_category: 'Lead Generation',
-          value: parseFloat(data.monthlyIncome),
-          currency: 'MXN',
-          source: leadSource
-        });
+      // PRIMERO: Verificar si el usuario ya existe con este email
+      const { data: existingProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, email, phone')
+        .eq('email', data.email)
+        .single();
+
+      if (existingProfile && !profileError) {
+        console.log('⚠️ Usuario ya existe con este email:', existingProfile);
+        setErrorType('account_exists_email'); // Set error type for blue styling
+        setErrorMessage('Este correo ya está en uso, por favor inicia sesión aquí.');
+        setSubmissionStatus('error');
+        // Navigate to /acceder after showing message, preserving URL params
+        const redirectUrl = `/acceder${urlParams ? `?${urlParams}` : ''}`;
+        setTimeout(() => router.push(redirectUrl), 2500);
+        return;
       }
 
-      // Track ConversionLandingPage event with Google Tag Manager
-      if (typeof window !== 'undefined' && (window as any).dataLayer) {
-        (window as any).dataLayer.push({
-          event: 'ConversionLandingPage',
-          formType: 'financing_request',
-          monthlyIncome: data.monthlyIncome,
-          source: leadSource,
-          email: data.email,
-          phone: data.phone
-        });
+      console.log('✅ Usuario nuevo confirmado, procediendo con SMS...');
+
+      // SEGUNDO: Verificar si el teléfono ya está registrado
+      const cleanPhone = data.phone.replace(/\D/g, '');
+      const { data: existingPhoneProfile, error: phoneError } = await supabase
+        .from('profiles')
+        .select('id, email, phone')
+        .eq('phone', cleanPhone)
+        .single();
+
+      if (existingPhoneProfile && !phoneError) {
+        console.log('⚠️ Usuario ya existe con este teléfono:', existingPhoneProfile);
+        setErrorType('account_exists_phone'); // Set error type for blue styling
+        setErrorMessage('Este número de celular ya está en uso, por favor inicia sesión aquí.');
+        setSubmissionStatus('error');
+        // Navigate to /acceder after showing message, preserving URL params
+        const redirectUrl = `/acceder${urlParams ? `?${urlParams}` : ''}`;
+        setTimeout(() => router.push(redirectUrl), 2500);
+        return;
       }
 
-      // Send OTP via Supabase Auth
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email: data.email,
-        options: {
-          shouldCreateUser: true,
-          data: {
-            full_name: data.fullName,
-            phone: data.phone,
-            monthly_income: parseInt(data.monthlyIncome),
-            source: 'financiamientos-landing'
-          }
+      // Format phone number (ensure +52 prefix for Mexico)
+      let formattedPhone = cleanPhone;
+      if (formattedPhone.length === 10) {
+        formattedPhone = `+52${formattedPhone}`;
+      } else if (!formattedPhone.startsWith('+')) {
+        formattedPhone = `+${formattedPhone}`;
+      }
+
+      console.log('📤 Enviando código de verificación a:', formattedPhone);
+
+      // Send SMS OTP via Twilio Verify (no otp parameter needed)
+      const { data: smsData, error: smsError } = await supabase.functions.invoke('send-sms-otp', {
+        body: {
+          phone: formattedPhone
         }
       });
 
-      if (otpError) {
-        console.error('❌ OTP Error:', otpError);
+      if (smsError) {
+        console.error('❌ Error al enviar SMS:', smsError);
+        const errorMsg = (smsError as any).message || 'Error al enviar código de verificación';
+
+        // Mostrar mensaje específico según el error
+        if (errorMsg.includes('phone number')) {
+          setErrorMessage('El número de teléfono ingresado no es válido. Por favor verifica que sea un número de 10 dígitos.');
+        } else if (errorMsg.includes('Twilio')) {
+          setErrorMessage('Error al enviar el mensaje SMS. Por favor intenta de nuevo en unos momentos.');
+        } else {
+          setErrorMessage(`Error: ${errorMsg}`);
+        }
+
         setSubmissionStatus('error');
         return;
       }
 
-      console.log('✅ OTP sent successfully');
+      if (!smsData?.success) {
+        console.error('❌ SMS no se envió correctamente:', smsData);
+        setErrorMessage('No se pudo enviar el código de verificación. Por favor intenta de nuevo.');
+        setSubmissionStatus('error');
+        return;
+      }
+
+      console.log('✅ SMS OTP sent successfully:', smsData);
+      console.log('💾 Código enviado al teléfono:', formattedPhone);
+
+      // Track form submission with Facebook Pixel and GTM
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'Lead', {
+          content_name: 'Financing Request - Form Submitted',
+          content_category: 'Financial Services',
+          source: leadSource
+        });
+      }
+
+      if (typeof window !== 'undefined' && (window as any).dataLayer) {
+        (window as any).dataLayer.push({
+          event: 'financing_form_submitted',
+          formType: 'financing_request',
+          source: leadSource
+        });
+      }
+
       setSubmissionStatus('otp'); // Show OTP verification form
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending OTP:', error);
+      setErrorMessage(error.message || 'Error inesperado al enviar el código. Por favor intenta de nuevo.');
       setSubmissionStatus('error');
     }
   };
 
-  // Step 2: Verify OTP and create/update profile
+  // Step 2: Verify SMS OTP and create/update profile
   const handleOtpVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formDataCache) return;
@@ -340,55 +529,208 @@ const FinanciamientosPage: React.FC = () => {
     setSubmissionStatus('submitting');
 
     try {
-      console.log('🔐 Verifying OTP...');
+      console.log('🔐 Verifying SMS OTP...');
 
-      // Verify OTP
-      const { data: authData, error: verifyError } = await supabase.auth.verifyOtp({
-        email: formDataCache.email,
-        token: otp,
-        type: 'email'
+      // Format phone number
+      let formattedPhone = formDataCache.phone.replace(/\D/g, '');
+      if (formattedPhone.length === 10) {
+        formattedPhone = `+52${formattedPhone}`;
+      } else if (!formattedPhone.startsWith('+')) {
+        formattedPhone = `+${formattedPhone}`;
+      }
+
+      console.log('📞 Teléfono formateado:', formattedPhone);
+      console.log('🔢 Código OTP ingresado:', otp);
+
+      // Verify SMS OTP using Edge Function
+      const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-sms-otp', {
+        body: {
+          phone: formattedPhone,
+          code: otp
+        }
       });
 
+      console.log('📊 Respuesta de verify-sms-otp:', { verifyData, verifyError });
+
       if (verifyError) {
-        console.error('❌ OTP Verification Error:', verifyError);
-        setSubmissionStatus('error');
+        console.error('❌ Error al verificar código:', verifyError);
+        const errorMsg = (verifyError as any).message || 'Error al verificar código';
+
+        if (errorMsg.includes('expired') || errorMsg.includes('expirado')) {
+          setErrorMessage('El código ha expirado. Por favor solicita un nuevo código.');
+        } else if (errorMsg.includes('invalid') || errorMsg.includes('inválido') || errorMsg.includes('Incorrect')) {
+          setErrorMessage('El código ingresado es incorrecto. Por favor verifica e intenta de nuevo.');
+        } else {
+          setErrorMessage('Error al verificar el código. Por favor intenta de nuevo.');
+        }
+
+        setSubmissionStatus('otp_error');
         return;
       }
 
-      console.log('✅ OTP verified successfully, user authenticated');
+      if (!verifyData?.success) {
+        console.error('❌ Código no verificado:', verifyData);
+        setErrorMessage(verifyData?.error || 'El código ingresado es incorrecto. Por favor verifica e intenta de nuevo.');
+        setSubmissionStatus('otp_error');
+        return;
+      }
+
+      console.log('✅ SMS OTP verified successfully');
+
+      // Check if user already exists
+      const { data: { user: existingUser } } = await supabase.auth.getUser();
+
+      let userId = existingUser?.id;
+      let newUserCreated = false;
+
+      // If no existing user, create one
+      if (!existingUser) {
+        console.log('📝 Creating new user account...');
+
+        // Create user with signUp (using a random password since we verified via SMS)
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: formDataCache.email,
+          password: Math.random().toString(36).slice(-16), // Random password
+          options: {
+            data: {
+              full_name: formDataCache.fullName,
+              phone: formattedPhone,
+              source: 'financiamientos-landing'
+            }
+          }
+        });
+
+        if (signUpError) {
+          console.error('❌ SignUp Error:', signUpError);
+
+          // If user already exists, try to sign them in
+          if (signUpError.message?.includes('already registered')) {
+            const redirectUrl = `/acceder${urlParams ? `?${urlParams}` : ''}`;
+            setErrorMessage(`Este correo ya está registrado. Por favor, inicia sesión.`);
+            setSubmissionStatus('error');
+            setTimeout(() => router.push(redirectUrl), 2000);
+            return;
+          }
+
+          throw signUpError;
+        }
+
+        if (!signUpData.user) {
+          throw new Error('No se pudo crear la cuenta de usuario');
+        }
+
+        userId = signUpData.user.id;
+        newUserCreated = true;
+        console.log('✅ User created successfully with ID:', userId);
+
+        // Wait a moment for Supabase Auth to establish the session
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Verify the session was established
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.warn('⚠️ Session not established after signUp, attempting to get user again');
+          const { data: { user: verifiedUser } } = await supabase.auth.getUser();
+          if (!verifiedUser) {
+            throw new Error('No se pudo establecer la sesión del usuario');
+          }
+        }
+      }
+
+      console.log('✅ User process completed, userId:', userId);
+
+      // Ensure we have a valid userId before proceeding
+      if (!userId) {
+        throw new Error('No se pudo obtener el ID del usuario');
+      }
 
       // Now update/create the user's profile
-      const profileData: ProfileData = {
-        nombre: formDataCache.fullName,
+      // Parse full name into first_name, last_name, mother_last_name
+      console.log('📝 Nombre completo recibido:', formDataCache.fullName);
+      const { firstName, lastName, motherLastName } = parseFullName(formDataCache.fullName);
+      console.log('📝 Nombre parseado:', { firstName, lastName, motherLastName });
+
+      // Get URL parameters for tracking
+      const params = new URLSearchParams(window.location.search);
+      const ordencompra = params.get('ordencompra') || params.get('orden_compra') || undefined;
+      const utmSource = params.get('utm_source') || undefined;
+      const utmMedium = params.get('utm_medium') || undefined;
+      const utmCampaign = params.get('utm_campaign') || undefined;
+      const utmTerm = params.get('utm_term') || undefined;
+      const utmContent = params.get('utm_content') || undefined;
+      const referrerUrl = document.referrer || undefined;
+      const landingPage = window.location.href;
+
+      // Clean phone number - extract only digits and take last 10
+      const cleanPhone = formDataCache.phone.replace(/\D/g, '').slice(-10);
+
+      console.log('📝 Preparando datos de perfil:', {
+        firstName,
+        lastName,
+        motherLastName,
+        cleanPhone,
+        email: formDataCache.email
+      });
+
+      const profileData = {
+        first_name: firstName,
+        last_name: lastName,
+        mother_last_name: motherLastName,
         email: formDataCache.email,
-        telefono: formDataCache.phone,
-        ingreso_mensual: parseInt(formDataCache.monthlyIncome)
+        phone: cleanPhone, // Only save 10 digits without country code
+        // Tracking data
+        ordencompra: ordencompra,
+        utm_source: utmSource,
+        utm_medium: utmMedium,
+        utm_campaign: utmCampaign,
+        utm_term: utmTerm,
+        utm_content: utmContent,
+        referrer: referrerUrl,
+        landing_page: landingPage,
+        lead_source: leadSource,
+        first_visit_at: new Date().toISOString()
       };
 
-      const { error: profileError } = await supabase
+      console.log('🔄 Ejecutando upsert con estos datos:', {
+        id: userId,
+        ...profileData,
+        updated_at: new Date().toISOString()
+      });
+
+      const { data: upsertData, error: profileError } = await supabase
         .from('profiles')
         .upsert({
-          id: authData.user?.id,
+          id: userId,
           ...profileData,
           updated_at: new Date().toISOString()
-        });
+        })
+        .select();
 
       if (profileError) {
         console.error('❌ Profile update error:', profileError);
       } else {
         console.log('✅ Profile updated successfully');
+        console.log('📊 Datos guardados en la base de datos:', upsertData);
       }
+
+      // Verificar inmediatamente que los datos se guardaron
+      const { data: verifyProfile, error: profileVerifyError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, mother_last_name, phone, email')
+        .eq('id', userId)
+        .single();
+
+      console.log('🔍 Verificación de perfil guardado:', { verifyProfile, profileVerifyError });
 
       // Also save to leads table for tracking
       const { data: leadData } = await supabase
         .from('leads')
         .insert([
           {
-            user_id: authData.user?.id,
+            user_id: userId,
             nombre: formDataCache.fullName,
             email: formDataCache.email,
             telefono: formDataCache.phone,
-            ingreso_mensual: parseInt(formDataCache.monthlyIncome),
             source: leadSource,
             metadata: {
               timestamp: new Date().toISOString(),
@@ -404,12 +746,19 @@ const FinanciamientosPage: React.FC = () => {
         .select()
         .single();
 
+      // Track ConversionLandingPage event - user completed registration
+      conversionTracking.trackConversionLandingPage({
+        userId: userId,
+        email: formDataCache.email,
+        source: leadSource,
+        leadId: leadData?.id
+      });
+
       // Track successful lead creation with Facebook Pixel
       if (typeof window !== 'undefined' && (window as any).fbq) {
         (window as any).fbq('track', 'Lead', {
           content_name: 'Financing Request Lead',
           content_category: 'Financial Services',
-          value: parseFloat(formDataCache.monthlyIncome) * 0.1,
           currency: 'MXN',
           lead_id: leadData?.id
         });
@@ -421,7 +770,6 @@ const FinanciamientosPage: React.FC = () => {
           event: 'financing_form_success',
           leadId: leadData?.id,
           formType: 'financing_request',
-          monthlyIncome: formDataCache.monthlyIncome,
           source: 'financiamientos-landing'
         });
       }
@@ -438,7 +786,7 @@ const FinanciamientosPage: React.FC = () => {
           body: JSON.stringify({
             ...profileData,
             leadId: leadData?.id,
-            userId: authData.user?.id,
+            userId: userId,
             source: 'financiamientos-landing',
             timestamp: new Date().toISOString()
           })
@@ -447,14 +795,15 @@ const FinanciamientosPage: React.FC = () => {
         console.warn('⚠️ Webhook notification failed (non-critical):', webhookError);
       }
 
-      setSubmissionStatus('success');
       reset();
       setFormDataCache(null);
 
-      // Redirect to application page after 2 seconds
-      setTimeout(() => {
-        window.location.href = '/escritorio/aplicacion';
-      }, 2000);
+      // Redirect to profile page immediately with URL parameters preserved
+      const redirectPath = `/escritorio/profile${urlParams ? `?${urlParams}` : ''}`;
+      router.push(redirectPath);
+
+      // Set success status AFTER navigation starts (for any loading state feedback)
+      setSubmissionStatus('success');
 
     } catch (error) {
       console.error('Error verifying OTP:', error);
@@ -476,12 +825,12 @@ const FinanciamientosPage: React.FC = () => {
         });
       }
 
-      setSubmissionStatus('error');
+      setSubmissionStatus('otp_error');
     }
   };
 
   // OTP Verification View
-  if (submissionStatus === 'otp') {
+  if (submissionStatus === 'otp' || submissionStatus === 'otp_error') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50/30 relative overflow-hidden flex items-center justify-center py-12 px-4">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -495,12 +844,12 @@ const FinanciamientosPage: React.FC = () => {
               <CheckCircle className="w-8 h-8 text-white" />
             </div>
             <h2 className="font-heading text-2xl font-black text-gray-900 mb-2">
-              Verifica tu correo
+              Verifica tu teléfono
             </h2>
             <p className="text-gray-600 text-sm">
-              Hemos enviado un código de 6 dígitos a <strong>{formDataCache?.email}</strong>
+              Hemos enviado un código de 6 dígitos por SMS a <strong>{formDataCache?.phone}</strong>
             </p>
-            <p className="text-xs text-gray-500 mt-1">(Revisa tu buzón de correo no deseado)</p>
+            <p className="text-xs text-gray-500 mt-1">(El mensaje puede tardar unos segundos en llegar)</p>
           </div>
 
           <form onSubmit={handleOtpVerification} className="space-y-4">
@@ -517,14 +866,27 @@ const FinanciamientosPage: React.FC = () => {
               />
             </div>
 
-            {/* Error message will be shown when component re-renders with error status */}
+            {submissionStatus === 'otp_error' && (
+              <div className="p-3 bg-red-100 border-2 border-red-400 rounded-lg text-center">
+                <p className="text-red-800 font-bold text-sm">
+                  {errorMessage || 'Código inválido o expirado. Inténtalo de nuevo.'}
+                </p>
+              </div>
+            )}
 
             <button
               type="submit"
-              disabled={otp.length < 6}
+              disabled={otp.length < 6 || submissionStatus === 'submitting'}
               className="w-full bg-gradient-to-r from-primary via-orange-500 to-yellow-500 text-white py-4 px-6 rounded-xl font-black text-base hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
             >
-              Verificar y Continuar
+              {submissionStatus === 'submitting' ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>Verificando...</span>
+                </div>
+              ) : (
+                'Verificar y Continuar'
+              )}
             </button>
 
             <button
@@ -533,10 +895,11 @@ const FinanciamientosPage: React.FC = () => {
                 setSubmissionStatus('idle');
                 setFormDataCache(null);
                 setOtp('');
+                setErrorMessage('');
               }}
               className="w-full text-sm text-gray-500 hover:text-primary font-medium"
             >
-              Cambiar correo electrónico
+              Modificar o cambiar número celular
             </button>
           </form>
         </div>
@@ -563,7 +926,7 @@ const FinanciamientosPage: React.FC = () => {
           </h1>
 
           <p className="text-xl text-gray-700 mb-8 leading-relaxed">
-            Te contactaremos en las próximas 24 horas con las mejores opciones de financiamiento para tu auto.
+            Te contactaremos en las próximas 24h con las mejores opciones de financiamiento para tu auto.
           </p>
 
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
@@ -580,21 +943,21 @@ const FinanciamientosPage: React.FC = () => {
         .financiamientos-page h4,
         .financiamientos-page h5,
         .financiamientos-page h6 {
-          font-family: 'DM Sans', sans-serif !important;
+          font-family: 'Be Vietnam Pro', sans-serif !important;
           font-weight: 700 !important;
-          letter-spacing: -0.025em !important;
+          letter-spacing: -0.01em !important;
         }
         .financiamientos-page h1 {
-          font-family: 'DM Sans', sans-serif !important;
+          font-family: 'Be Vietnam Pro', sans-serif !important;
           font-weight: 900 !important;
         }
         .financiamientos-page h2 {
-          font-family: 'DM Sans', sans-serif !important;
+          font-family: 'Be Vietnam Pro', sans-serif !important;
           font-weight: 800 !important;
-          letter-spacing: -0.035em !important;
+          letter-spacing: -0.02em !important;
         }
       `}</style>
-      <div className="financiamientos-page">
+      <div className="financiamientos-page" style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}>
       {/* Hero Section with Form */}
       <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-orange-50/30 py-12 sm:py-16 lg:py-20">
         {/* Animated Background Elements */}
@@ -605,7 +968,7 @@ const FinanciamientosPage: React.FC = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          {/* Logo with Animation - Optimized for Mobile */}
+          {/* Logo with Animation - Extra Small Size */}
           <motion.div
             initial={{ opacity: 0, scale: 1.2 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -615,26 +978,25 @@ const FinanciamientosPage: React.FC = () => {
             <img
               src="/images/trefalogo.png"
               alt="TREFA Logo"
-              className="h-14 sm:h-16 md:h-20 w-auto"
+              className="h-6 sm:h-10 md:h-12 w-auto"
             />
           </motion.div>
 
-          {/* Massive Headline - Optimized for Mobile */}
-          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+          {/* Massive Headline - Two lines only */}
+          <div className="text-center mb-3 sm:mb-4 lg:mb-6">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
-              className="font-heading text-[24px] sm:text-[34px] md:text-[46px] lg:text-[54px] xl:text-[66px] font-black mb-6 sm:mb-8 px-4"
-              style={{ letterSpacing: '-0.05em', lineHeight: '1.1', WebkitTextStroke: '0.5px currentColor' }}
+              className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-black mb-3 sm:mb-4 px-4 tracking-tight leading-[0.95]"
+              style={{ fontFamily: "'Be Vietnam Pro', sans-serif", fontWeight: 900, letterSpacing: '-0.02em' }}
             >
-              <span className="block text-gray-900 drop-shadow-lg xl:whitespace-nowrap">
-                Estrena un auto seminuevo en 24 horas
+              <span className="inline text-gray-900">
+                Estrena un auto seminuevo en{' '}
               </span>
-              <span className="block text-gray-900 drop-shadow-lg mt-1 sm:mt-2">
-                Desde aquí{' '}
-                <span className="bg-gradient-to-r from-primary via-orange-500 to-yellow-500 bg-clip-text text-transparent animate-shimmer bg-[length:200%_100%] whitespace-nowrap">
-                  es posible
+              <span className="inline">
+                <span className="bg-gradient-to-r from-primary via-orange-500 to-orange-600 bg-clip-text text-transparent">
+                  menos de 24h
                 </span>
               </span>
             </motion.h1>
@@ -643,17 +1005,15 @@ const FinanciamientosPage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-              className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed mt-6"
-              style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 400, letterSpacing: 'normal' }}
+              className="text-base md:text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed mt-2 mb-8 sm:mb-10 font-normal px-4"
+              style={{ fontFamily: "'Be Vietnam Pro', sans-serif", letterSpacing: 'normal' }}
             >
-              Conectamos tu perfil con el banco que te ofrece{' '}
-              <span className="text-primary font-black">la mejor tasa de interés</span>{' '}
-              y la mayor probabilidad de aprobar tu crédito automotriz.
+              Enviamos tu solicitud al banco con la mayor probabilidad de aprobar tu crédito automotriz.
             </motion.p>
           </div>
 
           {/* Main Content Grid - 3/5 Video, 2/5 Form */}
-          <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 lg:gap-8 xl:gap-10 items-start max-w-[95%] mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 lg:gap-8 xl:gap-10 items-start max-w-[95%] mx-auto mt-6">
             {/* Video Player with Animated Gradient Border */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -661,6 +1021,18 @@ const FinanciamientosPage: React.FC = () => {
               transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
               className="relative"
             >
+              {/* Paso 1 Label */}
+              <div className="mb-4 text-center lg:text-left">
+                <div className="inline-block bg-gradient-to-r from-primary/10 via-orange-500/10 to-yellow-500/10 border-2 border-primary/20 rounded-xl px-6 py-3 shadow-md">
+                  <h3 className="text-xl md:text-2xl font-black" style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}>
+                    <span className="bg-gradient-to-r from-primary via-orange-500 to-orange-600 bg-clip-text text-transparent">
+                      Paso 1:
+                    </span>
+                    <span className="text-gray-900"> Mira este corto video</span>
+                  </h3>
+                </div>
+              </div>
+
               {/* Animated Gradient Border Container */}
               <div className="relative p-[3px] rounded-xl bg-gradient-to-r from-primary via-orange-500 to-yellow-500 bg-[length:200%_200%] animate-shimmer shadow-2xl">
                 <div className="relative bg-white rounded-xl p-2">
@@ -686,13 +1058,22 @@ const FinanciamientosPage: React.FC = () => {
               transition={{ duration: 0.6, ease: "easeOut", delay: 0.6 }}
               className="relative"
             >
-              <div className="backdrop-blur-xl bg-white/90 border-2 border-white/60 rounded-2xl p-8 sm:p-10 md:p-12 shadow-2xl">
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" id="registration-form">
+              {/* Paso 2 Label */}
+              <div className="mb-4 text-center lg:text-left">
+                <div className="inline-block bg-gradient-to-r from-primary/10 via-orange-500/10 to-yellow-500/10 border-2 border-primary/20 rounded-xl px-6 py-3 shadow-md">
+                  <h3 className="text-xl md:text-2xl font-black" style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}>
+                    <span className="bg-gradient-to-r from-primary via-orange-500 to-orange-600 bg-clip-text text-transparent">
+                      Paso 2:
+                    </span>
+                    <span className="text-gray-900"> Regístrate sin costo</span>
+                  </h3>
+                </div>
+              </div>
+
+              <div className="backdrop-blur-xl bg-white/90 border-2 border-white/60 rounded-2xl p-5 sm:p-8 md:p-10 shadow-2xl">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4" id="registration-form">
                   <div className="text-center mb-6">
-                    <h2 className="font-heading text-2xl sm:text-3xl font-black text-gray-900 mb-2">
-                      Regístrate en 1 minuto
-                    </h2>
-                    <p className="text-primary font-bold text-sm">
+                    <p className="text-primary font-normal text-sm sm:text-base">
                       Sin compromiso de compra ni pagos por adelantado
                     </p>
                   </div>
@@ -701,6 +1082,8 @@ const FinanciamientosPage: React.FC = () => {
                     <input
                       {...register('fullName')}
                       placeholder="Nombre completo"
+                      onFocus={() => trackFieldInteraction('fullName', 'focus')}
+                      onBlur={() => trackFieldInteraction('fullName', 'blur')}
                       className="w-full px-4 py-3 backdrop-blur-md bg-white/90 border-2 border-gray-200 text-gray-900 placeholder-gray-500 rounded-xl transition-all focus:bg-white focus:ring-2 focus:ring-primary focus:border-primary shadow-md font-medium"
                     />
                     {errors.fullName && (
@@ -713,6 +1096,8 @@ const FinanciamientosPage: React.FC = () => {
                       {...register('email')}
                       type="email"
                       placeholder="Correo electrónico"
+                      onFocus={() => trackFieldInteraction('email', 'focus')}
+                      onBlur={() => trackFieldInteraction('email', 'blur')}
                       className="w-full px-4 py-3 backdrop-blur-md bg-white/90 border-2 border-gray-200 text-gray-900 placeholder-gray-500 rounded-xl transition-all focus:bg-white focus:ring-2 focus:ring-primary focus:border-primary shadow-md font-medium"
                     />
                     {errors.email && (
@@ -724,26 +1109,12 @@ const FinanciamientosPage: React.FC = () => {
                     <input
                       {...register('phone')}
                       placeholder="Teléfono (10 dígitos)"
+                      onFocus={() => trackFieldInteraction('phone', 'focus')}
+                      onBlur={() => trackFieldInteraction('phone', 'blur')}
                       className="w-full px-4 py-3 backdrop-blur-md bg-white/90 border-2 border-gray-200 text-gray-900 placeholder-gray-500 rounded-xl transition-all focus:bg-white focus:ring-2 focus:ring-primary focus:border-primary shadow-md font-medium"
                     />
                     {errors.phone && (
                       <p className="text-red-600 text-xs mt-2 ml-2 font-medium">{errors.phone.message}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <select
-                      {...register('monthlyIncome')}
-                      className="w-full px-4 py-3 backdrop-blur-md bg-white/90 border-2 border-gray-200 text-gray-900 rounded-xl transition-all focus:bg-white focus:ring-2 focus:ring-primary focus:border-primary shadow-md font-medium"
-                    >
-                      <option value="">Selecciona tu ingreso mensual</option>
-                      <option value="10000">Menos de $15,000</option>
-                      <option value="17500">$15,000 - $20,000</option>
-                      <option value="22500">$20,000 - $25,000</option>
-                      <option value="30000">$25,000 y más</option>
-                    </select>
-                    {errors.monthlyIncome && (
-                      <p className="text-red-600 text-xs mt-2 ml-2 font-medium">{errors.monthlyIncome.message}</p>
                     )}
                   </div>
 
@@ -772,23 +1143,23 @@ const FinanciamientosPage: React.FC = () => {
                       />
                       <label htmlFor="acceptTerms" className="text-gray-900 font-bold text-sm leading-relaxed">
                         Acepto los{' '}
-                        <a
-                          href="/politica-de-privacidad"
+                        <Link
+                          href="/terminos"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-primary hover:text-primary/80 font-black underline"
                         >
                           términos y condiciones
-                        </a>
+                        </Link>
                         {' '}y{' '}
-                        <a
+                        <Link
                           href="/politica-de-privacidad"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-primary hover:text-primary/80 font-black underline"
                         >
                           política de privacidad
-                        </a>
+                        </Link>
                         <span className="text-red-500"> *</span>
                       </label>
                     </div>
@@ -798,14 +1169,38 @@ const FinanciamientosPage: React.FC = () => {
                   </div>
 
                   {submissionStatus === 'error' && (
-                    <div className="p-4 bg-red-100 border-2 border-red-400 rounded-lg text-center">
-                      <p className="text-red-800 font-bold text-sm mb-2">
-                        Error al enviar la información
-                      </p>
+                    <div className={`p-4 rounded-lg text-center ${
+                      errorType === 'account_exists_email' || errorType === 'account_exists_phone'
+                        ? 'bg-blue-50 border-2 border-blue-200'
+                        : 'bg-red-100 border-2 border-red-400'
+                    }`}>
+                      {errorType === 'account_exists_email' || errorType === 'account_exists_phone' ? (
+                        <p className="text-blue-700 font-bold text-sm mb-2">
+                          {errorMessage}{' '}
+                          <Link
+                            href={`/acceder${urlParams ? `?${urlParams}` : ''}`}
+                            className="underline hover:text-blue-900"
+                          >
+                            Ir ahora
+                          </Link>
+                        </p>
+                      ) : (
+                        <p className="text-red-800 font-bold text-sm mb-2">
+                          {errorMessage || 'Error al enviar la información'}
+                        </p>
+                      )}
                       <button
                         type="button"
-                        onClick={() => setSubmissionStatus('idle')}
-                        className="text-xs text-red-700 hover:text-red-900 font-bold underline"
+                        onClick={() => {
+                          setSubmissionStatus('idle');
+                          setErrorMessage('');
+                          setErrorType('');
+                        }}
+                        className={`text-xs font-bold underline ${
+                          errorType === 'account_exists_email' || errorType === 'account_exists_phone'
+                            ? 'text-blue-700 hover:text-blue-900'
+                            : 'text-red-700 hover:text-red-900'
+                        }`}
                       >
                         Intentar de nuevo
                       </button>
@@ -815,7 +1210,7 @@ const FinanciamientosPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={submissionStatus === 'submitting'}
-                    className="w-full relative group overflow-hidden bg-gradient-to-r from-primary via-orange-500 to-yellow-500 text-white py-4 px-6 rounded-xl font-black text-base hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+                    className="w-full relative group overflow-hidden bg-gradient-to-r from-primary to-orange-600 text-white py-4 sm:py-5 px-6 rounded-xl font-black text-base sm:text-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg min-h-[48px] touch-manipulation"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
 
@@ -827,7 +1222,7 @@ const FinanciamientosPage: React.FC = () => {
                         </>
                       ) : (
                         <>
-                          <span>Solicitar Financiamiento</span>
+                          <span>Solicitar financiamiento</span>
                           <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </>
                       )}
@@ -847,54 +1242,8 @@ const FinanciamientosPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Brands Section */}
-      <section className="relative py-16 bg-gradient-to-r from-orange-50/80 to-yellow-50/80 border-t border-orange-200/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h3 className="font-heading text-3xl sm:text-4xl font-black text-gray-900 mb-4">
-              Tus marcas favoritas están aquí
-            </h3>
-            <p className="text-primary font-bold text-lg max-w-2xl mx-auto">
-              Trabajamos con las marcas más confiables del mercado automotriz
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 sm:gap-6 items-center justify-items-center">
-            {[
-              { name: 'Nissan', logo: 'https://www.carlogos.org/car-logos/nissan-logo.png' },
-              { name: 'Toyota', logo: 'https://www.carlogos.org/car-logos/toyota-logo.png' },
-              { name: 'Honda', logo: 'https://www.carlogos.org/car-logos/honda-logo.png' },
-              { name: 'Volkswagen', logo: 'https://www.carlogos.org/car-logos/volkswagen-logo.png' },
-              { name: 'Chevrolet', logo: 'https://www.carlogos.org/car-logos/chevrolet-logo.png' },
-              { name: 'Mazda', logo: 'https://www.carlogos.org/car-logos/mazda-logo.png' },
-              { name: 'KIA', logo: 'https://www.carlogos.org/car-logos/kia-logo.png' },
-              { name: 'Hyundai', logo: 'https://www.carlogos.org/car-logos/hyundai-logo.png' },
-              { name: 'Ford', logo: 'https://www.carlogos.org/car-logos/ford-logo.png' },
-              { name: 'BMW', logo: 'https://www.carlogos.org/car-logos/bmw-logo.png' }
-            ].map((brand, index) => (
-              <motion.div
-                key={brand.name}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.03 }}
-                viewport={{ once: true }}
-                className="group"
-              >
-                <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
-                  <img
-                    src={brand.logo}
-                    alt={`${brand.name} logo`}
-                    className="w-full h-12 sm:h-14 object-contain grayscale hover:grayscale-0 transition-all"
-                  />
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Unified Vehicle Showcase - All Categories Masonry Grid */}
-      <section className="py-12 md:py-16 bg-gradient-to-br from-gray-50 via-white to-orange-50/30">
+      <section className="py-20 md:py-24 bg-gradient-to-br from-gray-50 via-white to-orange-50/30">
         <div className="container mx-auto px-4 lg:px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -903,11 +1252,18 @@ const FinanciamientosPage: React.FC = () => {
             viewport={{ once: true }}
             className="text-center space-y-4 mb-12"
           >
-            <h2 className="font-heading text-2xl md:text-3xl lg:text-4xl font-black text-gray-900">
-              Todos Nuestros Autos Incluyen el Kit
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-gray-900" style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}>
+              Inventario de Autos con Entrega Inmediata
             </h2>
-            <p className="text-xl text-gray-700 max-w-3xl mx-auto font-bold">
-              SUVs, Sedanes, Hatchbacks y Pick Ups certificados con el Kit de Seguridad TREFA de $123,500 MXN incluido
+            <p className="text-lg md:text-xl text-gray-700 max-w-3xl mx-auto font-normal">
+              Todos nuestros autos incluyen el{' '}
+              <a
+                href="#kit-trefa"
+                className="text-primary hover:text-orange-600 underline decoration-2 underline-offset-4 transition-colors"
+              >
+                Kit de Seguridad TREFA
+              </a>
+              , con un valor real de $123,500 MXN.
             </p>
           </motion.div>
 
@@ -921,7 +1277,7 @@ const FinanciamientosPage: React.FC = () => {
                   transition={{ duration: 0.4, delay: index * 0.05 }}
                   viewport={{ once: true }}
                 >
-                  <MasonryVehicleCard vehicle={vehicle} />
+                  <MasonryVehicleCard vehicle={vehicle} urlParams={urlParams} />
                 </motion.div>
               ))}
             </div>
@@ -930,114 +1286,169 @@ const FinanciamientosPage: React.FC = () => {
           )}
 
           <div className="text-center mt-8">
-            <Link
-              href={`/acceder${urlParams ? `?${urlParams}` : ''}`}
-              className="inline-flex items-center gap-2 bg-primary text-white hover:bg-primary/90 px-8 py-4 rounded-lg font-black text-lg shadow-lg hover:shadow-xl transition-all"
+            <button
+              onClick={() => {
+                trackCTAClick('Ver todo el inventario', 'inventory_section');
+                document.getElementById('registration-form')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="group relative overflow-hidden inline-flex items-center gap-2 bg-gradient-to-r from-primary to-orange-600 text-white hover:shadow-2xl px-8 py-4 rounded-xl font-black text-lg transition-all hover:scale-105 shadow-lg"
             >
-              Crear mi cuenta
-              <ArrowRight className="w-5 h-5" />
-            </Link>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+              <span className="relative">Ver todo el inventario</span>
+              <ArrowRight className="w-5 h-5 relative group-hover:translate-x-1 transition-transform" />
+            </button>
           </div>
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="relative py-12 md:py-16 bg-white">
+      {/* Digital Financing Benefits */}
+      <section className="relative py-20 md:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h3 className="font-heading text-3xl sm:text-4xl font-black text-gray-900 mb-4">
-              Lo que dicen nuestros clientes
-            </h3>
-            <p className="text-gray-700 font-bold text-lg max-w-2xl mx-auto">
-              Más de 2,000 personas ya obtuvieron su financiamiento y hoy manejan un auto TREFA
-            </p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-6" style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}>
+              ¿Por qué elegir nuestro financiamiento digital?
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
+            {/* Left Content */}
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4">
+                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-1">
+                  <Check className="w-5 h-5 text-white" />
+                </div>
+                <p className="text-lg text-gray-700 leading-relaxed font-normal">
+                  Llena tu solicitud desde tu celular en pocos minutos y recibe una respuesta en 24h o menos.
+                </p>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-1">
+                  <Check className="w-5 h-5 text-white" />
+                </div>
+                <p className="text-lg text-gray-700 leading-relaxed font-normal">
+                  Financia tu auto con BBVA, Banregio, BANORTE, AFIRME, Scotiabank, y Hey Banco, nuestros bancos asociados.
+                </p>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-1">
+                  <Check className="w-5 h-5 text-white" />
+                </div>
+                <p className="text-lg text-gray-700 leading-relaxed font-normal">
+                  Perfilamiento bancario inteligente: enviamos tu solicitud al banco con la mayor probabilidad de aprobación
+                </p>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-1">
+                  <Check className="w-5 h-5 text-white" />
+                </div>
+                <p className="text-lg text-gray-700 leading-relaxed font-normal">
+                  Sin anticipos ni cobros sorpresa: paga tu enganche solo al finalizar tu trámite de financiamiento.
+                </p>
+              </div>
+            </div>
+
+            {/* Right Image */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="relative lg:pl-8"
+            >
+              <img
+                src="https://r2.trefa.mx/Banner%20127.png"
+                alt="TREFA - Financiamiento digital"
+                className="w-full h-auto object-contain"
+              />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Brands Section - Sliding Carousel */}
+      <section className="relative py-20 bg-white overflow-hidden">
+        <div className="w-full">
+          <div className="text-center mb-10 px-4">
+            <h2 className="text-4xl sm:text-5xl font-black text-gray-900" style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}>
+              Tus marcas favoritas están aquí
+            </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                name: 'María González',
-                vehicle: 'Honda CR-V 2021',
-                text: 'Excelente servicio desde el primer contacto. Mi Honda CR-V 2021 llegó en perfectas condiciones y el financiamiento fue muy accesible. El Kit de Seguridad TREFA me da mucha tranquilidad.',
-                location: 'Guadalupe, NL',
-                image: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400'
-              },
-              {
-                name: 'Carlos Ramírez',
-                vehicle: 'Nissan Frontier 2020',
-                text: 'El proceso de intercambio fue muy transparente. Recibí un precio justo por mi auto anterior y encontré la pick-up perfecta para mi negocio. La garantía blindada es excelente.',
-                location: 'Monterrey, NL',
-                image: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400'
-              },
-              {
-                name: 'Ana López',
-                vehicle: 'Mazda CX-5 2022',
-                text: 'Como madre soltera, necesitaba un auto confiable y económico. El equipo de TREFA me ayudó a encontrar el financiamiento perfecto y saber que tengo el certificado de procedencia me da mucha paz.',
-                location: 'Saltillo, COAH',
-                image: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400'
-              }
-            ].map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 rounded-full overflow-hidden mr-4 border-2 border-primary/30 shadow-md">
-                      <img
-                        src={testimonial.image}
-                        alt={testimonial.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div>
-                      <h4 className="text-gray-900 font-black">{testimonial.name}</h4>
-                      <p className="text-gray-600 text-sm font-medium">{testimonial.location}</p>
-                    </div>
-                  </div>
-                  <div className="flex mb-3">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                  <p className="text-gray-700 text-sm leading-relaxed mb-4 font-medium">
-                    "{testimonial.text}"
-                  </p>
-                  <div className="text-xs text-primary font-bold">
-                    {testimonial.vehicle}
+          {/* Infinite Scrolling Carousel - Full Width */}
+          <div className="relative overflow-hidden">
+            <div className="flex animate-scroll-left">
+              {/* First set */}
+              {[
+                { name: 'Nissan', logo: 'https://www.carlogos.org/car-logos/nissan-logo.png' },
+                { name: 'Toyota', logo: 'https://www.carlogos.org/car-logos/toyota-logo.png' },
+                { name: 'Honda', logo: 'https://www.carlogos.org/car-logos/honda-logo.png' },
+                { name: 'Volkswagen', logo: 'https://www.carlogos.org/car-logos/volkswagen-logo.png' },
+                { name: 'Chevrolet', logo: 'https://www.carlogos.org/car-logos/chevrolet-logo.png' },
+                { name: 'Mazda', logo: 'https://www.carlogos.org/car-logos/mazda-logo.png' },
+                { name: 'KIA', logo: 'https://www.carlogos.org/car-logos/kia-logo.png' },
+                { name: 'Hyundai', logo: 'https://www.carlogos.org/car-logos/hyundai-logo.png' },
+                { name: 'Ford', logo: 'https://www.carlogos.org/car-logos/ford-logo.png' },
+                { name: 'BMW', logo: 'https://www.carlogos.org/car-logos/bmw-logo.png' },
+                { name: 'Mercedes-Benz', logo: 'https://www.carlogos.org/car-logos/mercedes-benz-logo.png' },
+                { name: 'Audi', logo: 'https://www.carlogos.org/car-logos/audi-logo.png' },
+                { name: 'Jeep', logo: 'https://www.carlogos.org/car-logos/jeep-logo.png' },
+                { name: 'Subaru', logo: 'https://www.carlogos.org/car-logos/subaru-logo.png' },
+                { name: 'Mitsubishi', logo: 'https://www.carlogos.org/car-logos/mitsubishi-logo.png' }
+              ].map((brand, index) => (
+                <div key={`${brand.name}-1-${index}`} className="flex-shrink-0 mx-3">
+                  <div className="bg-gray-50 rounded-lg p-6 w-32 h-24 flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
+                    <img
+                      src={brand.logo}
+                      alt={`${brand.name} logo`}
+                      className="max-w-full max-h-full object-contain grayscale hover:grayscale-0 transition-all"
+                    />
                   </div>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Trust Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-16">
-            <div className="bg-white border-2 border-gray-100 rounded-xl p-6 shadow-lg">
-              <div className="text-4xl font-black text-primary mb-2">2,000+</div>
-              <div className="text-gray-600 font-bold">Clientes Satisfechos</div>
-            </div>
-            <div className="bg-white border-2 border-gray-100 rounded-xl p-6 shadow-lg">
-              <div className="text-4xl font-black text-primary mb-2">6.5h</div>
-              <div className="text-gray-600 font-bold">Tiempo Promedio</div>
-            </div>
-            <div className="bg-white border-2 border-gray-100 rounded-xl p-6 shadow-lg">
-              <div className="text-4xl font-black text-primary mb-2">85%</div>
-              <div className="text-gray-600 font-bold">Tasa de Aprobación</div>
-            </div>
-            <div className="bg-white border-2 border-gray-100 rounded-xl p-6 shadow-lg">
-              <div className="text-4xl font-black text-primary mb-2">7</div>
-              <div className="text-gray-600 font-bold">Bancos Asociados</div>
+              ))}
+              {/* Duplicate set for seamless loop */}
+              {[
+                { name: 'Nissan', logo: 'https://www.carlogos.org/car-logos/nissan-logo.png' },
+                { name: 'Toyota', logo: 'https://www.carlogos.org/car-logos/toyota-logo.png' },
+                { name: 'Honda', logo: 'https://www.carlogos.org/car-logos/honda-logo.png' },
+                { name: 'Volkswagen', logo: 'https://www.carlogos.org/car-logos/volkswagen-logo.png' },
+                { name: 'Chevrolet', logo: 'https://www.carlogos.org/car-logos/chevrolet-logo.png' },
+                { name: 'Mazda', logo: 'https://www.carlogos.org/car-logos/mazda-logo.png' },
+                { name: 'KIA', logo: 'https://www.carlogos.org/car-logos/kia-logo.png' },
+                { name: 'Hyundai', logo: 'https://www.carlogos.org/car-logos/hyundai-logo.png' },
+                { name: 'Ford', logo: 'https://www.carlogos.org/car-logos/ford-logo.png' },
+                { name: 'BMW', logo: 'https://www.carlogos.org/car-logos/bmw-logo.png' },
+                { name: 'Mercedes-Benz', logo: 'https://www.carlogos.org/car-logos/mercedes-benz-logo.png' },
+                { name: 'Audi', logo: 'https://www.carlogos.org/car-logos/audi-logo.png' },
+                { name: 'Jeep', logo: 'https://www.carlogos.org/car-logos/jeep-logo.png' },
+                { name: 'Subaru', logo: 'https://www.carlogos.org/car-logos/subaru-logo.png' },
+                { name: 'Mitsubishi', logo: 'https://www.carlogos.org/car-logos/mitsubishi-logo.png' }
+              ].map((brand, index) => (
+                <div key={`${brand.name}-2-${index}`} className="flex-shrink-0 mx-3">
+                  <div className="bg-gray-50 rounded-lg p-6 w-32 h-24 flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
+                    <img
+                      src={brand.logo}
+                      alt={`${brand.name} logo`}
+                      className="max-w-full max-h-full object-contain grayscale hover:grayscale-0 transition-all"
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
       {/* Guarantees Section - "LLÉVATE TRANQUILIDAD" */}
-      <section className="relative py-16 md:py-20 bg-gradient-to-br from-white via-orange-50/30 to-yellow-50/20">
+      <section className="relative py-20 md:py-24 bg-gradient-to-br from-white via-orange-50/30 to-yellow-50/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
             {/* Left Content */}
@@ -1049,10 +1460,10 @@ const FinanciamientosPage: React.FC = () => {
               className="space-y-8 lg:pr-8"
             >
               <div className="space-y-6 mb-12">
-                <h3 className="text-xl md:text-2xl font-black text-orange-600 tracking-wider uppercase mt-8">
+                <h3 className="text-lg md:text-xl lg:text-2xl font-black text-orange-600 tracking-wider uppercase">
                   LLÉVATE TRANQUILIDAD.
                 </h3>
-                <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-tight">
+                <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 leading-tight">
                   Garantías de defensa a defensa a donde vayas.
                 </h2>
               </div>
@@ -1091,11 +1502,15 @@ const FinanciamientosPage: React.FC = () => {
 
               <div className="pt-4">
                 <button
-                  onClick={() => document.getElementById('registration-form')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-gray-900 to-gray-800 hover:from-black hover:to-gray-900 text-white rounded-xl font-black text-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                  onClick={() => {
+                    trackCTAClick('Solicitar financiamiento', 'digital_financing_benefits');
+                    document.getElementById('registration-form')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="group relative overflow-hidden inline-flex items-center gap-2 bg-gradient-to-r from-primary to-orange-600 text-white hover:shadow-2xl px-8 py-4 rounded-xl font-black text-lg transition-all hover:scale-105 shadow-lg"
                 >
-                  REGISTRARME
-                  <ArrowRight className="w-6 h-6 ml-3" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                  <span className="relative">Solicitar financiamiento</span>
+                  <ArrowRight className="w-5 h-5 relative group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             </motion.div>
@@ -1119,7 +1534,7 @@ const FinanciamientosPage: React.FC = () => {
       </section>
 
       {/* Financial Commitment Section */}
-      <section className="relative py-16 md:py-20 bg-gradient-to-br from-blue-50 via-white to-orange-50/30">
+      <section className="relative py-20 md:py-24 bg-gradient-to-br from-blue-50 via-white to-orange-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
             {/* Left Image */}
@@ -1146,253 +1561,127 @@ const FinanciamientosPage: React.FC = () => {
               className="space-y-8 lg:pl-8"
             >
               <div className="space-y-6 mb-12">
-                <h3 className="text-xl md:text-2xl font-black text-orange-600 tracking-wider uppercase mt-8">
+                <h3 className="text-lg md:text-xl lg:text-2xl font-black text-orange-600 tracking-wider uppercase">
                   NUESTRO COMPROMISO
                 </h3>
-                <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-tight">
+                <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 leading-tight">
                   Te garantizamos el respaldo financiero que mereces
                 </h2>
               </div>
 
-              <p className="text-lg text-gray-700 leading-relaxed font-medium mb-8">
-                Elimina los riesgos de comprar tu auto a un particular o un lote convencional con nuestros programas de financiamiento digital respaldados por los bancos que tú ya conoces:
+              <p className="text-lg text-gray-700 leading-relaxed font-normal mb-6">
+                Elimina los riesgos de comprar tu auto a un particular o un lote convencional con nuestros programas de financiamiento digital respaldados por BBVA, Banregio, BANORTE, AFIRME, Scotiabank y Hey Banco.
               </p>
 
-              {/* Bank logos */}
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                {[
-                  { name: 'BBVA', logo: 'https://www.carlogos.org/logo/BBVA-logo-2019-640x480.png' },
-                  { name: 'Scotiabank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Scotiabank_logo.svg/320px-Scotiabank_logo.svg.png' },
-                  { name: 'AFIRME', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Logo_Banco_Afirme.svg/320px-Logo_Banco_Afirme.svg.png' },
-                  { name: 'BANORTE', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Banorte_logo.svg/320px-Banorte_logo.svg.png' },
-                  { name: 'Banregio', logo: 'https://www.banregio.com/img/logo-banregio.svg' },
-                  { name: 'Hey Banco', logo: 'https://heybanco.com/assets/images/logo.svg' }
-                ].map((bank, index) => (
-                  <div
-                    key={bank.name}
-                    className="bg-gradient-to-br from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-xl p-4 shadow-lg flex items-center justify-center hover:shadow-xl hover:border-orange-300 transition-all"
-                  >
-                    <img
-                      src={bank.logo}
-                      alt={`${bank.name} logo`}
-                      className="h-8 w-auto object-contain grayscale hover:grayscale-0 transition-all"
-                      onError={(e) => {
-                        // Fallback to text if image fails to load
-                        e.currentTarget.style.display = 'none';
-                        const span = document.createElement('span');
-                        span.className = 'font-black text-sm text-gray-700';
-                        span.textContent = bank.name;
-                        e.currentTarget.parentElement?.appendChild(span);
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-
               <button
-                onClick={() => document.getElementById('registration-form')?.scrollIntoView({ behavior: 'smooth' })}
-                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-gray-900 to-gray-800 hover:from-black hover:to-gray-900 text-white rounded-xl font-black text-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                onClick={() => {
+                  trackCTAClick('Solicitar financiamiento', 'financial_commitment_section');
+                  document.getElementById('registration-form')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="group relative overflow-hidden inline-flex items-center gap-2 bg-gradient-to-r from-primary to-orange-600 text-white hover:shadow-2xl px-8 py-4 rounded-xl font-black text-lg transition-all hover:scale-105 shadow-lg"
               >
-                REGISTRARME
-                <ArrowRight className="w-6 h-6 ml-3" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                <span className="relative">Solicitar financiamiento</span>
+                <ArrowRight className="w-5 h-5 relative group-hover:translate-x-1 transition-transform" />
               </button>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Digital Financing Benefits */}
-      <section className="relative py-16 md:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 mb-6 mt-8">
-              ¿Por qué elegir nuestro financiamiento digital?
-            </h2>
-          </motion.div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
-            {/* Left Content */}
-            <div className="space-y-6">
-              <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-1">
-                  <Check className="w-5 h-5 text-white" />
-                </div>
-                <p className="text-lg text-gray-700 leading-relaxed font-medium">
-                  Llena tu solicitud desde tu celular en pocos minutos y recibe una respuesta en 24 horas o menos.
-                </p>
-              </div>
-
-              <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-1">
-                  <Check className="w-5 h-5 text-white" />
-                </div>
-                <p className="text-lg text-gray-700 leading-relaxed font-medium">
-                  Financia tu auto con BBVA, Banregio, BANORTE, AFIRME, Scotiabank, y Hey Banco, nuestros bancos asociados.
-                </p>
-              </div>
-
-              <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-1">
-                  <Check className="w-5 h-5 text-white" />
-                </div>
-                <p className="text-lg text-gray-700 leading-relaxed font-medium">
-                  Perfilamiento bancario inteligente: enviamos tu solicitud al banco con la mayor probabilidad de aprobación
-                </p>
-              </div>
-
-              <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-1">
-                  <Check className="w-5 h-5 text-white" />
-                </div>
-                <p className="text-lg text-gray-700 leading-relaxed font-medium">
-                  Sin anticipos ni cobros sorpresa: paga tu enganche solo al finalizar tu trámite de financiamiento.
-                </p>
-              </div>
-            </div>
-
-            {/* Right Image */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="relative lg:pl-8"
-            >
-              <img
-                src="https://r2.trefa.mx/Banner%20127.png"
-                alt="TREFA - Financiamiento digital"
-                className="w-full h-auto object-contain rounded-2xl shadow-2xl"
-              />
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
       {/* Kit TREFA Benefits Section */}
-      <section className="py-12 md:py-16 bg-muted/50">
+      <section id="kit-trefa" className="py-20 md:py-24 bg-muted/50">
         <div className="container mx-auto px-4 lg:px-6">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="font-heading text-2xl md:text-3xl lg:text-4xl font-black text-gray-900">
-              El Kit de Seguridad TREFA Incluido
+          <div className="text-center space-y-4 mb-12">
+            <p className="text-lg md:text-xl font-black text-primary uppercase tracking-wide">
+              Todos nuestros autos incluyen el kit
+            </p>
+            <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-black text-gray-900">
+              El Kit de Seguridad TREFA
             </h2>
-            <p className="text-xl text-gray-700 max-w-3xl mx-auto font-bold">
-              Cada auto TREFA incluye el Kit de Seguridad valorado en $123,500 MXN sin costo adicional
+            <p className="text-lg md:text-xl text-gray-700 max-w-3xl mx-auto font-medium">
+              Cada auto TREFA incluye el Kit de Seguridad valorado en{' '}
+              <span className="font-black text-primary">$123,500 MXN</span> sin costo adicional
             </p>
           </div>
 
-          <div className="max-w-5xl mx-auto space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {[
               {
-                icon: Award,
-                title: 'Compromiso de Calidad TREFA',
-                description: 'Si tu auto presenta una falla mecánica en los primeros 30 días o 500 km, te devolvemos el 100% de tu dinero o lo reparamos sin costo.',
-                value: 'Tranquilidad Absoluta'
+                icon: ShieldCheck,
+                title: 'Garantía Blindada',
+                value: '$100,000 MXN',
+                description: 'Motor y transmisión cubiertos con hasta $100,000 pesos durante un año completo.'
               },
               {
                 icon: FileText,
-                title: 'Certificado de Procedencia Segura',
-                description: 'Validación en REPUVE, SAT, Totalcheck y TransUnion. Inspección física forense de números de serie en chasis y motor.',
-                value: '$3,500 MXN'
+                title: 'Certificado de Procedencia',
+                value: '$3,500 MXN',
+                description: 'Validación en REPUVE, SAT, Totalcheck y TransUnion. Historial 100% verificado.'
               },
               {
-                icon: ShieldCheck,
-                title: 'Garantía Blindada con Cobertura de $100,000',
-                description: 'Tu auto está cubierto en motor y transmisión con una bolsa de protección de hasta $100,000 pesos durante un año completo.',
-                value: '$100,000 MXN'
+                icon: Award,
+                title: 'Check-up a los 6 Meses',
+                value: '$4,000 MXN',
+                description: 'Inspección multipunto gratuita: frenos, suspensión, niveles y componentes de seguridad.'
               },
               {
                 icon: TrendingUp,
-                title: 'Programa de Recompra Garantizada',
-                description: 'Te garantizamos por escrito la recompra de tu auto por el 80% de su valor el primer año y el 70% el segundo.',
-                value: 'Protección Invaluable'
-              },
-              {
-                icon: Wrench,
-                title: 'Check-up de Confianza TREFA',
-                description: 'A los 6 meses o 10,000 km, inspección multipunto de seguridad sin costo para asegurar que sigue en perfectas condiciones.',
-                value: '$4,000 MXN'
+                title: 'Programa de Recompra',
+                value: 'Protección de Valor',
+                description: 'Recompra garantizada por el 80% del valor el primer año y 70% el segundo año.'
               },
               {
                 icon: Car,
-                title: 'Bono de Movilidad Garantizada',
-                description: 'Si tu auto ingresa a nuestro taller por garantía, te damos $250 pesos diarios para tus traslados.',
-                value: '$7,500 MXN'
+                title: 'Bono de Movilidad',
+                value: '$7,500 MXN',
+                description: 'Te damos $250 pesos diarios para tus traslados si tu auto está en nuestro taller.'
               },
               {
                 icon: DollarSign,
-                title: 'Bono de Tranquilidad Financiera',
-                description: 'Si tu auto está financiado, cubrimos el equivalente a tu mensualidad promedio mientras está en nuestro taller.',
-                value: '$8,500 MXN'
+                title: 'Bono Financiero',
+                value: '$8,500 MXN',
+                description: 'Cubrimos tu mensualidad promedio mientras tu auto está en reparación.'
               }
             ].map((benefit, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
                 viewport={{ once: true }}
-                className="group"
+                className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300"
               >
-                <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-xl shadow-lg border border-primary/10 overflow-hidden hover:shadow-xl transition-all duration-300">
-                  <div className="p-6 md:p-8">
-                    <div className="flex flex-col md:flex-row gap-6">
-                      <div className="flex-shrink-0">
-                        <div className="relative">
-                          <div className="w-16 h-16 bg-primary/10 text-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                            <benefit.icon className="w-8 h-8" />
-                          </div>
-                          <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-black">
-                            {index + 1}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex-grow space-y-3">
-                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
-                          <h3 className="font-heading text-xl md:text-2xl font-black text-gray-900">
-                            {benefit.title}
-                          </h3>
-                          <div className="flex-shrink-0">
-                            <span className="inline-block px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-black">
-                              {benefit.value}
-                            </span>
-                          </div>
-                        </div>
-
-                        <p className="text-gray-700 leading-relaxed text-base font-medium">
-                          {benefit.description}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="h-1 bg-gradient-to-r from-primary/20 via-primary/50 to-primary/20 group-hover:from-primary/40 group-hover:via-primary/70 group-hover:to-primary/40 transition-all duration-300"></div>
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                  <benefit.icon className="w-6 h-6 text-primary" />
                 </div>
+                <h3 className="font-heading font-semibold text-xl mb-2">{benefit.title}</h3>
+                <div className="text-primary font-black text-sm mb-3">{benefit.value}</div>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {benefit.description}
+                </p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Final CTA Section */}
-      <section className="py-12 md:py-16 bg-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-orange-600 to-yellow-600 opacity-90"></div>
+      {/* Wall of Love - Testimonials */}
+      <WallOfLove />
+
+      {/* Final CTA Section - Darker Blue with Orange CTA */}
+      <section className="py-20 md:py-24 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 relative overflow-hidden">
         <div className="container mx-auto px-4 lg:px-6 relative z-10">
-          <div className="text-center space-y-8 max-w-4xl mx-auto">
+          <div className="text-center space-y-6 max-w-4xl mx-auto">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="font-heading text-3xl md:text-4xl lg:text-5xl font-black text-white leading-tight"
+              className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight"
+              style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
             >
-              Tu Próximo Auto te Espera con Todo Incluido
+              Tu próximo auto te espera con todo incluido
             </motion.h2>
 
             <motion.p
@@ -1400,7 +1689,7 @@ const FinanciamientosPage: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
-              className="text-xl text-white/95 leading-relaxed font-bold"
+              className="text-lg md:text-xl text-white leading-snug font-normal"
             >
               No dejes tu inversión al azar. Elige la certeza y la tranquilidad que solo TREFA te puede ofrecer.
               Cada auto incluye el Kit de Seguridad valorado en $123,500 MXN sin costo adicional.
@@ -1411,32 +1700,27 @@ const FinanciamientosPage: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
               viewport={{ once: true }}
-              className="flex flex-col sm:flex-row gap-4 justify-center pt-4"
+              className="flex justify-center pt-4"
             >
               <button
-                onClick={() => document.getElementById('registration-form')?.scrollIntoView({ behavior: 'smooth' })}
-                className="inline-flex items-center justify-center gap-2 bg-white text-primary hover:bg-white/95 px-8 py-4 rounded-xl font-black shadow-2xl transition-all hover:scale-105 text-lg"
+                onClick={() => {
+                  trackCTAClick('Solicitar financiamiento', 'final_cta_section');
+                  document.getElementById('registration-form')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 px-8 py-4 rounded-xl font-black shadow-2xl transition-all hover:scale-105 text-lg"
               >
-                Solicitar Financiamiento Ahora
+                Solicitar financiamiento
                 <ArrowRight className="w-5 h-5" />
               </button>
-
-              <Link
-                href={`/acceder${urlParams ? `?${urlParams}` : ''}`}
-                className="inline-flex items-center justify-center gap-2 bg-transparent hover:bg-white/10 border-2 border-white text-white px-8 py-4 rounded-xl font-black transition-all hover:scale-105 text-lg"
-              >
-                Crear mi cuenta
-                <ArrowRight className="w-5 h-5" />
-              </Link>
             </motion.div>
 
-            <p className="text-sm text-white/90 pt-4 font-bold">
-              Financiamiento disponible • Garantía incluida • Inspección de 150 puntos • Respuesta en 24 horas
+            <p className="text-sm text-white/90 pt-4 font-normal">
+              Financiamiento disponible • Garantía incluida • Inspección de 150 puntos • Respuesta en 24h
             </p>
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 bg-gradient-to-t to-transparent blur-3xl rounded-t-full from-white/10 w-[80%] translate-y-1/2 h-64"></div>
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 bg-gradient-to-t to-transparent blur-3xl rounded-t-full from-blue-600/20 w-[80%] translate-y-1/2 h-64"></div>
       </section>
       </div>
     </div>
