@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 const ALLOWED_ORIGINS = [
   process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+  'https://autostrefa.mx',
+  'https://www.autostrefa.mx',
   'https://trefa.mx',
   'https://www.trefa.mx',
   'https://staging.trefa.mx',
