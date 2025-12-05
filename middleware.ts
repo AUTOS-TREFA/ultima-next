@@ -37,6 +37,7 @@ export async function middleware(req: NextRequest) {
     '/vender-mi-auto',
     '/acceder',
     '/admin/login',
+    '/bank-login',
     '/api',
     '/_next',
     '/favicon.ico',
@@ -46,10 +47,25 @@ export async function middleware(req: NextRequest) {
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
 
   // Auth-only routes (redirect to dashboard if logged in)
-  const authOnlyRoutes = ['/acceder', '/admin/login'];
+  const authOnlyRoutes = ['/acceder', '/admin/login', '/bank-login'];
   const isAuthOnlyRoute = authOnlyRoutes.some(route => pathname.startsWith(route));
 
   if (isAuthOnlyRoute && session) {
+    // Special handling for bank login - check if user is bank rep
+    if (pathname.startsWith('/bank-login')) {
+      const { data: bankRep } = await supabase
+        .from('bank_representative_profiles')
+        .select('id')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (bankRep) {
+        const url = req.nextUrl.clone();
+        url.pathname = '/bank-dashboard';
+        return NextResponse.redirect(url);
+      }
+    }
+
     // Redirect to dashboard if already logged in
     const url = req.nextUrl.clone();
     url.pathname = '/escritorio';
@@ -99,6 +115,46 @@ export async function middleware(req: NextRequest) {
         url.searchParams.set('error', 'unauthorized');
         return NextResponse.redirect(url);
       }
+    }
+  }
+
+  // Bank Portal routes - require bank representative authentication
+  if (pathname.startsWith('/bank-dashboard')) {
+    if (!session) {
+      // Redirect to bank login
+      const url = req.nextUrl.clone();
+      url.pathname = '/bank-login';
+      url.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(url);
+    }
+
+    // Check if user is an approved bank representative
+    const { data: bankRep, error: bankRepError } = await supabase
+      .from('bank_representative_profiles')
+      .select('is_approved, is_active')
+      .eq('id', session.user.id)
+      .maybeSingle();
+
+    if (bankRepError || !bankRep) {
+      // Not a bank representative
+      const url = req.nextUrl.clone();
+      url.pathname = '/bank-login';
+      url.searchParams.set('error', 'not_bank_rep');
+      return NextResponse.redirect(url);
+    }
+
+    if (!bankRep.is_approved) {
+      // Bank representative not yet approved - allow access but show pending message
+      // The page components will handle showing the approval pending state
+      return res;
+    }
+
+    if (!bankRep.is_active) {
+      // Bank representative account is inactive
+      const url = req.nextUrl.clone();
+      url.pathname = '/bank-login';
+      url.searchParams.set('error', 'account_inactive');
+      return NextResponse.redirect(url);
     }
   }
 
