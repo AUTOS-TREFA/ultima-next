@@ -1,0 +1,109 @@
+ESTRUCTURA DEL PROYECTO NEXT.JS
+================================
+
+ultima-next/
+│
+├── .claude/                      # Configuración de Claude Code
+│   ├── agents/
+│   ├── scripts/
+│   ├── commands/
+│   └── skills/
+│
+├── .github/                      # GitHub workflows y configuración
+│
+├── app/                          # Next.js App Router (rutas y páginas)
+│   ├── (public)/                # Rutas públicas
+│   ├── (auth)/                  # Rutas de autenticación
+│   ├── (bank)/                  # Rutas específicas de bancos
+│   ├── (standalone)/            # Rutas standalone
+│   ├── escritorio/              # Dashboard principal
+│   ├── api/                     # API routes de Next.js
+│   └── healthz/                 # Health check endpoint
+│
+├── src/                          # Código fuente compartido
+│   ├── components/              # Componentes React reutilizables
+│   ├── hooks/                   # Custom hooks
+│   ├── lib/                     # Utilidades y helpers
+│   ├── types/                   # Definiciones TypeScript
+│   └── utils/                   # Funciones auxiliares
+│
+├── lib/                          # Bibliotecas y configuraciones
+│
+├── server/                       # Lógica de servidor (Express.js)
+│
+├── docs/                         # Documentación del proyecto
+│   ├── current/                 # ✨ Documentación activa y actual
+│   ├── guides/                  # Guías y tutoriales
+│   │   └── spanish/             # ✨ Guías en español
+│   ├── prompts/                 # ✨ Prompts de IA y plantillas
+│   ├── deployment/              # Docs de deployment
+│   ├── scripts/                 # Docs de scripts
+│   ├── sql/                     # Scripts SQL de Supabase
+│   ├── sql-scripts/             # ✨ Scripts SQL ad-hoc
+│   └── archive/                 # Documentación histórica
+│       ├── gtm-templates/       # ✨ Templates GTM antiguos
+│       ├── old-fixes/           # ✨ Fixes históricos
+│       └── old-scripts/         # ✨ Scripts deprecados
+│
+├── supabase/                     # Base de datos y backend
+│   ├── migrations/              # Migraciones de BD
+│   ├── functions/               # Edge Functions
+│   └── old_migrations/          # Migraciones históricas
+│
+├── constructor/                  # Sistema page builder
+│   ├── context/                 # Context providers
+│   ├── builders/                # Lógica de construcción
+│   ├── components/              # Componentes del constructor
+│   │   └── block-templates/    # Plantillas de bloques
+│   │       ├── carousels/
+│   │       ├── features/
+│   │       ├── comparison/
+│   │       └── hero/
+│   └── services/                # Servicios del constructor
+│
+├── airtable/                     # Integración Airtable
+│
+├── cloudflare-workers/           # Cloudflare Workers
+│
+├── scripts/                      # Scripts de automatización
+│
+├── public/                       # Archivos estáticos públicos
+│
+├── images/                       # Imágenes del proyecto
+│   └── tabs/
+│
+├── logs/                         # ✨ Logs locales (NO comitear)
+│
+├── backups/                      # ✨ Backups locales (NO comitear)
+│
+├── database-backups/             # Backups de BD (NO comitear)
+│
+├── package.json                  # Dependencias npm
+├── tsconfig.json                 # Config TypeScript
+├── next.config.js                # Config Next.js
+├── tailwind.config.js            # Config Tailwind
+├── .env.local                    # Variables de entorno (NO comitear)
+└── .gitignore                    # Archivos ignorados por Git
+
+
+LEYENDA:
+========
+✨ = Carpetas/estructura creadas en esta sesión
+(folder)/ = Carpetas de agrupación de rutas en Next.js (no afectan URL)
+
+
+NOTAS IMPORTANTES:
+==================
+1. Las carpetas con ✨ son nuevas/completadas en esta sesión
+2. Carpetas entre paréntesis en /app/ son route groups (no afectan URLs)
+3. NO comitear: logs/, backups/, database-backups/, .env*, *.sql
+4. La estructura /docs/ ahora coincide con el proyecto original
+5. Toda documentación nueva debe estar en español
+
+
+MIGRACIÓN DE VITE A NEXT.JS:
+============================
+/src/pages/     →  /app/              (App Router)
+/src/main.tsx   →  /app/layout.tsx    (Root layout)
+vite.config.ts  →  next.config.js     (Build config)
+Client routing  →  File-based routing (Next.js)
