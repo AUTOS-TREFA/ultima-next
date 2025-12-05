@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import type { Vehicle } from '../types/types';
 import LazyImage from './LazyImage';
 import { getVehicleImage } from '../utils/getVehicleImage';
@@ -13,7 +13,7 @@ const SimpleVehicleCard: React.FC<SimpleVehicleCardProps> = ({ vehicle }) => {
 
   return (
     <Link
-      to={`/autos/${vehicle.slug}`}
+      href={`/autos/${vehicle.slug}`}
       className="group block w-full h-full"
     >
       <div className="relative overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-all hover:shadow-md hover:border-ring">

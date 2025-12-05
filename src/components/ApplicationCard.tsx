@@ -1,6 +1,8 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Clock, CheckCircle, AlertTriangle, FileText, Eye, Edit, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import PrintableApplication from './PrintableApplication';
 
 type ApplicationStatus = 'draft' | 'submitted' | 'reviewing' | 'pending_docs' | 'approved' | 'rejected' | 'pending' | 'in_progress' | 'complete';
@@ -66,7 +68,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, fullAppl
 
           {canEdit ? (
             <Link
-              to={`/escritorio/aplicacion/${application.id}`}
+              href={`/escritorio/aplicacion/${application.id}`}
               className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
             >
               <Edit className="w-4 h-4 mr-2" />

@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import {
     LayoutDashboard,
     HelpCircle,
@@ -53,9 +56,9 @@ import { Separator } from './ui/separator';
 import BottomNav from './BottomNav';
 import { motion } from 'framer-motion';
 
-const DashboardLayout: React.FC = () => {
+const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { profile, isAdmin, isSales, signOut } = useAuth();
-    const location = useLocation();
+    const pathname = usePathname();
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(true); // Default abierta
     const [isToolsExpanded, setIsToolsExpanded] = useState(false); // Dropdown de Herramientas
@@ -129,14 +132,14 @@ const DashboardLayout: React.FC = () => {
 
     const isActiveLink = (path: string, end?: boolean) => {
         if (end) {
-            return location.pathname === path;
+            return pathname === path;
         }
-        return location.pathname.startsWith(path);
+        return pathname.startsWith(path);
     };
 
     // Generate breadcrumbs from current path
     const generateBreadcrumbs = () => {
-        const paths = location.pathname.split('/').filter(Boolean);
+        const paths = pathname.split('/').filter(Boolean);
         const breadcrumbs = [{ label: 'Inicio', href: '/' }];
 
         const allNavItems = [...navItems, ...secondaryNav];
@@ -248,7 +251,7 @@ const DashboardLayout: React.FC = () => {
                                 return (
                                     <Link
                                         key={item.to}
-                                        to={item.to}
+                                        href={item.to}
                                         className={cn(
                                             "flex items-center rounded-lg text-xs font-medium transition-all",
                                             isSidebarExpanded ? "px-2.5 py-2 gap-2.5" : "justify-center py-2",
@@ -273,7 +276,7 @@ const DashboardLayout: React.FC = () => {
                             {/* Portal Bancario (solo para admin) */}
                             {isAdmin && (
                                 <Link
-                                    to={portalBancarioItem.to}
+                                    href={portalBancarioItem.to}
                                     className={cn(
                                         "flex items-center rounded-lg text-xs font-medium transition-all",
                                         isSidebarExpanded ? "px-2.5 py-2 gap-2.5" : "justify-center py-2",
@@ -331,7 +334,7 @@ const DashboardLayout: React.FC = () => {
                                                 return (
                                                     <Link
                                                         key={tool.to}
-                                                        to={tool.to}
+                                                        href={tool.to}
                                                         className={cn(
                                                             "flex items-center rounded-lg text-xs font-medium transition-all px-2 py-1.5 gap-2",
                                                             isActiveTool
@@ -386,7 +389,7 @@ const DashboardLayout: React.FC = () => {
                                                 return (
                                                     <Link
                                                         key={page.to}
-                                                        to={page.to}
+                                                        href={page.to}
                                                         className={cn(
                                                             "flex items-center rounded-lg text-xs font-medium transition-all px-2 py-1.5 gap-2",
                                                             isActivePage
@@ -415,7 +418,7 @@ const DashboardLayout: React.FC = () => {
                             return (
                                 <Link
                                     key={item.to}
-                                    to={item.to}
+                                    href={item.to}
                                     className={cn(
                                         "flex items-center rounded-lg text-xs font-medium transition-all mx-1",
                                         isSidebarExpanded ? "px-2.5 py-2 gap-2.5" : "justify-center py-2",
@@ -474,7 +477,7 @@ const DashboardLayout: React.FC = () => {
                                             <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
                                         ) : (
                                             <BreadcrumbLink asChild>
-                                                <Link to={crumb.href}>{crumb.label}</Link>
+                                                <Link href={crumb.href}>{crumb.label}</Link>
                                             </BreadcrumbLink>
                                         )}
                                     </BreadcrumbItem>
@@ -506,7 +509,7 @@ const DashboardLayout: React.FC = () => {
 
                 {/* Page Content */}
                 <main className="flex-1 items-start gap-4 p-4 sm:p-6 md:gap-8 pb-20 sm:pb-4 w-full max-w-full overflow-x-hidden">
-                    <Outlet />
+                    {children}
                 </main>
 
                 {/* Bottom Navigation - Mobile Only */}
@@ -582,7 +585,7 @@ const DashboardLayout: React.FC = () => {
                                     return (
                                         <Link
                                             key={item.to}
-                                            to={item.to}
+                                            href={item.to}
                                             onClick={() => setIsMobileSidebarOpen(false)}
                                             className={cn(
                                                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",
@@ -600,7 +603,7 @@ const DashboardLayout: React.FC = () => {
                                 {/* Portal Bancario (mobile - solo admin) */}
                                 {isAdmin && (
                                     <Link
-                                        to={portalBancarioItem.to}
+                                        href={portalBancarioItem.to}
                                         onClick={() => setIsMobileSidebarOpen(false)}
                                         className={cn(
                                             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",
@@ -627,7 +630,7 @@ const DashboardLayout: React.FC = () => {
                                             return (
                                                 <Link
                                                     key={tool.to}
-                                                    to={tool.to}
+                                                    href={tool.to}
                                                     onClick={() => setIsMobileSidebarOpen(false)}
                                                     className={cn(
                                                         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",
@@ -657,7 +660,7 @@ const DashboardLayout: React.FC = () => {
                                             return (
                                                 <Link
                                                     key={page.to}
-                                                    to={page.to}
+                                                    href={page.to}
                                                     onClick={() => setIsMobileSidebarOpen(false)}
                                                     className={cn(
                                                         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",
@@ -686,7 +689,7 @@ const DashboardLayout: React.FC = () => {
                                     return (
                                         <Link
                                             key={item.to}
-                                            to={item.to}
+                                            href={item.to}
                                             onClick={() => setIsMobileSidebarOpen(false)}
                                             className={cn(
                                                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",

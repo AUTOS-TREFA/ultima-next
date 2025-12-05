@@ -1,6 +1,7 @@
+'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import type { Vehicle } from '../types/types';
 import { useFavorites } from '../hooks/useFavorites';
 import { useQueryClient } from '@tanstack/react-query';
@@ -153,7 +154,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
       </div>
 
       {hasSlug && (
-        <Link to={`/autos/${vehicle.slug}`} data-gtm-id="card-list-view-details" className="absolute inset-0 z-[1]">
+        <Link href={`/autos/${vehicle.slug}`} data-gtm-id="card-list-view-details" className="absolute inset-0 z-[1]">
           <span className="sr-only">Ver detalles de {vehicle.title}</span>
         </Link>
       )}

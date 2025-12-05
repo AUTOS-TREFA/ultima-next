@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { WhatsAppIcon, HeartIcon, SolidHeartIcon } from '../icons';
 import { Button } from '../ui/button';
@@ -36,7 +38,7 @@ const VehicleCardActions: React.FC<VehicleCardActionsProps> = ({
   vehicleSlug,
 }) => {
   const { session } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const shareUrl = vehicleSlug ? `${window.location.origin}/autos/${vehicleSlug}` : window.location.href;
   const shareText = vehicleTitle ? `Mira este auto: ${vehicleTitle}` : 'Mira este auto en TREFA';
@@ -48,12 +50,12 @@ const VehicleCardActions: React.FC<VehicleCardActionsProps> = ({
 
     if (session) {
       const urlWithParams = ordencompra ? `/escritorio/aplicacion?ordencompra=${ordencompra}` : '/escritorio/aplicacion';
-      navigate(urlWithParams);
+      router.push(urlWithParams);
     } else {
       const redirectPath = ordencompra ? `/escritorio/aplicacion?ordencompra=${ordencompra}` : '/escritorio/aplicacion';
       localStorage.setItem('loginRedirect', redirectPath);
       const loginUrl = ordencompra ? `/acceder?ordencompra=${ordencompra}` : '/acceder';
-      navigate(loginUrl);
+      router.push(loginUrl);
     }
   };
 
@@ -80,7 +82,7 @@ const VehicleCardActions: React.FC<VehicleCardActionsProps> = ({
     }
 
     const url = `/autos${params.toString() ? `?${params.toString()}` : ''}`;
-    navigate(url);
+    router.push(url);
   };
 
   const handleShareWhatsApp = (e: React.MouseEvent) => {
