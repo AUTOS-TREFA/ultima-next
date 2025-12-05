@@ -14,25 +14,25 @@ const VehicleCardHeader: React.FC<VehicleCardHeaderProps> = ({ title, year, view
   <div>
     <div className="flex items-center gap-2 mb-1 flex-wrap">
       {ordencompra && (
-        <p className="text-xs font-light text-gray-500 tracking-wider">{ordencompra}</p>
+        <p className="text-[11px] md:text-[12px] font-light text-gray-500 tracking-wider">{ordencompra}</p>
       )}
       {promociones && promociones.length > 0 && promociones.slice(0, 2).map((promo, idx) => {
         const formattedPromo = formatPromotion(promo);
         if (!formattedPromo) return null;
 
         return (
-          <span key={idx} className="text-xs font-medium text-orange-600 border border-orange-600 px-2 py-0.5 rounded-md">
+          <span key={idx} className="text-[11px] md:text-[12px] font-medium text-orange-600 border border-orange-600 px-1.5 md:px-2 py-0.5 rounded-md">
             {formattedPromo}
           </span>
         );
       })}
     </div>
-    <h2 className="text-xl font-semibold text-gray-800 group-hover:text-primary-600 transition-colors leading-tight">
+    <h2 className="text-xl md:text-2xl font-bold md:font-extrabold text-gray-800 group-hover:text-primary-600 transition-colors leading-tight">
       {title} {year && <span className="text-gray-600">{year}</span>}
     </h2>
     {view_count > 100 && (
-      <div className="flex items-center gap-1.5 text-xs text-gray-500 flex-shrink-0 pt-1" title={`${view_count.toLocaleString('es-MX')} vistas`}>
-        <EyeIcon className="w-4 h-4" />
+      <div className="flex items-center gap-1.5 text-xs md:text-sm text-gray-500 flex-shrink-0 pt-1" title={`${view_count.toLocaleString('es-MX')} vistas`}>
+        <EyeIcon className="w-4 h-4 md:w-5 md:h-5" />
         <span>{view_count.toLocaleString('es-MX')}</span>
       </div>
     )}

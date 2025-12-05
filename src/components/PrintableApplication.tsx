@@ -1,9 +1,9 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 import { BankProfilingService } from '../services/BankProfilingService';
 import type { BankProfileData } from '../types/types';
+import { getStatusConfig } from '../constants/applicationStatus';
 
 const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
     <h3 className="text-sm font-bold uppercase tracking-wider text-white bg-trefa-blue p-2 rounded-t-md mt-3">{title}</h3>
@@ -16,14 +16,24 @@ const DataRow: React.FC<{ label: string, value: any }> = ({ label, value }) => (
     </div>
 );
 
+// Los 4 documentos requeridos según el sistema
+const REQUIRED_DOCUMENTS = [
+    'INE Front',
+    'INE Back',
+    'Comprobante Domicilio',
+    'Comprobante Ingresos'
+];
+
 const PrintableApplication: React.FC<{ application: any }> = ({ application }) => {
     const profile = application.personal_info_snapshot || {};
     const appData = application.application_data || {};
     const carInfo = application.car_info || {};
     const [advisorName, setAdvisorName] = useState<string | null>(null);
-    const [hasDocuments, setHasDocuments] = useState<boolean>(false);
+    const [hasAllDocuments, setHasAllDocuments] = useState<boolean>(false);
+    const [uploadedDocumentTypes, setUploadedDocumentTypes] = useState<string[]>([]);
     const [isCheckingDocuments, setIsCheckingDocuments] = useState<boolean>(true);
     const [bankProfile, setBankProfile] = useState<BankProfileData | null>(null);
+    const [refreshKey, setRefreshKey] = useState<number>(0);
 
     // Fetch advisor name if we have an asesor_asignado_id
     useEffect(() => {
@@ -55,47 +65,89 @@ const PrintableApplication: React.FC<{ application: any }> = ({ application }) =
         fetchAdvisorName();
     }, [profile.asesor_asignado_id, profile.asesor_asignado_name]);
 
-    // Check if documents are uploaded
+    // Check if ALL 4 required documents are uploaded FOR THIS SPECIFIC APPLICATION
     useEffect(() => {
         const checkDocuments = async () => {
-            if (!application.user_id) {
+            if (!application.id) {
                 setIsCheckingDocuments(false);
                 return;
             }
 
+            setIsCheckingDocuments(true);
+
             try {
+                console.log('[PrintableApplication] Checking documents for application:', application.id);
+
+                // Get all documents for this application
                 const { data, error } = await supabase
                     .from('uploaded_documents')
-                    .select('id')
-                    .eq('user_id', application.user_id)
-                    .limit(1);
+                    .select('document_type')
+                    .eq('application_id', application.id);
 
-                if (!error && data && data.length > 0) {
-                    setHasDocuments(true);
+                if (error) {
+                    console.error('[PrintableApplication] Error fetching documents:', error);
+                    setHasAllDocuments(false);
+                    setUploadedDocumentTypes([]);
+                } else if (data) {
+                    // Extract unique document types
+                    const uploadedTypes = [...new Set(data.map(doc => doc.document_type))];
+                    setUploadedDocumentTypes(uploadedTypes);
+
+                    // Check if all 4 required documents are present
+                    const hasAll = REQUIRED_DOCUMENTS.every(reqDoc => uploadedTypes.includes(reqDoc));
+                    setHasAllDocuments(hasAll);
+
+                    console.log('[PrintableApplication] Documents check result:', {
+                        uploadedTypes,
+                        requiredDocs: REQUIRED_DOCUMENTS,
+                        hasAllDocuments: hasAll
+                    });
                 } else {
-                    setHasDocuments(false);
+                    setHasAllDocuments(false);
+                    setUploadedDocumentTypes([]);
                 }
             } catch (err) {
-                console.error('Error checking documents:', err);
-                setHasDocuments(false);
+                console.error('[PrintableApplication] Error checking documents:', err);
+                setHasAllDocuments(false);
+                setUploadedDocumentTypes([]);
             } finally {
                 setIsCheckingDocuments(false);
             }
         };
 
         checkDocuments();
-    }, [application.user_id]);
+    }, [application.id, refreshKey]);
+
+    // Set up polling interval in a separate useEffect to avoid creating multiple intervals
+    useEffect(() => {
+        console.log('[PrintableApplication] Setting up auto-refresh polling (every 5 seconds)');
+        const pollInterval = setInterval(() => {
+            console.log('[PrintableApplication] Auto-refreshing document status...');
+            setRefreshKey(prev => prev + 1);
+        }, 5000);
+
+        // Cleanup interval on unmount
+        return () => {
+            console.log('[PrintableApplication] Clearing auto-refresh polling');
+            clearInterval(pollInterval);
+        };
+    }, []);
 
     // Fetch banking profile data
     useEffect(() => {
         const fetchBankProfile = async () => {
-            if (!application.user_id) return;
+            if (!application.user_id) {
+                console.log('[PrintableApplication] No user_id provided');
+                return;
+            }
 
             try {
+                console.log('[PrintableApplication] Fetching bank profile for user:', application.user_id);
                 const profile = await BankProfilingService.getUserBankProfile(application.user_id);
+                console.log('[PrintableApplication] Bank profile fetched:', profile);
                 setBankProfile(profile);
             } catch (err) {
-                console.error('Error fetching bank profile:', err);
+                console.error('[PrintableApplication] Error fetching bank profile:', err);
             }
         };
 
@@ -161,18 +213,9 @@ const PrintableApplication: React.FC<{ application: any }> = ({ application }) =
         return statusMap[status.toLowerCase()] || status;
     };
 
-    // Get application status in Spanish
-    const getStatusLabel = (status: string | undefined) => {
-        const statusMap: { [key: string]: string } = {
-            'draft': 'Borrador',
-            'submitted': 'Enviada',
-            'reviewing': 'En Revisión',
-            'pending_docs': 'Documentos Pendientes',
-            'approved': 'Aprobada',
-            'rejected': 'Rechazada',
-            'incomplete': 'Incompleta',
-        };
-        return statusMap[status || 'submitted'] || 'Enviada';
+    // Get missing documents list
+    const getMissingDocuments = () => {
+        return REQUIRED_DOCUMENTS.filter(reqDoc => !uploadedDocumentTypes.includes(reqDoc));
     };
 
     // Get spouse name (only if married)
@@ -196,47 +239,84 @@ const PrintableApplication: React.FC<{ application: any }> = ({ application }) =
                     <h1 className="text-xl font-bold text-gray-900">Solicitud de Financiamiento</h1>
                     <p className="text-xs text-gray-500 font-mono">ID: {application.id?.slice(0, 8)}</p>
                     <p className="text-xs text-gray-500">Fecha: {new Date(application.created_at).toLocaleDateString('es-MX')}</p>
-                    <p className="text-xs font-semibold text-primary-600 mt-1">Status: {getStatusLabel(application.status)}</p>
+                    <p className="text-xs font-semibold text-primary-600 mt-1">
+                        Status: {getStatusConfig(application.status || 'draft').label}
+                    </p>
                     {advisorName && (
                         <p className="text-xs text-gray-600 mt-1">Asesor Asignado: {advisorName}</p>
                     )}
                 </div>
-                <img src="/images/trefalogo.png" alt="TREFA Logo" className="h-10" />
+                <div className="flex flex-col items-end gap-2">
+                    <img src="/images/trefalogo.png" alt="TREFA Logo" className="h-10" />
+                </div>
             </header>
 
             {/* Document Completion Status Warning */}
             {!isCheckingDocuments && (
-                <div className={`mt-4 p-3 rounded-lg border-2 flex items-center gap-3 ${
-                    hasDocuments
+                <div className={`mt-4 p-3 rounded-lg border-2 ${
+                    hasAllDocuments
                         ? 'bg-green-50 border-green-500'
                         : 'bg-yellow-50 border-yellow-500'
                 }`}>
-                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                        hasDocuments ? 'bg-green-500' : 'bg-yellow-500'
-                    }`}>
-                        {hasDocuments ? (
-                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                        ) : (
-                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                        )}
-                    </div>
-                    <div className="flex-1">
-                        <p className={`text-sm font-bold ${
-                            hasDocuments ? 'text-green-900' : 'text-yellow-900'
+                    <div className="flex items-start gap-3">
+                        <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+                            hasAllDocuments ? 'bg-green-500' : 'bg-yellow-500'
                         }`}>
-                            {hasDocuments ? '✓ Documentos Completos' : '⚠ Documentos Incompletos'}
-                        </p>
-                        <p className={`text-xs ${
-                            hasDocuments ? 'text-green-700' : 'text-yellow-700'
-                        }`}>
-                            {hasDocuments
-                                ? 'Esta solicitud cuenta con documentos cargados.'
-                                : 'Esta solicitud no tiene documentos cargados. Se requiere solicitar documentos al cliente.'}
-                        </p>
+                            {hasAllDocuments ? (
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                            ) : (
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            )}
+                        </div>
+                        <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                                <p className={`text-sm font-bold ${
+                                    hasAllDocuments ? 'text-green-900' : 'text-yellow-900'
+                                }`}>
+                                    {hasAllDocuments ? '✓ Documentos Completos' : '⚠ Documentos Incompletos'}
+                                </p>
+                                <button
+                                    onClick={() => {
+                                        console.log('[PrintableApplication] Manual refresh triggered');
+                                        setRefreshKey(prev => prev + 1);
+                                    }}
+                                    className="flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded hover:bg-white/50 transition-colors"
+                                    title="Actualizar estado de documentos"
+                                >
+                                    <RefreshCw className="w-3 h-3" />
+                                    <span className="hidden sm:inline">Actualizar</span>
+                                </button>
+                            </div>
+                            <p className={`text-xs ${
+                                hasAllDocuments ? 'text-green-700' : 'text-yellow-700'
+                            }`}>
+                                {hasAllDocuments
+                                    ? 'Esta solicitud cuenta con todos los documentos requeridos (4/4).'
+                                    : `Faltan ${getMissingDocuments().length} de 4 documentos requeridos.`}
+                            </p>
+                            {!hasAllDocuments && uploadedDocumentTypes.length > 0 && (
+                                <div className="mt-2 text-xs">
+                                    <p className="font-semibold text-yellow-800 mb-1">Documentos faltantes:</p>
+                                    <ul className="list-disc list-inside text-yellow-700 space-y-0.5">
+                                        {getMissingDocuments().map(doc => (
+                                            <li key={doc}>{doc}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                            {uploadedDocumentTypes.length === 0 && (
+                                <p className="mt-1 text-xs text-yellow-700">
+                                    No se han cargado documentos para esta solicitud. Se requiere solicitar al cliente.
+                                </p>
+                            )}
+                            <p className="mt-2 text-xs text-gray-500 italic">
+                                Se actualiza automáticamente cada 5 segundos
+                            </p>
+                        </div>
                     </div>
                 </div>
             )}
@@ -250,10 +330,16 @@ const PrintableApplication: React.FC<{ application: any }> = ({ application }) =
                 </div>
 
                 {/* Financing Preferences */}
-                {(appData.loan_term_months || appData.down_payment_amount || appData.estimated_monthly_payment) && (
+                {(appData.loan_term_months || appData.down_payment_amount || appData.estimated_monthly_payment || bankProfile?.banco_recomendado) && (
                     <>
                         <SectionHeader title="Preferencias de Financiamiento" />
                         <div className="grid grid-cols-1 md:grid-cols-2 rounded-b-md overflow-hidden">
+                            {bankProfile?.banco_recomendado && (
+                                <DataRow label="Banco Recomendado" value={bankProfile.banco_recomendado} />
+                            )}
+                            {bankProfile?.banco_segunda_opcion && (
+                                <DataRow label="Banco Segunda Opción" value={bankProfile.banco_segunda_opcion} />
+                            )}
                             <DataRow label="Plazo del Crédito" value={appData.loan_term_months ? `${appData.loan_term_months} meses` : 'N/A'} />
                             <DataRow label="Enganche" value={formatCurrency(appData.down_payment_amount)} />
                             <DataRow label="Mensualidad Estimada" value={formatCurrency(appData.estimated_monthly_payment)} />
@@ -264,18 +350,6 @@ const PrintableApplication: React.FC<{ application: any }> = ({ application }) =
                     </>
                 )}
 
-                {/* Recommended Bank */}
-                {(bankProfile?.banco_recomendado || appData.recommended_bank) && (
-                    <>
-                        <SectionHeader title="Banco Recomendado" />
-                        <div className="rounded-b-md overflow-hidden">
-                            <DataRow label="Institución Financiera" value={bankProfile?.banco_recomendado || appData.recommended_bank} />
-                            {bankProfile?.banco_segunda_opcion && (
-                                <DataRow label="Segunda Opción" value={bankProfile.banco_segunda_opcion} />
-                            )}
-                        </div>
-                    </>
-                )}
 
                 {/* Personal Information */}
                 <SectionHeader title="Información Personal Completa" />
@@ -331,7 +405,7 @@ const PrintableApplication: React.FC<{ application: any }> = ({ application }) =
                     <DataRow label="Antigüedad en el Puesto" value={appData.job_seniority} />
                     <DataRow label="Dirección de la Empresa" value={appData.company_address} />
                     <DataRow label="Teléfono (Empresa)" value={appData.company_phone} />
-                    <DataRow label="Ingreso Mensual Neto" value={formatCurrency(appData.net_monthly_income)} />
+                    <DataRow label="Ingreso Mensual Bruto" value={formatCurrency(appData.net_monthly_income)} />
                 </div>
 
                 {/* Banking Profile - From Perfilación Bancaria */}

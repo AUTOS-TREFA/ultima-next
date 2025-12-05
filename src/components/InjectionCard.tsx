@@ -1,10 +1,10 @@
 import React from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 
 const FinanciamientoCard = () => {
   return (
     <Link
-      href="/acceder"
+      to="/acceder"
       className="block w-full h-full relative rounded-2xl overflow-hidden transition-transform duration-200 hover:scale-[1.02] no-underline"
     >
       <img

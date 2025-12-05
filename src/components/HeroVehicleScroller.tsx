@@ -1,9 +1,7 @@
-'use client';
-
 import React, { useState, useEffect, useMemo } from 'react';
 import type { WordPressVehicle } from '../types/types';
 import { useVehicles } from '../context/VehicleContext';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 
 const HeroVehicleScroller: React.FC = () => {
     const { vehicles: allVehicles } = useVehicles();
@@ -52,24 +50,21 @@ const HeroVehicleScroller: React.FC = () => {
 const VehicleImage: React.FC<{vehicle: WordPressVehicle}> = ({ vehicle }) => {
     const [isLoaded, setIsLoaded] = useState(false);
     return (
-        <>
-            {vehicle.slug && vehicle.slug.trim() !== '' && (
-                <Link href={`/autos/${vehicle.slug}`} className="flex-shrink-0 w-64 h-48 rounded-2xl overflow-hidden group relative bg-gray-200">
-                    <img
-                        src={Array.isArray(vehicle.feature_image) ? vehicle.feature_image[0] : vehicle.feature_image}
-                        alt={vehicle.titulo}
-                        className={`w-full h-full object-cover transition-all duration-500 ease-in-out group-hover:scale-110 ${isLoaded ? 'blur-0 scale-100' : 'blur-lg scale-110'}`}
-                        loading="lazy"
-                        decoding="async"
-                        onLoad={() => setIsLoaded(true)}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="absolute bottom-0 left-0 p-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <h3 className="font-bold text-sm leading-tight drop-shadow-md">{vehicle.titulo}</h3>
-                    </div>
-                </Link>
-            )}
-        </>
+        // FIX: Corrected property access from `ligawp` to `slug`
+        <Link to={`/autos/${vehicle.slug}`} className="flex-shrink-0 w-64 h-48 rounded-2xl overflow-hidden group relative bg-gray-200">
+            <img 
+                src={vehicle.feature_image} 
+                alt={vehicle.titulo} 
+                className={`w-full h-full object-cover transition-all duration-500 ease-in-out group-hover:scale-110 ${isLoaded ? 'blur-0 scale-100' : 'blur-lg scale-110'}`}
+                loading="lazy"
+                decoding="async"
+                onLoad={() => setIsLoaded(true)}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute bottom-0 left-0 p-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <h3 className="font-bold text-sm leading-tight drop-shadow-md">{vehicle.titulo}</h3>
+            </div>
+        </Link>
     );
 };
 

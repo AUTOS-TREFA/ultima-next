@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 // FIX: Import missing icons to resolve errors.
 import { Upload, FileText, CheckCircle, Clock, AlertTriangle } from 'lucide-react';

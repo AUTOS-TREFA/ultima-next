@@ -1,23 +1,20 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import type { WordPressVehicle } from '../types/types';
-import Link from 'next/link';
-import { formatPrice } from '../utils/formatters';
+import { Link } from 'react-router-dom';
+import { formatPrice, getPlaceholderImage } from '../utils/formatters';
 import { useVehicles } from '../context/VehicleContext';
 
 const HeroVehicleCard: React.FC<{ vehicle: WordPressVehicle }> = ({ vehicle }) => {
     const [isLoaded, setIsLoaded] = useState(false);
-    const rawImage = vehicle.feature_image || vehicle.thumbnail_webp || vehicle.thumbnail || vehicle.feature_image_webp || '/images/placeholder-car.jpg';
-    const imageSrc = Array.isArray(rawImage) ? rawImage[0] : rawImage;
+    const imageSrc = vehicle.feature_image || vehicle.thumbnail_webp || vehicle.thumbnail || vehicle.feature_image_webp || getPlaceholderImage(vehicle);
 
     return (
         <div className="relative h-full">
             <div className="h-full bg-white rounded-xl shadow-md overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col">
                 <div className="relative aspect-[4/3] bg-gray-200">
-                    <img
-                        src={imageSrc}
-                        alt={vehicle.titulo}
+                    <img 
+                        src={imageSrc} 
+                        alt={vehicle.titulo} 
                         className={`w-full h-full object-cover transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                         loading="lazy"
                         onLoad={() => setIsLoaded(true)}
@@ -33,11 +30,9 @@ const HeroVehicleCard: React.FC<{ vehicle: WordPressVehicle }> = ({ vehicle }) =
                     <p className="text-gray-900 font-semibold text-base mt-1">{formatPrice(vehicle.precio)}</p>
                 </div>
             </div>
-            {vehicle.slug && vehicle.slug.trim() !== '' && (
-                <Link href={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10">
-                    <span className="sr-only">Ver detalles de {vehicle.titulo}</span>
-                </Link>
-            )}
+            <Link to={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10">
+                <span className="sr-only">Ver detalles de {vehicle.titulo}</span>
+            </Link>
         </div>
     );
 };

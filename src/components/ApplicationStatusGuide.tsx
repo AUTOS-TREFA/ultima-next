@@ -1,5 +1,5 @@
 import React from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { User, Building2, ArrowRight, Plus, FileText } from 'lucide-react';
 import type { Profile } from '../types/types';
 
