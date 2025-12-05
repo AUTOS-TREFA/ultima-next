@@ -1,6 +1,6 @@
 import React from 'react';
 
-const SurveyPage: React.FC = () => {
+export default function SurveyPage() {
     return (
         <div className="w-full h-screen p-0 m-0">
             <iframe
@@ -11,6 +11,4 @@ const SurveyPage: React.FC = () => {
             ></iframe>
         </div>
     );
-};
-
-export default SurveyPage;
+}

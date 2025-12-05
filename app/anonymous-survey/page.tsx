@@ -1,9 +1,11 @@
+'use client';
+
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
-import { Label } from '../components/ui/label';
-import { Separator } from '../components/ui/separator';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import QRCode from 'qrcode';
 import { supabase } from '../../supabaseClient';
 import { toast } from 'sonner';
@@ -585,7 +587,7 @@ const surveyQuestions = [
   }
 ];
 
-const AnonymousSurveyPage: React.FC = () => {
+export default function AnonymousSurveyPage() {
   const [showWelcome, setShowWelcome] = useState(true);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -961,6 +963,4 @@ const AnonymousSurveyPage: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default AnonymousSurveyPage;
+}

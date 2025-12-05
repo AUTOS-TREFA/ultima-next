@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useReactTable,
   getCoreRowModel,
@@ -33,7 +33,7 @@ import {
 } from 'recharts';
 import { format, parseISO } from 'date-fns';
 import { saveAs } from 'file-saver';
-import { useSurveyResponses, useDashboardMetrics } from '../hooks/useSurveyData';
+import { useSurveyResponses, useDashboardMetrics } from '@/hooks/useSurveyData';
 import {
   calculateAllQuestionsAnalytics,
   calculateSectionAnalytics,
@@ -41,11 +41,11 @@ import {
   calculateLikertHeatmap,
   exportToCSV,
   exportAnalyticsToJSON
-} from '../lib/surveyAnalytics';
-import { SURVEY_SECTIONS } from '../lib/surveyQuestions';
-import type { SurveyResponse, QuestionAnalytics } from '../types/survey';
+} from '@/lib/surveyAnalytics';
+import { SURVEY_SECTIONS } from '@/lib/surveyQuestions';
+import type { SurveyResponse, QuestionAnalytics } from '@/types/survey';
 
-const SurveyAnalyticsDashboard: React.FC = () => {
+export default function SurveyAnalyticsDashboard() {
   const { data: responses = [], isLoading, error } = useSurveyResponses();
   const { data: metrics } = useDashboardMetrics();
 
@@ -576,6 +576,4 @@ const SurveyAnalyticsDashboard: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default SurveyAnalyticsDashboard;
+}
