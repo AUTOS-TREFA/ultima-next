@@ -21,8 +21,8 @@ All Supabase references have been successfully updated to the correct project (`
 6. ✅ `server/config.js` - Updated URL and anon key
 
 ### Airtable Scripts
-7. ✅ `airtable-upload-to-r2.js` - Updated URL (service key placeholder)
-8. ✅ `airtable/airtable-image-upload-optimized.js` - Updated URL (service key placeholder)
+7. ✅ `airtable-upload-to-r2.js` - Updated URL and service key
+8. ✅ `airtable/airtable-image-upload-optimized.js` - Updated URL and service key
 9. ✅ `airtable/R2_CORS_CONFIG.json` - Updated allowed origin
 10. ✅ `airtable/airtable-sync-webhook.js` - Updated URL and anon key
 
@@ -45,19 +45,17 @@ All Supabase references have been successfully updated to the correct project (`
 
 ### Migration/Utility Scripts
 22. ✅ `supabase/migrations/supabaseClient.ts` - Updated fallback URL and key
-23. ✅ `apply_security_fix.js` - Updated URL (service key placeholder)
+23. ✅ `apply_security_fix.js` - Updated URL and service key
 24. ✅ `cloudflare-workers/image-proxy.js` - Updated storage URL
 25. ✅ `scripts/migration/1-setup-nextjs.js` - Updated image domain
 
-## Service Role Key Updates Required
+## Service Role Key Updates - COMPLETED ✅
 
-The following files have placeholders for the service role key that need to be updated with the actual key from Supabase Dashboard > Settings > API for project `pemgwyymodlwabaexxrb`:
+All service role keys have been updated with the actual key from Supabase project `pemgwyymodlwabaexxrb`:
 
-1. `airtable-upload-to-r2.js` - Line 49
-2. `airtable/airtable-image-upload-optimized.js` - Line 10
-3. `apply_security_fix.js` - Line 6
-
-**Action Required:** Update `YOUR_SERVICE_ROLE_KEY_HERE` with the actual service role key from the Supabase dashboard.
+1. ✅ `airtable-upload-to-r2.js` - Line 48
+2. ✅ `airtable/airtable-image-upload-optimized.js` - Line 9
+3. ✅ `apply_security_fix.js` - Line 5
 
 ## Edge Functions
 
