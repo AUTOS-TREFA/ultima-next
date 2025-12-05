@@ -66,9 +66,13 @@ export async function middleware(req: NextRequest) {
       }
     }
 
+    // Check for redirect parameter in URL
+    const redirectParam = req.nextUrl.searchParams.get('redirect');
+
     // Redirect to dashboard if already logged in
     const url = req.nextUrl.clone();
-    url.pathname = '/escritorio';
+    url.pathname = redirectParam || '/escritorio';
+    url.searchParams.delete('redirect'); // Remove redirect param to avoid loops
     return NextResponse.redirect(url);
   }
 
