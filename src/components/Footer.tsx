@@ -90,6 +90,7 @@ const Footer: React.FC = () => {
                             <ul className="mt-4 space-y-2">
                                 <LinkItem to="/faq">Preguntas Frecuentes</LinkItem>
                                <LinkItem to="/vacantes">Vacantes</LinkItem>
+                                <LinkItem to="/terminos">Términos y Condiciones</LinkItem>
                                 <LinkItem to="/politica-de-privacidad">Política de Privacidad</LinkItem>
                                <li>
                                     <a aria-label="Visitar blog" href="https://blog.trefa.mx" target="_blank" rel="noopener noreferrer" className="text-base text-gray-400 hover:text-white transition-colors"> Blog </a>
