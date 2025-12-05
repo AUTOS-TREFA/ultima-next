@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'fs';
 
-const SUPABASE_URL = 'https://jjepfehmuybpctdzipnu.supabase.co';
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJJzdXBhYmFzZSIsInJlZiI6ImpqZXBmZWhtdXlicGN0ZHR6aXBudSIsInJvbGVzIjpbInNlcnZpY2Vfcm9sZSJdLCJpYXQiOjE2ODI2NTQ2NDUsImV4cCI6MTk0MTIxMDY0NX0.UJXbX5H1vX9j12K0G1b1x3rQ1g5c3F4Z2V5bHk';
+const SUPABASE_URL = 'https://pemgwyymodlwabaexxrb.supabase.co';
+// TODO: Update with service_role key from Supabase Dashboard > Settings > API for project pemgwyymodlwabaexxrb
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'YOUR_SERVICE_ROLE_KEY_HERE';
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 

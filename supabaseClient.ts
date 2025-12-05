@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 // IMPORTANT: Your Supabase project's URL and Anon Key should be stored in environment variables.
 // Next.js uses process.env, with NEXT_PUBLIC_ prefix for client-side access.
 // For example:
-// NEXT_PUBLIC_SUPABASE_URL="https://wmtlzfodmrchgqdbxjln.supabase.co"
+// NEXT_PUBLIC_SUPABASE_URL="https://pemgwyymodlwabaexxrb.supabase.co"
 // ...
 const FALLBACK_URL = 'https://pemgwyymodlwabaexxrb.supabase.co';
 const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlbWd3eXltb2Rsd2FiYWV4eHJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5OTE1MTYsImV4cCI6MjA3ODU2NzUxNn0.wfwBKfCuDYmBX_Hi5KvqtNmLLpbgQllPnUaPfoDrYok';
