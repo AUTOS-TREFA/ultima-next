@@ -28,6 +28,7 @@ import { cn } from '../lib/utils';
 import { AppleCardsCarousel } from '../components/AppleCardsCarousel';
 import HeroTrefa from '../components/ui/hero-trefa';
 import AnimatedVehicleGrid from '../components/AnimatedVehicleGrid';
+import Portfolio from '../components/shadcn-studio/blocks/portfolio-04/portfolio-04';
 import HomePageContentService, {
   HeroContent,
   InventoryHeroContent,
@@ -936,6 +937,7 @@ const HomePage: React.FC = () => {
     <main className="relative z-10 scroll-smooth">
       {/* Immediately visible sections - no loading dependency */}
       <HeroTrefa isMobile={isMobile} />
+      <Portfolio maxVehicles={12} />
       <WallOfLove />
       <WhyChooseTrefaSection />
 
