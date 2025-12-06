@@ -7,7 +7,12 @@ EXCEPTION WHEN OTHERS THEN
 END $$;
 
 -- Remove any existing cron job with the same name (for idempotency)
-SELECT cron.unschedule('send-automated-email-notifications');
+DO $$
+BEGIN
+  PERFORM cron.unschedule('send-automated-email-notifications');
+EXCEPTION WHEN OTHERS THEN
+  RAISE NOTICE 'No existing cron job to unschedule: %', SQLERRM;
+END $$;
 
 -- Schedule the automated email notifications to run daily at 10:00 AM UTC
 -- This translates to 4:00 AM CST (Mexico time)
