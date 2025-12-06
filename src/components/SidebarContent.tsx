@@ -3,12 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '../context/AuthContext';
-import { ApplicationService } from '../services/ApplicationService';
+import { useAuth } from '@/context/AuthContext';
+import { ApplicationService } from '@/services/ApplicationService';
+import type { ApplicationListItem } from '@/types/types';
 
-interface Application {
-    id: string;
-    status?: string;
+interface Application extends ApplicationListItem {
     car_info?: {
         _vehicleTitle?: string;
     };
@@ -40,9 +39,11 @@ import {
     TrendingDown,
     Grid3x3,
     HelpCircle,
-    Search,
     DollarSign,
-    BarChart3
+    BarChart3,
+    Route,
+    Shield,
+    Mail
 } from 'lucide-react';
 
 // @ts-ignore
@@ -59,29 +60,38 @@ interface SidebarContentProps {
     setIsBetaSurveyVisible: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-// Custom icon components for Comprar and Vender
-const ComprarIcon = ({ className }: { className?: string }) => (
-    <div className="relative w-5 h-5 flex items-center justify-center">
-        <Search className={`w-4 h-4 absolute ${className}`} style={{ transform: 'translate(-2px, -2px)' }} />
-        <Car className={`w-3 h-3 absolute ${className}`} style={{ transform: 'translate(2px, 2px)' }} />
-    </div>
-);
+// Custom NavLink component for Next.js
+interface NavLinkProps {
+    href: string;
+    children: React.ReactNode;
+    className?: string | ((props: { isActive: boolean }) => string);
+    end?: boolean;
+    title?: string;
+}
 
-const VenderIcon = ({ className }: { className?: string }) => (
-    <div className="relative w-5 h-5 flex items-center justify-center">
-        <DollarSign className={`w-4 h-4 absolute ${className}`} style={{ transform: 'translate(-2px, -2px)' }} />
-        <Car className={`w-3 h-3 absolute ${className}`} style={{ transform: 'translate(2px, 2px)' }} />
-    </div>
-);
+const NavLink: React.FC<NavLinkProps> = ({ href, children, className, end = false, title }) => {
+    const pathname = usePathname();
+    const isActive = end ? pathname === href : pathname.startsWith(href);
+
+    const computedClassName = typeof className === 'function'
+        ? className({ isActive })
+        : className;
+
+    return (
+        <Link href={href} className={computedClassName} title={title}>
+            {children}
+        </Link>
+    );
+};
+
 
 const SidebarContent: React.FC<SidebarContentProps> = ({
     isCollapsed,
     onToggle,
 }) => {
-    const { user, profile, signOut, isAdmin, isSales } = useAuth();
+    const { user, profile, signOut, isAdmin, isSales, isMarketing } = useAuth();
     const [drafts, setDrafts] = useState<Application[]>([]);
     const [isLoadingDrafts, setIsLoadingDrafts] = useState(false);
-    const pathname = usePathname();
 
     useEffect(() => {
         if (user && !isCollapsed) {
@@ -101,21 +111,39 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
 
     const navItems = [
         // Regular user items
-        ...(!isAdmin && !isSales ? [
-            { to: '/escritorio', label: 'Resumen', icon: LayoutDashboard, end: true, iconColor: 'text-blue-600', bgColor: 'bg-blue-50/50' }
+        ...(!isAdmin && !isSales && !isMarketing ? [
+            { to: '/escritorio', label: 'Resumen', icon: LayoutDashboard, end: true }
         ] : []),
-        { to: '/escritorio/profile', label: 'Mi Perfil', icon: User, iconColor: 'text-gray-600', bgColor: 'bg-gray-50/50' },
-        { to: '/escritorio/favoritos', label: 'Mis Favoritos', icon: Heart, iconColor: 'text-red-500', bgColor: 'bg-red-50/50' },
-        { to: '/escritorio/seguimiento', label: 'Mis Solicitudes', icon: FileText, iconColor: 'text-gray-600', bgColor: 'bg-gray-50/50' },
-        { to: '/escritorio/perfilacion-bancaria', label: 'Perfil Bancario', icon: Building2, iconColor: 'text-gray-600', bgColor: 'bg-gray-50/50' },
-        { to: '/escritorio/citas', label: 'Citas', icon: CalendarIcon, iconColor: 'text-gray-600', bgColor: 'bg-gray-50/50' },
-        { to: '/escritorio/vende-tu-auto', label: 'Vender', icon: VenderIcon, iconColor: 'text-green-600', bgColor: 'bg-green-50/50', isCustomIcon: true },
-        { to: '/escritorio/autos', label: 'Comprar', icon: ComprarIcon, iconColor: 'text-blue-600', bgColor: 'bg-blue-50/50', isCustomIcon: true },
+        // Marketing users only see their profile and FAQs in the main section
+        ...(!isMarketing ? [
+            { to: '/escritorio/profile', label: 'Perfil', icon: User },
+            { to: '/escritorio/favoritos', label: 'Favoritos', icon: Heart },
+            { to: '/escritorio/seguimiento', label: 'Solicitudes', icon: FileText },
+            { to: '/escritorio/citas', label: 'Citas', icon: CalendarIcon },
+            { to: '/escritorio/vende-tu-auto', label: 'Vender', icon: DollarSign },
+            { to: '/escritorio/autos', label: 'Inventario', icon: Car },
+        ] : [
+            { to: '/escritorio/profile', label: 'Perfil', icon: User },
+        ]),
         // Help/FAQ for everyone at the end
-        { to: '/faq', label: 'Ayuda', icon: HelpCircle, iconColor: 'text-gray-400', bgColor: 'bg-gray-50/50' },
+        { to: '/faq', label: 'FAQs', icon: HelpCircle },
     ];
 
-    const userRoleText = isAdmin ? 'Administrador' : isSales ? 'Ventas' : 'Usuario';
+    const adminNavItems = [
+        { to: '/escritorio/admin/marketing', label: 'Dashboard General', icon: BarChart3 },
+        { to: '/escritorio/admin/customer-journeys', label: 'Customer Journeys', icon: Route },
+        { to: '/escritorio/admin/marketing-analytics', label: 'Analytics', icon: TrendingUp },
+        { to: '/bancos/dashboard', label: 'Portal Bancario', icon: Building2 },
+        { to: '/escritorio/admin/config', label: 'Configuración', icon: Settings },
+    ];
+
+    const salesNavItems = [
+        { to: '/escritorio/ventas/dashboard', label: 'Dashboard Ventas', icon: LayoutDashboard },
+        { to: '/escritorio/ventas/crm', label: 'CRM / Leads', icon: Users },
+        { to: '/escritorio/ventas/performance', label: 'Rendimiento', icon: TrendingUp },
+    ];
+
+    const userRoleText = isAdmin ? 'Administrador' : isSales ? 'Ventas' : isMarketing ? 'Marketing' : 'Usuario';
 
     return (
         <div className="flex flex-col h-full bg-white border-r border-gray-200">
@@ -126,29 +154,200 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
             </div>
             <div className="flex-grow p-4 overflow-y-auto">
                 <nav className="space-y-2">
-                    {navItems.map(item => {
-                        const isActive = item.end ? pathname === item.to : pathname.startsWith(item.to);
-                        return (
-                            <Link
-                                key={item.to}
-                                href={item.to}
-                                className={`flex ${isCollapsed ? 'flex-col items-center justify-center' : 'flex-row items-center'} px-3 ${isCollapsed ? 'py-3' : 'py-2.5'} rounded-lg transition-colors text-sm font-medium ${
+                    {navItems.map(item => (
+                        <NavLink
+                            key={item.to}
+                            href={item.to}
+                            end={item.end}
+                            className={({ isActive }) =>
+                                `flex ${isCollapsed ? 'flex-col items-center justify-center' : 'flex-row items-center'} px-3 ${isCollapsed ? 'py-3' : 'py-2.5'} rounded-lg transition-colors text-base font-medium ${
                                     isActive
                                         ? 'bg-primary-100 text-primary-700'
-                                        : `${item.bgColor || 'bg-gray-50/50'} text-gray-600 hover:bg-gray-200/50 hover:text-gray-900`
-                                }`}
-                                title={isCollapsed ? item.label : undefined}
-                            >
-                                {item.isCustomIcon ? (
-                                    <item.icon className={`${item.iconColor || 'text-gray-600'} ${isCollapsed ? 'w-6 h-6' : ''} ${!isCollapsed ? 'mr-3' : ''}`} />
-                                ) : (
-                                    <item.icon className={`${isCollapsed ? 'w-7 h-7' : 'w-5 h-5'} flex-shrink-0 ${item.iconColor || 'text-gray-600'} ${!isCollapsed ? 'mr-3' : ''}`} />
-                                )}
-                                <span className={`transition-all duration-200 ${isCollapsed ? 'text-[0.65rem] mt-1 text-center leading-tight' : 'whitespace-nowrap'}`}>{item.label}</span>
-                            </Link>
-                        );
-                    })}
+                                        : 'bg-gray-50/50 text-gray-600 hover:bg-gray-200/50 hover:text-gray-900'
+                                }`
+                            }
+                            title={isCollapsed ? item.label : undefined}
+                        >
+                            <item.icon className={`${isCollapsed ? 'w-7 h-7' : 'w-5 h-5'} flex-shrink-0 text-gray-600 ${!isCollapsed ? 'mr-3' : ''}`} />
+                            <span className={`transition-all duration-200 ${isCollapsed ? 'text-[0.65rem] mt-1 text-center leading-tight' : 'whitespace-nowrap'}`}>{item.label}</span>
+                        </NavLink>
+                    ))}
                 </nav>
+
+                {/* Admin Section */}
+                {isAdmin && (
+                    <div className="mt-6 pt-6 border-t">
+                        {!isCollapsed && (
+                            <h3 className="px-3 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center">
+                                <Settings className="w-4 h-4 mr-2" />
+                                Administración
+                            </h3>
+                        )}
+                        <nav className="space-y-2">
+                            {adminNavItems.map(item => (
+                                <NavLink
+                                    key={item.to}
+                                    href={item.to}
+                                    className={({ isActive }) =>
+                                        `flex ${isCollapsed ? 'flex-col items-center justify-center' : 'flex-row items-center'} px-3 ${isCollapsed ? 'py-3' : 'py-2.5'} rounded-lg transition-colors text-sm font-medium ${
+                                            isActive
+                                                ? 'bg-indigo-100 text-indigo-700'
+                                                : 'bg-gray-50/50 text-gray-600 hover:bg-gray-200/50 hover:text-gray-900'
+                                        }`
+                                    }
+                                    title={isCollapsed ? item.label : undefined}
+                                >
+                                    <item.icon className={`${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'} flex-shrink-0 text-gray-600 ${!isCollapsed ? 'mr-3' : ''}`} />
+                                    <span className={`transition-all duration-200 ${isCollapsed ? 'text-[0.6rem] mt-1 text-center leading-tight' : 'whitespace-nowrap'}`}>{item.label}</span>
+                                </NavLink>
+                            ))}
+                        </nav>
+                    </div>
+                )}
+
+                {/* Marketing Section - Visible to Marketing and Admins */}
+                {(isMarketing || isAdmin) && (
+                    <div className="mt-6 pt-6 border-t border-gray-200">
+                        {!isCollapsed && (
+                            <h3 className="px-3 mb-3 text-xs font-semibold text-purple-600 uppercase tracking-wider flex items-center">
+                                <TrendingUp className="w-4 h-4 mr-2" />
+                                Marketing
+                            </h3>
+                        )}
+                        <nav className="space-y-2">
+                            <NavLink
+                                href="/escritorio/marketing"
+                                className={({ isActive }) =>
+                                    `flex ${isCollapsed ? 'flex-col items-center justify-center' : 'flex-row items-center'} px-3 ${isCollapsed ? 'py-3' : 'py-2.5'} rounded-lg transition-colors text-sm font-medium ${
+                                        isActive
+                                            ? 'bg-purple-100 text-purple-700'
+                                            : 'bg-gray-50/50 text-gray-600 hover:bg-purple-50 hover:text-purple-700'
+                                    }`
+                                }
+                                title={isCollapsed ? 'Marketing Hub' : undefined}
+                            >
+                                <BarChart3 className={`${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'} flex-shrink-0 ${!isCollapsed ? 'mr-3' : ''}`} />
+                                <span className={`transition-all duration-200 ${isCollapsed ? 'text-[0.6rem] mt-1 text-center leading-tight' : 'whitespace-nowrap'}`}>Marketing Hub</span>
+                            </NavLink>
+                            <NavLink
+                                href="/escritorio/marketing/analytics"
+                                className={({ isActive }) =>
+                                    `flex ${isCollapsed ? 'flex-col items-center justify-center' : 'flex-row items-center'} px-3 ${isCollapsed ? 'py-3' : 'py-2.5'} rounded-lg transition-colors text-sm font-medium ${
+                                        isActive
+                                            ? 'bg-purple-100 text-purple-700'
+                                            : 'bg-gray-50/50 text-gray-600 hover:bg-purple-50 hover:text-purple-700'
+                                    }`
+                                }
+                                title={isCollapsed ? 'Analytics' : undefined}
+                            >
+                                <TrendingUp className={`${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'} flex-shrink-0 ${!isCollapsed ? 'mr-3' : ''}`} />
+                                <span className={`transition-all duration-200 ${isCollapsed ? 'text-[0.6rem] mt-1 text-center leading-tight' : 'whitespace-nowrap'}`}>Analytics</span>
+                            </NavLink>
+                            <NavLink
+                                href="/escritorio/marketing/customer-journeys"
+                                className={({ isActive }) =>
+                                    `flex ${isCollapsed ? 'flex-col items-center justify-center' : 'flex-row items-center'} px-3 ${isCollapsed ? 'py-3' : 'py-2.5'} rounded-lg transition-colors text-sm font-medium ${
+                                        isActive
+                                            ? 'bg-purple-100 text-purple-700'
+                                            : 'bg-gray-50/50 text-gray-600 hover:bg-purple-50 hover:text-purple-700'
+                                    }`
+                                }
+                                title={isCollapsed ? 'Customer Journeys' : undefined}
+                            >
+                                <Route className={`${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'} flex-shrink-0 ${!isCollapsed ? 'mr-3' : ''}`} />
+                                <span className={`transition-all duration-200 ${isCollapsed ? 'text-[0.6rem] mt-1 text-center leading-tight' : 'whitespace-nowrap'}`}>Customer Journeys</span>
+                            </NavLink>
+                            <NavLink
+                                href="/escritorio/marketing/constructor"
+                                className={({ isActive }) =>
+                                    `flex ${isCollapsed ? 'flex-col items-center justify-center' : 'flex-row items-center'} px-3 ${isCollapsed ? 'py-3' : 'py-2.5'} rounded-lg transition-colors text-sm font-medium ${
+                                        isActive
+                                            ? 'bg-purple-100 text-purple-700'
+                                            : 'bg-gray-50/50 text-gray-600 hover:bg-purple-50 hover:text-purple-700'
+                                    }`
+                                }
+                                title={isCollapsed ? 'Landing Page Builder' : undefined}
+                            >
+                                <Grid3x3 className={`${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'} flex-shrink-0 ${!isCollapsed ? 'mr-3' : ''}`} />
+                                <span className={`transition-all duration-200 ${isCollapsed ? 'text-[0.6rem] mt-1 text-center leading-tight' : 'whitespace-nowrap'}`}>Landing Pages</span>
+                            </NavLink>
+                            <NavLink
+                                href="/escritorio/marketing/crm"
+                                className={({ isActive }) =>
+                                    `flex ${isCollapsed ? 'flex-col items-center justify-center' : 'flex-row items-center'} px-3 ${isCollapsed ? 'py-3' : 'py-2.5'} rounded-lg transition-colors text-sm font-medium ${
+                                        isActive
+                                            ? 'bg-purple-100 text-purple-700'
+                                            : 'bg-gray-50/50 text-gray-600 hover:bg-purple-50 hover:text-purple-700'
+                                    }`
+                                }
+                                title={isCollapsed ? 'CRM Demo' : undefined}
+                            >
+                                <Users className={`${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'} flex-shrink-0 ${!isCollapsed ? 'mr-3' : ''}`} />
+                                <span className={`transition-all duration-200 ${isCollapsed ? 'text-[0.6rem] mt-1 text-center leading-tight' : 'whitespace-nowrap'}`}>CRM (Demo)</span>
+                            </NavLink>
+                            <NavLink
+                                href="/escritorio/documentos-analytics"
+                                className={({ isActive }) =>
+                                    `flex ${isCollapsed ? 'flex-col items-center justify-center' : 'flex-row items-center'} px-3 ${isCollapsed ? 'py-3' : 'py-2.5'} rounded-lg transition-colors text-sm font-medium ${
+                                        isActive
+                                            ? 'bg-purple-100 text-purple-700'
+                                            : 'bg-gray-50/50 text-gray-600 hover:bg-purple-50 hover:text-purple-700'
+                                    }`
+                                }
+                                title={isCollapsed ? 'Documents Analytics' : undefined}
+                            >
+                                <FileText className={`${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'} flex-shrink-0 ${!isCollapsed ? 'mr-3' : ''}`} />
+                                <span className={`transition-all duration-200 ${isCollapsed ? 'text-[0.6rem] mt-1 text-center leading-tight' : 'whitespace-nowrap'}`}>Documents Analytics</span>
+                            </NavLink>
+                        </nav>
+                    </div>
+                )}
+
+                {/* Sales Section - Visible to Sales and Admins */}
+                {(isSales || isAdmin) && !isMarketing && (
+                    <div className="mt-6 pt-6 border-t border-gray-200">
+                        {!isCollapsed && (
+                            <h3 className="px-3 mb-3 text-xs font-semibold text-[#FF6801] uppercase tracking-wider flex items-center">
+                                <BriefcaseIcon className="w-4 h-4 mr-2" />
+                                Asesores
+                            </h3>
+                        )}
+                        <nav className="space-y-2">
+                            {salesNavItems.map(item => (
+                                <NavLink
+                                    key={item.to}
+                                    href={item.to}
+                                    className={({ isActive }) =>
+                                        `flex ${isCollapsed ? 'flex-col items-center justify-center' : 'flex-row items-center'} px-3 ${isCollapsed ? 'py-3' : 'py-2.5'} rounded-lg transition-colors text-sm font-medium ${
+                                            isActive
+                                                ? 'bg-orange-100 text-orange-700'
+                                                : 'bg-gray-50/50 text-gray-600 hover:bg-orange-50 hover:text-orange-700'
+                                        }`
+                                    }
+                                    title={isCollapsed ? item.label : undefined}
+                                >
+                                    <item.icon className={`${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'} flex-shrink-0 ${!isCollapsed ? 'mr-3' : ''}`} />
+                                    <span className={`transition-all duration-200 ${isCollapsed ? 'text-[0.6rem] mt-1 text-center leading-tight' : 'whitespace-nowrap'}`}>{item.label}</span>
+                                </NavLink>
+                            ))}
+                            {/* Mis Solicitudes - for sales to see their applications */}
+                            <NavLink
+                                href="/escritorio/ventas/mis-solicitudes"
+                                className={({ isActive }) =>
+                                    `flex ${isCollapsed ? 'flex-col items-center justify-center' : 'flex-row items-center'} px-3 ${isCollapsed ? 'py-3' : 'py-2.5'} rounded-lg transition-colors text-sm font-medium ${
+                                        isActive
+                                            ? 'bg-orange-100 text-orange-700'
+                                            : 'bg-gray-50/50 text-gray-600 hover:bg-orange-50 hover:text-orange-700'
+                                    }`
+                                }
+                                title={isCollapsed ? 'Mis Solicitudes' : undefined}
+                            >
+                                <FileText className={`${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'} flex-shrink-0 ${!isCollapsed ? 'mr-3' : ''}`} />
+                                <span className={`transition-all duration-200 ${isCollapsed ? 'text-[0.6rem] mt-1 text-center leading-tight' : 'whitespace-nowrap'}`}>Mis Solicitudes</span>
+                            </NavLink>
+                        </nav>
+                    </div>
+                )}
 
                 {!isCollapsed && (
                     <div className="mt-6 pt-6 border-t">
@@ -161,9 +360,9 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                                 <div className="flex justify-center p-4"><Loader2 className="w-5 h-5 animate-spin text-gray-400"/></div>
                             ) : drafts.length > 0 ? (
                                 drafts.map(draft => (
-                                    <Link 
-                                        key={draft.id} 
-                                        to={`/escritorio/aplicacion/${draft.id}`}
+                                    <Link
+                                        key={draft.id}
+                                        href={`/escritorio/aplicacion/${draft.id}`}
                                         className="block text-sm text-gray-600 p-3 rounded-lg hover:bg-gray-100"
                                     >
                                         {draft.car_info?._vehicleTitle || 'Borrador sin auto'}
@@ -175,25 +374,27 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                         </div>
                     </div>
                 )}
-                
+
                 {!isCollapsed && (
                      <div className="mt-6 pt-6 border-t">
-                        <Link
+                        <NavLink
                             href="/escritorio/encuesta"
-                            className={`flex items-center px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
-                                pathname === '/escritorio/encuesta'
-                                    ? 'bg-primary-100 text-primary-700'
-                                    : 'bg-gray-50/50 text-gray-600 hover:bg-gray-200/50 hover:text-gray-900'
-                            } ${isCollapsed ? 'justify-center' : ''}`}
+                            className={({ isActive }) =>
+                                `flex items-center px-3 py-2.5 rounded-lg transition-colors text-base font-medium ${
+                                    isActive
+                                        ? 'bg-primary-100 text-primary-700'
+                                        : 'bg-gray-50/50 text-gray-600 hover:bg-gray-200/50 hover:text-gray-900'
+                                } ${isCollapsed ? 'justify-center' : ''}`
+                            }
                         >
                             <ListChecks className={`w-5 h-5 flex-shrink-0 ${isCollapsed ? '' : 'mr-3'}`} />
-                            <span className={`transition-opacity duration-200 whitespace-nowrap ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100'}`}>Encuesta de Mejora</span>
-                        </Link>
+                            <span className={`transition-opacity duration-200 whitespace-nowrap ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100'}`}>Encuesta</span>
+                        </NavLink>
                     </div>
                 )}
             </div>
             <div className="p-4 border-t flex-shrink-0">
-                 <Link
+                 <NavLink
                     href="/escritorio/profile"
                     className={`flex items-center mb-4 transition-all duration-200 ${isCollapsed ? 'justify-center' : ''}`}
                  >
@@ -210,15 +411,37 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                             <p className="text-xs text-gray-500">{userRoleText}</p>
                         </div>
                     )}
-                </Link>
+                </NavLink>
+
+                {/* Cerrar Sesión */}
                 <button
                     onClick={handleSignOut}
                     title={isCollapsed ? 'Cerrar Sesión' : undefined}
-                    className={`w-full flex items-center px-3 py-2.5 rounded-lg transition-all duration-300 shadow-sm hover:shadow-md text-white font-semibold bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 transform-gpu active:scale-95 ${isCollapsed ? 'justify-center' : ''}`}
+                    className={`w-full flex items-center px-3 py-2.5 rounded-lg transition-all duration-300 mb-2 text-gray-700 font-medium bg-gray-100 hover:bg-gray-200 ${isCollapsed ? 'justify-center' : ''}`}
                 >
                     <LogOut className="w-5 h-5 flex-shrink-0" />
                     {!isCollapsed && <span className="ml-3">Cerrar Sesión</span>}
                 </button>
+
+                {/* Privacy Policy */}
+                <Link
+                    href="/privacy"
+                    title={isCollapsed ? 'Política de Privacidad' : undefined}
+                    className={`w-full flex items-center px-3 py-2 rounded-lg transition-colors mb-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 text-sm ${isCollapsed ? 'justify-center' : ''}`}
+                >
+                    <Shield className="w-4 h-4 flex-shrink-0" />
+                    {!isCollapsed && <span className="ml-3">Política de Privacidad</span>}
+                </Link>
+
+                {/* Reportar Errores */}
+                <Link
+                    href="/contacto"
+                    title={isCollapsed ? 'Reportar Errores' : undefined}
+                    className={`w-full flex items-center px-3 py-2 rounded-lg transition-colors mb-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 text-sm ${isCollapsed ? 'justify-center' : ''}`}
+                >
+                    <Mail className="w-4 h-4 flex-shrink-0" />
+                    {!isCollapsed && <span className="ml-3">Reportar Errores</span>}
+                </Link>
             </div>
             <div className="p-2 border-t flex-shrink-0">
                  <button

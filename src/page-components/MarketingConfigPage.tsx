@@ -9,7 +9,8 @@ import {
   MarketingConfig,
   ConversionEvent,
   TrackingEvent
-} from '../services/MarketingConfigService';
+} from '@/services/MarketingConfigService';
+import { CustomerJourneyService, type CustomerJourney } from '@/services/CustomerJourneyService';
 import {
   Settings,
   TrendingUp,
@@ -28,8 +29,10 @@ import {
   StopCircle,
   Clock,
   Target,
-  Globe
+  Globe,
+  Route
 } from 'lucide-react';
+import Link from 'next/link';
 
 const configSchema = z.object({
   gtm_container_id: z.string().regex(/^GTM-[A-Z0-9]+$/, 'Debe ser formato GTM-XXXXXXX'),
@@ -46,6 +49,7 @@ const getEventUrl = (eventType: string): string => {
     'ViewContent': 'https://trefa.mx/autos/*',
     'InitialRegistration': 'https://trefa.mx/acceder',
     'PersonalInformationComplete': 'https://trefa.mx/escritorio/profile/',
+    'ComienzaSolicitud': 'https://trefa.mx/escritorio/aplicacion',
     'LeadComplete': 'https://trefa.mx/escritorio/aplicacion/*',
     'ConversionLandingPage': 'https://trefa.mx/financiamientos',
     'PerfilacionBancariaComplete': 'https://trefa.mx/escritorio/perfilacion-bancaria',
@@ -76,6 +80,11 @@ const getEventParameters = (eventType: string): Record<string, string> => {
       'userId': '{{DLV - User ID}}',
       'email': '{{DLV - User Email}}',
       'profileStatus': '{{DLV - Profile Status}}',
+    },
+    'ComienzaSolicitud': {
+      'userId': '{{DLV - User ID}}',
+      'email': '{{DLV - User Email}}',
+      'page': '{{DLV - Page URL}}',
     },
     'LeadComplete': {
       'userId': '{{DLV - User ID}}',
@@ -135,6 +144,15 @@ const defaultConversionEvents: ConversionEvent[] = [
     gtm_enabled: true,
   },
   {
+    id: 'comienzasolicitud',
+    name: 'Comienza Solicitud',
+    event_type: 'ComienzaSolicitud',
+    trigger_location: 'Página de aplicación',
+    enabled: true,
+    fb_enabled: true,
+    gtm_enabled: true,
+  },
+  {
     id: 'leadcomplete',
     name: 'Lead Completo',
     event_type: 'LeadComplete',
@@ -176,10 +194,14 @@ export default function MarketingConfigPage() {
   const [conversionEvents, setConversionEvents] = useState<ConversionEvent[]>(defaultConversionEvents);
   const [recentEvents, setRecentEvents] = useState<TrackingEvent[]>([]);
   const [leadSources, setLeadSources] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'config' | 'events' | 'analytics' | 'monitor'>('config');
+  const [activeTab, setActiveTab] = useState<'config' | 'events' | 'analytics' | 'journeys'>('config');
   const [isSaving, setIsSaving] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Customer Journey state
+  const [customerJourneys, setCustomerJourneys] = useState<CustomerJourney[]>([]);
+  const [isLoadingJourneys, setIsLoadingJourneys] = useState(false);
 
   // Real-time monitoring state
   const [isMonitoring, setIsMonitoring] = useState(false);
@@ -203,11 +225,24 @@ export default function MarketingConfigPage() {
     loadRecentEvents();
     loadLeadSources();
     checkDiagnostics();
+    loadCustomerJourneys();
   }, []);
 
-  // Auto-refresh for monitoring tab
+  const loadCustomerJourneys = async () => {
+    try {
+      setIsLoadingJourneys(true);
+      const journeys = await CustomerJourneyService.getAllJourneys();
+      setCustomerJourneys(journeys);
+    } catch (error) {
+      console.error('Error loading customer journeys:', error);
+    } finally {
+      setIsLoadingJourneys(false);
+    }
+  };
+
+  // Auto-refresh for monitoring tab (keeping for potential future use)
   useEffect(() => {
-    if (isMonitoring && activeTab === 'monitor') {
+    if (isMonitoring && activeTab === 'journeys') {
       const interval = setInterval(() => {
         loadRecentEvents();
         checkDiagnostics();
@@ -258,7 +293,8 @@ export default function MarketingConfigPage() {
   };
 
   const loadRecentEvents = async () => {
-    const events = await marketingConfigService.getTrackingEvents({ limit: 50 });
+    // Removed limit to fetch all events (was limited to 50, now fetches all)
+    const events = await marketingConfigService.getTrackingEvents({ limit: 100000 });
     setRecentEvents(events);
     if (isMonitoring) {
       // Add new events to live stream
@@ -393,7 +429,7 @@ export default function MarketingConfigPage() {
     if (result.config) {
       marketingConfigService.trackConversionEvent(
         'test_event',
-        'LeadComplete',
+        'Lead',
         { test: true, timestamp: new Date().toISOString() }
       );
     }
@@ -707,19 +743,15 @@ export default function MarketingConfigPage() {
                 Analytics
               </button>
               <button
-                onClick={() => {
-                  setActiveTab('monitor');
-                  if (!isMonitoring) toggleMonitoring();
-                }}
+                onClick={() => setActiveTab('journeys')}
                 className={`px-6 py-3 border-b-2 font-medium text-sm ${
-                  activeTab === 'monitor'
+                  activeTab === 'journeys'
                     ? 'border-blue-600 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                <Radio className="w-4 h-4 inline mr-2" />
-                Monitor en Vivo
-                {isMonitoring && <span className="ml-2 inline-block w-2 h-2 bg-red-600 rounded-full animate-pulse"></span>}
+                <Route className="w-4 h-4 inline mr-2" />
+                Customer Journey
               </button>
             </nav>
           </div>
@@ -943,293 +975,148 @@ export default function MarketingConfigPage() {
               </div>
             )}
 
-            {/* Real-Time Monitor Tab */}
-            {activeTab === 'monitor' && (
+            {/* Customer Journey Summary Tab */}
+            {activeTab === 'journeys' && (
               <div className="space-y-6">
-                {/* Monitor Controls */}
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                {/* Header with CTA */}
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
                   <div className="flex items-center gap-3">
-                    {isMonitoring ? (
-                      <div className="flex items-center gap-2">
-                        <Radio className="w-5 h-5 text-red-600 animate-pulse" />
-                        <span className="font-semibold text-gray-900">Monitoreo Activo</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Radio className="w-5 h-5 text-gray-400" />
-                        <span className="font-semibold text-gray-600">Monitoreo Pausado</span>
-                      </div>
-                    )}
-                    <span className="text-sm text-gray-500">
-                      Última actualización: {lastRefresh.toLocaleTimeString('es-MX')}
-                    </span>
+                    <Route className="w-6 h-6 text-blue-600" />
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Resumen de Customer Journeys</h3>
+                      <p className="text-sm text-gray-600">Visualiza y gestiona los recorridos de tus clientes</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        loadRecentEvents();
-                        checkDiagnostics();
-                        calculateEventStats();
-                      }}
-                      className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                      Actualizar
-                    </button>
-                    <button
-                      onClick={toggleMonitoring}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
-                        isMonitoring
-                          ? 'bg-red-600 text-white hover:bg-red-700'
-                          : 'bg-green-600 text-white hover:bg-green-700'
-                      }`}
-                    >
-                      {isMonitoring ? (
-                        <>
-                          <StopCircle className="w-4 h-4" />
-                          Detener
-                        </>
-                      ) : (
-                        <>
-                          <PlayCircle className="w-4 h-4" />
-                          Iniciar
-                        </>
-                      )}
-                    </button>
-                  </div>
+                  <Link
+                    href="/escritorio/admin/customer-journeys"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  >
+                    <Route className="w-4 h-4" />
+                    Ver Todos los Journeys
+                  </Link>
                 </div>
 
-                {/* Diagnostics Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Facebook Pixel Status */}
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-semibold text-gray-900">Facebook Pixel</h3>
-                      {pixelDiagnostics?.isLoaded ? (
-                        <CheckCircle className="w-6 h-6 text-green-600" />
-                      ) : (
-                        <XCircle className="w-6 h-6 text-red-600" />
-                      )}
-                    </div>
-                    {pixelDiagnostics && (
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Estado:</span>
-                          <span className={pixelDiagnostics.isLoaded ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-                            {pixelDiagnostics.isLoaded ? 'Cargado' : 'No Cargado'}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Pixel ID:</span>
-                          <span className="font-mono text-xs">{pixelDiagnostics.pixelId || 'N/A'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Versión:</span>
-                          <span>{pixelDiagnostics.version || 'N/A'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Cola de eventos:</span>
-                          <span>{pixelDiagnostics.queueLength}</span>
-                        </div>
-                        {pixelDiagnostics.errors.length > 0 && (
-                          <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded">
-                            <p className="text-xs text-red-700 font-semibold mb-1">Errores:</p>
-                            {pixelDiagnostics.errors.map((error, i) => (
-                              <p key={i} className="text-xs text-red-600">• {error}</p>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* GTM Status */}
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-semibold text-gray-900">Google Tag Manager</h3>
-                      {gtmDiagnostics?.isLoaded ? (
-                        <CheckCircle className="w-6 h-6 text-green-600" />
-                      ) : (
-                        <XCircle className="w-6 h-6 text-red-600" />
-                      )}
-                    </div>
-                    {gtmDiagnostics && (
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Estado:</span>
-                          <span className={gtmDiagnostics.isLoaded ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-                            {gtmDiagnostics.isLoaded ? 'Cargado' : 'No Cargado'}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Container ID:</span>
-                          <span className="font-mono text-xs">{gtmDiagnostics.containerId || 'N/A'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">DataLayer:</span>
-                          <span>{gtmDiagnostics.dataLayerLength} eventos</span>
-                        </div>
-                        {gtmDiagnostics.lastPush && (
-                          <div className="mt-2 p-2 bg-gray-50 rounded">
-                            <p className="text-xs text-gray-600 mb-1">Último push:</p>
-                            <pre className="text-xs overflow-auto max-h-20">
-                              {JSON.stringify(gtmDiagnostics.lastPush, null, 2)}
-                            </pre>
-                          </div>
-                        )}
-                        {gtmDiagnostics.errors.length > 0 && (
-                          <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded">
-                            <p className="text-xs text-red-700 font-semibold mb-1">Errores:</p>
-                            {gtmDiagnostics.errors.map((error, i) => (
-                              <p key={i} className="text-xs text-red-600">• {error}</p>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Event Statistics */}
-                {eventStats.total > 0 && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="border border-gray-200 rounded-lg p-4 bg-gradient-to-br from-blue-50 to-blue-100">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-gray-600">Total Eventos</p>
-                          <p className="text-3xl font-bold text-blue-600">{eventStats.total}</p>
-                        </div>
-                        <BarChart3 className="w-10 h-10 text-blue-600 opacity-50" />
-                      </div>
-                    </div>
-                    <div className="border border-gray-200 rounded-lg p-4 bg-gradient-to-br from-green-50 to-green-100">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-gray-600">Últimas 24h</p>
-                          <p className="text-3xl font-bold text-green-600">{eventStats.last24h}</p>
-                        </div>
-                        <Clock className="w-10 h-10 text-green-600 opacity-50" />
-                      </div>
-                    </div>
-                    <div className="border border-gray-200 rounded-lg p-4 bg-gradient-to-br from-purple-50 to-purple-100">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-gray-600">Última Hora</p>
-                          <p className="text-3xl font-bold text-purple-600">{eventStats.lastHour}</p>
-                        </div>
-                        <Zap className="w-10 h-10 text-purple-600 opacity-50" />
-                      </div>
+                {/* Journey Statistics */}
+                {isLoadingJourneys ? (
+                  <div className="flex justify-center items-center p-12">
+                    <div className="text-center">
+                      <RefreshCw className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
+                      <p className="text-gray-600">Cargando customer journeys...</p>
                     </div>
                   </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="border border-gray-200 rounded-lg p-4 bg-gradient-to-br from-blue-50 to-blue-100">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-gray-600">Total Journeys</p>
+                            <p className="text-3xl font-bold text-blue-600">{customerJourneys.length}</p>
+                          </div>
+                          <Route className="w-10 h-10 text-blue-600 opacity-50" />
+                        </div>
+                      </div>
+                      <div className="border border-gray-200 rounded-lg p-4 bg-gradient-to-br from-green-50 to-green-100">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-gray-600">Journeys Activos</p>
+                            <p className="text-3xl font-bold text-green-600">
+                              {customerJourneys.filter(j => j.is_active).length}
+                            </p>
+                          </div>
+                          <CheckCircle className="w-10 h-10 text-green-600 opacity-50" />
+                        </div>
+                      </div>
+                      <div className="border border-gray-200 rounded-lg p-4 bg-gradient-to-br from-gray-50 to-gray-100">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-gray-600">Journeys Inactivos</p>
+                            <p className="text-3xl font-bold text-gray-600">
+                              {customerJourneys.filter(j => !j.is_active).length}
+                            </p>
+                          </div>
+                          <XCircle className="w-10 h-10 text-gray-600 opacity-50" />
+                        </div>
+                      </div>
+                    </div>
+                  </>
                 )}
 
-                {/* Event Type Distribution */}
-                {eventStats.byType && Object.keys(eventStats.byType).length > 0 && (
+                {/* Customer Journey List */}
+                {!isLoadingJourneys && customerJourneys.length > 0 && (
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="font-semibold text-gray-900 mb-4">Distribución por Tipo de Evento</h3>
+                    <h3 className="font-semibold text-gray-900 mb-4">Customer Journeys Configurados</h3>
                     <div className="space-y-3">
-                      {Object.entries(eventStats.byType).map(([type, count]: [string, any]) => (
-                        <div key={type} className="flex items-center gap-3">
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-sm font-medium text-gray-700">{type}</span>
-                              <span className="text-sm font-semibold text-gray-900">{count}</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div
-                                className="bg-blue-600 h-2 rounded-full transition-all"
-                                style={{ width: `${(count / eventStats.total) * 100}%` }}
-                              ></div>
+                      {customerJourneys.map((journey) => (
+                        <div key={journey.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-semibold text-gray-900">{journey.name}</h4>
+                                {journey.is_active ? (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded">
+                                    <CheckCircle className="w-3 h-3" />
+                                    Activo
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded">
+                                    <XCircle className="w-3 h-3" />
+                                    Inactivo
+                                  </span>
+                                )}
+                              </div>
+                              {journey.description && (
+                                <p className="text-sm text-gray-600 mb-2">{journey.description}</p>
+                              )}
+                              {journey.landing_page && (
+                                <p className="text-xs text-gray-500">
+                                  <Globe className="w-3 h-3 inline mr-1" />
+                                  Landing: {journey.landing_page}
+                                </p>
+                              )}
                             </div>
                           </div>
+                          {journey.steps && journey.steps.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-gray-200">
+                              <p className="text-xs font-medium text-gray-600 mb-2">
+                                Pasos del Journey ({journey.steps.length}):
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {journey.steps.slice(0, 5).map((step, idx) => (
+                                  <span key={step.id} className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                                    {idx + 1}. {step.step_name}
+                                  </span>
+                                ))}
+                                {journey.steps.length > 5 && (
+                                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                                    +{journey.steps.length - 5} más
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Live Event Stream */}
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-gray-900">Stream de Eventos en Vivo</h3>
-                    {isMonitoring && (
-                      <span className="flex items-center gap-2 text-sm text-gray-600">
-                        <span className="relative flex h-3 w-3">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                        </span>
-                        Actualizando cada 5s
-                      </span>
-                    )}
-                  </div>
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {liveEvents.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        <Activity className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                        <p>Esperando eventos...</p>
-                        <p className="text-xs mt-1">Los nuevos eventos aparecerán aquí en tiempo real</p>
-                      </div>
-                    ) : (
-                      liveEvents.map((event, index) => (
-                        <div
-                          key={`${event.id}-${index}`}
-                          className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition animate-fade-in"
-                        >
-                          <div className="flex-shrink-0 mt-1">
-                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2">
-                              <p className="font-semibold text-gray-900 truncate">{event.event_name}</p>
-                              <span className="text-xs text-gray-500 whitespace-nowrap">
-                                {event.created_at ? new Date(event.created_at).toLocaleTimeString('es-MX') : 'Ahora'}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-3 mt-1">
-                              <span className="text-xs text-gray-600 bg-white px-2 py-0.5 rounded">
-                                {event.event_type}
-                              </span>
-                              {event.utm_source && (
-                                <span className="text-xs text-gray-600 flex items-center gap-1">
-                                  <Globe className="w-3 h-3" />
-                                  {event.utm_source}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="border border-blue-200 bg-blue-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-blue-900 mb-3">Acciones Rápidas</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <button
-                      onClick={testFacebookPixel}
-                      className="flex items-center gap-2 px-4 py-3 bg-white border border-blue-300 rounded-lg hover:bg-blue-100 transition text-sm"
+                {!isLoadingJourneys && customerJourneys.length === 0 && (
+                  <div className="border border-dashed border-gray-300 rounded-lg p-8 text-center">
+                    <Route className="w-16 h-16 text-gray-400 mx-auto mb-3" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay Customer Journeys configurados</h3>
+                    <p className="text-gray-600 mb-4">
+                      Crea tu primer customer journey para comenzar a trackear el recorrido de tus clientes.
+                    </p>
+                    <Link
+                      href="/escritorio/admin/customer-journeys"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                     >
-                      <Target className="w-4 h-4 text-blue-600" />
-                      <span>Enviar Evento de Prueba a FB</span>
-                    </button>
-                    <button
-                      onClick={() => window.open('https://business.facebook.com/events_manager', '_blank')}
-                      className="flex items-center gap-2 px-4 py-3 bg-white border border-blue-300 rounded-lg hover:bg-blue-100 transition text-sm"
-                    >
-                      <Eye className="w-4 h-4 text-blue-600" />
-                      <span>Abrir Events Manager</span>
-                    </button>
-                    <button
-                      onClick={() => window.open(`https://tagmanager.google.com/#/container/accounts/XXXXXX/containers/${config?.gtm_container_id}/workspaces/0`, '_blank')}
-                      className="flex items-center gap-2 px-4 py-3 bg-white border border-blue-300 rounded-lg hover:bg-blue-100 transition text-sm"
-                    >
-                      <Settings className="w-4 h-4 text-blue-600" />
-                      <span>Abrir GTM Container</span>
-                    </button>
+                      <Route className="w-4 h-4" />
+                      Crear Customer Journey
+                    </Link>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>
