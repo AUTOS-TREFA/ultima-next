@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { supabase } from '../../supabaseClient';
+import { createBrowserSupabaseClient } from '@/lib/supabase/client';
 import { useAuth } from '../context/AuthContext';
 
 export const useFavorites = () => {
@@ -18,11 +18,12 @@ export const useFavorites = () => {
         const fetchFavorites = async () => {
             setIsLoading(true);
             if (user) {
+                const supabase = createBrowserSupabaseClient();
                 const { data, error } = await supabase
                     .from('user_favorites')
                     .select('vehicle_id')
                     .eq('user_id', user.id);
-                
+
                 if (error) {
                     console.error('Error fetching favorites:', error);
                     setFavorites([]);
@@ -47,13 +48,14 @@ export const useFavorites = () => {
         if (isToggling === vehicleId) return; // Prevent multiple clicks
 
         if (!user) {
-            const search = searchParams.toString();
-            localStorage.setItem('loginRedirect', pathname + (search ? `?${search}` : ''));
+            const fullPath = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
+            localStorage.setItem('loginRedirect', fullPath);
             router.push('/acceder');
             return;
         }
 
         setIsToggling(vehicleId);
+        const supabase = createBrowserSupabaseClient();
         const isCurrentlyFavorite = favorites.includes(vehicleId);
 
         if (isCurrentlyFavorite) {

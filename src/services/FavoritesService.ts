@@ -1,4 +1,4 @@
-import { supabase } from '../../supabaseClient';
+import { createBrowserSupabaseClient } from '@/lib/supabase/client';
 
 export class FavoritesService {
   /**
@@ -7,14 +7,15 @@ export class FavoritesService {
    * @returns The count of favorites.
    */
   static async getFavoriteCountByVehicleId(vehicleId: number): Promise<number> {
+    const supabase = createBrowserSupabaseClient();
     const { count, error } = await supabase
       .from('user_favorites')
-      .select('*', { count: 'exact', head: true }) // head: true makes it faster as it doesn't return data
+      .select('*', { count: 'exact', head: true })
       .eq('vehicle_id', vehicleId);
 
     if (error) {
       console.error('Error fetching favorite count:', error);
-      return 0; // Return 0 on error
+      return 0;
     }
 
     return count || 0;
@@ -28,6 +29,7 @@ export class FavoritesService {
   static async getFavoriteCounts(vehicleIds: number[]): Promise<Record<number, number>> {
     if (vehicleIds.length === 0) return {};
 
+    const supabase = createBrowserSupabaseClient();
     const { data, error } = await supabase
       .from('user_favorites')
       .select('vehicle_id')

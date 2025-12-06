@@ -27,12 +27,12 @@ const FavoritesQuickAccess: React.FC<FavoritesQuickAccessProps> = ({ variant = '
       // Try matching with both id and ordencompra
       const favVehicles = vehicles.filter(v =>
         favorites.includes(v.id) ||
-        favorites.includes(v.ordencompra) ||
-        favorites.includes(String(v.id)) ||
-        favorites.includes(String(v.ordencompra))
+        favorites.includes(v.ordencompra as any) ||
+        favorites.includes(String(v.id) as any) ||
+        favorites.includes(String(v.ordencompra) as any)
       );
       console.log('[FavoritesQuickAccess] matched vehicles:', favVehicles.length);
-      setFavoriteVehicles(favVehicles.slice(0, 6)); // Limit to 6 for display
+      setFavoriteVehicles(favVehicles.slice(0, 6));
     } else {
       setFavoriteVehicles([]);
     }
