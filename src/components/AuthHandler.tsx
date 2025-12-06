@@ -30,6 +30,16 @@ export const checkApplicationProfileCompleteness = (p: Profile | null): boolean 
     });
 };
 
+// Check if profile has basic information complete (first_name, last_name, phone)
+export const checkBasicProfileCompleteness = (p: Profile | null): boolean => {
+    if (!p) return false;
+    const basicFields: (keyof Profile)[] = ['first_name', 'last_name', 'phone'];
+    return basicFields.every(field => {
+        const value = p[field];
+        return value !== null && value !== undefined && String(value).trim() !== '';
+    });
+};
+
 const AuthHandler: React.FC = () => {
   const { session, profile, loading } = useAuth();
   const router = useRouter();

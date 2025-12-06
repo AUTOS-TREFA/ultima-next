@@ -3,16 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '../../supabaseClient';
-import { useAuth } from '../context/AuthContext';
-import { CheckCircleIcon, HeartIcon, FileTextIcon, BellIcon, CalendarIcon, GoogleIcon } from '../components/icons';
-import type { WordPressVehicle } from '../types/types';
-import VehicleService from '../services/VehicleService';
-import { formatPrice } from '../utils/formatters';
-import { getVehicleImage } from '../utils/getVehicleImage';
+import { createBrowserSupabaseClient } from '@/lib/supabase/client';
+import { useAuth } from '@/context/AuthContext';
+import { CheckCircleIcon, GoogleIcon } from '@/components/icons';
+import type { WordPressVehicle } from '@/types/types';
+import VehicleService from '@/services/VehicleService';
+import { formatPrice } from '@/utils/formatters';
+import { getVehicleImage } from '@/utils/getVehicleImage';
 import { getEmailRedirectUrl } from '@/config';
-import { proxyImage } from '../utils/proxyImage';
-import { conversionTracking } from '../services/ConversionTrackingService';
+import { proxyImage } from '@/utils/proxyImage';
+import { conversionTracking } from '@/services/ConversionTrackingService';
+import { checkBasicProfileCompleteness } from '@/components/AuthHandler';
 
 // Admin email addresses that should be redirected to admin dashboard
 const ADMIN_EMAILS = [
@@ -76,7 +77,7 @@ const AuthPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | React.ReactNode | null>(null);
     const [view, setView] = useState<'signIn' | 'verifyOtp'>('signIn');
     const router = useRouter();
     const { session, profile } = useAuth();
@@ -85,11 +86,22 @@ const AuthPage: React.FC = () => {
     const [isLoadingVehicle, setIsLoadingVehicle] = useState(false);
     const [isVideoLoaded, setIsVideoLoaded] = useState(false);
     const [customerAvatars, setCustomerAvatars] = useState(allCustomerAvatars.slice(0, 3));
+    const [urlParamsString, setUrlParamsString] = useState('');
+
+    // Create Supabase client
+    const supabase = createBrowserSupabaseClient();
 
     useEffect(() => {
         // Shuffle avatars on mount
         const shuffled = [...allCustomerAvatars].sort(() => 0.5 - Math.random());
         setCustomerAvatars(shuffled.slice(0, 3));
+    }, []);
+
+    // Capturar URL params al inicio
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const paramString = params.toString();
+        setUrlParamsString(paramString);
     }, []);
 
     useEffect(() => {
@@ -106,10 +118,18 @@ const AuthPage: React.FC = () => {
             sessionStorage.setItem('leadSourceData', JSON.stringify(sourceData));
         }
 
-        if (session) {
-            // First check URL redirect parameter
+        if (session && profile) {
+            // Check if there's a pending redirect (URL param takes priority)
             const urlRedirect = searchParams?.get('redirect');
             let redirectPath = urlRedirect || localStorage.getItem('loginRedirect');
+
+            // Check if basic profile is incomplete for regular users
+            if (profile.role === 'user' && !checkBasicProfileCompleteness(profile)) {
+                // First-time users with incomplete profile go to profile page
+                localStorage.removeItem('loginRedirect');
+                router.replace('/escritorio/profile');
+                return;
+            }
 
             // If no redirect is set, determine default based on email or role
             if (!redirectPath) {
@@ -138,7 +158,7 @@ const AuthPage: React.FC = () => {
                 if (vehicle) setVehicleToFinance(vehicle);
             }).catch(err => {
                 console.error("Error fetching vehicle for AuthPage:", err);
-                setError("Error al cargar la información del auto.");
+                setError("No pudimos cargar la informacion del vehiculo. Por favor, intenta nuevamente o continua sin esta informacion.");
             }).finally(() => setIsLoadingVehicle(false));
         }
     }, [searchParams]);
@@ -148,6 +168,16 @@ const AuthPage: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                setError('Por favor, ingresa un correo electronico valido.');
+                setLoading(false);
+                return;
+            }
+
+            console.log('Validacion de email omitida - dejando que Supabase Auth maneje la existencia del usuario');
+
             // Set default redirect if not already set (will be adjusted after login based on role)
             if (!localStorage.getItem('loginRedirect')) {
                 localStorage.setItem('loginRedirect', '/escritorio');
@@ -155,14 +185,13 @@ const AuthPage: React.FC = () => {
 
             const source = sessionStorage.getItem('rfdm_source');
             const options: any = {
-                shouldCreateUser: true,
+                shouldCreateUser: false, // Don't create user - they must register first
             };
             if (source) {
                 options.data = { source };
             }
 
-            console.log('Sending OTP to:', email);
-            console.log('With options:', options);
+            console.log('Enviando OTP a:', email);
 
             const { data, error } = await supabase.auth.signInWithOtp({
                 email,
@@ -171,10 +200,49 @@ const AuthPage: React.FC = () => {
 
             if (error) {
                 console.error('OTP Send Error:', error);
-                throw error;
+
+                // Better error messages
+                if (error.message.includes('rate limit')) {
+                    throw new Error('Has solicitado demasiados codigos. Por favor espera unos minutos antes de intentar de nuevo.');
+                } else if (error.message.includes('Email not confirmed')) {
+                    throw new Error('Tu correo electronico no ha sido confirmado. Por favor verifica tu bandeja de entrada.');
+                } else if (error.message.includes('User not found') || error.message.includes('Signups not allowed') || error.message.includes('not allowed for otp')) {
+                    // User doesn't exist - show friendly error message
+                    console.log('Usuario no encontrado en Supabase Auth');
+                    setError(
+                        <div className="text-left">
+                            <p className="text-xl font-bold mb-3 text-blue-900">Este correo no esta registrado</p>
+                            <p className="text-sm text-blue-800 mb-4">
+                                <strong>{email}</strong> no tiene cuenta. Creala gratis en segundos!
+                            </p>
+                            <button
+                                onClick={() => {
+                                    const redirectUrl = `/registro${urlParamsString ? `?${urlParamsString}&email=${encodeURIComponent(email)}` : `?email=${encodeURIComponent(email)}`}`;
+                                    router.push(redirectUrl);
+                                }}
+                                className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                            >
+                                Crear mi cuenta
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setError(null);
+                                    setEmail('');
+                                }}
+                                className="w-full mt-2 text-blue-600 hover:text-blue-800 font-medium py-2"
+                            >
+                                Intentar con otro correo
+                            </button>
+                        </div>
+                    );
+                    setLoading(false);
+                    return;
+                } else {
+                    throw error;
+                }
             }
 
-            console.log('OTP sent successfully:', data);
+            console.log('OTP enviado exitosamente a:', email);
 
             // Track OTP request
             conversionTracking.trackAuth.otpRequested(email, {
@@ -185,17 +253,24 @@ const AuthPage: React.FC = () => {
             setView('verifyOtp');
         } catch (error: any) {
             console.error('Full Email Submit Error:', error);
-            setError(`No se pudo enviar el código. ${error.message || 'Revisa el correo o inténtalo de nuevo.'}`);
+            setError(error.message || `No pudimos enviar el codigo de verificacion. Por favor, verifica que tu correo electronico este escrito correctamente e intentalo nuevamente. Si el problema persiste, contacta con soporte.`);
         } finally {
             setLoading(false);
         }
     };
-    
+
     const handleOtpSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
         try {
+            // Validate OTP format (6 digits)
+            if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+                setError('El codigo debe tener 6 digitos numericos.');
+                setLoading(false);
+                return;
+            }
+
             const { data, error } = await supabase.auth.verifyOtp({
                 email,
                 token: otp,
@@ -204,7 +279,19 @@ const AuthPage: React.FC = () => {
 
             if (error) {
                 console.error('OTP Verification Error:', error);
-                throw error;
+
+                // Provide specific error messages based on error type
+                if (error.message.includes('expired') || error.message.includes('Token has expired')) {
+                    throw new Error('El codigo ha expirado. Por favor solicita un nuevo codigo.');
+                } else if (error.message.includes('invalid') || error.message.includes('Token')) {
+                    throw new Error('El codigo ingresado es incorrecto. Por favor verifica e intenta de nuevo.');
+                } else if (error.message.includes('not found') || error.message.includes('User not found')) {
+                    throw new Error('No se encontro una cuenta con este correo electronico. Por favor registrate primero.');
+                } else if (error.message.includes('too many')) {
+                    throw new Error('Demasiados intentos fallidos. Por favor espera unos minutos antes de intentar de nuevo.');
+                } else {
+                    throw error;
+                }
             }
 
             console.log('OTP Verification Success:', data);
@@ -215,7 +302,7 @@ const AuthPage: React.FC = () => {
 
             // Track registration completion ONLY for first-time users
             if (isNewUser) {
-                console.log('🎉 New user detected - tracking InitialRegistration');
+                console.log('New user detected - tracking InitialRegistration');
                 conversionTracking.trackAuth.otpVerified(data.user?.id || '', {
                     email: email,
                     vehicleId: searchParams?.get('ordencompra') || undefined
@@ -224,7 +311,7 @@ const AuthPage: React.FC = () => {
                 // Wait 500ms to ensure Facebook Pixel event is sent before redirect
                 await new Promise(resolve => setTimeout(resolve, 500));
             } else {
-                console.log('👤 Returning user - skipping InitialRegistration event');
+                console.log('Returning user - skipping InitialRegistration event');
             }
 
             // Redirect path will be determined by the useEffect above based on profile role
@@ -243,8 +330,8 @@ const AuthPage: React.FC = () => {
             router.replace(redirectPath);
 
         } catch (error: any) {
-             console.error('Full OTP Error:', error);
-             setError(`Código inválido o expirado. ${error.message || 'Por favor, inténtalo de nuevo.'}`);
+             console.error('Full OTP Verification Error:', error);
+             setError(error.message || 'El codigo que ingresaste es invalido o ha expirado. Por favor, solicita un nuevo codigo o verifica que lo hayas ingresado correctamente.');
         } finally {
             setLoading(false);
         }
@@ -267,12 +354,12 @@ const AuthPage: React.FC = () => {
             },
         });
         if (error) {
-            setError('No se pudo iniciar sesión con Google. Inténtalo de nuevo.');
+            setError('No pudimos completar el inicio de sesion con Google. Por favor, verifica que hayas autorizado el acceso y intenta nuevamente. Si el problema persiste, prueba iniciar sesion con tu correo electronico.');
             setLoading(false);
         }
         // The AuthHandler component will handle the redirect after successful login.
     };
-    
+
 
     if (session) {
         return (
@@ -281,25 +368,29 @@ const AuthPage: React.FC = () => {
             </div>
         );
     }
-    
-    
-    const formInputClasses = "block w-full rounded-lg border border-gray-300 bg-gray-50 py-3 px-4 text-gray-900 shadow-sm placeholder:text-gray-500 focus:ring-2 focus:ring-primary-500";
-    const submitButtonClasses = "flex w-full justify-center rounded-lg bg-primary-600 px-3 py-3 text-base font-bold text-white shadow-lg hover:bg-primary-700 transition-all duration-300 transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed";
+
+
+    const formInputClasses = "block w-full rounded-lg border border-gray-300 bg-gray-50 py-3 sm:py-4 px-4 text-base sm:text-lg text-gray-900 shadow-sm placeholder:text-gray-500 focus:ring-2 focus:ring-primary-500 min-h-[48px] sm:min-h-[52px]";
+    const submitButtonClasses = "flex w-full justify-center rounded-lg bg-primary-600 px-4 py-4 sm:py-5 text-base sm:text-lg font-bold text-white shadow-lg hover:bg-primary-700 transition-all duration-300 transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed min-h-[52px] sm:min-h-[56px] touch-manipulation";
 
     const renderSignInView = () => (
         <div className="space-y-8">
             <div className="text-left lg:text-center">
                 <Link href="/" className="inline-block mb-8 lg:hidden">
-                    <img src="/images/trefalogo.png" alt="TREFA Logo" className="h-8 w-auto mx-auto" />
+                    <img src="/images/trefalogo.png" alt="TREFA Logo" className="h-10 sm:h-12 w-auto mx-auto" />
                 </Link>
-                <h1 className="text-lg lg:text-2xl font-extrabold text-gray-900 tracking-tight lg:tracking-normal">Accede o crea tu cuenta</h1>
-                <p className="mt-3 text-gray-600">
-                    Usa tu cuenta de Google o ingresa tu correo para recibir un código de acceso seguro.
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-gray-900 tracking-tight lg:tracking-normal">Accede o crea tu cuenta</h1>
+                <p className="mt-3 text-base sm:text-lg text-gray-600">
+                    Usa tu cuenta de Google o ingresa tu correo para recibir un codigo de acceso seguro.
                 </p>
             </div>
             <div>
-                {error && <p className="text-red-600 text-sm p-3 rounded-md mb-4 text-center bg-red-50 border border-red-200">{error}</p>}
-                
+                {error && (
+                    <div className={`text-sm p-4 rounded-lg mb-4 ${typeof error === 'string' ? 'text-red-600 bg-red-50 border border-red-200' : 'text-blue-900 bg-blue-50 border border-blue-200'}`}>
+                        {typeof error === 'string' ? <p className="text-center">{error}</p> : error}
+                    </div>
+                )}
+
                 {isLoadingVehicle ? (
                     <VehicleSkeletonCard />
                 ) : vehicleToFinance ? (
@@ -308,11 +399,11 @@ const AuthPage: React.FC = () => {
 
                 <form onSubmit={handleEmailSubmit} className="space-y-4">
                     <div>
-                        <input id="email" placeholder="Correo electrónico" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={formInputClasses} />
+                        <input id="email" placeholder="Correo electronico" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={formInputClasses} />
                     </div>
                     <div>
                         <button type="submit" data-gtm-id="auth-otp-request-submit" disabled={loading} className={submitButtonClasses}>
-                            {loading ? 'Enviando...' : 'Recibir código de acceso'}
+                            {loading ? 'Enviando...' : 'Recibir codigo de acceso'}
                         </button>
                     </div>
                 </form>
@@ -322,7 +413,7 @@ const AuthPage: React.FC = () => {
                         <div className="w-full border-t border-gray-300" />
                     </div>
                     <div className="relative flex justify-center text-sm">
-                        <span className="bg-white px-2 text-gray-500">O continúa con</span>
+                        <span className="bg-white px-2 text-gray-500">O continua con</span>
                     </div>
                 </div>
 
@@ -331,11 +422,18 @@ const AuthPage: React.FC = () => {
                         type="button"
                         onClick={handleGoogleSignIn}
                         disabled={loading}
-                        className="flex w-full items-center justify-center gap-3 rounded-md border-2 border-gray-300 bg-white px-3 py-3 text-sm font-semibold text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                        className="flex w-full items-center justify-center gap-3 rounded-md border-2 border-gray-300 bg-white px-4 py-4 sm:py-5 text-base sm:text-lg font-semibold text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 transition-colors min-h-[52px] sm:min-h-[56px] touch-manipulation"
                     >
-                        <GoogleIcon className="h-5 w-5" />
-                        <span>Iniciar sesión con Google</span>
+                        <GoogleIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                        <span>Iniciar sesion con Google</span>
                     </button>
+                </div>
+
+                <div className="text-center text-sm text-gray-600 mt-6">
+                    No tienes cuenta?{' '}
+                    <Link href={`/registro${urlParamsString ? `?${urlParamsString}` : ''}`} className="text-primary-600 hover:underline font-medium">
+                        Registrate aqui
+                    </Link>
                 </div>
             </div>
         </div>
@@ -343,10 +441,14 @@ const AuthPage: React.FC = () => {
 
     const renderVerifyOtpView = () => (
          <div className="space-y-6 text-center">
-            <CheckCircleIcon className="w-12 h-12 text-green-500 mx-auto" />
-            <h2 className="mt-2 text-2xl font-bold text-gray-900">Verifica tu correo</h2>
-            <p className="text-gray-600">Hemos enviado un código de 6 dígitos a <strong>{email}</strong>. <br/><span className="mt-1 text-xs text-gray-500">(Revisa tu buzón de correo no deseado)</span></p>
-            {error && <p className="text-red-600 text-sm p-3 rounded-md mt-4 bg-red-50 border border-red-200">{error}</p>}
+            <CheckCircleIcon className="w-14 h-14 sm:w-16 sm:h-16 text-green-500 mx-auto" />
+            <h2 className="mt-2 text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Verifica tu correo</h2>
+            <p className="text-base sm:text-lg text-gray-600">Hemos enviado un codigo de 6 digitos a <strong>{email}</strong>. <br/><span className="mt-1 text-xs sm:text-sm text-gray-500">(Revisa tu buzon de correo no deseado)</span></p>
+            {error && (
+                <div className="text-red-600 text-sm sm:text-base p-3 rounded-md mt-4 bg-red-50 border border-red-200">
+                    {typeof error === 'string' ? error : error}
+                </div>
+            )}
             <div className="mt-4">
                  <form onSubmit={handleOtpSubmit} className="space-y-4">
                     <div>
@@ -359,7 +461,7 @@ const AuthPage: React.FC = () => {
                             value={otp}
                             onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
                             required
-                            className={`${formInputClasses} text-center tracking-[0.5em] font-mono text-2xl`}
+                            className={`${formInputClasses} text-center tracking-[0.5em] font-mono text-2xl sm:text-3xl`}
                         />
                     </div>
                     <div>
@@ -370,26 +472,26 @@ const AuthPage: React.FC = () => {
                  </form>
                  <button
                     onClick={() => { setView('signIn'); setError(null); }}
-                    className="mt-6 text-sm text-gray-500 hover:text-primary-600"
+                    className="mt-6 text-base sm:text-lg text-gray-500 hover:text-primary-600 min-h-[44px] touch-manipulation inline-flex items-center justify-center"
                  >
-                    Cambiar de correo 
+                    Cambiar de correo
                  </button>
             </div>
         </div>
     );
 
-     
+
 
     return (
      <div className="relative min-h-screen flex items-center justify-center p-4 bg-black">
         {/* Fullscreen Video Background */}
         <div className="absolute inset-0 w-full h-full">
-            <video 
+            <video
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${isVideoLoaded ? 'opacity-100' : 'opacity-0'}`}
-                src={proxyImage("https://cufm.mx/wp-content/uploads/2025/04/testomimos-02.mp4")} 
+                src={proxyImage("https://cufm.mx/wp-content/uploads/2025/04/testomimos-02.mp4")}
                 autoPlay
                 loop
-                muted 
+                muted
                 playsInline
                 onLoadedData={() => setIsVideoLoaded(true)}
             />
@@ -402,33 +504,33 @@ const AuthPage: React.FC = () => {
                 </Link>
 
                 <div className="flex-1 flex flex-col justify-center py-6">
-                    <h2 className="text-2xl font-bold text-gray-900 leading-tight">
+                    <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
                         Crea tu cuenta <span className="text-primary-600">gratis</span> y sin compromisos
                     </h2>
-                    <p className="mt-3 text-base text-gray-600">Al registrarte podrás:</p>
+                    <p className="mt-3 text-base lg:text-lg text-gray-600">Al registrarte podras:</p>
                                             <ul className="mt-6 space-y-4">
                                                 <li>
                                                     <div>
-                                                        <h3 className="font-semibold text-gray-900 text-sm">Guardar tus autos favoritos ❤️</h3>
-                                                        <p className="text-xs text-gray-600 mt-0.5">No pierdas de vista los autos que te interesan.</p>
+                                                        <h3 className="font-semibold text-gray-900 text-sm lg:text-base">Guardar tus autos favoritos</h3>
+                                                        <p className="text-xs lg:text-sm text-gray-600 mt-0.5">No pierdas de vista los autos que te interesan.</p>
                                                     </div>
                                                 </li>
                                                 <li>
                                                     <div>
-                                                        <h3 className="font-semibold text-gray-900 text-sm">Aplicar a financiamiento en línea 📄</h3>
-                                                        <p className="text-xs text-gray-600 mt-0.5">Inicia tu solicitud 100% digital.</p>
+                                                        <h3 className="font-semibold text-gray-900 text-sm lg:text-base">Aplicar a financiamiento en linea</h3>
+                                                        <p className="text-xs lg:text-sm text-gray-600 mt-0.5">Inicia tu solicitud 100% digital.</p>
                                                     </div>
                                                 </li>
                                                 <li>
                                                     <div>
-                                                        <h3 className="font-semibold text-gray-900 text-sm">Recibir notificaciones de precios 🔔</h3>
-                                                        <p className="text-xs text-gray-600 mt-0.5">Te avisaremos si el precio baja.</p>
+                                                        <h3 className="font-semibold text-gray-900 text-sm lg:text-base">Recibir notificaciones de precios</h3>
+                                                        <p className="text-xs lg:text-sm text-gray-600 mt-0.5">Te avisaremos si el precio baja.</p>
                                                     </div>
                                                 </li>
                                                 <li>
                                                     <div>
-                                                        <h3 className="font-semibold text-gray-900 text-sm">Agendar visitas y pruebas de manejo 🗓️</h3>
-                                                        <p className="text-xs text-gray-600 mt-0.5">Coordina tu visita de forma fácil.</p>
+                                                        <h3 className="font-semibold text-gray-900 text-sm lg:text-base">Agendar visitas y pruebas de manejo</h3>
+                                                        <p className="text-xs lg:text-sm text-gray-600 mt-0.5">Coordina tu visita de forma facil.</p>
                                                     </div>
                                                 </li>
                                             </ul>                </div>
@@ -443,11 +545,11 @@ const AuthPage: React.FC = () => {
                             />
                         ))}
                     </div>
-                    <span className="font-medium text-gray-700 text-xs">Únete a cientos de clientes satisfechos</span>
+                    <span className="font-medium text-gray-700 text-xs">Unete a cientos de clientes satisfechos</span>
                 </div>
             </div>
 
-            <div className="bg-white p-8 md:p-12 flex flex-col justify-center">
+            <div className="bg-white p-6 sm:p-8 md:p-12 flex flex-col justify-center">
                 {view === 'signIn' ? renderSignInView() : renderVerifyOtpView()}
             </div>
         </div>

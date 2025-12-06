@@ -12,6 +12,7 @@ interface AuthContextType {
     loading: boolean;
     isAdmin: boolean;
     isSales: boolean;
+    isMarketing: boolean;
     signOut: () => Promise<void>;
     reloadProfile: () => Promise<Profile | null>;
 }
@@ -42,24 +43,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 .single();
 
             if (error && error.code !== 'PGRST116') {
-                console.error('❌ Error reloading profile:', error.message);
+                console.error('[AuthContext] Error reloading profile:', error.message);
                 setProfile(null);
                 return null;
             }
 
             if (data) {
-                console.log('✅ Profile reloaded from Supabase and cached.');
-                setProfile(data as Profile);
-                sessionStorage.setItem('userProfile', JSON.stringify(data));
-                return data as Profile;
+                // Validate role before caching
+                if (data.role && ['user', 'sales', 'admin', 'marketing'].includes(data.role)) {
+                    console.log('[AuthContext] Profile reloaded from Supabase with role:', data.role);
+                    setProfile(data as Profile);
+                    sessionStorage.setItem('userProfile', JSON.stringify(data));
+                    return data as Profile;
+                } else {
+                    console.error('[AuthContext] Invalid role in profile data:', data.role);
+                    setProfile(null);
+                    sessionStorage.removeItem('userProfile');
+                    return null;
+                }
             }
 
             // If no data, ensure profile is cleared
             setProfile(null);
             return null;
 
-        } catch (e: any) {
-            console.error("❌ Unexpected error in reloadProfile:", e.message);
+        } catch (e: unknown) {
+            const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+            console.error("[AuthContext] Unexpected error in reloadProfile:", errorMessage);
             setProfile(null);
             return null;
         }
@@ -67,11 +77,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const signOut = async () => {
         try {
-            console.log('🔒 Signing out...');
+            console.log('[AuthContext] Signing out...');
             const { error } = await supabase.auth.signOut();
 
             if (error) {
-                console.error('❌ Error signing out:', error);
+                console.error('[AuthContext] Error signing out:', error);
                 // Force local logout even if server signout fails
             }
 
@@ -81,9 +91,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setProfile(null);
             sessionStorage.removeItem('userProfile');
             localStorage.clear(); // Clear all localStorage items
-            console.log('✅ Signed out successfully');
+            console.log('[AuthContext] Signed out successfully');
         } catch (error) {
-            console.error('❌ Unexpected error during sign out:', error);
+            console.error('[AuthContext] Unexpected error during sign out:', error);
             // Force local logout even on unexpected errors
             setSession(null);
             setUser(null);
@@ -99,15 +109,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const cachedProfile = sessionStorage.getItem('userProfile');
             if (cachedProfile) {
                 const parsed = JSON.parse(cachedProfile);
-                // Basic validation to ensure the cached profile belongs to the current user
-                if (parsed.id === userId) {
-                    console.log('✅ Profile loaded from sessionStorage cache.');
+                // Enhanced validation: check user ID and role validity
+                if (parsed.id === userId && parsed.role && ['user', 'sales', 'admin', 'marketing'].includes(parsed.role)) {
+                    console.log('[AuthContext] Profile loaded from sessionStorage cache with role:', parsed.role);
                     setProfile(parsed);
                     return parsed;
+                } else {
+                    // Invalid cache - clear it
+                    console.warn('[AuthContext] Invalid cached profile detected, clearing cache');
+                    sessionStorage.removeItem('userProfile');
                 }
             }
         } catch (e) {
-            console.warn("Could not read profile from sessionStorage.", e);
+            console.warn("[AuthContext] Could not read profile from sessionStorage.", e);
+            sessionStorage.removeItem('userProfile'); // Clear corrupted cache
         }
 
         // If not in cache, fetch from Supabase
@@ -119,25 +134,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 .single();
 
             if (error && error.code !== 'PGRST116') {
-                console.error('❌ Error fetching profile:', error.message);
+                console.error('[AuthContext] Error fetching profile:', error.message);
                 setProfile(null);
                 sessionStorage.removeItem('userProfile');
                 return null;
             }
 
             if (data) {
-                console.log('✅ Profile fetched from Supabase and cached.');
-                setProfile(data as Profile);
-                sessionStorage.setItem('userProfile', JSON.stringify(data));
-                return data as Profile;
+                // Validate role before caching
+                if (data.role && ['user', 'sales', 'admin', 'marketing'].includes(data.role)) {
+                    console.log('[AuthContext] Profile fetched from Supabase with role:', data.role);
+                    setProfile(data as Profile);
+                    sessionStorage.setItem('userProfile', JSON.stringify(data));
+                    return data as Profile;
+                } else {
+                    console.error('[AuthContext] Invalid role in fetched profile:', data.role);
+                    setProfile(null);
+                    sessionStorage.removeItem('userProfile');
+                    return null;
+                }
             }
 
             // Profile doesn't exist (PGRST116 error), create it
-            console.log('⚠️ Profile not found, creating new profile...');
+            console.log('[AuthContext] Profile not found, creating new profile...');
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) {
-                console.error('❌ Cannot create profile: user not found');
+                console.error('[AuthContext] Cannot create profile: user not found');
                 return null;
             }
 
@@ -205,18 +228,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 .single();
 
             if (createError) {
-                console.error('❌ Error creating profile:', createError.message);
+                console.error('[AuthContext] Error creating profile:', createError.message);
                 setProfile(null);
                 return null;
             }
 
-            console.log(`✅ Profile created successfully with role: ${role}`);
+            console.log(`[AuthContext] Profile created successfully with role: ${role}`);
             setProfile(createdProfile as Profile);
             sessionStorage.setItem('userProfile', JSON.stringify(createdProfile));
             return createdProfile as Profile;
 
-        } catch (e: any) {
-            console.error("❌ Unexpected error in fetchProfile:", e.message);
+        } catch (e: unknown) {
+            const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+            console.error("[AuthContext] Unexpected error in fetchProfile:", errorMessage);
             setProfile(null);
             sessionStorage.removeItem('userProfile');
             return null;
@@ -226,69 +250,140 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     useEffect(() => {
         setLoading(true);
 
+        // Safety timeout to prevent eternal loading states
+        const loadingTimeout = setTimeout(() => {
+            console.warn('[AuthContext] Loading timeout reached - forcing loading to false');
+            setLoading(false);
+        }, 10000); // 10 second timeout
+
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, session) => {
-                if (event === 'INITIAL_SESSION') {
-                    setSession(session);
-                    const currentUser = session?.user ?? null;
-                    setUser(currentUser);
-                    if (currentUser) {
-                        await fetchProfile(currentUser.id);
-                    } else {
+                try {
+                    console.log('[AuthContext] Auth state change:', event);
+
+                    if (event === 'INITIAL_SESSION') {
+                        setSession(session);
+                        const currentUser = session?.user ?? null;
+                        setUser(currentUser);
+                        if (currentUser) {
+                            await fetchProfile(currentUser.id);
+                        } else {
+                            setProfile(null);
+                            sessionStorage.removeItem('userProfile');
+                        }
+                        clearTimeout(loadingTimeout); // Clear timeout on success
+                        setLoading(false);
+                    } else if (event === 'SIGNED_IN') {
+                        console.log('[AuthContext] SIGNED_IN event - checking if profile needs refresh');
+                        setSession(session);
+                        const currentUser = session?.user ?? null;
+                        setUser(currentUser);
+                        if (currentUser) {
+                            // Check if we already have a valid cached profile with correct role
+                            const cachedProfile = sessionStorage.getItem('userProfile');
+                            let needsRefresh = true;
+
+                            if (cachedProfile) {
+                                try {
+                                    const parsed = JSON.parse(cachedProfile);
+                                    if (parsed.id === currentUser.id && parsed.role && ['user', 'sales', 'admin', 'marketing'].includes(parsed.role)) {
+                                        console.log('[AuthContext] Valid cached profile exists with role:', parsed.role, '- skipping refresh');
+                                        needsRefresh = false;
+                                        setProfile(parsed);
+                                    }
+                                } catch (e) {
+                                    console.warn('[AuthContext] Failed to parse cached profile');
+                                }
+                            }
+
+                            if (needsRefresh) {
+                                console.log('[AuthContext] Refreshing profile from database');
+                                // Update last_sign_in_at in profiles table
+                                await supabase
+                                    .from('profiles')
+                                    .update({ last_sign_in_at: new Date().toISOString() })
+                                    .eq('id', currentUser.id);
+                                await fetchProfile(currentUser.id);
+                            }
+                        }
+                    } else if (event === 'SIGNED_OUT') {
+                        setSession(null);
+                        setUser(null);
                         setProfile(null);
                         sessionStorage.removeItem('userProfile');
                     }
+                } catch (error) {
+                    console.error('[AuthContext] Error in auth state change handler:', error);
+                } finally {
+                    // Ensure loading is always set to false eventually
+                    clearTimeout(loadingTimeout);
                     setLoading(false);
-                } else if (event === 'SIGNED_IN') {
-                    setSession(session);
-                    const currentUser = session?.user ?? null;
-                    setUser(currentUser);
-                    if (currentUser) {
-                        await fetchProfile(currentUser.id);
-                    }
-                } else if (event === 'SIGNED_OUT') {
-                    setSession(null);
-                    setUser(null);
-                    setProfile(null);
-                    sessionStorage.removeItem('userProfile');
                 }
             }
         );
 
         return () => {
+            clearTimeout(loadingTimeout);
             subscription?.unsubscribe();
         };
     }, [fetchProfile]); // fetchProfile is now stable (no dependencies)
 
     useEffect(() => {
-        if (profile && profile.role === 'user' && !profile.asesor_asignado_id) {
-            const assignAgent = async () => {
-                try {
-                    const { data: agentId, error: rpcError } = await supabase.rpc('get_next_sales_agent');
-                    if (rpcError) {
-                        console.error('Error assigning sales agent:', rpcError);
-                    } else if (agentId) {
-                        const { error: updateError } = await supabase
-                            .from('profiles')
-                            .update({ asesor_asignado_id: agentId })
-                            .eq('id', profile.id);
-                        if (updateError) {
-                            console.error('Error updating profile with agent ID:', updateError);
-                        } else {
-                            // Reload profile to get the latest data and update cache
-                            await reloadProfile();
-                        }
-                    }
-                } catch (e) {
-                    console.error("Unexpected error in agent assignment effect:", e);
-                }
-            };
-            assignAgent();
+        // Only run once when profile is first loaded and needs agent assignment
+        // Use ref to track if assignment is in progress or already done
+        const profileId = profile?.id;
+        const profileRole = profile?.role;
+        const profileAsesorId = profile?.asesor_asignado_id;
+
+        // Skip if no profile, already has advisor, or not a user
+        if (!profile || profileRole !== 'user' || profileAsesorId) {
+            return;
         }
-    }, [profile, reloadProfile]);
+
+        // Use a flag in sessionStorage to prevent duplicate assignments
+        const assignmentKey = `advisor_assignment_${profileId}`;
+        if (sessionStorage.getItem(assignmentKey)) {
+            return; // Already attempted assignment for this profile
+        }
+
+        const assignAgent = async () => {
+            try {
+                // Mark that we're attempting assignment
+                sessionStorage.setItem(assignmentKey, 'in_progress');
+
+                const { data: agentId, error: rpcError } = await supabase.rpc('get_next_sales_agent');
+                if (rpcError) {
+                    console.error('[AuthContext] Error assigning sales agent:', rpcError);
+                    sessionStorage.removeItem(assignmentKey); // Allow retry on error
+                } else if (agentId) {
+                    const { error: updateError } = await supabase
+                        .from('profiles')
+                        .update({ asesor_asignado_id: agentId })
+                        .eq('id', profileId);
+                    if (updateError) {
+                        console.error('[AuthContext] Error updating profile with agent ID:', updateError);
+                        sessionStorage.removeItem(assignmentKey); // Allow retry on error
+                    } else {
+                        // Update profile locally without triggering reloadProfile to avoid loops
+                        const updatedProfile = { ...profile, asesor_asignado_id: agentId };
+                        // Update sessionStorage BEFORE updating state to prevent race conditions
+                        sessionStorage.setItem('userProfile', JSON.stringify(updatedProfile));
+                        setProfile(updatedProfile);
+                        sessionStorage.setItem(assignmentKey, 'completed');
+                        console.log('[AuthContext] Agent assigned and profile cache updated');
+                    }
+                }
+            } catch (e) {
+                console.error("[AuthContext] Unexpected error in agent assignment effect:", e);
+                sessionStorage.removeItem(assignmentKey); // Allow retry on error
+            }
+        };
+        assignAgent();
+    }, [profile?.id, profile?.role, profile?.asesor_asignado_id]); // Only depend on specific primitive values
 
     const isAdmin = profile?.role === 'admin';
     const isSales = profile?.role === 'sales';
+    const isMarketing = profile?.role === 'marketing';
 
     const value = {
         session,
@@ -297,6 +392,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         loading,
         isAdmin,
         isSales,
+        isMarketing,
         signOut,
         reloadProfile
     };
