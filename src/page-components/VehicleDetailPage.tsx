@@ -37,6 +37,7 @@ import { useAuth } from '../context/AuthContext';
 import InspectionReport from '../components/InspectionReport';
 import { InspectionService } from '../services/InspectionService';
 import { FavoritesService } from '../services/FavoritesService';
+import { facebookPixelService } from '../services/FacebookPixelService';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import AuthBenefitsBlock from '../components/AuthBenefitsBlock';
 import TestimonialCta from '../components/TestimonialCta';
@@ -44,6 +45,8 @@ import SimpleVehicleCard from '../components/SimpleVehicleCard';
 import VehicleGridCard from '../components/VehicleGridCard';
 import ShareButtons from '../components/ShareButtons';
 
+// Import finance calculator utilities
+import { calculateMonthlyPayment, calculateTotalPaid, getValidTermOptions, getMaxTermByYear } from '../utils/financeCalculator';
 
 // =================================================================================
 // TYPE DEFINITIONS
@@ -67,22 +70,10 @@ type MediaItem = {
 const TABS = [
   { id: 'specs', label: 'Ficha', icon: FileTextIcon },
   { id: 'calculator', label: 'Calculadora', icon: CalculatorIcon },
-  { id: 'inspection', label: 'Inspección', icon: ShieldCheckIcon },
+  { id: 'inspection', label: 'Inspeccion', icon: ShieldCheckIcon },
 ];
 
 const cardStyle = "bg-white p-3 sm:p-4 lg:p-6 rounded-xl lg:rounded-2xl shadow-sm border border-gray-200/80";
-
-const calculateMonthlyPayment = (price: number, dp: number, term: number, annualRate: number): number => {
-    const loanAmount = price - dp;
-    if (loanAmount <= 0 || term <= 0 || !isFinite(loanAmount)) return 0;
-    const monthlyRate = annualRate / 12 / 100;
-    if (monthlyRate === 0) return loanAmount / term;
-    const n = term;
-    const numerator = loanAmount * monthlyRate * Math.pow(1 + monthlyRate, n);
-    const denominator = Math.pow(1 + monthlyRate, n) - 1;
-    if (denominator === 0) return 0;
-    return numerator / denominator;
-};
 
 // =================================================================================
 // SUB-COMPONENTS
@@ -100,6 +91,8 @@ const MediaGallery: React.FC<{
     const activeThumbnailRef = useRef<HTMLButtonElement>(null);
 
     const activeIndex = useMemo(() => mediaItems.findIndex(item => item.src === activeMedia?.src), [mediaItems, activeMedia]);
+
+    const [isDragging, setIsDragging] = useState(false);
 
     const goToIndex = useCallback((index: number) => {
         const newIndex = (index + mediaItems.length) % mediaItems.length;
@@ -119,6 +112,10 @@ const MediaGallery: React.FC<{
         });
     }, [activeIndex]);
 
+    const handleDragStart = () => {
+        setIsDragging(true);
+    };
+
     const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
         const swipeThreshold = 50;
         if (info.offset.x > swipeThreshold) {
@@ -126,6 +123,8 @@ const MediaGallery: React.FC<{
         } else if (info.offset.x < -swipeThreshold) {
             goToNext();
         }
+        // Reset dragging state after a short delay to prevent click events
+        setTimeout(() => setIsDragging(false), 100);
     };
 
     const bonusPromo = useMemo(() => {
@@ -164,6 +163,7 @@ const MediaGallery: React.FC<{
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.1}
+            onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             dragListener={!isEmbed} // Disable drag on iframes
         >
@@ -181,11 +181,17 @@ const MediaGallery: React.FC<{
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
+                    onClick={(e) => {
+                        // Only open lightbox if clicking on the image itself, not on buttons or while dragging
+                        const target = e.target as HTMLElement;
+                        const isButton = target.closest('button');
+                        if (!isButton && !isDragging && activeMedia?.type === 'image') {
+                            handleOpenLightbox();
+                        }
+                    }}
                 >
                     {activeMedia?.type === 'image' && (
-                        <button onClick={handleOpenLightbox} className="w-full h-full">
-                            <LazyImage src={activeMedia.src} alt="Vista principal del auto" className="w-full h-full" objectFit="cover" />
-                        </button>
+                        <LazyImage src={activeMedia.src} alt="Vista principal del auto" className="w-full h-full cursor-pointer" objectFit="cover" />
                     )}
                     {activeMedia?.type === 'video' && (
                         isEmbed ? (
@@ -203,10 +209,10 @@ const MediaGallery: React.FC<{
 
             {mediaItems.length > 1 && (
                 <>
-                    <button onClick={goToPrev} className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-black/30 text-white p-2 rounded-full backdrop-blur-sm hover:bg-black/50 transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center" aria-label="Previous image">
+                    <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); goToPrev(); }} className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-black/30 text-white p-2 rounded-full backdrop-blur-sm hover:bg-black/50 transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center" aria-label="Previous image">
                         <ChevronLeftIcon className="w-8 h-8" />
                     </button>
-                    <button onClick={goToNext} className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-black/30 text-white p-2 rounded-full backdrop-blur-sm hover:bg-black/50 transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center" aria-label="Next image">
+                    <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); goToNext(); }} className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-black/30 text-white p-2 rounded-full backdrop-blur-sm hover:bg-black/50 transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center" aria-label="Next image">
                         <ChevronRightIcon className="w-8 h-8" />
                     </button>
                 </>
@@ -231,7 +237,8 @@ const TitlePriceActionsBlock: React.FC<{
     isToggling: boolean;
     onToggleFavorite: () => void;
     onFinancingClick: () => void;
-}> = React.memo(({ vehicle, financeData, favoriteCount, isFavorite, isToggling, onToggleFavorite, onFinancingClick }) => (
+    onWhatsAppClick?: () => void;
+}> = React.memo(({ vehicle, financeData, favoriteCount, isFavorite, isToggling, onToggleFavorite, onFinancingClick, onWhatsAppClick }) => (
     <div className={cardStyle}>
         <div>
             {vehicle.ordencompra && (
@@ -253,17 +260,25 @@ const TitlePriceActionsBlock: React.FC<{
         {vehicle.promociones && vehicle.promociones.length > 0 && (
             <div className="mt-4">
                 <sup className="text-xs lg:text-sm font-semibold italic text-gray-700">
-                    <i>¡{vehicle.promociones.map(p => formatPromotion(p)).join('! + ¡')}!</i>
+                    <i>{vehicle.promociones.map(p => formatPromotion(p)).join('! + ')}!</i>
                 </sup>
             </div>
         )}
 
         <div className="mt-4 sm:mt-6 flex flex-col gap-2 sm:gap-3">
             <button data-gtm-id="detail-page-finance" onClick={onFinancingClick} className="w-full text-center bg-primary-600 text-white font-bold py-2.5 sm:py-3.5 px-4 sm:px-6 rounded-lg hover:bg-primary-700 text-sm sm:text-base lg:text-lg shadow-md transition-all"> Comprar con financiamiento </button>
-            <a href={`https://wa.me/5218187049079?text=${encodeURIComponent(`Hola, me interesa el ${vehicle.titulo}`)}`} target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-green-500 text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg hover:bg-green-600 text-sm sm:text-base lg:text-lg shadow-md transition-all"> <WhatsAppIcon className="w-5 h-5 sm:w-6 sm:h-6" /> Contactar por WhatsApp </a>
-            <button data-gtm-id="detail-page-favorite" onClick={onToggleFavorite} disabled={isToggling} className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-white text-gray-700 font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg hover:bg-gray-100 border-2 border-gray-300 text-sm sm:text-base lg:text-lg shadow-sm transition-all disabled:opacity-50"> {isFavorite ? <SolidHeartIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" /> : <HeartIcon className="w-5 h-5 sm:w-6 sm:h-6" />} {isFavorite ? 'Guardado' : 'Añadir a favoritos'} ({favoriteCount}) </button>
+            <a
+                href={`https://wa.me/5218187049079?text=${encodeURIComponent(`Hola, me interesa el ${vehicle.titulo}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={onWhatsAppClick}
+                className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-green-500 text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg hover:bg-green-600 text-sm sm:text-base lg:text-lg shadow-md transition-all"
+            >
+                <WhatsAppIcon className="w-5 h-5 sm:w-6 sm:h-6" /> Contactar por WhatsApp
+            </a>
+            <button data-gtm-id="detail-page-favorite" onClick={onToggleFavorite} disabled={isToggling} className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-white text-gray-700 font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg hover:bg-gray-100 border-2 border-gray-300 text-sm sm:text-base lg:text-lg shadow-sm transition-all disabled:opacity-50"> {isFavorite ? <SolidHeartIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" /> : <HeartIcon className="w-5 h-5 sm:w-6 sm:h-6" />} {isFavorite ? 'Guardado' : 'Anadir a favoritos'} ({favoriteCount}) </button>
         </div>
-        <ShareButtons url={window.location.href} title={vehicle.titulo} className="mt-6 justify-center" />
+        <ShareButtons url={typeof window !== 'undefined' ? window.location.href : ''} title={vehicle.titulo} className="mt-6 justify-center" />
     </div>
 ));
 
@@ -286,7 +301,7 @@ const CharacteristicsSection: React.FC<{ vehicle: WordPressVehicle; inspectionDa
         }
 
         const pastOwners = inspectionData?.past_owners ?? 1;
-        list.push({ icon: UsersIcon, text: `${pastOwners} ${pastOwners === 1 ? 'Dueño' : 'Dueños'}` });
+        list.push({ icon: UsersIcon, text: `${pastOwners} ${pastOwners === 1 ? 'Dueno' : 'Duenos'}` });
 
         if (vehicle.sucursal?.length > 0) list.push({ icon: MapPin, text: `Sucursal: ${vehicle.sucursal.join(', ')}` });
 
@@ -295,7 +310,7 @@ const CharacteristicsSection: React.FC<{ vehicle: WordPressVehicle; inspectionDa
 
     return (
         <div>
-            <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-6 pt-2.5">Características</h3>
+            <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-6 pt-2.5">Caracteristicas</h3>
             <div className="grid grid-cols-1 gap-4">
                 {features.map((feature, index) => (
                     <div key={index} className="flex items-center gap-3">
@@ -312,7 +327,7 @@ const FinanceHighlightItem: React.FC<{ title: string; subtitle: string; downPaym
     <div className={`p-3 md:p-4 rounded-lg ${isRecommended ? 'bg-primary-50 border-primary-200' : 'bg-gray-100 border-gray-200'} border`}>
         <p className={`font-bold text-sm md:text-base ${isRecommended ? 'text-primary-800' : 'text-gray-800'}`}>{title}</p>
         <p className="text-xs text-gray-500">{subtitle}</p>
-        <p className="text-xs font-semibold text-orange-600 mt-1">Plazo: {term} meses | Tasa: 12.99%</p>
+        <p className="text-xs font-semibold text-orange-600 mt-1">Plazo: {term} meses | Tasa: 17%</p>
         <div className="mt-3 space-y-2 text-sm text-gray-800">
             <div className="flex justify-between"><span>Enganche:</span> <span className="font-semibold">{downPayment}</span></div>
             <div className="flex justify-between"><span>Mensualidad Aprox:</span> <span className="font-semibold">{monthlyPayment}</span></div>
@@ -324,20 +339,21 @@ const FinancingHighlights: React.FC<{ vehicle: WordPressVehicle }> = React.memo(
     const financing = useMemo(() => {
         const price = vehicle.precio;
         const term = vehicle.plazomax || 60;
-        const rate = 12.99;
+        const rate = 17.0; // Correct interest rate per calculator-prompt.txt
 
-        const engancheMinimo = vehicle.enganchemin > 0 ? vehicle.enganchemin : price * 0.15;
-        const mensualidadMinima = vehicle.mensualidad_minima > 0 
-            ? vehicle.mensualidad_minima 
-            : calculateMonthlyPayment(price, engancheMinimo, term, rate);
+        // Use API values if available, otherwise calculate with correct defaults
+        const engancheMinimo = vehicle.enganchemin > 0 ? vehicle.enganchemin : price * 0.25; // 25% min
+        const mensualidadMinima = vehicle.mensualidad_minima > 0
+            ? vehicle.mensualidad_minima
+            : calculateMonthlyPayment(price, engancheMinimo, term, rate, true); // Include insurance
 
         const engancheRecomendado = vehicle.enganche_recomendado > 0
             ? vehicle.enganche_recomendado
-            : price * 0.35;
+            : price * 0.40; // 40% recommended
         const mensualidadRecomendada = vehicle.mensualidad_recomendada > 0
             ? vehicle.mensualidad_recomendada
-            : calculateMonthlyPayment(price, engancheRecomendado, term, rate);
-        
+            : calculateMonthlyPayment(price, engancheRecomendado, term, rate, true); // Include insurance
+
         return { engancheMinimo, mensualidadMinima, engancheRecomendado, mensualidadRecomendada, term };
     }, [vehicle]);
 
@@ -346,21 +362,25 @@ const FinancingHighlights: React.FC<{ vehicle: WordPressVehicle }> = React.memo(
             <h2 className="text-xl md:text-2xl font-black text-gray-900 mb-3 md:mb-4">Escenarios de Financiamiento</h2>
             <div className="space-y-3 md:space-y-4 text-gray-700 text-sm md:text-base">
                 <FinanceHighlightItem
-                    title="Dejando un Enganche Mínimo"
-                    subtitle="*Incluye seguro y otros cargos"
+                    title="Dejando un Enganche Minimo"
+                    subtitle="(25% del valor del auto)*"
                     downPayment={formatPrice(financing.engancheMinimo)}
                     monthlyPayment={formatPrice(financing.mensualidadMinima)}
                     term={financing.term}
                 />
                 <FinanceHighlightItem
                     title="Dejando un Enganche Recomendado"
-                    subtitle="(35% del valor del auto)"
+                    subtitle="(40% del valor del auto)*"
                     downPayment={formatPrice(financing.engancheRecomendado)}
                     monthlyPayment={formatPrice(financing.mensualidadRecomendada)}
                     term={financing.term}
                     isRecommended
                 />
             </div>
+            <p className="text-xs text-gray-500 mt-4">
+                *Porcentajes aproximados, pueden variar segun ano del vehiculo.<br/>
+                Tasa de interes puede variar segun el banco. Incluye seguro con valor del 5% del auto (amortizado mensualmente).
+            </p>
         </div>
     );
 });
@@ -383,7 +403,7 @@ const DescriptionSection: React.FC<{ content: string }> = React.memo(({ content 
     if (!content) return null;
     return (
         <div className={cardStyle}>
-            <h2 className="text-xl sm:text-2xl font-black text-gray-900 mb-4">Descripción del Auto</h2>
+            <h2 className="text-xl sm:text-2xl font-black text-gray-900 mb-4">Descripcion del Auto</h2>
             <div className="prose prose-custom max-w-none text-gray-600" dangerouslySetInnerHTML={{ __html: content }} />
         </div>
     );
@@ -413,14 +433,14 @@ const SimilarVehicles: React.FC<{ vehicle: WordPressVehicle; allVehicles: WordPr
         <>
             {/* Mobile Carousel */}
             <div className="lg:hidden">
-                <VehicleCarousel vehicles={similarVehicles} title="También te puede interesar..." />
+                <VehicleCarousel vehicles={similarVehicles} title="Tambien te puede interesar" />
             </div>
 
             {/* Desktop Grid */}
-            <div className="hidden lg:block bg-gray-50 py-12">
+            <div className="hidden lg:block py-12 bg-muted/30">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h2 className="text-2xl lg:text-3xl font-black text-gray-900 mb-8">También te puede interesar...</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <h2 className="text-2xl font-bold text-foreground tracking-tight mb-6">Tambien te puede interesar</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                         {similarVehicles.slice(0, 4).map(v => (
                             <SimpleVehicleCard key={v.id} vehicle={v} />
                         ))}
@@ -433,10 +453,11 @@ const SimilarVehicles: React.FC<{ vehicle: WordPressVehicle; allVehicles: WordPr
 
 const PopularityBadge: React.FC<{ viewCount: number }> = React.memo(({ viewCount }) => {
     if (viewCount < 1000) return null;
-    let emojis = '🔥';
-    if (viewCount >= 2000) emojis += '🔥';
-    if (viewCount >= 3000) emojis += '🔥';
-    return <span className="text-xl" role="img" aria-label="Popular">{emojis}</span>;
+    let emojis = '';
+    if (viewCount >= 1000) emojis += '*';
+    if (viewCount >= 2000) emojis += '*';
+    if (viewCount >= 3000) emojis += '*';
+    return <span className="text-xl text-orange-500 font-bold" role="img" aria-label="Popular">{emojis}</span>;
 });
 
 const InspectionSummary: React.FC<{ data: InspectionReportData; onSeeFullReport: () => void }> = React.memo(({ data, onSeeFullReport }) => {
@@ -461,7 +482,7 @@ const InspectionSummary: React.FC<{ data: InspectionReportData; onSeeFullReport:
                 ))}
             </ul>
             <button onClick={onSeeFullReport} className="text-sm font-semibold text-primary-600 hover:underline mt-3 w-full text-left">
-                Ver reporte de inspección completo &rarr;
+                Ver reporte de inspeccion completo &rarr;
             </button>
         </div>
     );
@@ -532,7 +553,7 @@ const VehicleDetailLocation: React.FC<{ vehicle: WordPressVehicle }> = React.mem
         rel="noopener noreferrer"
         className="inline-block mt-3 text-sm text-primary-600 hover:text-primary-700 font-semibold hover:underline"
       >
-        Ver en Google Maps →
+        Ver en Google Maps
       </a>
     </div>
   );
@@ -540,7 +561,7 @@ const VehicleDetailLocation: React.FC<{ vehicle: WordPressVehicle }> = React.mem
 
 const TabsSection: React.FC<{
     activeTab: 'specs' | 'calculator' | 'inspection';
-    setActiveTab: (tab: 'specs' | 'calculator' | 'inspection') => void;
+    onTabChange: (tab: 'specs' | 'calculator' | 'inspection') => void;
     isAdmin: boolean;
     vehicleId: number;
     specifications: { label: string; value: string | number }[];
@@ -552,15 +573,15 @@ const TabsSection: React.FC<{
     inspectionLoading: boolean;
     inspectionData: InspectionReportData | null;
     onSeeFullReport: () => void;
-}> = React.memo(({ activeTab, setActiveTab, isAdmin, vehicleId, specifications, financeData, downPayment, setDownPayment, loanTerm, setLoanTerm, inspectionLoading, inspectionData, onSeeFullReport }) => (
+}> = React.memo(({ activeTab, onTabChange, isAdmin, vehicleId, specifications, financeData, downPayment, setDownPayment, loanTerm, setLoanTerm, inspectionLoading, inspectionData, onSeeFullReport }) => (
     <div className={cardStyle}>
         <div className="flex border-b">
             {TABS.map(tab => (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-colors ${activeTab === tab.id ? 'border-b-2 border-trefa-dark-blue text-trefa-dark-blue' : 'text-gray-500 hover:text-gray-800'}`}>
+                <button key={tab.id} onClick={() => onTabChange(tab.id as any)} className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-colors ${activeTab === tab.id ? 'border-b-2 border-trefa-dark-blue text-trefa-dark-blue' : 'text-gray-500 hover:text-gray-800'}`}>
                     <tab.icon className="w-4 h-4" /> {tab.label}
                 </button>
             ))}
-            {isAdmin && vehicleId && <Link href={`/escritorio/admin/inspections/${vehicleId}`} className="ml-auto px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-md flex items-center gap-2"><EditIcon className="w-4 h-4"/> Editar</Link>}
+            {isAdmin && <Link href={`/escritorio/admin/inspections/${vehicleId}`} className="ml-auto px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-md flex items-center gap-2"><EditIcon className="w-4 h-4"/> Editar</Link>}
         </div>
 
         <div className="mt-6">
@@ -568,8 +589,12 @@ const TabsSection: React.FC<{
             {activeTab === 'calculator' && financeData && (
                 <div className="space-y-6">
                     <div>
-                        <label htmlFor="downPayment" className="block text-sm font-medium text-gray-700">Enganche: <span className="font-bold">{formatPrice(downPayment)}</span></label>
-                        <input id="downPayment" type="range" min={financeData.minDownPayment} max={financeData.maxDownPayment} value={downPayment} onChange={e => setDownPayment(Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600" />
+                        <label htmlFor="downPayment" className="block text-sm font-medium text-gray-700 mb-2">Enganche: <span className="font-bold">{formatPrice(downPayment)}</span></label>
+                        <input id="downPayment" type="range" min={financeData.minDownPayment} max={financeData.maxDownPayment} step="5000" value={downPayment} onChange={e => setDownPayment(Number(e.target.value))} className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary-600 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-md" />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>{formatPrice(financeData.minDownPayment)}</span>
+                            <span>{formatPrice(financeData.maxDownPayment)}</span>
+                        </div>
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Plazo (meses):</label>
@@ -581,18 +606,19 @@ const TabsSection: React.FC<{
                     </div>
                     <div className="mt-4 pt-4 border-t border-dashed">
                         <SummaryRow label="Mensualidad estimada" value={formatPrice(financeData.monthlyPayment)} isLarge />
-                        <SummaryRow label="Monto a financiar" value={formatPrice(financeData.displayedPrice - downPayment)} />
-                        <SummaryRow label="Total pagado al final" value={formatPrice(financeData.totalPayment)} />
+                        <SummaryRow label="Tasa de interes" value="17%* puede variar" />
                     </div>
-                    <p className="text-xs text-gray-500 text-center pt-2">*Estos montos no incluyen costos de seguro.</p>
+                    <p className="text-xs text-gray-500 text-center pt-2">
+                        *Tasa de interes puede variar segun el banco. Incluye seguro con valor del 5% del auto (amortizado mensualmente).
+                    </p>
                 </div>
             )}
             {activeTab === 'inspection' && (
                 inspectionLoading ? <p>Cargando reporte...</p> :
                 inspectionData ? <InspectionSummary data={inspectionData} onSeeFullReport={onSeeFullReport} /> :
                 <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm font-semibold text-gray-700">Reporte de Inspección no Disponible</p>
-                    <p className="text-xs text-gray-500 mt-1">Este auto aún no tiene un reporte de inspección público.</p>
+                    <p className="text-sm font-semibold text-gray-700">Reporte de Inspeccion no Disponible</p>
+                    <p className="text-xs text-gray-500 mt-1">Este auto aun no tiene un reporte de inspeccion publico.</p>
                 </div>
             )}
         </div>
@@ -668,18 +694,64 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
 
     // SEO metadata is handled in the page.tsx file in Next.js
 
-
     const handleFinancingClick = () => {
         if (!vehicle) return;
+
+        // Facebook Pixel: Tracking InitiateCheckout
+        facebookPixelService.trackInitiateCheckout({
+            id: vehicle.record_id || vehicle.id,
+            title: vehicle.titulo,
+            price: vehicle.autoprecio,
+            brand: vehicle.automarca,
+            model: vehicle.autosubmarcaversion,
+            year: vehicle.autoano,
+            category: vehicle.carroceria,
+            slug: vehicle.slug,
+        }).catch(err => console.warn('[FB Pixel] Error tracking InitiateCheckout:', err));
+
         const financingUrl = session ? '/escritorio/aplicacion' : '/acceder';
         const urlWithParams = vehicle.ordencompra ? `${financingUrl}?ordencompra=${vehicle.ordencompra}` : financingUrl;
         router.push(urlWithParams);
     };
 
+    const handleWhatsAppClick = () => {
+        if (!vehicle) return;
+
+        // Facebook Pixel: Tracking AddToCart (WhatsApp interaction)
+        facebookPixelService.trackAddToCart({
+            id: vehicle.record_id || vehicle.id,
+            title: vehicle.titulo,
+            price: vehicle.autoprecio,
+            brand: vehicle.automarca,
+            model: vehicle.autosubmarcaversion,
+            year: vehicle.autoano,
+            category: vehicle.carroceria,
+            slug: vehicle.slug,
+        }, 'whatsapp').catch(err => console.warn('[FB Pixel] Error tracking AddToCart:', err));
+    };
+
+    const handleTabChange = (tab: 'specs' | 'calculator' | 'inspection') => {
+        setActiveTab(tab);
+
+        // Facebook Pixel: Tracking AddToCart when calculator tab is clicked
+        if (tab === 'calculator' && vehicle) {
+            facebookPixelService.trackAddToCart({
+                id: vehicle.record_id || vehicle.id,
+                title: vehicle.titulo,
+                price: vehicle.autoprecio,
+                brand: vehicle.automarca,
+                model: vehicle.autosubmarcaversion,
+                year: vehicle.autoano,
+                category: vehicle.carroceria,
+                slug: vehicle.slug,
+            }, 'calculator').catch(err => console.warn('[FB Pixel] Error tracking AddToCart:', err));
+        }
+    };
+
     useEffect(() => {
         const fetchVehicleData = async () => {
             if (!slug) {
-                setError('No se proporcionó el identificador del auto.');
+                setError('No se proporciono el identificador del auto.');
                 setIsLoadingVehicle(false);
                 return;
             }
@@ -691,6 +763,20 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
                 const vehicleData = await VehicleService.getAndRecordVehicleView(slug);
                 if (vehicleData) {
                     setVehicle(vehicleData);
+
+                    // Facebook Pixel: Tracking ViewContent
+                    facebookPixelService.trackViewContent({
+                        id: vehicleData.record_id || vehicleData.id,
+                        title: vehicleData.titulo,
+                        price: vehicleData.autoprecio,
+                        brand: vehicleData.automarca,
+                        model: vehicleData.autosubmarcaversion,
+                        year: vehicleData.autoano,
+                        category: vehicleData.carroceria,
+                        slug: vehicleData.slug,
+                        image_url: getVehicleImage(vehicleData),
+                    }).catch(err => console.warn('[FB Pixel] Error tracking ViewContent:', err));
+
                     setInspectionLoading(true);
                     try {
                         const [inspectionResult, favoriteCountResult] = await Promise.allSettled([
@@ -743,7 +829,7 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
     useEffect(() => {
         if (vehicle) {
             const price = parseFloat(String(vehicle.precio_reduccion)) || vehicle.precio;
-            const minDP = vehicle.engancheMinimo || price * 0.15;
+            const minDP = vehicle.engancheMinimo || price * 0.25; // 25% minimum to match calculator
             setDownPayment(minDP);
 
             const maxTerm = vehicle.plazomax || 60;
@@ -754,15 +840,15 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
 
     const financeData = useMemo(() => {
         if (!vehicle) return null;
-        const CALC_INTEREST_RATE = 16.0; // Use a fixed 16% rate for the interactive calculator
+        const CALC_INTEREST_RATE = 17.0; // Correct interest rate per calculator-prompt.txt
         const price = parseFloat(String(vehicle.precio_reduccion)) || vehicle.precio;
-        const monthlyPayment = calculateMonthlyPayment(price, downPayment, loanTerm, CALC_INTEREST_RATE);
+        const monthlyPayment = calculateMonthlyPayment(price, downPayment, loanTerm, CALC_INTEREST_RATE, true); // Include insurance
 
         return {
             displayedPrice: price,
             hasReduction: price < vehicle.precio,
-            minDownPayment: vehicle.engancheMinimo || price * 0.15,
-            maxDownPayment: price > (vehicle.engancheMinimo || price * 0.15) ? price : (vehicle.engancheMinimo || price * 0.15) + 1,
+            minDownPayment: vehicle.enganchemin || price * 0.25, // 25% minimum
+            maxDownPayment: price > (vehicle.enganchemin || price * 0.25) ? price : (vehicle.enganchemin || price * 0.25) + 1,
             monthlyPayment,
             upperMonthlyPayment: 0, // No longer a range
             totalPayment: monthlyPayment > 0 ? (monthlyPayment * loanTerm) + downPayment : price,
@@ -797,12 +883,12 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
     const crumbs = [{ name: 'Inventario', href: '/autos' }, { name: vehicle.titulo }];
     const specifications = [
         { label: 'Marca', value: vehicle.marca }, { label: 'Modelo', value: vehicle.modelo },
-        { label: 'Año', value: vehicle.autoano }, { label: 'Kilometraje', value: formatMileage(vehicle.kilometraje) },
+        { label: 'Ano', value: vehicle.autoano }, { label: 'Kilometraje', value: formatMileage(vehicle.kilometraje) },
         { label: 'Color Exterior', value: vehicle.color_exterior }, { label: 'Color Interior', value: vehicle.color_interior },
-        { label: 'Transmisión', value: vehicle.transmision }, { label: 'Combustible', value: vehicle.combustible },
+        { label: 'Transmision', value: vehicle.transmision }, { label: 'Combustible', value: vehicle.combustible },
         { label: 'Motor', value: vehicle.automotor }, { label: 'Cilindros', value: vehicle.autocilindros },
-        { label: 'Garantía', value: vehicle.garantia }, { label: 'Siniestros', value: vehicle.nosiniestros },
-        { label: 'Detalles Estéticos', value: vehicle.detalles_esteticos },
+        { label: 'Garantia', value: vehicle.garantia }, { label: 'Siniestros', value: vehicle.nosiniestros },
+        { label: 'Detalles Esteticos', value: vehicle.detalles_esteticos },
     ].filter(spec => spec.value && String(spec.value).trim() !== '' && String(spec.value).trim() !== '0');
 
   return (
@@ -812,7 +898,7 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
 
         <nav className="no-print flex items-center justify-between bg-gray-100 p-1.5 sm:p-2 rounded-lg sm:rounded-xl mb-4 sm:mb-8 border border-gray-200">
           {/* Previous Vehicle */}
-          {prevVehicle && prevVehicle.slug ? (() => {
+          {prevVehicle ? (() => {
             const prevImage = getVehicleImage(prevVehicle);
             return (
               <Link href={`/autos/${prevVehicle.slug}`} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-white/60 transition-colors">
@@ -829,7 +915,7 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
           {prevVehicle && nextVehicle && <div className="h-12 border-r border-gray-200 mx-2 hidden sm:block"></div>}
 
           {/* Next Vehicle */}
-          {nextVehicle && nextVehicle.slug ? (() => {
+          {nextVehicle ? (() => {
             const nextImage = getVehicleImage(nextVehicle);
             return (
               <Link href={`/autos/${nextVehicle.slug}`} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-white/60 transition-colors">
@@ -850,34 +936,37 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
             <MediaGallery mediaItems={mediaItems} activeMedia={activeMedia} setActiveMedia={setActiveMedia} handleOpenLightbox={handleOpenLightbox} vehicleTitle={vehicle.titulo} promociones={vehicle.promociones}/>
 
             <div className="lg:hidden space-y-4 sm:space-y-6 lg:space-y-8">
-              <TitlePriceActionsBlock vehicle={vehicle} financeData={financeData} favoriteCount={favoriteCount} isFavorite={isFavorite(vehicle.id)} isToggling={isToggling === vehicle.id} onToggleFavorite={() => toggleFavorite(vehicle.id)} onFinancingClick={handleFinancingClick} />
+              <TitlePriceActionsBlock vehicle={vehicle} financeData={financeData} favoriteCount={favoriteCount} isFavorite={isFavorite(vehicle.id)} isToggling={isToggling === vehicle.id} onToggleFavorite={() => toggleFavorite(vehicle.id)} onFinancingClick={handleFinancingClick} onWhatsAppClick={handleWhatsAppClick} />
             </div>
 
             <FeatureFinancingSection vehicle={vehicle} inspectionData={inspectionData} />
             <DescriptionSection content={vehicle.description || vehicle.descripcion} />
 
 
-                          <div className="lg:hidden space-y-4 sm:space-y-6 lg:space-y-8">              <TabsSection activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={isAdmin} vehicleId={vehicle.id} specifications={specifications} financeData={financeData} downPayment={downPayment} setDownPayment={setDownPayment} loanTerm={loanTerm} setLoanTerm={setLoanTerm} inspectionLoading={inspectionLoading} inspectionData={inspectionData} onSeeFullReport={() => setIsLightboxOpen(true)} />
+                          <div className="lg:hidden space-y-4 sm:space-y-6 lg:space-y-8">              <TabsSection activeTab={activeTab} onTabChange={handleTabChange} isAdmin={isAdmin} vehicleId={vehicle.id} specifications={specifications} financeData={financeData} downPayment={downPayment} setDownPayment={setDownPayment} loanTerm={loanTerm} setLoanTerm={setLoanTerm} inspectionLoading={inspectionLoading} inspectionData={inspectionData} onSeeFullReport={() => setIsLightboxOpen(true)} />
               <VehicleDetailLocation vehicle={vehicle} />
             </div>
           </div>
 
           <aside className="hidden lg:block lg:col-span-2">
             <div className="sticky top-28 space-y-6">
-              <TitlePriceActionsBlock vehicle={vehicle} financeData={financeData} favoriteCount={favoriteCount} isFavorite={isFavorite(vehicle.id)} isToggling={isToggling === vehicle.id} onToggleFavorite={() => toggleFavorite(vehicle.id)} onFinancingClick={handleFinancingClick} />
-              <TabsSection activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={isAdmin} vehicleId={vehicle.id} specifications={specifications} financeData={financeData} downPayment={downPayment} setDownPayment={setDownPayment} loanTerm={loanTerm} setLoanTerm={setLoanTerm} inspectionLoading={inspectionLoading} inspectionData={inspectionData} onSeeFullReport={() => setIsLightboxOpen(true)} />
+              <TitlePriceActionsBlock vehicle={vehicle} financeData={financeData} favoriteCount={favoriteCount} isFavorite={isFavorite(vehicle.id)} isToggling={isToggling === vehicle.id} onToggleFavorite={() => toggleFavorite(vehicle.id)} onFinancingClick={handleFinancingClick} onWhatsAppClick={handleWhatsAppClick} />
+              <TabsSection activeTab={activeTab} onTabChange={handleTabChange} isAdmin={isAdmin} vehicleId={vehicle.id} specifications={specifications} financeData={financeData} downPayment={downPayment} setDownPayment={setDownPayment} loanTerm={loanTerm} setLoanTerm={setLoanTerm} inspectionLoading={inspectionLoading} inspectionData={inspectionData} onSeeFullReport={() => setIsLightboxOpen(true)} />
               <VehicleDetailLocation vehicle={vehicle} />
               {!session && <AuthBenefitsBlock />}
             </div>
           </aside>
         </div>
+
+        {/* Recently Viewed - Inside main for proper layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-12 mt-8">
+          <div className="lg:col-span-3">
+            <RecentlyViewed currentVehicleId={vehicle.id} />
+          </div>
+        </div>
       </main>
 
       <SimilarVehicles vehicle={vehicle} allVehicles={allVehicles} />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-        <RecentlyViewed currentVehicleId={vehicle.id} />
-      </div>
 
       {/* Lightbox for inspection or media */}
       {isLightboxOpen && inspectionData && activeTab === 'inspection' && (

@@ -1,4 +1,4 @@
-import { supabase } from '../../supabaseClient';
+import { createBrowserSupabaseClient } from '@/lib/supabase/client';
 
 export interface MarketingConfig {
   id?: string;
@@ -87,6 +87,7 @@ class MarketingConfigService {
     }
 
     // Fallback to Supabase
+    const supabase = createBrowserSupabaseClient();
     const { data, error } = await supabase
       .from('marketing_config')
       .select('*')
@@ -124,6 +125,7 @@ class MarketingConfigService {
    */
   async saveConfig(config: Partial<MarketingConfig>): Promise<{ success: boolean; error?: string }> {
     try {
+      const supabase = createBrowserSupabaseClient();
       // Deactivate all existing configs
       await supabase
         .from('marketing_config')
@@ -175,6 +177,7 @@ class MarketingConfigService {
    */
   async updateConfig(id: string, updates: Partial<MarketingConfig>): Promise<{ success: boolean; error?: string }> {
     try {
+      const supabase = createBrowserSupabaseClient();
       const { data, error } = await supabase
         .from('marketing_config')
         .update({
@@ -372,6 +375,7 @@ class MarketingConfigService {
     metadata: Record<string, any>
   ): Promise<void> {
     try {
+      const supabase = createBrowserSupabaseClient();
       const sessionId = sessionStorage.getItem('session_id') || '';
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -412,6 +416,7 @@ class MarketingConfigService {
     limit?: number;
   }): Promise<TrackingEvent[]> {
     try {
+      const supabase = createBrowserSupabaseClient();
       let query = supabase
         .from('tracking_events')
         .select('*')
@@ -448,6 +453,7 @@ class MarketingConfigService {
    */
   async getLeadSourceAnalytics(startDate?: string, endDate?: string): Promise<any[]> {
     try {
+      const supabase = createBrowserSupabaseClient();
       let query = supabase
         .from('tracking_events')
         .select('utm_source, utm_medium, utm_campaign, event_type, created_at')
