@@ -106,8 +106,28 @@ images/sucursales/saltillo.jpeg                                            (nuev
 
 ## Próximos Pasos
 
+### Aplicar Migraciones de Base de Datos
+
+**IMPORTANTE:** Usa el script personalizado para aplicar solo las migraciones recientes:
+
+```bash
+bash scripts/apply-recent-migrations.sh
+```
+
+Este script aplica **solo las 5 migraciones del 5-6 de diciembre**:
+1. `20251205000001_optimize_indexes_remove_redundant.sql` - Optimización de índices
+2. `20251205000002_optimize_indexes_add_critical.sql` - Índices críticos
+3. `20251206_add_missing_columns.sql` - Columnas faltantes (tokens de carga)
+4. `20251206_create_document_upload_metrics.sql` - Vista de métricas de documentos
+5. `20251206_update_get_filter_options_ubicacion_mapping.sql` - Mapeo de ubicaciones
+
+**¿Por qué no usar `npx supabase db push`?**
+- La base de datos ya fue migrada con `pg_dump` el 6 de diciembre
+- `supabase db push` intentaría aplicar 89+ migraciones que ya existen
+- Esto causaría conflictos y errores
+
 ### Pendientes de Verificación
-1. ⏳ Aplicar migración de base de datos con `npx supabase db push`
+1. ⏳ Aplicar migraciones con `bash scripts/apply-recent-migrations.sh`
 2. ⏳ Verificar que el filtro de sucursales funcione correctamente en `/autos`
 3. ⏳ Probar el diseño responsive en mobile y desktop
 4. ⏳ Verificar que el límite de 3 imágenes no afecte la experiencia
