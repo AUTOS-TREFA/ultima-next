@@ -1,70 +1,69 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ProfileService } from '../services/profileService';
-import { User, ArrowLeft, CheckCircle, Loader2, Info, ArrowRight } from 'lucide-react';
+import { supabase } from '../../supabaseClient';
+import { User, ArrowLeft, CheckCircle, Loader2, Info, ChevronRight, ChevronLeft } from 'lucide-react';
 import type { Profile } from '../types/types';
 import { calculateRFC } from '../utils/rfcCalculator';
 import { toast } from 'sonner';
 import { conversionTracking } from '../services/ConversionTrackingService';
-
-
-const MEXICAN_STATES = [ 'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 'Chihuahua', 'Coahuila', 'Colima', 'Durango', 'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco', 'México', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla', 'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas', ];
+import { Label } from '../components/ui/label';
+import { Input } from '../components/ui/input';
+import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
+import { Button } from '../components/ui/button';
+import { Progress } from '../components/ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 
 const CELLPHONE_COMPANIES = [
-  'Telcel',
-  'AT&T',
-  'Movistar',
-  'Unefon',
-  'Virgin Mobile',
-  'Weex (Dish)',
-  'Pillofon',
-  'Otro',
+  'Telcel', 'AT&T', 'Movistar', 'Unefon', 'Virgin Mobile', 'Weex (Dish)', 'Pillofon', 'Otro',
 ];
 
-// Utility function to normalize names to Title Case
+const COUNTRY_CODES = [
+  { code: '+52', country: 'México', flag: '🇲🇽' },
+  { code: '+1', country: 'EE.UU./Canadá', flag: '🇺🇸' },
+  { code: '+34', country: 'España', flag: '🇪🇸' },
+  { code: '+57', country: 'Colombia', flag: '🇨🇴' },
+  { code: '+54', country: 'Argentina', flag: '🇦🇷' },
+];
+
+const SALES_AGENTS = [
+  { id: 'd21e808e-083c-48fd-be78-d52ee7837146', name: 'Anahi Garza Garcia' },
+  { id: 'cb55da28-ef7f-4632-9fcd-a8d9f37f1463', name: 'Carlos Isidro Berrones' },
+  { id: 'e49bf74c-308f-4e8d-b683-3575d7214e98', name: 'Daniel Rodríguez' },
+  { id: '7e239ec5-aceb-4e9f-ae67-2ac16733609b', name: 'David Rojas' },
+  { id: 'fe901e9e-c3f2-41a1-b5a0-6d95c9d81344', name: 'David Marconi Mazariegos' },
+  { id: 'a4165ce3-e52b-4f8d-9123-327c0179f73c', name: 'Israel Ramírez' },
+  { id: '4c8c43bb-c936-44a2-ab82-f40326387770', name: 'Ramón Araujo' },
+];
+
 const normalizeNameToTitleCase = (name: string): string => {
   if (!name) return '';
-
-  // List of Spanish prepositions and articles that should stay lowercase
   const lowercaseWords = ['de', 'del', 'la', 'los', 'las', 'y', 'e', 'van', 'von', 'da', 'di'];
-
-  return name
-    .trim()
-    .toLowerCase()
-    .split(' ')
-    .map((word, index) => {
-      // First word should always be capitalized
-      if (index === 0) {
-        return word.charAt(0).toUpperCase() + word.slice(1);
-      }
-      // Check if word should stay lowercase
-      if (lowercaseWords.includes(word)) {
-        return word;
-      }
-      // Capitalize first letter
+  return name.trim().toLowerCase().split(' ').map((word, index) => {
+    if (index === 0 || !lowercaseWords.includes(word)) {
       return word.charAt(0).toUpperCase() + word.slice(1);
-    })
-    .join(' ');
+    }
+    return word;
+  }).join(' ');
 };
 
-// Schemas
 const profileSchema = z.object({
-  first_name: z.string().min(2, 'Nombre es requerido'),
-  last_name: z.string().min(2, 'Apellido paterno es requerido'),
-  mother_last_name: z.string().min(2, 'Apellido materno es requerido'),
-  phone: z.string().min(10, 'Teléfono debe tener 10 dígitos'),
+  first_name: z.string().min(2, 'Por favor, ingresa tu nombre (mínimo 2 caracteres)'),
+  last_name: z.string().min(2, 'Por favor, ingresa tu apellido paterno (mínimo 2 caracteres)'),
+  mother_last_name: z.string().min(2, 'Por favor, ingresa tu apellido materno (mínimo 2 caracteres)'),
+  phone: z.string().optional().or(z.literal('')),
   cellphone_company: z.string().optional().or(z.literal('')),
-  birth_date: z.string().min(1, 'Fecha de nacimiento es requerida'),
-  homoclave: z.string().length(3, 'Homoclave debe tener 3 caracteres'),
-  fiscal_situation: z.string().min(1, 'Situación fiscal es requerida'),
-  civil_status: z.string().min(1, 'Estado civil es requerido'),
+  birth_date: z.string().min(1, 'Por favor, selecciona tu fecha de nacimiento'),
+  homoclave: z.string().length(3, 'La homoclave debe tener exactamente 3 caracteres'),
+  fiscal_situation: z.string().min(1, 'Por favor, selecciona tu situación fiscal'),
+  civil_status: z.string().min(1, 'Por favor, selecciona tu estado civil'),
   spouse_name: z.string().optional().or(z.literal('')),
   gender: z.string().optional().or(z.literal('')),
   how_did_you_know: z.string().optional().or(z.literal('')),
@@ -74,59 +73,75 @@ const profileSchema = z.object({
   }
   return true;
 }, {
-  message: 'El nombre del cónyuge es obligatorio para personas casadas.',
+  message: 'Por favor, ingresa el nombre completo de tu cónyuge',
   path: ['spouse_name'],
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
-const checkProfileCompleteness = (p: Profile | undefined): boolean => {
-  if (!p) return false;
-  
-  const requiredFields: (keyof Profile)[] = [
-    'first_name', 
-    'last_name', 
-    'mother_last_name', 
-    'phone', 
-    'birth_date', 
-    'homoclave'
-  ];
-  
-  return requiredFields.every(field => {
-    const value = p[field];
-    return value != null && String(value).trim() !== '';
-  });
-};
+const STEPS = [
+  { id: 1, title: 'Contacto', description: 'Información de contacto' },
+  { id: 2, title: 'Personal', description: 'Datos personales' },
+  { id: 3, title: 'Fiscal', description: 'Información fiscal' },
+];
 
 const ProfilePage: React.FC = () => {
   const { user, profile, loading, reloadProfile } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const formInitialized = useRef(false);
 
-  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
-  const [isProfileComplete, setIsProfileComplete] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSaving, setIsSaving] = useState(false);
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
+  const [isProfileComplete, setIsProfileComplete] = useState(false);
   const [calculatedRfc, setCalculatedRfc] = useState('');
-  const [asesorAutorizadoAcceso, setAsesorAutorizadoAcceso] = useState(false);
-  const [assignedAgentName, setAssignedAgentName] = useState<string>();
+  const [hasPriorAdvisor, setHasPriorAdvisor] = useState<string>('no');
+  const [selectedSalesAgentId, setSelectedSalesAgentId] = useState<string>('');
   const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  
+  const [countryCode, setCountryCode] = useState<string>('+52');
+
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
+    mode: 'onBlur',
+    defaultValues: {
+      first_name: '',
+      last_name: '',
+      mother_last_name: '',
+      phone: '',
+      cellphone_company: '',
+      birth_date: '',
+      homoclave: '',
+      fiscal_situation: '',
+      civil_status: '',
+      spouse_name: '',
+      gender: '',
+      how_did_you_know: '',
+    }
   });
-  
-  const { watch: watchProfileFields, reset: resetProfileForm } = profileForm;
-  const civilStatus = watchProfileFields('civil_status');
+
+  const { watch, setValue, getValues, register, formState: { errors } } = profileForm;
+  const civilStatus = watch('civil_status');
   const isMarried = civilStatus?.toLowerCase() === 'casado';
 
+  // Initialize form ONCE when profile loads
   useEffect(() => {
-    if (profile) {
-      const isComplete = checkProfileCompleteness(profile);
-      setIsProfileComplete(isComplete);
-      if (!isComplete) {
+    if (profile && !formInitialized.current) {
+      formInitialized.current = true;
+
+      const requiredFields = ['first_name', 'last_name', 'mother_last_name', 'phone', 'birth_date', 'homoclave', 'fiscal_situation', 'civil_status', 'rfc'];
+      const isComplete = requiredFields.every(field => profile[field as keyof Profile] && String(profile[field as keyof Profile]).trim() !== '');
+
+      if (isComplete) {
+        setIsProfileComplete(true);
+        setCurrentStep(3); // Set to last step so progress shows 100%
+      } else {
         setIsFirstTimeUser(true);
       }
-      resetProfileForm({
+
+      // Set form values without triggering re-renders
+      profileForm.reset({
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
         mother_last_name: profile.mother_last_name || '',
@@ -139,30 +154,231 @@ const ProfilePage: React.FC = () => {
         spouse_name: profile.spouse_name || '',
         gender: profile.gender || '',
         how_did_you_know: profile.how_did_you_know || '',
-      });
+      }, { keepDefaultValues: false });
+
       setCalculatedRfc(profile.rfc || '');
-      setAsesorAutorizadoAcceso(profile.asesor_autorizado_acceso || false);
       setPreviewUrl(profile.picture_url || null);
 
       if (profile.asesor_asignado_id) {
-        ProfileService.getProfile(profile.asesor_asignado_id).then(agentProfile => {
-          if (agentProfile) {
-            setAssignedAgentName(`${agentProfile.first_name || ''} ${agentProfile.last_name || ''}`.trim());
-          }
-        });
+        setHasPriorAdvisor('yes');
+        setSelectedSalesAgentId(profile.asesor_asignado_id);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile]);
+  }, [profile, profileForm]);
 
-  const [firstName, lastName, motherLastName, birthDate, homoclave] = watchProfileFields(['first_name', 'last_name', 'mother_last_name', 'birth_date', 'homoclave']);
+  // Calculate RFC when relevant fields change
+  const firstName = watch('first_name');
+  const lastName = watch('last_name');
+  const motherLastName = watch('mother_last_name');
+  const birthDate = watch('birth_date');
+  const homoclave = watch('homoclave');
 
   useEffect(() => {
-    if (firstName && lastName && motherLastName && birthDate && homoclave) {
-      const rfc = calculateRFC({ first_name: firstName, last_name: lastName, mother_last_name: motherLastName, birth_date: birthDate, homoclave });
-      setCalculatedRfc(rfc || 'Completa los campos para calcular');
+    if (firstName && lastName && motherLastName && birthDate && homoclave?.length === 3) {
+      const rfc = calculateRFC({
+        first_name: firstName,
+        last_name: lastName,
+        mother_last_name: motherLastName,
+        birth_date: birthDate,
+        homoclave
+      });
+      if (rfc) setCalculatedRfc(rfc);
     }
   }, [firstName, lastName, motherLastName, birthDate, homoclave]);
+
+  // Save current step data
+  const saveStepData = useCallback(async (): Promise<boolean> => {
+    if (!user) return false;
+
+    setIsSaving(true);
+    try {
+      const formData = getValues();
+
+      const payload: Partial<Profile> = {
+        id: user.id,
+        email: user.email,
+        first_name: formData.first_name ? normalizeNameToTitleCase(formData.first_name) : undefined,
+        last_name: formData.last_name ? normalizeNameToTitleCase(formData.last_name) : undefined,
+        mother_last_name: formData.mother_last_name ? normalizeNameToTitleCase(formData.mother_last_name) : undefined,
+        phone: formData.phone || undefined,
+        cellphone_company: formData.cellphone_company || undefined,
+        birth_date: formData.birth_date || undefined,
+        homoclave: formData.homoclave || undefined,
+        fiscal_situation: formData.fiscal_situation || undefined,
+        civil_status: formData.civil_status || undefined,
+        spouse_name: formData.spouse_name ? normalizeNameToTitleCase(formData.spouse_name) : undefined,
+        gender: formData.gender || undefined,
+        how_did_you_know: formData.how_did_you_know || undefined,
+      };
+
+      // Calculate and add RFC
+      if (formData.first_name && formData.last_name && formData.mother_last_name &&
+          formData.birth_date && formData.homoclave?.length === 3) {
+        const rfc = calculateRFC({
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          mother_last_name: formData.mother_last_name,
+          birth_date: formData.birth_date,
+          homoclave: formData.homoclave
+        });
+        if (rfc) payload.rfc = rfc;
+      }
+
+      // Handle advisor assignment
+      if (hasPriorAdvisor === 'yes' && selectedSalesAgentId) {
+        payload.asesor_asignado_id = selectedSalesAgentId;
+        payload.asesor_autorizado_acceso = true;
+      } else if (!profile?.asesor_asignado_id) {
+        const assignedAdvisorId = await ProfileService.assignAdvisorToUser(user.id);
+        if (assignedAdvisorId) {
+          payload.asesor_asignado_id = assignedAdvisorId;
+          payload.asesor_autorizado_acceso = true;
+        }
+      }
+
+      // Handle profile picture
+      if (profilePictureFile) {
+        const pictureUrl = await ProfileService.uploadProfilePicture(user.id, profilePictureFile);
+        payload.picture_url = pictureUrl;
+      }
+
+      await ProfileService.updateProfile(payload);
+      return true;
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast.error('Error al guardar. Por favor, intenta de nuevo.');
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  }, [user, getValues, hasPriorAdvisor, selectedSalesAgentId, profile, profilePictureFile]);
+
+  // Handle next step
+  const handleNextStep = async () => {
+    // Validate current step fields
+    let fieldsToValidate: (keyof ProfileFormData)[] = [];
+
+    if (currentStep === 1) {
+      // Step 1: Contact information
+      fieldsToValidate = ['phone'];
+      // Validate asesor selection if user said "yes" to prior advisor
+      if (hasPriorAdvisor === 'yes' && !selectedSalesAgentId) {
+        toast.error('Por favor, selecciona tu asesor.');
+        return;
+      }
+    } else if (currentStep === 2) {
+      // Step 2: Personal information
+      fieldsToValidate = ['first_name', 'last_name', 'mother_last_name', 'birth_date', 'civil_status'];
+      if (isMarried) fieldsToValidate.push('spouse_name');
+    }
+
+    if (fieldsToValidate.length > 0) {
+      const isValid = await profileForm.trigger(fieldsToValidate);
+      if (!isValid) {
+        toast.error('Por favor, completa los campos obligatorios.');
+        return;
+      }
+    }
+
+    // Save current progress
+    const saved = await saveStepData();
+    if (!saved) return;
+
+    // Move to next step
+    if (currentStep < STEPS.length) {
+      setCurrentStep(currentStep + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Handle previous step
+  const handlePrevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Handle final submit
+  const handleFinalSubmit = async () => {
+    // Validate all required fields for step 3
+    const isValid = await profileForm.trigger(['homoclave', 'fiscal_situation']);
+    if (!isValid) {
+      toast.error('Por favor, completa la homoclave y situación fiscal.');
+      return;
+    }
+
+    const saved = await saveStepData();
+    if (!saved) return;
+
+    // Check if profile is now complete
+    const formData = getValues();
+    const requiredFields = ['first_name', 'last_name', 'mother_last_name', 'phone', 'birth_date', 'homoclave', 'fiscal_situation', 'civil_status'];
+    const isComplete = requiredFields.every(field => formData[field as keyof ProfileFormData] && String(formData[field as keyof ProfileFormData]).trim() !== '');
+
+    if (isComplete) {
+      // Track completion event
+      conversionTracking.trackProfile.updated({
+        userId: user?.id,
+        email: user?.email,
+        profileComplete: true,
+        hasProfilePicture: !!previewUrl,
+        asesorAutorizado: hasPriorAdvisor === 'yes' || !!profile?.asesor_asignado_id
+      });
+
+      // If user already had a complete profile, just show success without redirecting
+      if (isProfileComplete) {
+        toast.success('¡Perfil actualizado correctamente!');
+        setIsProfileComplete(true);
+        await reloadProfile();
+        return;
+      }
+
+      // Check if user already has an ongoing application
+      const { data: existingApplications } = await supabase
+        .from('financing_applications')
+        .select('id, status')
+        .eq('user_id', user?.id)
+        .not('status', 'eq', 'cancelled')
+        .limit(1);
+
+      if (existingApplications && existingApplications.length > 0) {
+        // User has an existing application, don't redirect to perfilacion bancaria
+        toast.success('¡Perfil actualizado! Ya tienes una solicitud en proceso.');
+        setIsProfileComplete(true);
+        await reloadProfile();
+
+        // Check if there's a return path with ordencompra
+        const returnTo = searchParams?.get('returnTo');
+        const ordencompra = searchParams?.get('ordencompra');
+        if (returnTo && ordencompra) {
+          router.push(`${returnTo}?ordencompra=${ordencompra}`);
+        } else {
+          router.push('/escritorio');
+        }
+        return;
+      }
+
+      toast.success('¡Perfil completado! Redirigiendo a perfilación bancaria...');
+
+      // Reload profile context and redirect
+      await reloadProfile();
+      setTimeout(() => {
+        // Preserve ordencompra and returnTo when redirecting to bank profiling
+        const returnTo = searchParams?.get('returnTo');
+        const ordencompra = searchParams?.get('ordencompra');
+        let redirectPath = '/escritorio/perfilacion-bancaria';
+
+        if (returnTo && ordencompra) {
+          redirectPath = `${redirectPath}?returnTo=${returnTo}&ordencompra=${ordencompra}`;
+        }
+
+        router.push(redirectPath);
+      }, 1000);
+    } else {
+      toast.info('Progreso guardado. Algunos campos obligatorios están pendientes.');
+    }
+  };
 
   const handlePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -171,281 +387,383 @@ const ProfilePage: React.FC = () => {
       setPreviewUrl(URL.createObjectURL(file));
     }
   };
-  
-  const handleProfileUpdate = async (data: ProfileFormData) => {
-    if (!user) return;
-    setSaveState('saving');
 
-    try {
-      let pictureUrl = profile?.picture_url;
-      if (profilePictureFile) {
-        pictureUrl = await ProfileService.uploadProfilePicture(user.id, profilePictureFile);
-      }
-
-      // Normalize names to Title Case
-      const normalizedData = {
-        ...data,
-        first_name: normalizeNameToTitleCase(data.first_name),
-        last_name: normalizeNameToTitleCase(data.last_name),
-        mother_last_name: normalizeNameToTitleCase(data.mother_last_name),
-        spouse_name: data.spouse_name ? normalizeNameToTitleCase(data.spouse_name) : undefined,
-      };
-
-      const finalRfc = calculateRFC(normalizedData);
-      const payload: Partial<Profile> = {
-        id: user.id,
-        email: user.email, // Ensure email is always included
-        ...normalizedData,
-        rfc: finalRfc ?? undefined,
-        asesor_autorizado_acceso: asesorAutorizadoAcceso,
-        picture_url: pictureUrl
-      };
-
-      if (asesorAutorizadoAcceso && !profile?.asesor_asignado_id) {
-        const assignedAdvisorId = await ProfileService.assignAdvisorToUser(user.id);
-        if (assignedAdvisorId) {
-          payload.asesor_asignado_id = assignedAdvisorId;
-        }
-      }
-
-      await ProfileService.updateProfile(payload);
-      await reloadProfile();
-
-      // Track profile update conversion
-      conversionTracking.trackProfile.updated({
-        userId: user.id,
-        email: user.email,
-        profileComplete: checkProfileCompleteness(payload as Profile),
-        hasProfilePicture: !!pictureUrl,
-        asesorAutorizado: asesorAutorizadoAcceso
-      });
-
-      setSaveState('saved');
-      toast.success('¡Perfil guardado! Redirigiendo a perfilación bancaria...');
-
-      setTimeout(() => {
-        router.push('/escritorio/perfilacion-bancaria');
-      }, 4000);
-
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Ocurrió un error desconocido');
-      setSaveState('idle');
-    }
-  };
-  
-  const inputClassName = "mt-1 block w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 placeholder-gray-500 disabled:bg-gray-100 disabled:cursor-not-allowed";
-  const phoneInputClassName = "flex-1 w-full px-4 py-2.5 bg-white border border-gray-300 rounded-r-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 placeholder-gray-500";
+  // Show 100% progress if profile is complete, otherwise based on current step
+  const progress = isProfileComplete ? 100 : (currentStep / STEPS.length) * 100;
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary-600"></div>
+        <Loader2 className="h-16 w-16 animate-spin text-primary-600" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 lg:py-8">
       <Link
         href="/escritorio"
-        className="flex items-center text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 lg:mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
         Volver al Dashboard
       </Link>
-      
-      <div className="space-y-8">
 
-        {/* Profile Information */}
-        <form onSubmit={profileForm.handleSubmit(handleProfileUpdate)} className="bg-white text-gray-900 rounded-xl shadow-sm border border-gray-200 p-6 sm:p-8">
-          <div className="flex justify-between items-start mb-6">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center">
-              <User className="w-5 h-5 mr-3 text-primary-600" />
-              Información del Perfil
-            </h2>
-            <div className="text-center">
-              <label htmlFor="profile-picture-upload" className="cursor-pointer group">
-                <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden ring-2 ring-offset-2 ring-primary-500/50 group-hover:ring-primary-500/80 transition-all">
-                  {previewUrl ? (
-                    <img src={previewUrl} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="w-12 h-12 text-gray-400" />
+      {isProfileComplete && (
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 p-4 lg:p-5 mb-4 lg:mb-6 rounded-r-lg">
+          <div className="flex items-center">
+            <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 mr-3 flex-shrink-0" />
+            <div>
+              <h3 className="font-bold text-gray-900 text-sm sm:text-base lg:text-lg">
+                ¡Perfil completo!
+              </h3>
+              <p className="text-xs sm:text-sm lg:text-base text-gray-700 mt-1">
+                Tu información de perfil está completa. Puedes editarla si es necesario.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isFirstTimeUser && (
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 lg:p-5 mb-4 lg:mb-6 rounded-r-lg">
+          <h3 className="font-bold text-gray-900 text-sm sm:text-base lg:text-lg">
+            ¡Te has registrado con éxito!
+          </h3>
+          <p className="text-xs sm:text-sm lg:text-base text-gray-700 mt-2">
+            Completa la información de tu perfil para continuar con tu solicitud de crédito.
+          </p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Progress Bar */}
+          <Card className="border-0 shadow-none bg-transparent">
+            <CardContent className="p-0">
+              <div className="flex justify-between items-center mb-2">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center">
+                  <User className="w-5 h-5 mr-2 sm:mr-3 text-primary-600" />
+                  Completa tu perfil
+                </h2>
+                <span className="text-sm font-medium text-gray-600">
+                  Paso {currentStep} de {STEPS.length}
+                </span>
+              </div>
+              <Progress value={progress} className="h-2" />
+              <div className="flex justify-between mt-2">
+                {STEPS.map((step) => (
+                  <div
+                    key={step.id}
+                    className={`text-xs text-center flex-1 ${
+                      step.id === currentStep ? 'text-primary-700 font-bold' :
+                      step.id < currentStep ? 'text-green-500 font-medium' : 'text-gray-400'
+                    }`}
+                  >
+                    {step.title}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Form */}
+          <form onSubmit={(e) => e.preventDefault()}>
+            <Card className="mb-6">
+              <CardContent className="p-4 sm:p-6 min-h-[400px]">
+
+                {/* Step 1: Contact */}
+                {currentStep === 1 && (
+                  <div className="space-y-6">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-5 border-2 border-blue-200">
+                      <div className="text-center mb-4">
+                        <h4 className="text-base sm:text-lg font-bold text-gray-900 mb-1">Asignación de Asesor</h4>
+                        <p className="text-xs sm:text-sm text-gray-600">¿Ya has sido atendido por un asesor de TREFA?</p>
+                      </div>
+
+                      <RadioGroup value={hasPriorAdvisor} onValueChange={setHasPriorAdvisor} className="flex gap-4">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="no" id="no-prior" />
+                          <Label htmlFor="no-prior" className="cursor-pointer">No</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="yes" id="yes-prior" />
+                          <Label htmlFor="yes-prior" className="cursor-pointer">Sí</Label>
+                        </div>
+                      </RadioGroup>
+
+                      {hasPriorAdvisor === 'yes' && (
+                        <div className="mt-4">
+                          <Label className="text-sm">Selecciona tu asesor</Label>
+                          <select
+                            value={selectedSalesAgentId}
+                            onChange={(e) => setSelectedSalesAgentId(e.target.value)}
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1"
+                          >
+                            <option value="">Selecciona...</option>
+                            {SALES_AGENTS.map((agent) => (
+                              <option key={agent.id} value={agent.id}>{agent.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      {hasPriorAdvisor === 'no' && (
+                        <p className="text-xs sm:text-sm text-blue-700 bg-blue-100 p-3 rounded-lg mt-4">
+                          <Info className="w-4 h-4 inline mr-2" />
+                          Se te asignará un asesor automáticamente.
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="text-center">
+                        <h3 className="text-lg font-bold text-gray-900 mb-1">Información de Contacto</h3>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="phone" className="text-sm sm:text-base">Teléfono</Label>
+                        <div className="flex">
+                          <select
+                            value={countryCode}
+                            onChange={(e) => setCountryCode(e.target.value)}
+                            className="inline-flex items-center px-2 rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground text-sm sm:text-base min-h-[44px] sm:min-h-[48px] cursor-pointer"
+                          >
+                            {COUNTRY_CODES.map((country) => (
+                              <option key={country.code} value={country.code}>
+                                {country.flag} {country.code}
+                              </option>
+                            ))}
+                          </select>
+                          <Input {...register('phone')} placeholder="10 dígitos" className="rounded-l-none min-h-[44px] sm:min-h-[48px] text-base" />
+                        </div>
+                        {errors.phone && <p className="text-sm sm:text-base text-red-600">{errors.phone.message}</p>}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="cellphone_company" className="text-sm sm:text-base">Compañía Telefónica</Label>
+                        <select {...register('cellphone_company')} className="flex h-12 sm:h-14 w-full rounded-md border border-input bg-background px-3 py-2 text-base min-h-[44px] sm:min-h-[48px]">
+                          <option value="">Seleccionar...</option>
+                          {CELLPHONE_COMPANIES.map((company) => (
+                            <option key={company} value={company}>{company}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Correo Electrónico</Label>
+                        <Input type="email" value={user?.email || ''} readOnly disabled />
+                        <p className="text-xs text-muted-foreground">Este correo está vinculado a tu cuenta.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 2: Personal */}
+                {currentStep === 2 && (
+                  <div className="space-y-5">
+                    <div className="text-center mb-6">
+                      <h3 className="text-lg font-bold text-gray-900 mb-1">Datos Personales</h3>
+                      <p className="text-sm text-gray-600">Ingresa tu nombre como aparece en tu identificación</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm sm:text-base">Nombre(s) *</Label>
+                        <Input {...register('first_name')} placeholder="Tu(s) nombre(s)" className="min-h-[44px] sm:min-h-[48px] text-base" />
+                        {errors.first_name && <p className="text-sm sm:text-base text-red-600">{errors.first_name.message}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm sm:text-base">Apellido Paterno *</Label>
+                        <Input {...register('last_name')} placeholder="Apellido paterno" className="min-h-[44px] sm:min-h-[48px] text-base" />
+                        {errors.last_name && <p className="text-sm sm:text-base text-red-600">{errors.last_name.message}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm sm:text-base">Apellido Materno *</Label>
+                        <Input {...register('mother_last_name')} placeholder="Apellido materno" className="min-h-[44px] sm:min-h-[48px] text-base" />
+                        {errors.mother_last_name && <p className="text-sm sm:text-base text-red-600">{errors.mother_last_name.message}</p>}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm sm:text-base">Fecha de Nacimiento *</Label>
+                      <Input type="date" {...register('birth_date')} className="min-h-[44px] sm:min-h-[48px] text-base" />
+                      {errors.birth_date && <p className="text-sm sm:text-base text-red-600">{errors.birth_date.message}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm sm:text-base">Género</Label>
+                      <RadioGroup value={watch('gender') || ''} onValueChange={(v) => setValue('gender', v)} className="grid grid-cols-2 gap-3">
+                        {['Masculino', 'Femenino'].map((g) => (
+                          <div key={g}>
+                            <RadioGroupItem value={g} id={`gender-${g}`} className="peer sr-only" />
+                            <Label
+                              htmlFor={`gender-${g}`}
+                              className="flex items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 sm:p-4 text-sm sm:text-base hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground cursor-pointer min-h-[44px] touch-manipulation"
+                            >
+                              {g}
+                            </Label>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm sm:text-base">Estado Civil *</Label>
+                      <RadioGroup value={civilStatus || ''} onValueChange={(v) => setValue('civil_status', v)} className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {['soltero', 'casado', 'viudo', 'union', 'divorciado'].map((status) => (
+                          <div key={status}>
+                            <RadioGroupItem value={status} id={`civil-${status}`} className="peer sr-only" />
+                            <Label
+                              htmlFor={`civil-${status}`}
+                              className="flex items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 sm:p-3.5 text-sm sm:text-base hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground cursor-pointer min-h-[44px] touch-manipulation"
+                            >
+                              {status === 'soltero' ? 'Soltero(a)' :
+                               status === 'casado' ? 'Casado(a)' :
+                               status === 'viudo' ? 'Viudo(a)' :
+                               status === 'union' ? 'Unión Libre' : 'Divorciado(a)'}
+                            </Label>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                      {errors.civil_status && <p className="text-sm sm:text-base text-red-600">{errors.civil_status.message}</p>}
+                    </div>
+
+                    {isMarried && (
+                      <div className="space-y-2">
+                        <Label className="text-sm sm:text-base">Nombre del Cónyuge *</Label>
+                        <Input {...register('spouse_name')} placeholder="Nombre completo del cónyuge" className="min-h-[44px] sm:min-h-[48px] text-base" />
+                        {errors.spouse_name && <p className="text-sm sm:text-base text-red-600">{errors.spouse_name.message}</p>}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Step 3: Fiscal */}
+                {currentStep === 3 && (
+                  <div className="space-y-5">
+                    <div className="text-center mb-6">
+                      <h3 className="text-lg font-bold text-gray-900 mb-1">Información Fiscal</h3>
+                      <p className="text-sm text-gray-600">Completa tus datos fiscales</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm sm:text-base">Homoclave (RFC) *</Label>
+                      <Input {...register('homoclave')} maxLength={3} placeholder="Últimos 3 dígitos" className="min-h-[44px] sm:min-h-[48px] text-base" />
+                      {errors.homoclave && <p className="text-sm sm:text-base text-red-600">{errors.homoclave.message}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm sm:text-base">RFC Calculado</Label>
+                      <Input value={calculatedRfc} readOnly disabled className="font-mono font-bold min-h-[44px] sm:min-h-[48px] text-base" />
+                      <p className="text-xs sm:text-sm text-muted-foreground">Se calcula automáticamente.</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm sm:text-base">Situación Fiscal *</Label>
+                      <select {...register('fiscal_situation')} className="flex h-12 sm:h-14 w-full rounded-md border border-input bg-background px-3 py-2 text-base min-h-[44px] sm:min-h-[48px]">
+                        <option value="">Seleccionar...</option>
+                        <option value="asalariado">Empleado con nómina</option>
+                        <option value="honorarios">Honorarios</option>
+                        <option value="dividendos">Dividendos o acciones</option>
+                        <option value="pensionado">Pensionado</option>
+                        <option value="actividad_empresarial">Persona Física con Actividad Empresarial</option>
+                      </select>
+                      {errors.fiscal_situation && <p className="text-sm sm:text-base text-red-600">{errors.fiscal_situation.message}</p>}
+                    </div>
+                  </div>
+                )}
+
+              </CardContent>
+            </Card>
+
+            {/* Navigation */}
+            <div className="flex justify-between items-center gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handlePrevStep}
+                disabled={currentStep === 1 || isSaving}
+              >
+                <ChevronLeft className="w-4 h-4 mr-2" />
+                Anterior
+              </Button>
+
+              {currentStep < STEPS.length ? (
+                <Button
+                  type="button"
+                  onClick={handleNextStep}
+                  disabled={isSaving}
+                  style={{ backgroundColor: '#FF6801' }}
+                  className="text-white"
+                >
+                  {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  Siguiente
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={handleFinalSubmit}
+                  disabled={isSaving}
+                  style={{ backgroundColor: '#FF6801' }}
+                  className="text-white"
+                >
+                  {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                  {isSaving ? 'Guardando...' : 'Guardar y continuar'}
+                </Button>
+              )}
+            </div>
+          </form>
+        </div>
+
+        {/* Sidebar */}
+        <div className="lg:col-span-1">
+          <Card className="sticky top-6">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base text-center">Foto de Perfil</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center">
+                <label htmlFor="profile-picture" className="cursor-pointer group inline-block">
+                  <div className="w-24 h-24 mx-auto rounded-full bg-gray-200 flex items-center justify-center overflow-hidden ring-2 ring-offset-2 ring-primary-500/50 group-hover:ring-primary-500/80">
+                    {previewUrl ? (
+                      <img src={previewUrl} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-12 h-12 text-gray-400" />
+                    )}
+                  </div>
+                  <span className="text-xs font-semibold text-gray-500 mt-2 group-hover:text-primary-600 block">Cambiar foto</span>
+                </label>
+                <input id="profile-picture" type="file" accept="image/*" className="hidden" onChange={handlePictureChange} />
+              </div>
+
+              {(firstName || lastName) && (
+                <div className="space-y-2 text-sm text-gray-600 bg-muted p-3 rounded-lg">
+                  <div className="flex justify-between">
+                    <span className="font-medium">Nombre:</span>
+                    <span>{normalizeNameToTitleCase(firstName || '')} {normalizeNameToTitleCase(lastName || '')}</span>
+                  </div>
+                  {user?.email && (
+                    <div className="flex justify-between">
+                      <span className="font-medium">Email:</span>
+                      <span className="truncate ml-2">{user.email}</span>
+                    </div>
+                  )}
+                  {calculatedRfc && (
+                    <div className="flex justify-between">
+                      <span className="font-medium">RFC:</span>
+                      <span className="font-mono font-bold text-primary-600">{calculatedRfc}</span>
+                    </div>
                   )}
                 </div>
-                <span className="text-xs font-semibold text-gray-500 mt-2 group-hover:text-primary-600">Cambiar foto</span>
-              </label>
-              <input id="profile-picture-upload" type="file" accept="image/*" className="hidden" onChange={handlePictureChange} />
-            </div>
-          </div>
-
-          {isFirstTimeUser && !isProfileComplete && (
-            <div className="bg-blue-50 border-l-4 border-blue-400 text-blue-800 p-4 mb-6 rounded-r-lg">
-                <h3 className="font-bold flex items-center"><Info className="w-5 h-5 mr-2" />¡Bienvenido!</h3>
-                <p className="text-sm mt-1">El primer paso para comenzar tu solicitud de financiamiento es que completes tu perfil. Ingresa tus datos tal como aparecen en tu identificación oficial.</p>
-            </div>
-          )}
-
-          {isProfileComplete ? (
-            <div className="mb-6 p-6 bg-green-50 border border-green-200 rounded-xl text-center">
-                <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-                <h3 className="text-xl font-bold text-green-900">¡Perfil Completo!</h3>
-                <p className="text-gray-600 mt-2 mb-4">Has completado tu información personal. El siguiente paso es crear tu perfilamiento bancario para encontrar el banco con las mejores condiciones para tu caso específico.</p>
-                <Link
-                    href="/escritorio/perfilacion-bancaria"
-                    className="inline-flex items-center justify-center py-2.5 px-6 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-green-50 focus:ring-green-500"
-                >
-                    Crear mi perfil bancario  <ArrowRight className="w-4 h-4 ml-2" />
-                </Link>
-            </div>
-          ) : null}
-
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Teléfono</label>
-                <div className="flex mt-1">
-                  <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">MX +52</span>
-                  <input id="phone" {...profileForm.register('phone')} className={phoneInputClassName} />
-                </div>
-                {profileForm.formState.errors.phone && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.phone?.message as React.ReactNode}</p>}
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Correo Electrónico</label>
-                <input id="email" type="email" value={user?.email || ''} readOnly disabled className={inputClassName} />
-              </div>
-              <div>
-                <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">Nombre(s)</label>
-                <input id="first_name" {...profileForm.register('first_name')} className={inputClassName} />
-                {profileForm.formState.errors.first_name && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.first_name?.message as React.ReactNode}</p>}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">Apellido Paterno</label>
-                <input id="last_name" {...profileForm.register('last_name')} className={inputClassName} />
-                {profileForm.formState.errors.last_name && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.last_name?.message as React.ReactNode}</p>}
-              </div>
-              <div>
-                <label htmlFor="mother_last_name" className="block text-sm font-medium text-gray-700">Apellido Materno</label>
-                <input id="mother_last_name" {...profileForm.register('mother_last_name')} className={inputClassName} />
-                {profileForm.formState.errors.mother_last_name && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.mother_last_name?.message as React.ReactNode}</p>}
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="birth_date" className="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
-                <input id="birth_date" type="date" {...profileForm.register('birth_date')} className={inputClassName} />
-                {profileForm.formState.errors.birth_date && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.birth_date.message as React.ReactNode}</p>}
-              </div>
-              <div>
-                <label htmlFor="homoclave" className="block text-sm font-medium text-gray-700">Homoclave (RFC)</label>
-                <input id="homoclave" {...profileForm.register('homoclave')} className={inputClassName} maxLength={3} placeholder="Últimos 3 dígitos del RFC" />
-                {profileForm.formState.errors.homoclave && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.homoclave.message as React.ReactNode}</p>}
-              </div>
-            </div>
-            
-            <div>
-              <label htmlFor="rfc" className="block text-sm font-medium text-gray-700">RFC Calculado</label>
-              <input 
-                id="rfc" 
-                type="text" 
-                value={calculatedRfc} 
-                readOnly 
-                disabled 
-                className={inputClassName} 
-              />
-              <p className="text-xs text-gray-500 mt-1">Este campo se calcula automáticamente al guardar tu perfil con todos los datos requeridos.</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <FormField label="Situación Fiscal" error={profileForm.formState.errors.fiscal_situation?.message as React.ReactNode}>
-                <select {...profileForm.register('fiscal_situation')} className={inputClassName}>
-                  <option value="">Seleccionar...</option>
-                  <option value="asalariado">Empleado con nónima</option>
-                  <option value="honorarios">Honorarios</option>
-                  <option value="dividendos">Dividendos o acciones</option>
-                  <option value="pensionado">Pensionado</option>
-                  <option value="actividad_empresarial">Persona Física con Actividad Empresarial</option>
-                </select>
-              </FormField>
-              <FormField label="Estado Civil" error={profileForm.formState.errors.civil_status?.message as React.ReactNode}>
-                <select {...profileForm.register('civil_status')} className={inputClassName}>
-                  <option value="">Seleccionar...</option>
-                  <option value="soltero">Soltero(a)</option>
-                  <option value="casado">Casado(a)</option>
-                  <option value="viudo">Viudo(a)</option>
-                  <option value="union">Unión Libre</option>
-                </select>
-              </FormField>
-              <FormField label="Género" error={profileForm.formState.errors.gender?.message as React.ReactNode}>
-                <select {...profileForm.register('gender')} className={inputClassName}>
-                  <option value="">Seleccionar...</option>
-                  <option value="Masculino">Masculino</option>
-                  <option value="Femenino">Femenino</option>
-                </select>
-              </FormField>
-            </div>
-
-            {isMarried && (
-              <div>
-                <label htmlFor="spouse_name" className="block text-sm font-medium text-gray-700">Nombre Completo del Cónyuge</label>
-                <input id="spouse_name" {...profileForm.register('spouse_name')} className={inputClassName} placeholder="Nombre completo" />
-                {profileForm.formState.errors.spouse_name && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.spouse_name.message as React.ReactNode}</p>}
-              </div>
-            )}
-
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <label className="flex items-start cursor-pointer">
-                <input
-                  id="asesor_autorizado_acceso"
-                  type="checkbox"
-                  className="form-checkbox h-5 w-5 text-primary-600 rounded mt-1"
-                  checked={asesorAutorizadoAcceso}
-                  onChange={(e) => setAsesorAutorizadoAcceso(e.target.checked)}
-                />
-                <div className="ml-3">
-                  <span className="font-semibold text-gray-800">Autorizar acceso a mi asesor</span>
-                  <p className="text-sm text-gray-600">
-                    {assignedAgentName 
-                      ? `Autorizar a ${assignedAgentName} el acceso a mi cuenta para dar seguimiento a mi solicitud.`
-                      : 'Autorizar el acceso a mi cuenta a mi asesor asignado para dar seguimiento a mi solicitud.'
-                    }
-                  </p>
-                </div>
-              </label>
-            </div>
-            
-            <div className="flex justify-end pt-4">
-              <button 
-                type="submit" 
-                disabled={saveState === 'saving'} 
-                className={`inline-flex items-center justify-center py-2.5 px-6 border border-transparent shadow-sm text-sm font-bold rounded-lg text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-70
-                  ${saveState === 'saved' 
-                    ? 'bg-green-500 hover:bg-green-600 focus:ring-green-500' 
-                    : 'bg-gradient-to-r from-yellow-500 to-primary-500 hover:from-yellow-600 hover:to-primary-600 focus:ring-primary-500'
-                  }`}
-              >
-                {saveState === 'saving' && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {saveState === 'saved' && <CheckCircle className="w-4 h-4 mr-2" />}
-                {saveState === 'saving' ? 'Guardando...' : saveState === 'saved' ? '¡Guardado!' : 'Guardar Cambios'}
-              </button>
-            </div>
-          </div>
-        </form>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
-}
-
-const FormField: React.FC<{ label: string; error?: React.ReactNode; children: React.ReactNode; }> = ({ label, error, children }) => (
-  <div>
-    <label className="block text-sm font-medium text-gray-700">{label}</label>
-    <div className="mt-1">{children}</div>
-    {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
-  </div>
-);
-
+};
 
 export default ProfilePage;

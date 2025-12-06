@@ -3,32 +3,140 @@
 import React, { useState, useEffect } from 'react';
 import {
   BarChart3, TrendingUp, Users, MousePointerClick,
-  Calendar, Filter, Download, RefreshCw, ExternalLink
+  Calendar, Filter, Download, RefreshCw, ExternalLink, AlertCircle,
+  FileText, Eye, TrendingDown, CheckCircle, Clock
 } from 'lucide-react';
-import marketingEvents, { EventFilters, EventStats, MarketingEvent } from '../services/MarketingEventsService';
+import {
+  MetricsService,
+  type FunnelMetrics,
+  type MetaFunnelMetrics,
+  type SourceMetrics,
+  type CampaignMetrics as CampaignMetricsType,
+  type PageMetrics,
+  type EventTypeMetrics,
+  type TimeSeriesData
+} from '../services/MetricsService';
+
+interface DashboardMetrics {
+  // Métricas del embudo principal
+  funnelMetrics: FunnelMetrics;
+  metaFunnelMetrics: MetaFunnelMetrics;
+
+  // Métricas adicionales (ahora desde MetricsService)
+  total_events: number;
+  unique_sessions: number;
+  unique_users: number;
+
+  // Top fuentes y campañas (ahora tipadas desde MetricsService)
+  top_sources: SourceMetrics[];
+  top_campaigns: CampaignMetricsType[];
+
+  // Eventos por tipo
+  events_by_type: EventTypeMetrics[];
+
+  // Eventos en el tiempo
+  events_over_time: TimeSeriesData[];
+
+  // Páginas más vistas
+  top_pages: PageMetrics[];
+}
 
 const MarketingAnalyticsDashboardPage: React.FC = () => {
-  const [stats, setStats] = useState<EventStats | null>(null);
-  const [events, setEvents] = useState<MarketingEvent[]>([]);
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState<EventFilters>({
-    startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+  const [error, setError] = useState<string | null>(null);
+
+  const [filters, setFilters] = useState<{
+    startDate?: string;
+    endDate?: string;
+    utmSource?: string;
+    utmCampaign?: string;
+  }>({
+    // Cambiar a 90 días (3 meses) para capturar todos los eventos recientes
+    startDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0],
   });
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'events' | 'sources' | 'campaigns'>('overview');
+  const [availableSources, setAvailableSources] = useState<string[]>([]);
+  const [availableCampaigns, setAvailableCampaigns] = useState<string[]>([]);
+
+  const [activeTab, setActiveTab] = useState<'overview' | 'funnel' | 'sources' | 'campaigns' | 'pages' | 'events' | 'meta-funnel'>('overview');
 
   const loadData = async () => {
     setLoading(true);
+    setError(null);
+
     try {
-      const [statsData, eventsData] = await Promise.all([
-        marketingEvents.getEventStats(filters),
-        marketingEvents.getEvents(filters, 500),
+      console.log('[MarketingAnalytics] 🔄 Iniciando carga de datos con filtros:', filters);
+
+      // Cargar TODAS las métricas desde MetricsService para garantizar consistencia
+      const [
+        funnelMetrics,
+        metaFunnelMetrics,
+        sourceMetrics,
+        campaignMetrics,
+        pageMetrics,
+        eventTypeMetrics,
+        timeSeriesData,
+        sources,
+        campaigns,
+        totalVisits,
+        uniqueVisitors
+      ] = await Promise.all([
+        MetricsService.getFunnelMetricsOptimized(filters.startDate, filters.endDate),
+        MetricsService.getMetaFunnelMetrics(filters.startDate, filters.endDate),
+        MetricsService.getSourceMetrics(filters.startDate, filters.endDate, filters.utmCampaign),
+        MetricsService.getCampaignMetrics(filters.startDate, filters.endDate, filters.utmSource),
+        MetricsService.getPageMetrics(filters.startDate, filters.endDate),
+        MetricsService.getEventTypeMetrics(filters.startDate, filters.endDate),
+        MetricsService.getTimeSeriesData(filters.startDate, filters.endDate),
+        MetricsService.getAvailableUTMSources(),
+        MetricsService.getAvailableUTMCampaigns(),
+        MetricsService.getTotalSiteVisits(filters.startDate, filters.endDate),
+        MetricsService.getUniqueSiteVisitors(filters.startDate, filters.endDate)
       ]);
-      setStats(statsData);
-      setEvents(eventsData);
-    } catch (error) {
-      console.error('Failed to load marketing data:', error);
+
+      console.log('[MarketingAnalytics] ✅ Datos cargados exitosamente:', {
+        funnel: funnelMetrics,
+        metaFunnel: metaFunnelMetrics,
+        sources: sourceMetrics.length,
+        campaigns: campaignMetrics.length,
+        pages: pageMetrics.length,
+        eventTypes: eventTypeMetrics.length,
+        timeSeriesData: timeSeriesData.length,
+        totalVisits,
+        uniqueVisitors
+      });
+
+      console.log('[MarketingAnalytics] 📊 Detalle de métricas del embudo:', {
+        landing_views: funnelMetrics.landing_page_views,
+        registrations: funnelMetrics.registrations,
+        profile_completes: funnelMetrics.profile_completes,
+        bank_profiling: funnelMetrics.bank_profiling_completes,
+        app_starts: funnelMetrics.application_starts,
+        lead_completes: funnelMetrics.lead_completes
+      });
+
+      setAvailableSources(sources);
+      setAvailableCampaigns(campaigns);
+
+      // Consolidar todas las métricas
+      setMetrics({
+        funnelMetrics,
+        metaFunnelMetrics,
+        total_events: eventTypeMetrics.reduce((sum, e) => sum + e.count, 0),
+        unique_sessions: uniqueVisitors,
+        unique_users: eventTypeMetrics.reduce((sum, e) => sum + e.unique_users, 0),
+        top_sources: sourceMetrics.slice(0, 10),
+        top_campaigns: campaignMetrics.slice(0, 10),
+        events_by_type: eventTypeMetrics,
+        events_over_time: timeSeriesData,
+        top_pages: pageMetrics.slice(0, 15)
+      });
+
+    } catch (err) {
+      console.error('[MarketingAnalytics] Error loading data:', err);
+      setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
       setLoading(false);
     }
@@ -36,138 +144,178 @@ const MarketingAnalyticsDashboardPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
+  }, [filters.startDate, filters.endDate, filters.utmSource, filters.utmCampaign]);
+
+  // Auto-refresh cada 5 minutos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('[MarketingAnalytics] Auto-refresh triggered (every 5 minutes)');
+      loadData();
+    }, 5 * 60 * 1000); // 5 minutos
+
+    return () => clearInterval(interval);
   }, [filters]);
 
-  const exportToCSV = () => {
-    if (!events.length) return;
+  // Función para calcular tasas de conversión
+  const calculateConversionRates = (funnel: FunnelMetrics) => {
+    const safeDiv = (a: number, b: number) => b > 0 ? ((a / b) * 100).toFixed(1) : '0.0';
 
-    const headers = ['Date', 'Event Type', 'Event Name', 'Page URL', 'UTM Source', 'UTM Medium', 'UTM Campaign', 'Referrer'];
-    const rows = events.map(e => [
-      e.created_at || '',
-      e.event_type,
-      e.event_name,
-      e.page_url,
-      e.utm_source || '',
-      e.utm_medium || '',
-      e.utm_campaign || '',
-      e.referrer || '',
-    ]);
-
-    const csv = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `marketing-events-${Date.now()}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    return {
+      landing_to_registration: safeDiv(funnel.registrations, funnel.landing_page_views),
+      registration_to_profile: safeDiv(funnel.profile_completes, funnel.registrations),
+      profile_to_bank: safeDiv(funnel.bank_profiling_completes, funnel.profile_completes),
+      bank_to_application: safeDiv(funnel.application_starts, funnel.bank_profiling_completes),
+      application_to_lead: safeDiv(funnel.lead_completes, funnel.application_starts),
+      overall: safeDiv(funnel.lead_completes, funnel.landing_page_views)
+    };
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <RefreshCw className="w-8 h-8 animate-spin text-primary-600" />
+          <p className="text-gray-600">Cargando analytics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+          <AlertCircle className="w-8 h-8 text-red-600 mb-2" />
+          <h3 className="text-lg font-semibold text-red-900 mb-2">Error</h3>
+          <p className="text-red-700">{error}</p>
+          <button
+            onClick={() => loadData()}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!metrics) {
+    return null;
+  }
+
+  const conversionRates = calculateConversionRates(metrics.funnelMetrics);
+  const metaConversionRates = calculateConversionRates({
+    landing_page_views: metrics.metaFunnelMetrics.meta_landing_views,
+    registrations: metrics.metaFunnelMetrics.meta_registrations,
+    profile_completes: metrics.metaFunnelMetrics.meta_profile_completes,
+    bank_profiling_completes: metrics.metaFunnelMetrics.meta_bank_profiling_completes,
+    application_starts: metrics.metaFunnelMetrics.meta_application_starts,
+    lead_completes: metrics.metaFunnelMetrics.meta_lead_completes,
+    application_submissions: 0,
+    landing_user_ids: [],
+    registered_user_ids: [],
+    profile_complete_user_ids: [],
+    bank_profile_user_ids: [],
+    application_start_user_ids: [],
+    lead_complete_user_ids: []
+  });
+
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <BarChart3 className="w-8 h-8 text-primary-600" />
-            Analytics de Marketing
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Visualiza eventos, referrers y rendimiento de campañas
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={loadData}
-            disabled={loading}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2 text-sm font-medium disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Actualizar
-          </button>
-          <button
-            onClick={exportToCSV}
-            disabled={!events.length}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 flex items-center gap-2 text-sm font-medium disabled:opacity-50"
-          >
-            <Download className="w-4 h-4" />
-            Exportar CSV
-          </button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Filter className="w-5 h-5 text-gray-600" />
-          <h3 className="font-semibold text-gray-900">Filtros</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio</label>
-            <input
-              type="date"
-              value={filters.startDate || ''}
-              onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Fin</label>
-            <input
-              type="date"
-              value={filters.endDate || ''}
-              onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Evento</label>
-            <select
-              value={filters.eventType || ''}
-              onChange={(e) => setFilters({ ...filters, eventType: e.target.value || undefined })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Marketing Analytics</h1>
+              <p className="text-gray-600 mt-1">Panel completo de métricas y embudo de conversión</p>
+            </div>
+            <button
+              onClick={() => loadData()}
+              className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
             >
-              <option value="">Todos</option>
-              <option value="page_view">Page View</option>
-              <option value="button_click">Button Click</option>
-              <option value="form_submit">Form Submit</option>
-              <option value="lead_capture">Lead Capture</option>
-            </select>
+              <RefreshCw className="w-4 h-4" />
+              Actualizar
+            </button>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">UTM Source</label>
-            <input
-              type="text"
-              value={filters.utmSource || ''}
-              onChange={(e) => setFilters({ ...filters, utmSource: e.target.value || undefined })}
-              placeholder="Ej: google, facebook"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-            />
+
+          {/* Filtros */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Fecha Inicio
+              </label>
+              <input
+                type="date"
+                value={filters.startDate}
+                onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Fecha Fin
+              </label>
+              <input
+                type="date"
+                value={filters.endDate}
+                onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Fuente UTM
+              </label>
+              <select
+                value={filters.utmSource || ''}
+                onChange={(e) => setFilters({ ...filters, utmSource: e.target.value || undefined })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="">Todas las fuentes</option>
+                {availableSources.map(source => (
+                  <option key={source} value={source}>{source}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Campaña UTM
+              </label>
+              <select
+                value={filters.utmCampaign || ''}
+                onChange={(e) => setFilters({ ...filters, utmCampaign: e.target.value || undefined })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="">Todas las campañas</option>
+                {availableCampaigns.map(campaign => (
+                  <option key={campaign} value={campaign}>{campaign}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Stats Cards */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        {/* KPIs Principales */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Eventos</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.total_events.toLocaleString()}</p>
+                <p className="text-sm font-medium text-gray-600">ConversionLandingPage</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{metrics.funnelMetrics.registrations.toLocaleString()}</p>
+                <p className="text-xs text-gray-500 mt-1">Registros en /financiamientos</p>
               </div>
               <div className="p-3 bg-blue-100 rounded-lg">
-                <BarChart3 className="w-6 h-6 text-blue-600" />
+                <MousePointerClick className="w-6 h-6 text-blue-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Sesiones Únicas</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.unique_sessions.toLocaleString()}</p>
+                <p className="text-sm font-medium text-gray-600">Usuarios Únicos</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{metrics.unique_users.toLocaleString()}</p>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
                 <Users className="w-6 h-6 text-green-600" />
@@ -175,186 +323,334 @@ const MarketingAnalyticsDashboardPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Conversiones</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">
-                  {stats.events_by_type.find(e => e.type === 'lead_capture')?.count || 0}
-                </p>
+                <p className="text-sm font-medium text-gray-600">Leads Completos</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{metrics.funnelMetrics.lead_completes.toLocaleString()}</p>
               </div>
               <div className="p-3 bg-purple-100 rounded-lg">
-                <TrendingUp className="w-6 h-6 text-purple-600" />
+                <CheckCircle className="w-6 h-6 text-purple-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Clics</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">
-                  {stats.events_by_type.find(e => e.type === 'button_click')?.count || 0}
-                </p>
+                <p className="text-sm font-medium text-gray-600">Conversión Global</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{conversionRates.overall}%</p>
               </div>
-              <div className="p-3 bg-orange-100 rounded-lg">
-                <MousePointerClick className="w-6 h-6 text-orange-600" />
+              <div className="p-3 bg-yellow-100 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-yellow-600" />
               </div>
             </div>
           </div>
         </div>
-      )}
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          {[
-            { id: 'overview', label: 'Resumen', icon: BarChart3 },
-            { id: 'events', label: 'Eventos', icon: Calendar },
-            { id: 'sources', label: 'Fuentes', icon: ExternalLink },
-            { id: 'campaigns', label: 'Campañas', icon: TrendingUp },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                activeTab === tab.id
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <tab.icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      {/* Tab Content */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <RefreshCw className="w-8 h-8 animate-spin text-primary-600" />
+        {/* Tabs */}
+        <div className="bg-white rounded-lg shadow-sm">
+          <div className="border-b border-gray-200">
+            <nav className="flex space-x-4 px-6" aria-label="Tabs">
+              {[
+                { key: 'overview', label: 'Resumen', icon: BarChart3 },
+                { key: 'funnel', label: 'Embudo', icon: TrendingDown },
+                { key: 'meta-funnel', label: 'Embudo Meta', icon: TrendingDown },
+                { key: 'sources', label: 'Fuentes', icon: MousePointerClick },
+                { key: 'campaigns', label: 'Campañas', icon: FileText },
+                { key: 'pages', label: 'Páginas', icon: Eye },
+                { key: 'events', label: 'Eventos', icon: Clock }
+              ].map(tab => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key as any)}
+                    className={`
+                      flex items-center gap-2 py-4 px-3 border-b-2 font-medium text-sm transition-colors
+                      ${activeTab === tab.key
+                        ? 'border-primary-500 text-primary-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }
+                    `}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </nav>
           </div>
-        ) : (
-          <>
-            {activeTab === 'overview' && stats && (
+
+          <div className="p-6">
+            {/* Tab: Overview */}
+            {activeTab === 'overview' && (
               <div className="space-y-6">
+                <h3 className="text-lg font-semibold text-gray-900">Resumen de Métricas</h3>
+
+                {/* Embudo compacto */}
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  <div className="bg-blue-50 rounded-lg p-4">
+                    <p className="text-sm text-blue-600 font-medium">Landing Views</p>
+                    <p className="text-2xl font-bold text-blue-900 mt-1">{metrics.funnelMetrics.landing_page_views}</p>
+                  </div>
+                  <div className="bg-indigo-50 rounded-lg p-4">
+                    <p className="text-sm text-indigo-600 font-medium">Registros</p>
+                    <p className="text-2xl font-bold text-indigo-900 mt-1">{metrics.funnelMetrics.registrations}</p>
+                    <p className="text-xs text-indigo-600 mt-1">{conversionRates.landing_to_registration}%</p>
+                  </div>
+                  <div className="bg-purple-50 rounded-lg p-4">
+                    <p className="text-sm text-purple-600 font-medium">Perfil Completo</p>
+                    <p className="text-2xl font-bold text-purple-900 mt-1">{metrics.funnelMetrics.profile_completes}</p>
+                    <p className="text-xs text-purple-600 mt-1">{conversionRates.registration_to_profile}%</p>
+                  </div>
+                  <div className="bg-pink-50 rounded-lg p-4">
+                    <p className="text-sm text-pink-600 font-medium">Solicitudes</p>
+                    <p className="text-2xl font-bold text-pink-900 mt-1">{metrics.funnelMetrics.application_starts}</p>
+                    <p className="text-xs text-pink-600 mt-1">{conversionRates.bank_to_application}%</p>
+                  </div>
+                  <div className="bg-red-50 rounded-lg p-4">
+                    <p className="text-sm text-red-600 font-medium">Leads Completos</p>
+                    <p className="text-2xl font-bold text-red-900 mt-1">{metrics.funnelMetrics.lead_completes}</p>
+                    <p className="text-xs text-red-600 mt-1">{conversionRates.application_to_lead}%</p>
+                  </div>
+                </div>
+
+                {/* Top fuentes */}
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-4">Eventos por Tipo</h3>
-                  <div className="space-y-3">
-                    {stats.events_by_type.map((item) => (
-                      <div key={item.type} className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 capitalize">{item.type.replace('_', ' ')}</span>
+                  <h4 className="text-md font-semibold text-gray-900 mb-3">Top 5 Fuentes de Tráfico</h4>
+                  <div className="space-y-2">
+                    {metrics.top_sources.slice(0, 5).map((source, idx) => (
+                      <div key={source.source} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center gap-3">
-                          <div className="w-64 bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-primary-600 h-2 rounded-full"
-                              style={{ width: `${(item.count / stats.total_events) * 100}%` }}
-                            />
+                          <span className="text-sm font-mono text-gray-500">#{idx + 1}</span>
+                          <div>
+                            <span className="font-medium text-gray-900">{source.source}</span>
+                            <p className="text-xs text-green-600 font-medium">
+                              {source.conversionRate}% conversión
+                            </p>
                           </div>
-                          <span className="text-sm font-medium text-gray-900 w-16 text-right">
-                            {item.count.toLocaleString()}
-                          </span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="text-sm text-gray-600">{source.users} usuarios</span>
+                          <span className="text-sm font-semibold text-gray-900">{source.count} eventos</span>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
+              </div>
+            )}
 
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-4">Eventos en el Tiempo (Últimos 30 días)</h3>
-                  <div className="h-64 flex items-end justify-between gap-1">
-                    {stats.events_over_time.slice(-30).map((item, idx) => {
-                      const maxCount = Math.max(...stats.events_over_time.map(e => e.count));
-                      const height = (item.count / maxCount) * 100;
-                      return (
-                        <div key={idx} className="flex-1 flex flex-col items-center">
+            {/* Tab: Embudo Completo */}
+            {activeTab === 'funnel' && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold text-gray-900">Embudo de Conversión Completo</h3>
+
+                <div className="space-y-4">
+                  {[
+                    { label: 'Vistas al Landing Page', value: metrics.funnelMetrics.landing_page_views, rate: '100%', color: 'blue' },
+                    { label: 'Registros (ConversionLandingPage)', value: metrics.funnelMetrics.registrations, rate: conversionRates.landing_to_registration + '%', color: 'indigo' },
+                    { label: 'Perfil Completo', value: metrics.funnelMetrics.profile_completes, rate: conversionRates.registration_to_profile + '%', color: 'purple' },
+                    { label: 'Perfilación Bancaria', value: metrics.funnelMetrics.bank_profiling_completes, rate: conversionRates.profile_to_bank + '%', color: 'pink' },
+                    { label: 'Solicitud Iniciada', value: metrics.funnelMetrics.application_starts, rate: conversionRates.bank_to_application + '%', color: 'rose' },
+                    { label: 'Lead Completo', value: metrics.funnelMetrics.lead_completes, rate: conversionRates.application_to_lead + '%', color: 'red' },
+                  ].map((step, idx) => {
+                    const percentage = metrics.funnelMetrics.landing_page_views > 0
+                      ? (step.value / metrics.funnelMetrics.landing_page_views) * 100
+                      : 0;
+
+                    return (
+                      <div key={step.label} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className={`w-8 h-8 rounded-full bg-${step.color}-100 text-${step.color}-600 flex items-center justify-center text-sm font-semibold`}>
+                              {idx + 1}
+                            </span>
+                            <span className="font-medium text-gray-900">{step.label}</span>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className="text-sm text-gray-600">Conversión: {step.rate}</span>
+                            <span className="text-lg font-bold text-gray-900">{step.value.toLocaleString()}</span>
+                          </div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3">
                           <div
-                            className="w-full bg-primary-500 rounded-t hover:bg-primary-600 transition-colors cursor-pointer"
-                            style={{ height: `${height}%` }}
-                            title={`${item.date}: ${item.count} events`}
+                            className={`bg-${step.color}-500 h-3 rounded-full transition-all duration-500`}
+                            style={{ width: `${percentage}%` }}
                           />
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            {activeTab === 'events' && (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Evento</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Página</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">UTM Source</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Campaña</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {events.slice(0, 100).map((event) => (
-                      <tr key={event.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {event.created_at ? new Date(event.created_at).toLocaleString() : '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                            {event.event_name}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">{event.page_url}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {event.utm_source || '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {event.utm_campaign || '-'}
-                        </td>
-                      </tr>
+            {/* Tab: Embudo Meta */}
+            {activeTab === 'meta-funnel' && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold text-gray-900">Embudo Meta (Facebook/Instagram)</h3>
+
+                <div className="space-y-4">
+                  {[
+                    { label: 'Vistas desde Meta', value: metrics.metaFunnelMetrics.meta_landing_views, rate: '100%' },
+                    { label: 'Registros desde Meta', value: metrics.metaFunnelMetrics.meta_registrations, rate: metaConversionRates.landing_to_registration + '%' },
+                    { label: 'Perfil Completo', value: metrics.metaFunnelMetrics.meta_profile_completes, rate: metaConversionRates.registration_to_profile + '%' },
+                    { label: 'Perfilación Bancaria', value: metrics.metaFunnelMetrics.meta_bank_profiling_completes, rate: metaConversionRates.profile_to_bank + '%' },
+                    { label: 'Solicitud Iniciada', value: metrics.metaFunnelMetrics.meta_application_starts, rate: metaConversionRates.bank_to_application + '%' },
+                    { label: 'Lead Completo desde Meta', value: metrics.metaFunnelMetrics.meta_lead_completes, rate: metaConversionRates.application_to_lead + '%' },
+                  ].map((step, idx) => {
+                    const percentage = metrics.metaFunnelMetrics.meta_landing_views > 0
+                      ? (step.value / metrics.metaFunnelMetrics.meta_landing_views) * 100
+                      : 0;
+
+                    return (
+                      <div key={step.label} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-gray-900">{step.label}</span>
+                          <div className="flex items-center gap-4">
+                            <span className="text-sm text-gray-600">Conversión: {step.rate}</span>
+                            <span className="text-lg font-bold text-gray-900">{step.value.toLocaleString()}</span>
+                          </div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3">
+                          <div
+                            className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Fuentes */}
+            {activeTab === 'sources' && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Top Fuentes de Tráfico</h3>
+                <div className="space-y-2">
+                  {metrics.top_sources.map((source, idx) => (
+                    <div key={source.source} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <span className="text-lg font-mono text-gray-500 w-8">#{idx + 1}</span>
+                        <div>
+                          <p className="font-semibold text-gray-900">{source.source}</p>
+                          <p className="text-sm text-gray-600">
+                            {source.users} usuarios • {source.sessions} sesiones • {source.conversions} conversiones
+                          </p>
+                          <p className="text-sm text-green-600 font-medium">
+                            {source.conversionRate}% tasa de conversión
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-gray-900">{source.count}</p>
+                        <p className="text-sm text-gray-600">eventos totales</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Campañas */}
+            {activeTab === 'campaigns' && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Top Campañas UTM</h3>
+                {metrics.top_campaigns.length > 0 ? (
+                  <div className="space-y-2">
+                    {metrics.top_campaigns.map((campaign, idx) => (
+                      <div key={`${campaign.campaign}-${campaign.source}-${campaign.medium}`} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <span className="text-lg font-mono text-gray-500 w-8">#{idx + 1}</span>
+                          <div>
+                            <p className="font-semibold text-gray-900">{campaign.campaign}</p>
+                            <p className="text-xs text-gray-500">
+                              Fuente: {campaign.source} • Medio: {campaign.medium}
+                            </p>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {campaign.users} usuarios • {campaign.conversions} conversiones
+                            </p>
+                            <p className="text-sm text-green-600 font-medium">
+                              {campaign.conversionRate}% tasa de conversión
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-gray-900">{campaign.count}</p>
+                          <p className="text-sm text-gray-600">eventos totales</p>
+                        </div>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-gray-500">
+                    <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                    <p>No hay campañas con parámetros UTM en este período</p>
+                  </div>
+                )}
               </div>
             )}
 
-            {activeTab === 'sources' && stats && (
-              <div className="space-y-3">
-                <h3 className="font-semibold text-gray-900 mb-4">Top 10 Fuentes de Tráfico</h3>
-                {stats.top_sources.map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <span className="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-bold text-sm">
-                        {idx + 1}
-                      </span>
-                      <span className="font-medium text-gray-900">{item.source}</span>
+            {/* Tab: Páginas */}
+            {activeTab === 'pages' && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Páginas Más Vistas</h3>
+                <div className="space-y-2">
+                  {metrics.top_pages.map((page, idx) => (
+                    <div key={page.page} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <span className="text-lg font-mono text-gray-500 flex-shrink-0">#{idx + 1}</span>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-mono text-sm text-gray-900 truncate">{page.page}</p>
+                          <p className="text-sm text-gray-600">
+                            {page.unique_users} usuarios • {page.unique_sessions} sesiones
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-2xl font-bold text-gray-900">{page.views}</p>
+                        <p className="text-sm text-gray-600">vistas</p>
+                      </div>
                     </div>
-                    <span className="text-lg font-bold text-gray-900">{item.count.toLocaleString()}</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
 
-            {activeTab === 'campaigns' && stats && (
-              <div className="space-y-3">
-                <h3 className="font-semibold text-gray-900 mb-4">Top 10 Campañas</h3>
-                {stats.top_campaigns.map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <span className="w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-sm">
-                        {idx + 1}
-                      </span>
-                      <span className="font-medium text-gray-900">{item.campaign}</span>
+            {/* Tab: Eventos */}
+            {activeTab === 'events' && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Distribución de Eventos</h3>
+                <div className="space-y-2">
+                  {metrics.events_by_type.map((event, idx) => (
+                    <div key={event.type} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-medium text-gray-900">{event.type}</span>
+                          <p className="text-xs text-gray-600">{event.unique_users} usuarios únicos</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm text-gray-600">{event.percentage.toFixed(1)}%</span>
+                          <span className="text-lg font-bold text-gray-900">{event.count}</span>
+                        </div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-primary-500 h-2 rounded-full transition-all duration-500"
+                          style={{ width: `${event.percentage}%` }}
+                        />
+                      </div>
                     </div>
-                    <span className="text-lg font-bold text-gray-900">{item.count.toLocaleString()}</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
-          </>
-        )}
+          </div>
+        </div>
       </div>
     </div>
   );
