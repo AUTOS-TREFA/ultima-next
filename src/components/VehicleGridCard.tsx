@@ -38,6 +38,15 @@ const VehicleGridCard: React.FC<VehicleGridCardProps> = ({ vehicle }) => {
     await toggleFavorite(vehicle.id);
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Only navigate if clicking on the card background, not on interactive elements
+    const target = e.target as HTMLElement;
+    const isInteractive = target.closest('button') || target.closest('a[href]') || target.closest('[role="button"]');
+    if (!isInteractive && hasSlug) {
+      window.location.href = `/autos/${vehicle.slug}`;
+    }
+  };
+
   const prefetchVehicle = () => {
     if (hasSlug) {
       queryClient.prefetchQuery({
@@ -52,18 +61,19 @@ const VehicleGridCard: React.FC<VehicleGridCardProps> = ({ vehicle }) => {
     const imageUrls = [
       mainImage,
       ...(vehicle.galeria_exterior || []),
-      ...(vehicle.galeria_interior || []),
     ];
-    // Deduplicate and filter out any falsy values
-    return [...new Set(imageUrls.filter(Boolean))];
+    // Deduplicate, filter out falsy values, and LIMIT TO 3 IMAGES MAX for performance
+    const uniqueImages = [...new Set(imageUrls.filter(Boolean))];
+    return uniqueImages.slice(0, 3);
   }, [vehicle]);
 
   const CardContent = (
     <div
       onMouseEnter={prefetchVehicle}
-      className={`bg-white rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300 ${!isPopular ? 'overflow-hidden' : ''} group flex flex-col relative ${isSeparado ? 'opacity-70' : ''} ${isPopular ? 'popular-card' : ''}`}
+      onClick={handleCardClick}
+      className={`bg-white rounded-3xl shadow-sm hover:shadow-lg transition-shadow duration-300 ${!isPopular ? 'overflow-hidden' : ''} group flex flex-col relative isolate ${isSeparado ? 'opacity-70' : ''} ${isPopular ? 'popular-card' : ''} cursor-pointer`}
     >
-        <div className={`block relative ${isPopular ? 'overflow-hidden rounded-t-xl' : ''}`}>
+        <div className={`block relative ${isPopular ? 'overflow-hidden rounded-t-3xl' : ''}`}>
             <ImageCarousel
               images={imagesForCarousel}
               alt={vehicle.titulo}
@@ -72,6 +82,7 @@ const VehicleGridCard: React.FC<VehicleGridCardProps> = ({ vehicle }) => {
               sucursal={vehicle.ubicacion}
               clasificacionid={vehicle.clasificacionid}
               carroceria={vehicle.carroceria}
+              isPopular={isPopular}
               className="aspect-[4/3]"
             />
             {isSeparado && (
@@ -79,7 +90,7 @@ const VehicleGridCard: React.FC<VehicleGridCardProps> = ({ vehicle }) => {
                     <span className="bg-gray-900 text-white text-sm font-bold py-1.5 px-4 rounded-md shadow-lg tracking-wider">SEPARADO</span>
                 </div>
             )}
-            <div className="absolute top-3 right-3 z-20">
+            <div className="absolute top-3 right-3 z-[2]">
                  <button
                     onClick={handleToggleFavorite}
                     data-gtm-id="card-grid-favorite"
@@ -96,14 +107,14 @@ const VehicleGridCard: React.FC<VehicleGridCardProps> = ({ vehicle }) => {
             <div>
                 <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                     {vehicle.ordencompra && (
-                        <p className="text-xs font-medium uppercase text-gray-400 tracking-wide">{vehicle.ordencompra}</p>
+                        <p className="text-[11px] font-medium uppercase text-gray-400 tracking-wide">{vehicle.ordencompra}</p>
                     )}
                     {vehicle.promociones && vehicle.promociones.length > 0 && vehicle.promociones.slice(0, 2).map((promo, idx) => {
                         const formattedPromo = formatPromotion(promo);
                         if (!formattedPromo) return null;
 
                         return (
-                            <span key={idx} className="text-xs font-medium text-orange-600 border border-orange-600 px-2 py-0.5 rounded-md">
+                            <span key={idx} className="text-[11px] font-medium text-orange-600 border border-orange-600 px-1.5 py-0.5 rounded-md">
                                 {formattedPromo}
                             </span>
                         );
@@ -136,7 +147,7 @@ const VehicleGridCard: React.FC<VehicleGridCardProps> = ({ vehicle }) => {
         </div>
 
         {hasSlug && (
-          <Link href={`/autos/${vehicle.slug}`} data-gtm-id="card-grid-view-details" className="absolute inset-0 z-10">
+          <Link href={`/autos/${vehicle.slug}`} data-gtm-id="card-grid-view-details" className="absolute inset-0 z-[1] pointer-events-none">
             <span className="sr-only">Ver detalles de {vehicle.title}</span>
           </Link>
         )}
