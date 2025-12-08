@@ -4,11 +4,301 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 20 14.3% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 14.3% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14.3% 4.1%;
+    --primary: 24.6 95% 53.1%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 60 4.8% 95.9%;
+    --secondary-foreground: 24 9.8% 10%;
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 5.3% 44.7%;
+    --accent: 60 4.8% 95.9%;
+    --accent-foreground: 24 9.8% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 20 5.9% 90%;
+    --input: 20 5.9% 90%;
+    --ring: 24.6 95% 53.1%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 60 9.1% 97.8%;
+    --card: 20 14.3% 4.1%;
+    --card-foreground: 60 9.1% 97.8%;
+    --popover: 20 14.3% 4.1%;
+    --popover-foreground: 60 9.1% 97.8%;
+    --primary: 20.5 90.2% 48.2%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 12 6.5% 15.1%;
+    --secondary-foreground: 60 9.1% 97.8%;
+    --muted: 12 6.5% 15.1%;
+    --muted-foreground: 24 5.4% 63.9%;
+    --accent: 12 6.5% 15.1%;
+    --accent-foreground: 60 9.1% 97.8%;
+    --destructive: 0 72.2% 50.6%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 12 6.5% 15.1%;
+    --input: 12 6.5% 15.1%;
+    --ring: 20.5 90.2% 48.2%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* ===================================================================
+     CRITICAL FIX: ALL ORANGE/PRIMARY BACKGROUNDS MUST HAVE WHITE TEXT
+     ================================================================ */
+
+  /* Base rule: ALL elements with primary or orange background get white text */
+  .bg-primary,
+  .bg-primary-100,
+  .bg-primary-200,
+  .bg-primary-300,
+  .bg-primary-400,
+  .bg-primary-500,
+  .bg-primary-600,
+  .bg-primary-700,
+  .bg-primary-800,
+  .bg-primary-900,
+  .bg-brand-primary,
+  [class*="bg-primary"],
+  .bg-\[\#FF6801\],
+  .bg-\[\#ff6801\],
+  [style*="background-color: #FF6801"],
+  [style*="background-color:#FF6801"],
+  [style*="background-color: #ff6801"],
+  [style*="background-color:#ff6801"],
+  [style*="background-color: rgb(255, 104, 1)"],
+  [style*="background-color:rgb(255, 104, 1)"],
+  [style*="background: #FF6801"],
+  [style*="background:#FF6801"],
+  [style*="background: #ff6801"],
+  [style*="background:#ff6801"] {
+    color: white !important;
+  }
+
+  /* ALL children and descendants of orange backgrounds get white text */
+  .bg-primary *,
+  .bg-primary-100 *,
+  .bg-primary-200 *,
+  .bg-primary-300 *,
+  .bg-primary-400 *,
+  .bg-primary-500 *,
+  .bg-primary-600 *,
+  .bg-primary-700 *,
+  .bg-primary-800 *,
+  .bg-primary-900 *,
+  .bg-brand-primary *,
+  [class*="bg-primary"] *,
+  .bg-\[\#FF6801\] *,
+  .bg-\[\#ff6801\] *,
+  [style*="background-color: #FF6801"] *,
+  [style*="background-color:#FF6801"] *,
+  [style*="background-color: #ff6801"] *,
+  [style*="background-color:#ff6801"] *,
+  [style*="background-color: rgb(255, 104, 1)"] *,
+  [style*="background-color:rgb(255, 104, 1)"] *,
+  [style*="background: #FF6801"] *,
+  [style*="background:#FF6801"] *,
+  [style*="background: #ff6801"] *,
+  [style*="background:#ff6801"] * {
+    color: white !important;
+  }
+
+  /* Special overrides for ALL element types that might have orange backgrounds */
+  button.bg-primary,
+  button[class*="bg-primary"],
+  button.bg-\[\#FF6801\],
+  button.bg-\[\#ff6801\],
+  button.bg-primary *,
+  button[class*="bg-primary"] *,
+  button.bg-\[\#FF6801\] *,
+  button.bg-\[\#ff6801\] *,
+  a.bg-primary,
+  a[class*="bg-primary"],
+  a.bg-\[\#FF6801\],
+  a.bg-\[\#ff6801\],
+  a.bg-primary *,
+  a[class*="bg-primary"] *,
+  span.bg-primary,
+  span[class*="bg-primary"],
+  span.bg-\[\#FF6801\],
+  span.bg-\[\#ff6801\],
+  div.bg-primary,
+  div[class*="bg-primary"],
+  div.bg-\[\#FF6801\],
+  div.bg-\[\#ff6801\],
+  .btn-primary,
+  .btn-primary *,
+  [class*="badge"].bg-primary,
+  [class*="badge"][class*="bg-primary"],
+  [class*="badge"].bg-\[\#FF6801\],
+  [class*="tag"].bg-primary,
+  [class*="tag"][class*="bg-primary"],
+  [class*="tag"].bg-\[\#FF6801\] {
+    color: white !important;
+  }
+
+  /* Nuclear option: Override any text color classes when inside orange backgrounds */
+  .bg-primary .text-black,
+  .bg-primary .text-gray-900,
+  .bg-primary .text-neutral-900,
+  [class*="bg-primary"] .text-black,
+  [class*="bg-primary"] .text-gray-900,
+  [class*="bg-primary"] .text-neutral-900,
+  .bg-\[\#FF6801\] .text-black,
+  .bg-\[\#FF6801\] .text-gray-900,
+  .bg-\[\#ff6801\] .text-black,
+  .bg-\[\#ff6801\] .text-gray-900 {
+    color: white !important;
+  }
+
+  /* CRITICAL: Force ALL shadcn/ui primary buttons to use white text */
+  button[class*="bg-primary"],
+  button.bg-primary,
+  a[class*="bg-primary"],
+  a.bg-primary,
+  [role="button"][class*="bg-primary"],
+  /* Specific shadcn button class */
+  .inline-flex.items-center.justify-center.bg-primary,
+  button.inline-flex.items-center.justify-center.bg-primary,
+  a.inline-flex.items-center.justify-center.bg-primary {
+    color: white !important;
+  }
+
+  /* Force text-primary-foreground to always be white */
+  .text-primary-foreground,
+  [class*="text-primary-foreground"] {
+    color: white !important;
+  }
+}
+
 html, body, #root {
   background-color: white;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 html { scroll-behavior: smooth; }
-body { font-family: 'Be Vietnam Pro', sans-serif; }
+body {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Prevent horizontal scroll globally - exclude SVG elements for recharts compatibility */
+*:not(svg):not(svg *) {
+  max-width: 100%;
+}
+
+/* Ensure recharts containers render properly */
+.recharts-responsive-container {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 200px !important;
+  min-width: 200px !important;
+}
+
+.recharts-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+  min-height: 200px !important;
+}
+
+/* Force recharts surface to be visible */
+.recharts-surface {
+  overflow: visible !important;
+  min-width: 100px !important;
+  min-height: 100px !important;
+}
+
+/* Ensure SVG elements in recharts are not hidden */
+.recharts-wrapper svg {
+  overflow: visible !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Fix for recharts legend and tooltip positioning */
+.recharts-legend-wrapper {
+  position: relative !important;
+}
+
+.recharts-tooltip-wrapper {
+  z-index: 1000 !important;
+}
+
+/* Chart container helper - ensures proper dimensions */
+[style*="height"] > .recharts-responsive-container {
+  min-height: inherit !important;
+}
+
+/* Ensure card content has proper dimensions for charts */
+[class*="CardContent"] > div[style*="height"],
+.card-content > div[style*="height"] {
+  display: block !important;
+  position: relative !important;
+}
+
+/* Fix for tabs content - ensure charts get proper dimensions */
+[data-state="active"] .recharts-responsive-container,
+[data-state="active"] .recharts-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Force recalculation when tab becomes active */
+[data-radix-collection-item][data-state="active"] ~ [role="tabpanel"] .recharts-wrapper {
+  transform: translateZ(0);
+}
+
+/* Add bottom padding for mobile pages to prevent bottom nav overlap */
+@media (max-width: 1023px) {
+  main, .main-content, [class*="container"] {
+    padding-bottom: max(env(safe-area-inset-bottom), 5rem) !important;
+  }
+}
 h1, h2, h3, h4, h5, h6 { font-family: 'Be Vietnam Pro', sans-serif; }
 h1 { font-weight: 900; }
 .prose { line-height: 1.45; }
@@ -336,13 +626,8 @@ h1-be-vietnam-pro-black {
 
   .header-search-container {
     position: relative;
-    padding: 2px;
-    margin-top:3px;
-    background: linear-gradient(90deg, #FF6801, #a98804, #FF6801);
-    background-size: 200% 200%;
-    animation: neon-glow 8s linear infinite;
-    border-radius: 9999px; /* rounded-full */
     width: 100%;
+    /* Removed animated background that was obstructing the search bar */
   }
   .header-search-tooltip {
     position: absolute;
@@ -394,7 +679,7 @@ h1-be-vietnam-pro-black {
   .animate-shine {
     animation: shine 1.8s infinite cubic-bezier(.2,.9,.2,1);
   }
-  
+
   .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
   .animate-swipe-right-indicator { animation: swipe-right-indicator 2s ease-in-out infinite; }
   .animate-swipe-left-indicator { animation: swipe-left-indicator 2s ease-in-out infinite 0.2s; }
@@ -505,54 +790,107 @@ background: radial-gradient(circle, rgba(255, 120, 10, 1) 18%, rgba(255, 104, 1,
     100% { background-position: 0% 50%; }
   }
 
-  /* Rezago animated border */
+  /* Rezago animated border - Electric Shock Effect */
   .rezago-border {
     position: relative;
-    border: 1px solid transparent;
+    border: 1.5px solid transparent !important;
   }
 
   .rezago-border::before {
     content: '';
     position: absolute;
-    inset: -1px;
-    border-radius: 1rem;
-    padding: 1px;
-    background: linear-gradient(90deg, #f97316, #fbbf24, #f97316);
-    background-size: 200% 100%;
+    inset: -1.5px;
+    border-radius: calc(1.5rem + 1.5px); /* Match card roundness + border offset */
+    padding: 1.5px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      transparent 20%,
+      #ea580c 35%,
+      #fb923c 42%,
+      #ffffff 48%,
+      #fb923c 54%,
+      #ea580c 60%,
+      transparent 75%,
+      transparent 100%
+    );
+    background-size: 300% 100%;
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
-    animation: rezago-gradient-move 3s linear infinite;
+    animation: rezago-electric-pulse 45s linear infinite;
     pointer-events: none;
-    z-index: 1;
+    z-index: 1000;
+    filter: drop-shadow(0 0 4px rgba(251, 146, 60, 0.4)) brightness(1.2);
   }
 
-  @keyframes rezago-gradient-move {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 200% 50%; }
+  @keyframes rezago-electric-pulse {
+    0% {
+      background-position: -100% 50%;
+      filter: drop-shadow(0 0 2px rgba(251, 146, 60, 0.3)) brightness(1.1);
+    }
+    50% {
+      background-position: 200% 50%;
+      filter: drop-shadow(0 0 6px rgba(251, 146, 60, 0.5)) brightness(1.3);
+    }
+    100% {
+      background-position: 500% 50%;
+      filter: drop-shadow(0 0 2px rgba(251, 146, 60, 0.3)) brightness(1.1);
+    }
   }
 
-  /* Popular Card - Animated Gradient Border (1000+ views) */
+  /* Popular Card - Electric Pulse Effect (1000+ views) */
   .popular-card {
     position: relative;
-    border: 3px solid transparent;
-    border-radius: 1rem;
-    background:
-      linear-gradient(white, white) padding-box,
-      linear-gradient(90deg, #FF6801, #FF8C00, #FF4500, #FF6801) border-box;
-    background-size: 100% 100%, 400% 100%;
-    animation: popular-gradient-move 3s ease-in-out infinite;
-    z-index: 0;
+    border: 1.5px solid transparent !important;
+  }
+
+  .popular-card::before {
+    content: '';
+    position: absolute;
+    inset: -1.5px;
+    border-radius: calc(1.5rem + 1.5px);
+    padding: 1.5px;
+    background: linear-gradient(
+      135deg,
+      transparent 0%,
+      transparent 15%,
+      #ea580c 30%,
+      #fb923c 37%,
+      #ffffff 43%,
+      #fb923c 49%,
+      #ea580c 57%,
+      transparent 72%,
+      transparent 100%
+    );
+    background-size: 500% 500%;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: popular-electric-wave 52s linear infinite;
+    pointer-events: none;
+    z-index: 1000;
+    filter: drop-shadow(0 0 5px rgba(251, 146, 60, 0.5)) brightness(1.2);
   }
 
   .popular-card > a {
     position: absolute;
-    z-index: 10;
+    z-index: 100;
   }
 
-  @keyframes popular-gradient-move {
-    0% { background-position: 0% 0%, 0% 50%; }
-    100% { background-position: 0% 0%, 400% 50%; }
+  @keyframes popular-electric-wave {
+    0% {
+      background-position: -100% -100%;
+      filter: drop-shadow(0 0 3px rgba(251, 146, 60, 0.4)) brightness(1.15);
+    }
+    50% {
+      background-position: 300% 300%;
+      filter: drop-shadow(0 0 7px rgba(251, 146, 60, 0.6)) brightness(1.35);
+    }
+    100% {
+      background-position: 700% 700%;
+      filter: drop-shadow(0 0 3px rgba(251, 146, 60, 0.4)) brightness(1.15);
+    }
   }
 }
 /* ========================================
@@ -564,7 +902,7 @@ background: radial-gradient(circle, rgba(255, 120, 10, 1) 18%, rgba(255, 104, 1,
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 
+  box-shadow:
     0 8px 32px 0 rgba(31, 38, 135, 0.15),
     inset 0 0 0 1px rgba(255, 255, 255, 0.4);
 }
@@ -581,4 +919,60 @@ background: radial-gradient(circle, rgba(255, 120, 10, 1) 18%, rgba(255, 104, 1,
     rgba(255, 255, 255, 0.2) 100%
   );
   pointer-events: none;
+}
+
+/* Shimmer Button Animations */
+@keyframes shimmer-slide {
+  to {
+    transform: translate(calc(100cqw - 100%), -100cqh);
+  }
+}
+
+@keyframes spin-around {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.animate-shimmer-slide {
+  animation: shimmer-slide calc(var(--shimmer-duration) * 1) linear infinite;
+}
+
+.animate-spin-around {
+  animation: spin-around calc(var(--shimmer-duration) * 0.75) linear infinite;
+}
+
+/* Custom Scrollbar Styles for Sidebar */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 3px;
+}
+
+.scrollbar-thin:hover::-webkit-scrollbar-thumb {
+  background-color: #9ca3af;
+}
+
+.scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+}
+
+.scrollbar-thumb-gray-400:hover::-webkit-scrollbar-thumb {
+  background-color: #9ca3af;
+}
+
+.scrollbar-track-transparent::-webkit-scrollbar-track {
+  background: transparent;
 }

@@ -4,6 +4,7 @@
 
 import React, { useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { Vehicle } from '../types/types';
 import { HeartIcon, TagIcon, ShieldCheckIcon, FuelIcon, GaugeIcon, CogIcon } from './icons';
 import ImageCarousel from './ImageCarousel'; // Import the new ImageCarousel
@@ -26,6 +27,7 @@ const SpecBadge: React.FC<{ children: React.ReactNode, icon?: React.ElementType 
 
 const VehicleGridCard: React.FC<VehicleGridCardProps> = ({ vehicle }) => {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const hasSlug = vehicle.slug && vehicle.slug.trim() !== '';
   const { isFavorite, toggleFavorite, isToggling } = useFavorites();
   const favorite = isFavorite(vehicle.id);
@@ -43,7 +45,7 @@ const VehicleGridCard: React.FC<VehicleGridCardProps> = ({ vehicle }) => {
     const target = e.target as HTMLElement;
     const isInteractive = target.closest('button') || target.closest('a[href]') || target.closest('[role="button"]');
     if (!isInteractive && hasSlug) {
-      window.location.href = `/autos/${vehicle.slug}`;
+      router.push(`/autos/${vehicle.slug}`);
     }
   };
 

@@ -10,6 +10,11 @@ import { formatPromotion } from '../utils/formatters';
 import { getCategoryImage } from '../utils/get-category-image';
 import { BRAND_LOGOS } from '../utils/constants';
 import { proxyImage } from '../utils/proxyImage';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Separator } from './ui/separator';
+import FavoritesQuickAccess from './FavoritesQuickAccess';
 
 // --- TYPES AND INTERFACES ---
 
@@ -46,13 +51,13 @@ interface FilterSidebarProps {
 
 // --- HELPER COMPONENTS ---
 
-const CheckboxFilterGroup: React.FC<{
+const CheckboxFilterGroup = React.memo<{
     options: (string | number)[];
     selected: (string | number)[];
     onChange: (value: string | number) => void;
     counts: Record<string | number, number>;
     labelFormatter?: (option: string | number) => string;
-}> = React.memo(({ options, selected, onChange, counts, labelFormatter = String }) => (
+}>(({ options, selected, onChange, counts, labelFormatter = String }) => (
     <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
         {options.map(option => {
             const optionId = `filter-${String(option).replace(/\s/g, '-')}`;
@@ -73,7 +78,9 @@ const CheckboxFilterGroup: React.FC<{
     </div>
 ));
 
-const ToggleSwitch: React.FC<{ label: string; isEnabled: boolean; onToggle: () => void; }> = React.memo(({ label, isEnabled, onToggle }) => (
+CheckboxFilterGroup.displayName = 'CheckboxFilterGroup';
+
+const ToggleSwitch = React.memo<{ label: string; isEnabled: boolean; onToggle: () => void; }>(({ label, isEnabled, onToggle }) => (
     <div className="flex items-center justify-between py-3">
         <span className="font-semibold text-gray-800 text-sm">{label}</span>
         <button onClick={onToggle} type="button" role="switch" aria-checked={isEnabled} className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${isEnabled ? 'bg-primary-600' : 'bg-gray-300'}`}>
@@ -82,10 +89,15 @@ const ToggleSwitch: React.FC<{ label: string; isEnabled: boolean; onToggle: () =
     </div>
 ));
 
+ToggleSwitch.displayName = 'ToggleSwitch';
+
 // --- MAIN COMPONENT ---
 
 const FilterSidebar: React.FC<FilterSidebarProps> = (props) => {
     const { onFiltersChange, onClearFilters, filterOptions, currentFilters, onRemoveFilter, activeFiltersList, isMobileSheet = false, onCloseSheet, resultsCount = 0 } = props;
+
+    console.log('[FilterSidebar] Received filterOptions:', filterOptions);
+    console.log('[FilterSidebar] filterOptions keys:', Object.keys(filterOptions || {}));
 
     const handleCheckboxChange = useCallback((filterKey: keyof VehicleFilters, value: string | number) => {
         const currentValues = (currentFilters[filterKey] as (string | number)[]) || [];
@@ -118,35 +130,42 @@ const FilterSidebar: React.FC<FilterSidebarProps> = (props) => {
 
     const counts = useMemo(() => ({
         marcas: Object.fromEntries((filterOptions?.marcas || []).map(s => [s.name, s.count])),
-        autoano: Object.fromEntries((filterOptions?.years || []).map(y => [y.name, y.count])),
-        garantia: Object.fromEntries((filterOptions?.warranties || []).map(c => [c.name, c.count])),
-        transmision: Object.fromEntries((filterOptions?.transmissions || []).map(t => [t.name, t.count])),
-        combustible: Object.fromEntries((filterOptions?.combustibles || []).map(f => [f.name, f.count])),
+        autoano: Object.fromEntries((filterOptions?.autoano || []).map(y => [y.name, y.count])),
+        garantia: Object.fromEntries((filterOptions?.garantia || []).map(c => [c.name, c.count])),
+        transmision: Object.fromEntries((filterOptions?.transmision || []).map(t => [t.name, t.count])),
+        combustible: Object.fromEntries((filterOptions?.combustible || []).map(f => [f.name, f.count])),
         carroceria: Object.fromEntries((filterOptions?.carroceria || []).map(w => [w.name, w.count])),
-        promociones: Object.fromEntries((filterOptions?.promotions || []).map(p => [p.name, p.count])),
-        ubicacion: Object.fromEntries((filterOptions?.sucursales || []).map(p => [p.name, p.count])),
+        promociones: Object.fromEntries((filterOptions?.promociones || []).map(p => [p.name, p.count])),
+        ubicacion: Object.fromEntries((filterOptions?.ubicacion || []).map(p => [p.name, p.count])),
     }), [filterOptions]);
 
     const FilterBody = (
         <>
             {activeFiltersList.length > 0 && (
-                <div className="pb-4 mb-4 border-b border-gray-200">
-                    <div className="flex justify-between items-center mb-2">
-                        <h3 className="text-sm font-semibold text-gray-600">Filtros Activos</h3>
-                        <button onClick={onClearFilters} type="button" className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800 font-semibold">
-                            <XCircleIcon className="w-4 h-4" /> Limpiar
-                        </button>
+                <div className="pb-4 mb-4">
+                    <div className="flex justify-between items-center mb-3">
+                        <h3 className="text-sm font-medium text-muted-foreground">Filtros Activos</h3>
+                        <Button variant="ghost" size="sm" onClick={onClearFilters} className="h-auto py-1 px-2 text-xs">
+                            <XCircleIcon className="w-3 h-3 mr-1" /> Limpiar
+                        </Button>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {activeFiltersList.map(({ key, value, label }) => (
-                            <div key={`${key}-${String(value)}`} className="flex items-center bg-primary-100 text-primary-700 text-xs font-semibold pl-2.5 pr-1 py-1 rounded-full">
+                            <Badge key={`${key}-${String(value)}`} variant="secondary" className="pl-2.5 pr-1 py-1">
                                 <span>{label}</span>
-                                <button type="button" onClick={() => onRemoveFilter(key, value)} className="ml-1 p-0.5 rounded-full hover:bg-primary-200" aria-label={`Remover filtro ${label}`}>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="ml-1 h-auto w-auto p-0.5 hover:bg-primary/20"
+                                    onClick={() => onRemoveFilter(key, value)}
+                                    aria-label={`Remover filtro ${label}`}
+                                >
                                     <XIcon className="w-3 h-3" />
-                                </button>
-                            </div>
+                                </Button>
+                            </Badge>
                         ))}
                     </div>
+                    <Separator className="mt-4" />
                 </div>
             )}
 
@@ -170,9 +189,9 @@ const FilterSidebar: React.FC<FilterSidebarProps> = (props) => {
                 </div>
             </AccordionItem>
 
-            <AccordionItem title="Marca" startOpen>
+            <AccordionItem title="Marca">
                 <div className="grid grid-cols-4 gap-2">
-                    {(filterOptions?.marcas || []).slice(0, 8).map(m => {
+                    {(filterOptions?.marcas || []).slice(0, 12).map(m => {
                         const isSelected = (currentFilters.marca || []).includes(m.name as string);
                         return (
                             <button
@@ -190,92 +209,104 @@ const FilterSidebar: React.FC<FilterSidebarProps> = (props) => {
                         );
                     })}
                 </div>
-                {(filterOptions?.marcas || []).length > 8 && (
+                {(filterOptions?.marcas || []).length > 12 && (
                     <AccordionItem title="Más marcas">
-                        <CheckboxFilterGroup options={(filterOptions?.marcas || []).slice(8).map(m => m.name)} selected={currentFilters.marca || []} onChange={(v) => handleCheckboxChange('marca', v)} counts={counts.marcas} />
+                        <CheckboxFilterGroup options={(filterOptions?.marcas || []).slice(12).map(m => m.name)} selected={currentFilters.marca || []} onChange={(v) => handleCheckboxChange('marca', v)} counts={counts.marcas} />
                     </AccordionItem>
                 )}
             </AccordionItem>
 
             <AccordionItem title="Precio">
                 <div className="px-4">
-                    <PriceRangeSlider min={filterOptions?.minPrice || 0} max={filterOptions?.maxPrice || 1000000} initialMin={currentFilters.minPrice} initialMax={currentFilters.maxPrice} onPriceChange={handlePriceChange} />
+                    <PriceRangeSlider min={filterOptions?.minPrice || 0} max={filterOptions?.maxPrice || 1000000} initialMin={currentFilters.minPrice} initialMax={currentFilters.maxPrice} onPriceChange={handlePriceChange} requireApply={true} />
                 </div>
             </AccordionItem>
 
             <AccordionItem title="Enganche">
                 <div className="px-4">
-                    <PriceRangeSlider min={filterOptions?.enganchemin || 0} max={filterOptions?.maxEnganche || 500000} initialMin={currentFilters.enganchemin} initialMax={currentFilters.maxEnganche} onPriceChange={handleEngancheChange} />
+                    <PriceRangeSlider min={filterOptions?.enganchemin || 0} max={filterOptions?.maxEnganche || 500000} initialMin={currentFilters.enganchemin} initialMax={currentFilters.maxEnganche} onPriceChange={handleEngancheChange} requireApply={true} />
                 </div>
             </AccordionItem>
 
             <AccordionItem title="Año">
-                <CheckboxFilterGroup options={(filterOptions?.years || []).map(y => y.name)} selected={currentFilters.autoano || []} onChange={(v) => handleCheckboxChange('autoano', v)} counts={counts.autoano} />
+                <CheckboxFilterGroup options={(filterOptions?.autoano || []).map(y => y.name)} selected={currentFilters.autoano || []} onChange={(v) => handleCheckboxChange('autoano', v)} counts={counts.autoano} />
             </AccordionItem>
 
             <AccordionItem title="Sucursal">
-                <CheckboxFilterGroup options={(filterOptions?.sucursales || []).map(s => s.name)} selected={currentFilters.ubicacion || []} onChange={(v) => handleCheckboxChange('ubicacion', v)} counts={counts.ubicacion} />
+                <CheckboxFilterGroup options={(filterOptions?.ubicacion || []).map(s => s.name)} selected={currentFilters.ubicacion || []} onChange={(v) => handleCheckboxChange('ubicacion', v)} counts={counts.ubicacion} />
             </AccordionItem>
 
             <AccordionItem title="Transmisión">
-                <CheckboxFilterGroup options={(filterOptions?.transmissions || []).map(t => t.name)} selected={currentFilters.transmision || []} onChange={(v) => handleCheckboxChange('transmision', v)} counts={counts.transmision} />
+                <CheckboxFilterGroup options={(filterOptions?.transmision || []).map(t => t.name)} selected={currentFilters.transmision || []} onChange={(v) => handleCheckboxChange('transmision', v)} counts={counts.transmision} />
             </AccordionItem>
 
             <AccordionItem title="Combustible">
-                <CheckboxFilterGroup options={(filterOptions?.combustibles || []).map(c => c.name)} selected={currentFilters.combustible || []} onChange={(v) => handleCheckboxChange('combustible', v)} counts={counts.combustible} />
+                <CheckboxFilterGroup options={(filterOptions?.combustible || []).map(c => c.name)} selected={currentFilters.combustible || []} onChange={(v) => handleCheckboxChange('combustible', v)} counts={counts.combustible} />
             </AccordionItem>
 
             <AccordionItem title="Garantía">
-                <CheckboxFilterGroup options={(filterOptions?.warranties || []).map(w => w.name)} selected={currentFilters.garantia || []} onChange={(v) => handleCheckboxChange('garantia', v)} counts={counts.garantia} />
+                <CheckboxFilterGroup options={(filterOptions?.garantia || []).map(w => w.name)} selected={currentFilters.garantia || []} onChange={(v) => handleCheckboxChange('garantia', v)} counts={counts.garantia} />
             </AccordionItem>
 
             <AccordionItem title="Promociones">
-                <CheckboxFilterGroup options={(filterOptions?.promotions || []).map(p => p.name)} selected={currentFilters.promociones || []} onChange={(v) => handleCheckboxChange('promociones', v)} counts={counts.promociones} labelFormatter={(v) => formatPromotion(String(v))} />
+                <CheckboxFilterGroup options={(filterOptions?.promociones || []).map(p => p.name)} selected={currentFilters.promotion || []} onChange={(v) => handleCheckboxChange('promotion', v)} counts={counts.promociones} labelFormatter={formatPromotion} />
             </AccordionItem>
 
             <div className="mt-4 pt-4 border-t border-gray-200">
                 <ToggleSwitch label="Ocultar separados" isEnabled={!!currentFilters.hideSeparado} onToggle={() => handleToggleChange('hideSeparado')} />
             </div>
 
-            <div className="mt-6 flex flex-col gap-2">
-                <button
+            <div className="mt-6">
+                <Button
+                    variant="outline"
                     onClick={onClearFilters}
-                    className="w-full bg-gray-200 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-300 transition-colors"
+                    className="w-full"
                 >
                     Limpiar Filtros
-                </button>
+                </Button>
             </div>
+
+            {/* Favorites Quick Access */}
+            {!isMobileSheet && <FavoritesQuickAccess variant="sidebar" />}
         </>
     );
 
     if (isMobileSheet) {
         return (
             <div className="flex flex-col h-full overflow-hidden relative">
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
-                    <h2 className="text-lg font-bold text-gray-800">Filtros</h2>
-                    <button onClick={onCloseSheet} className="p-2 rounded-full text-gray-600 hover:bg-gray-100"><XIcon className="w-6 h-6" /></button>
-                </div>
+                <CardHeader className="flex-row items-center justify-between space-y-0 flex-shrink-0 border-b">
+                    <CardTitle className="text-lg">Filtros</CardTitle>
+                    <Button variant="ghost" size="icon" onClick={onCloseSheet}>
+                        <XIcon className="w-5 h-5" />
+                    </Button>
+                </CardHeader>
                 <div className="overflow-y-auto px-6 py-4 flex-grow pb-24">
                     {FilterBody}
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-[100]">
-                    <button onClick={onCloseSheet} className="w-full bg-primary-600 text-white font-bold py-3.5 rounded-lg hover:bg-primary-700 transition-colors">
+                <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-card shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-[100]">
+                    <Button onClick={onCloseSheet} className="w-full h-12 text-base" size="lg">
                         Mostrar {resultsCount} resultados
-                    </button>
+                    </Button>
                 </div>
             </div>
         );
     }
 
     return (
-        <aside className="w-full lg:w-96 p-6 bg-white rounded-2xl shadow-sm h-fit sticky top-28">
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-800">Filtrar por</h2>
-                <FilterIcon className="w-6 h-6 text-gray-500" />
-            </div>
-            {FilterBody}
-        </aside>
+        <div className="w-full lg:w-96">
+            <Card className="w-full overflow-visible">
+                <CardHeader>
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="text-xl">Filtrar por</CardTitle>
+                        <FilterIcon className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                </CardHeader>
+                <CardContent className="overflow-visible">
+                    {FilterBody}
+                </CardContent>
+            </Card>
+        </div>
     );
 };
 
-export default FilterSidebar;
+export default React.memo(FilterSidebar);

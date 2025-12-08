@@ -1,7 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 
 // Use the SERVICE_ROLE key which bypasses RLS
-const supabaseUrl = 'https://jjepfehmuybpctdzipnu.supabase.co';
+const supabaseUrl = 'https://pemgwyymodlwabaexxrb.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqZXBmZWhtdXlicGN0ZHppcG51Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NDE5OTYwMywiZXhwIjoyMDU5Nzc1NjAzfQ.KwSFEXOrtgwgIjMVG-czB73VWQIVDahgDvTdyL5qSQo';
 const supabase = createClient(supabaseUrl, supabaseKey);
 

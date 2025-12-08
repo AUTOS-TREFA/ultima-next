@@ -16,9 +16,9 @@
 const AIRTABLE_API_BASE = 'https://api.airtable.com/v0';
 const AIRTABLE_BASE_ID = 'appbOPKYqQRW2HgyB';
 const AIRTABLE_TABLE_ID = 'tblOjECDJDZlNv8At';
-const SUPABASE_FUNCTION_URL = 'https://jjepfehmuybpctdzipnu.supabase.co/functions/v1/airtable-sync';
-const SUPABASE_URL = 'https://jjepfehmuybpctdzipnu.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqZXBmZWhtdXlicGN0ZHppcG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQxOTk2MDMsImV4cCI6MjA1OTc3NTYwM30.yaMESZqaoLvkbVSgdHxpU-Vb7q-naxj95QxcpRYPrX4';
+const SUPABASE_FUNCTION_URL = 'https://pemgwyymodlwabaexxrb.supabase.co/functions/v1/airtable-sync';
+const SUPABASE_URL = 'https://pemgwyymodlwabaexxrb.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlbWd3eXltb2Rsd2FiYWV4eHJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5OTE1MTYsImV4cCI6MjA3ODU2NzUxNn0.wfwBKfCuDYmBX_Hi5KvqtNmLLpbgQllPnUaPfoDrYok';
 
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 

@@ -1,25 +1,48 @@
 #!/usr/bin/env node
 /**
- * Sync ALL Airtable records to Supabase by triggering the webhook for each
- *
- * Usage:
- *   AIRTABLE_API_KEY=your_key node sync-all-airtable.cjs
+ * Clean inventario_cache and re-sync from Airtable
+ * This script will:
+ * 1. Clear all records from inventario_cache
+ * 2. Sync all "Comprado" vehicles from Airtable
  */
+
+const { createClient } = require('@supabase/supabase-js');
 
 const AIRTABLE_API_BASE = 'https://api.airtable.com/v0';
 const AIRTABLE_BASE_ID = 'appbOPKYqQRW2HgyB';
 const AIRTABLE_TABLE_ID = 'tblOjECDJDZlNv8At';
 const SUPABASE_FUNCTION_URL = 'https://pemgwyymodlwabaexxrb.supabase.co/functions/v1/airtable-sync';
+const supabaseUrl = 'https://pemgwyymodlwabaexxrb.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlbWd3eXltb2Rsd2FiYWV4eHJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5OTE1MTYsImV4cCI6MjA3ODU2NzUxNn0.wfwBKfCuDYmBX_Hi5KvqtNmLLpbgQllPnUaPfoDrYok';
 
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 
 if (!AIRTABLE_API_KEY) {
     console.error('❌ AIRTABLE_API_KEY environment variable is required');
+    console.error('   Usage: AIRTABLE_API_KEY=your_key node clean-and-resync-inventory.cjs');
     process.exit(1);
 }
 
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+async function cleanInventoryCache() {
+    console.log('🗑️  Cleaning inventario_cache table...\n');
+
+    const { error } = await supabase
+        .from('inventario_cache')
+        .delete()
+        .neq('record_id', 'DOES_NOT_EXIST'); // Delete all records
+
+    if (error) {
+        console.error('❌ Error cleaning table:', error);
+        throw error;
+    }
+
+    console.log('✅ inventario_cache table cleaned\n');
+}
+
 async function getAllAirtableRecords() {
-    console.log('📡 Fetching all records from Airtable...');
+    console.log('📡 Fetching all "Comprado" records from Airtable...\n');
 
     const allRecords = [];
     let offset = null;
@@ -88,13 +111,16 @@ async function syncRecord(record, index, total) {
 }
 
 async function main() {
-    console.log('🔄 Airtable → Supabase Full Sync\n');
+    console.log('🔄 Clean and Re-sync Inventory from Airtable\n');
     console.log('=' .repeat(60));
 
     const startTime = Date.now();
 
     try {
-        // Get all records
+        // Step 1: Clean the table
+        await cleanInventoryCache();
+
+        // Step 2: Get all records from Airtable
         const records = await getAllAirtableRecords();
 
         if (records.length === 0) {
@@ -102,7 +128,7 @@ async function main() {
             return;
         }
 
-        // Sync each record
+        // Step 3: Sync each record
         console.log(`Starting sync of ${records.length} records...\n`);
 
         const results = {
@@ -138,6 +164,14 @@ async function main() {
         console.log(`❌ Failed: ${results.failed}`);
         console.log(`⏱️  Duration: ${duration}s`);
 
+        // Verify final count
+        const { count: finalCount } = await supabase
+            .from('inventario_cache')
+            .select('*', { count: 'exact', head: true })
+            .eq('ordenstatus', 'Comprado');
+
+        console.log(`\n📊 Final count in inventario_cache: ${finalCount}`);
+
         if (results.errors.length > 0) {
             console.log('\n❌ Failed Records:');
             results.errors.forEach(err => {
@@ -148,6 +182,7 @@ async function main() {
 
     } catch (error) {
         console.error('\n❌ Sync failed:', error.message);
+        console.error(error);
         process.exit(1);
     }
 }
