@@ -7,15 +7,16 @@ import { Card, CardContent } from '@/components/ui/card'
 import { MotionPreset } from '@/components/ui/motion-preset'
 import { cn } from '@/lib/utils'
 import { supabase } from '../../../../../supabaseClient'
+import { getVehicleImage } from '@/utils/getVehicleImage'
+import { DEFAULT_PLACEHOLDER_IMAGE } from '@/utils/constants'
+import type { Vehicle } from '@/types/types'
 
 export type VehiclePortfolioItem = {
-  id: string
+  id: number
+  slug: string
   image: string
-  marca: string
-  modelo: string
-  año: number
+  titulo: string
   precio: number
-  estado: string
 }
 
 type PortfolioProps = {
@@ -38,12 +39,12 @@ const Portfolio = ({
     const fetchVehicles = async () => {
       try {
         const { data, error } = await supabase
-          .from('inventario')
-          .select('id, marca, modelo, año, precio, fotos_airtable, estado')
-          .not('fotos_airtable', 'is', null)
-          .neq('fotos_airtable', '[]')
-          .order('created_at', { ascending: false })
-          .limit(maxVehicles)
+          .from('inventario_cache')
+          .select('id, slug, titulo, precio, feature_image, galeria_exterior, fotos_exterior_url, separado, vendido')
+          .eq('separado', false)
+          .eq('vendido', false)
+          .order('id', { ascending: false })
+          .limit(maxVehicles * 2) // Fetch more to filter for images
 
         if (error) {
           console.error('Error fetching vehicles:', error)
@@ -52,29 +53,18 @@ const Portfolio = ({
 
         if (data) {
           const portfolioItems: VehiclePortfolioItem[] = data
-            .filter(vehicle => {
-              // Asegurarse de que tenga fotos válidas
-              if (!vehicle.fotos_airtable) return false
-              const photos = typeof vehicle.fotos_airtable === 'string'
-                ? JSON.parse(vehicle.fotos_airtable)
-                : vehicle.fotos_airtable
-              return Array.isArray(photos) && photos.length > 0
-            })
             .map(vehicle => {
-              const photos = typeof vehicle.fotos_airtable === 'string'
-                ? JSON.parse(vehicle.fotos_airtable)
-                : vehicle.fotos_airtable
-
+              const vehicleImage = getVehicleImage(vehicle as Partial<Vehicle>)
               return {
                 id: vehicle.id,
-                image: photos[0],
-                marca: vehicle.marca || 'N/A',
-                modelo: vehicle.modelo || 'N/A',
-                año: vehicle.año || new Date().getFullYear(),
-                precio: vehicle.precio || 0,
-                estado: vehicle.estado || 'disponible'
+                slug: vehicle.slug || '',
+                image: vehicleImage,
+                titulo: vehicle.titulo || 'Vehículo',
+                precio: vehicle.precio || 0
               }
             })
+            .filter(item => item.image !== DEFAULT_PLACEHOLDER_IMAGE) // Only show vehicles with real images
+            .slice(0, maxVehicles) // Limit to requested amount after filtering
 
           setVehicles(portfolioItems)
         }
@@ -148,7 +138,7 @@ const Portfolio = ({
               className='flex justify-center'
             >
               <Button size='lg' className='rounded-lg text-base' asChild>
-                <Link href='/inventory'>Ver Inventario Completo</Link>
+                <Link href='/autos'>Ver Inventario Completo</Link>
               </Button>
             </MotionPreset>
           )}
@@ -184,10 +174,10 @@ const Portfolio = ({
                     transition={{ duration: 0.4 }}
                     className='group relative overflow-hidden rounded-xl transition-shadow duration-500 hover:shadow-2xl'
                   >
-                    <Link href={`/inventory?id=${vehicle.id}`}>
+                    <Link href={`/autos/${vehicle.slug}`}>
                       <img
                         src={vehicle.image}
-                        alt={`${vehicle.marca} ${vehicle.modelo} ${vehicle.año}`}
+                        alt={vehicle.titulo}
                         className='aspect-auto w-full object-cover'
                       />
 
@@ -195,13 +185,10 @@ const Portfolio = ({
 
                       <Card className='border-primary group-hover:animate-in group-hover:slide-in-from-bottom-4 group-hover:fade-in absolute inset-x-6 bottom-6 py-4 opacity-0 transition-all duration-500 group-hover:opacity-100'>
                         <CardContent className='space-y-1 px-4 text-center'>
-                          <span className='text-muted-foreground text-xs'>
-                            {vehicle.año} • {vehicle.estado}
-                          </span>
-                          <h3 className='text-lg font-semibold'>
-                            {vehicle.marca} {vehicle.modelo}
+                          <h3 className='text-lg font-semibold line-clamp-2'>
+                            {vehicle.titulo}
                           </h3>
-                          <p className='text-primary font-bold'>
+                          <p className='text-primary font-bold text-base'>
                             ${vehicle.precio.toLocaleString('es-MX')}
                           </p>
                         </CardContent>
