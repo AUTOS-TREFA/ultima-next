@@ -434,7 +434,7 @@ const AuthPage: React.FC = () => {
 
                 <div className="text-center text-sm text-gray-600 mt-6">
                     No tienes cuenta?{' '}
-                    <Link href={`/registro${urlParamsString ? `?${urlParamsString}` : ''}`} className="text-primary-600 hover:underline font-medium">
+                    <Link href={`/registro${urlParamsString ? `?${urlParamsString}` : ''}`} className="!text-primary-600 hover:underline font-medium">
                         Registrate aqui
                     </Link>
                 </div>
