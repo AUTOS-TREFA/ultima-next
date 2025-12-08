@@ -1,6 +1,6 @@
 import { Metadata, Viewport } from 'next';
 import RootClientLayout from './RootClientLayout';
-import '../index.css';
+import './globals.css';
 
 export const metadata: Metadata = {
   title: {
