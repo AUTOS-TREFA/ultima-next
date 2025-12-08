@@ -46,7 +46,7 @@ const EdgeVehicleCard: React.FC<EdgeVehicleCardProps> = ({ vehicle }) => {
         <div className="block relative">
             <ImageCarousel
               images={imagesForCarousel}
-              alt={vehicle.titulo}
+              alt={vehicle.title}
               isSeparado={isSeparado}
               clasificacionid={vehicle.clasificacionid}
               carroceria={vehicle.carroceria}
@@ -70,8 +70,8 @@ const EdgeVehicleCard: React.FC<EdgeVehicleCardProps> = ({ vehicle }) => {
 
         <div className="p-4 flex flex-col flex-grow">
             <div>
-                <h3 className="font-bold text-gray-800 group-hover:text-primary-600 transition-colors truncate" title={vehicle.titulo}>
-                    {vehicle.titulo}
+                <h3 className="font-bold text-gray-800 group-hover:text-primary-600 transition-colors truncate" title={vehicle.title}>
+                    {vehicle.title}
                 </h3>
             </div>
             <p className="text-sm text-gray-500 mt-1 truncate">
@@ -108,7 +108,7 @@ const EdgeVehicleCard: React.FC<EdgeVehicleCardProps> = ({ vehicle }) => {
 
         {hasSlug && (
           <Link href={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10">
-            <span className="sr-only">Ver detalles de {vehicle.titulo}</span>
+            <span className="sr-only">Ver detalles de {vehicle.title}</span>
           </Link>
         )}
     </div>

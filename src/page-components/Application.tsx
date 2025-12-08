@@ -229,7 +229,7 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
                         if (vehicle) {
                             const featureImage = vehicle.thumbnail_webp || vehicle.thumbnail || vehicle.feature_image_webp || vehicle.feature_image || DEFAULT_PLACEHOLDER_IMAGE;
                             const carData = {
-                                _vehicleTitle: vehicle.titulo,
+                                _vehicleTitle: vehicle.title,
                                 _ordenCompra: vehicle.ordencompra,
                                 _featureImage: featureImage,
                                 precio: vehicle.precio,
@@ -278,7 +278,7 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
         if (!applicationId) return;
         const featureImage = vehicle.thumbnail_webp || vehicle.thumbnail || vehicle.feature_image_webp || vehicle.feature_image || DEFAULT_PLACEHOLDER_IMAGE;
         const carData = {
-            _vehicleTitle: vehicle.titulo,
+            _vehicleTitle: vehicle.title,
             _ordenCompra: vehicle.ordencompra,
             _featureImage: featureImage,
             precio: vehicle.precio,

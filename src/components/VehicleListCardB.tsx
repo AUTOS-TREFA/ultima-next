@@ -25,12 +25,12 @@ const VehicleListCardB: React.FC<VehicleListCardBProps> = ({ vehicle }) => {
     <Link href={`/autos-b/${vehicle.slug}`} className="block bg-white p-4 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200/80 group">
       <div className="flex flex-col sm:flex-row gap-5">
         <div className="flex-shrink-0 w-full sm:w-48">
-          <LazyImage src={imageSrc} alt={vehicle.titulo} className="w-full h-40 sm:h-full rounded-lg" />
+          <LazyImage src={imageSrc} alt={vehicle.title} className="w-full h-40 sm:h-full rounded-lg" />
         </div>
 
         <div className="flex-grow flex flex-col justify-between">
           <div>
-            <h2 className="text-lg font-bold text-gray-800 group-hover:text-primary-600 transition-colors">{vehicle.titulo}</h2>
+            <h2 className="text-lg font-bold text-gray-800 group-hover:text-primary-600 transition-colors">{vehicle.title}</h2>
             <p className="text-sm text-gray-500 mt-1">Garasi Cak Su • 3.1 km from centre</p>
 
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">

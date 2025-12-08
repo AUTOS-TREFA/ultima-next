@@ -33,9 +33,9 @@ const VehicleFinanceCard: React.FC<{ vehicle: WordPressVehicle }> = ({ vehicle }
   <div className="mb-6 bg-gray-100 p-4 rounded-lg border border-gray-200">
     <p className="text-sm font-semibold text-gray-700 mb-2">Para continuar con tu solicitud por:</p>
     <div className="flex items-center gap-4">
-      <img src={getVehicleImage(vehicle)} alt={vehicle.titulo} className="w-24 h-18 object-cover rounded-md flex-shrink-0" />
+      <img src={getVehicleImage(vehicle)} alt={vehicle.title} className="w-24 h-18 object-cover rounded-md flex-shrink-0" />
       <div>
-        <h3 className="font-bold text-gray-900">{vehicle.titulo}</h3>
+        <h3 className="font-bold text-gray-900">{vehicle.title}</h3>
         <p className="text-primary-600 font-semibold">{formatPrice(vehicle.precio)}</p>
       </div>
     </div>

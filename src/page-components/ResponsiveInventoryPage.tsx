@@ -50,7 +50,7 @@ const ResponsiveInventoryPage: React.FC = () => {
     const handleSwipe = (carIndex: number, car: WordPressVehicle, direction: Direction) => {
         if (direction === 'down') {
             toggleFavorite(car.id);
-            toast.success(`${car.titulo} guardado en favoritos!`, {
+            toast.success(`${car.title} guardado en favoritos!`, {
                 icon: <Heart className="w-4 h-4 text-red-500" />,
             });
         } else if (direction === 'up') {

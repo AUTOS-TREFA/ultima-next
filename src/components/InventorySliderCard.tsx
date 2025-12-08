@@ -28,13 +28,13 @@ const InventorySliderCard: React.FC<InventorySliderCardProps> = ({ vehicle }) =>
             <div className="relative aspect-[4/3] bg-gray-100">
                 <LazyImage 
                     src={imageSrc} 
-                    alt={vehicle.titulo} 
+                    alt={vehicle.title} 
                     className="w-full h-full"
                 />
             </div>
             <div className="p-4 flex-shrink-0">
-                <h3 className="text-gray-800 font-bold text-base truncate transition-colors group-hover:text-primary-600" title={vehicle.titulo}>
-                    {vehicle.titulo}
+                <h3 className="text-gray-800 font-bold text-base truncate transition-colors group-hover:text-primary-600" title={vehicle.title}>
+                    {vehicle.title}
                 </h3>
                 <p className="text-gray-700 font-semibold text-lg mt-1">{formatPrice(vehicle.precio)}</p>
             </div>
@@ -42,7 +42,7 @@ const InventorySliderCard: React.FC<InventorySliderCardProps> = ({ vehicle }) =>
     );
 
     return hasSlug ? (
-        <Link href={`/autos/${vehicle.slug}`} aria-label={`Ver detalles de ${vehicle.titulo}`} className="contents">
+        <Link href={`/autos/${vehicle.slug}`} aria-label={`Ver detalles de ${vehicle.title}`} className="contents">
             <CardContent />
         </Link>
     ) : (

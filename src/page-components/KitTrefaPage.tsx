@@ -101,14 +101,14 @@ const MasonryVehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
                 <div className={`aspect-[4/3] bg-gray-100 ${isPopular ? 'overflow-hidden rounded-t-lg' : ''}`}>
                     <LazyImage
                         src={imageSrc}
-                        alt={vehicle.titulo}
+                        alt={vehicle.title}
                         className="w-full h-full"
                         objectFit="cover"
                     />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-3">
-                    <h4 className="text-white font-semibold text-sm truncate drop-shadow-md" title={vehicle.titulo}>
-                        {vehicle.titulo}
+                    <h4 className="text-white font-semibold text-sm truncate drop-shadow-md" title={vehicle.title}>
+                        {vehicle.title}
                     </h4>
                     <p className="text-white font-bold text-base drop-shadow-md">
                         {formatPrice(vehicle.precio)}

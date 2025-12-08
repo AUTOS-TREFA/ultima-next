@@ -55,7 +55,7 @@ const MobileHeader: React.FC = () => {
             try {
                 const lowercasedQuery = query.toLowerCase();
                 const filtered = allVehicles.filter(v =>
-                    v.titulo.toLowerCase().includes(lowercasedQuery) ||
+                    v.title.toLowerCase().includes(lowercasedQuery) ||
                     (v.marca && v.marca.toLowerCase().includes(lowercasedQuery)) ||
                     (v.modelo && v.modelo.toLowerCase().includes(lowercasedQuery)) ||
                     (v.autoano && v.autoano.toString().includes(lowercasedQuery))
@@ -172,12 +172,12 @@ const MobileHeader: React.FC = () => {
                                     >
                                         <img
                                             src={vehicle.feature_image}
-                                            alt={vehicle.titulo}
+                                            alt={vehicle.title}
                                             className="w-20 h-16 object-cover rounded-lg flex-shrink-0"
                                         />
                                         <div className="flex-1 min-w-0">
                                             <p className="font-semibold text-sm text-gray-900 line-clamp-2">
-                                                {vehicle.titulo}
+                                                {vehicle.title}
                                             </p>
                                             <p className="text-sm text-primary-600 font-bold mt-0.5">
                                                 {formatPrice(vehicle.precio)}

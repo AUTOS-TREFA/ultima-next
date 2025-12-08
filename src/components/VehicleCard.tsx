@@ -121,7 +121,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
 
         <div className="flex-grow p-5 flex flex-col justify-between min-w-0">
           <div>
-            <VehicleCardHeader title={vehicle.titulo} year={vehicle.autoano || vehicle.year} viewCount={vehicle.view_count || 0} ordencompra={vehicle.ordencompra} promociones={vehicle.promociones} />
+            <VehicleCardHeader title={vehicle.title} year={vehicle.autoano || vehicle.year} viewCount={vehicle.view_count || 0} ordencompra={vehicle.ordencompra} promociones={vehicle.promociones} />
             <VehicleCardSpecs
               sucursal={vehicle.ubicacion}
               kilometraje={vehicle.kilometraje}
@@ -146,7 +146,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
               marca={vehicle.marca}
               carroceria={vehicle.carroceria}
               precio={vehicle.precio}
-              vehicleTitle={vehicle.titulo}
+              vehicleTitle={vehicle.title}
               vehicleSlug={vehicle.slug}
             />
           </div>

@@ -28,7 +28,7 @@ const VehicleSelector: React.FC<VehicleSelectorProps> = ({ isOpen, onClose, onSe
     if (!searchQuery) return availableVehicles;
     const lowercasedQuery = searchQuery.toLowerCase();
     return availableVehicles.filter(vehicle =>
-      vehicle.titulo.toLowerCase().includes(lowercasedQuery) ||
+      vehicle.title.toLowerCase().includes(lowercasedQuery) ||
       vehicle.marca.toLowerCase().includes(lowercasedQuery) ||
       String(vehicle.autoano).includes(lowercasedQuery)
     );
@@ -84,9 +84,9 @@ const VehicleSelector: React.FC<VehicleSelectorProps> = ({ isOpen, onClose, onSe
                   className="w-full flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200"
                 >
                   <button onClick={() => onSelect(vehicle)} className="flex-grow flex items-center gap-4 text-left">
-                    <LazyImage src={imageSrc} alt={vehicle.titulo} className="w-24 h-20 rounded-md flex-shrink-0 border border-gray-200" />
+                    <LazyImage src={imageSrc} alt={vehicle.title} className="w-24 h-20 rounded-md flex-shrink-0 border border-gray-200" />
                     <div className="flex-grow min-w-0">
-                      <p className="font-semibold text-gray-800 truncate" title={vehicle.titulo}>{vehicle.titulo}</p>
+                      <p className="font-semibold text-gray-800 truncate" title={vehicle.title}>{vehicle.title}</p>
                       {/* FIX: Corrected property name from 'autoprecio' to 'precio' */}
                       <p className="text-sm text-gray-600">{formatPrice(vehicle.precio)}</p>
                     </div>
@@ -98,7 +98,7 @@ const VehicleSelector: React.FC<VehicleSelectorProps> = ({ isOpen, onClose, onSe
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
                     className="flex-shrink-0 p-2 rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-700 transition-colors"
-                    aria-label={`Ver detalles de ${vehicle.titulo} en una nueva pestaña`}
+                    aria-label={`Ver detalles de ${vehicle.title} en una nueva pestaña`}
                   >
                     <EyeIcon className="w-5 h-5" />
                   </Link>

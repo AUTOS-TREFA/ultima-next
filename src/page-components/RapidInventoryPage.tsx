@@ -38,7 +38,7 @@ const RapidInventoryPage: React.FC = () => {
     const filteredVehicles = useMemo(() => {
         return allVehicles.filter(v => {
             const searchLower = filters.search.toLowerCase();
-            const titleMatch = v.titulo.toLowerCase().includes(searchLower);
+            const titleMatch = v.title.toLowerCase().includes(searchLower);
             const makeMatch = filters.make ? v.marca === filters.make : true;
             return titleMatch && makeMatch;
         });

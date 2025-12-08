@@ -246,7 +246,7 @@ const TitlePriceActionsBlock: React.FC<{
                     {vehicle.ordencompra}
                 </p>
             )}
-            <h1 className="text-2xl lg:text-4xl font-extrabold text-gray-900 leading-tight">{vehicle.titulo} {(vehicle.autoano || vehicle.year) && <span className="text-gray-600">{vehicle.autoano || vehicle.year}</span>}</h1>
+            <h1 className="text-2xl lg:text-4xl font-extrabold text-gray-900 leading-tight">{vehicle.title} {(vehicle.autoano || vehicle.year) && <span className="text-gray-600">{vehicle.autoano || vehicle.year}</span>}</h1>
             <div className="mt-2 flex items-center gap-x-4 gap-y-1 text-xs lg:text-sm text-gray-500 flex-wrap">
                 <div className="flex items-center gap-1.5"> <HeartIcon className="w-4 h-4 text-red-400" /> <span className="font-medium">{favoriteCount} {favoriteCount === 1 ? 'favorito' : 'favoritos'}</span> </div>
                 <div className="flex items-center gap-1.5"> <EyeIcon className="w-4 h-4" /> <span className="font-medium">{(vehicle.view_count || 0).toLocaleString('es-MX')} vistas</span> <PopularityBadge viewCount={vehicle.view_count || 0} /> </div>
@@ -268,7 +268,7 @@ const TitlePriceActionsBlock: React.FC<{
         <div className="mt-4 sm:mt-6 flex flex-col gap-2 sm:gap-3">
             <button data-gtm-id="detail-page-finance" onClick={onFinancingClick} className="w-full text-center bg-primary-600 text-white font-bold py-2.5 sm:py-3.5 px-4 sm:px-6 rounded-lg hover:bg-primary-700 text-sm sm:text-base lg:text-lg shadow-md transition-all"> Comprar con financiamiento </button>
             <a
-                href={`https://wa.me/5218187049079?text=${encodeURIComponent(`Hola, me interesa el ${vehicle.titulo}`)}`}
+                href={`https://wa.me/5218187049079?text=${encodeURIComponent(`Hola, me interesa el ${vehicle.title}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={onWhatsAppClick}
@@ -278,7 +278,7 @@ const TitlePriceActionsBlock: React.FC<{
             </a>
             <button data-gtm-id="detail-page-favorite" onClick={onToggleFavorite} disabled={isToggling} className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-white text-gray-700 font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg hover:bg-gray-100 border-2 border-gray-300 text-sm sm:text-base lg:text-lg shadow-sm transition-all disabled:opacity-50"> {isFavorite ? <SolidHeartIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" /> : <HeartIcon className="w-5 h-5 sm:w-6 sm:h-6" />} {isFavorite ? 'Guardado' : 'Anadir a favoritos'} ({favoriteCount}) </button>
         </div>
-        <ShareButtons url={typeof window !== 'undefined' ? window.location.href : ''} title={vehicle.titulo} className="mt-6 justify-center" />
+        <ShareButtons url={typeof window !== 'undefined' ? window.location.href : ''} title={vehicle.title} className="mt-6 justify-center" />
     </div>
 ));
 
@@ -700,7 +700,7 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
         // Facebook Pixel: Tracking InitiateCheckout
         facebookPixelService.trackInitiateCheckout({
             id: vehicle.record_id || vehicle.id,
-            title: vehicle.titulo,
+            title: vehicle.title,
             price: vehicle.autoprecio,
             brand: vehicle.automarca,
             model: vehicle.autosubmarcaversion,
@@ -720,7 +720,7 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
         // Facebook Pixel: Tracking AddToCart (WhatsApp interaction)
         facebookPixelService.trackAddToCart({
             id: vehicle.record_id || vehicle.id,
-            title: vehicle.titulo,
+            title: vehicle.title,
             price: vehicle.autoprecio,
             brand: vehicle.automarca,
             model: vehicle.autosubmarcaversion,
@@ -737,7 +737,7 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
         if (tab === 'calculator' && vehicle) {
             facebookPixelService.trackAddToCart({
                 id: vehicle.record_id || vehicle.id,
-                title: vehicle.titulo,
+                title: vehicle.title,
                 price: vehicle.autoprecio,
                 brand: vehicle.automarca,
                 model: vehicle.autosubmarcaversion,
@@ -767,7 +767,7 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
                     // Facebook Pixel: Tracking ViewContent
                     facebookPixelService.trackViewContent({
                         id: vehicleData.record_id || vehicleData.id,
-                        title: vehicleData.titulo,
+                        title: vehicleData.title,
                         price: vehicleData.autoprecio,
                         brand: vehicleData.automarca,
                         model: vehicleData.autosubmarcaversion,
@@ -880,7 +880,7 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
         );
     }
 
-    const crumbs = [{ name: 'Inventario', href: '/autos' }, { name: vehicle.titulo }];
+    const crumbs = [{ name: 'Inventario', href: '/autos' }, { name: vehicle.title }];
     const specifications = [
         { label: 'Marca', value: vehicle.marca }, { label: 'Modelo', value: vehicle.modelo },
         { label: 'Ano', value: vehicle.autoano }, { label: 'Kilometraje', value: formatMileage(vehicle.kilometraje) },
@@ -903,10 +903,10 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
             return (
               <Link href={`/autos/${prevVehicle.slug}`} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-white/60 transition-colors">
                 <ChevronLeftIcon className="w-8 h-8 flex-shrink-0 text-gray-400 group-hover:text-primary-600 transition-colors" />
-                <img src={prevImage} alt={prevVehicle.titulo} className="w-20 h-16 object-cover rounded-md flex-shrink-0 hidden sm:block" />
+                <img src={prevImage} alt={prevVehicle.title} className="w-20 h-16 object-cover rounded-md flex-shrink-0 hidden sm:block" />
                 <div className="truncate text-left">
                   <span className="text-xs text-gray-500 block">Anterior</span>
-                  <span className="font-semibold hidden md:block truncate text-neutral-800 group-hover:text-primary-700">{prevVehicle.titulo}</span>
+                  <span className="font-semibold hidden md:block truncate text-neutral-800 group-hover:text-primary-700">{prevVehicle.title}</span>
                 </div>
               </Link>
             );
@@ -921,9 +921,9 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
               <Link href={`/autos/${nextVehicle.slug}`} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-white/60 transition-colors">
                 <div className="truncate text-right">
                   <span className="text-xs text-gray-500 block">Siguiente</span>
-                  <span className="font-semibold hidden md:block truncate text-neutral-800 group-hover:text-primary-700">{nextVehicle.titulo}</span>
+                  <span className="font-semibold hidden md:block truncate text-neutral-800 group-hover:text-primary-700">{nextVehicle.title}</span>
                 </div>
-                <img src={nextImage} alt={nextVehicle.titulo} className="w-20 h-16 object-cover rounded-md flex-shrink-0 hidden sm:block" />
+                <img src={nextImage} alt={nextVehicle.title} className="w-20 h-16 object-cover rounded-md flex-shrink-0 hidden sm:block" />
                 <ChevronRightIcon className="w-8 h-8 flex-shrink-0 text-gray-400 group-hover:text-primary-600 transition-colors" />
               </Link>
             );
@@ -933,7 +933,7 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-12 items-start pt-2 sm:pt-4">
           <div className="lg:col-span-3 space-y-4 sm:space-y-6 lg:space-y-8">
-            <MediaGallery mediaItems={mediaItems} activeMedia={activeMedia} setActiveMedia={setActiveMedia} handleOpenLightbox={handleOpenLightbox} vehicleTitle={vehicle.titulo} promociones={vehicle.promociones}/>
+            <MediaGallery mediaItems={mediaItems} activeMedia={activeMedia} setActiveMedia={setActiveMedia} handleOpenLightbox={handleOpenLightbox} vehicleTitle={vehicle.title} promociones={vehicle.promociones}/>
 
             <div className="lg:hidden space-y-4 sm:space-y-6 lg:space-y-8">
               <TitlePriceActionsBlock vehicle={vehicle} financeData={financeData} favoriteCount={favoriteCount} isFavorite={isFavorite(vehicle.id)} isToggling={isToggling === vehicle.id} onToggleFavorite={() => toggleFavorite(vehicle.id)} onFinancingClick={handleFinancingClick} onWhatsAppClick={handleWhatsAppClick} />

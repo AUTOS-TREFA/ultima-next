@@ -49,16 +49,16 @@ const HeroVehicleCard: React.FC<{ vehicle: Vehicle }> = React.memo(({ vehicle })
         <div className="relative aspect-[4/3] bg-gray-100">
           <LazyImage
             src={imageSrc}
-            alt={vehicle.titulo}
+            alt={vehicle.title}
             className="w-full h-full"
             objectFit="cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-3">
             <h3
               className="text-white font-bold text-sm truncate drop-shadow-md"
-              title={vehicle.titulo}
+              title={vehicle.title}
             >
-              {vehicle.titulo}
+              {vehicle.title}
             </h3>
             <p className="text-primary-400 font-semibold text-base drop-shadow-md">
               {formatPrice(vehicle.precio)}
@@ -67,7 +67,7 @@ const HeroVehicleCard: React.FC<{ vehicle: Vehicle }> = React.memo(({ vehicle })
         </div>
       </div>
       <Link href={`/autos/${vehicle.slug}`} className="absolute inset-0 z-10">
-        <span className="sr-only">Ver detalles de {vehicle.titulo}</span>
+        <span className="sr-only">Ver detalles de {vehicle.title}</span>
       </Link>
     </div>
   );

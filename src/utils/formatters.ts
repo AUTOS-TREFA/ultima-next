@@ -283,7 +283,7 @@ export function formatMexicanPhone(phone: string): string {
  */
 export function getWhatsAppMessage(vehicle: WordPressVehicle): string {
   return encodeURIComponent(
-    `Hola, me interesa el ${vehicle.titulo} (${vehicle.ano}). ` +
+    `Hola, me interesa el ${vehicle.title} (${vehicle.ano}). ` +
     `¿Está disponible?\n\n` +
     `Orden: ${vehicle.ordencompra}\n` +
     `Precio: ${formatPrice(vehicle.precio)}`
@@ -359,7 +359,7 @@ export function filterVehicles(
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       const matchesSearch = 
-        vehicle.titulo.toLowerCase().includes(searchLower) ||
+        vehicle.title.toLowerCase().includes(searchLower) ||
         vehicle.marca.toLowerCase().includes(searchLower) ||
         vehicle.modelo.toLowerCase().includes(searchLower);
       
@@ -535,10 +535,10 @@ export function paginateVehicles(
  * Genera meta tags para SEO
  */
 export function generateVehicleMetaTags(vehicle: WordPressVehicle) {
-  const title = `${vehicle.titulo} en Venta | TREFA`;
+  const title = `${vehicle.title} en Venta | TREFA`;
   const description = vehicle.descripcion 
     ? stripHtml(vehicle.descripcion).slice(0, 160)
-    : `Encuentra el ${vehicle.titulo}, año ${vehicle.ano} con ${formatMileage(vehicle.kilometraje)} en TREFA. Financiamiento disponible.`;
+    : `Encuentra el ${vehicle.title}, año ${vehicle.ano} con ${formatMileage(vehicle.kilometraje)} en TREFA. Financiamiento disponible.`;
   
   const keywords = [
     vehicle.marca,
@@ -639,7 +639,7 @@ export function generateVehicleStructuredData(vehicle: WordPressVehicle) {
   return {
     "@context": "https://schema.org",
     "@type": "Car",
-    "name": vehicle.titulo,
+    "name": vehicle.title,
     "brand": {
       "@type": "Brand",
       "name": vehicle.marca
@@ -800,7 +800,7 @@ export function isValidVehicle(vehicle: Partial<WordPressVehicle>): boolean {
   return !!(
     vehicle.id &&
     vehicle.slug &&
-    vehicle.titulo &&
+    vehicle.title &&
     vehicle.precio &&
     vehicle.ano &&
     vehicle.marca

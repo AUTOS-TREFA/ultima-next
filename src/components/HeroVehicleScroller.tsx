@@ -56,7 +56,7 @@ const VehicleImage: React.FC<{vehicle: WordPressVehicle}> = ({ vehicle }) => {
         <Link href={`/autos/${vehicle.slug}`} className="flex-shrink-0 w-64 h-48 rounded-2xl overflow-hidden group relative bg-gray-200">
             <img 
                 src={vehicle.feature_image} 
-                alt={vehicle.titulo} 
+                alt={vehicle.title} 
                 className={`w-full h-full object-cover transition-all duration-500 ease-in-out group-hover:scale-110 ${isLoaded ? 'blur-0 scale-100' : 'blur-lg scale-110'}`}
                 loading="lazy"
                 decoding="async"
@@ -64,7 +64,7 @@ const VehicleImage: React.FC<{vehicle: WordPressVehicle}> = ({ vehicle }) => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="absolute bottom-0 left-0 p-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <h3 className="font-bold text-sm leading-tight drop-shadow-md">{vehicle.titulo}</h3>
+                <h3 className="font-bold text-sm leading-tight drop-shadow-md">{vehicle.title}</h3>
             </div>
         </Link>
     );

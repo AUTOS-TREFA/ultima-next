@@ -32,7 +32,7 @@ const AdminInspectionsListPage: React.FC = () => {
         if (!searchQuery) return allVehicles;
         const lowercasedQuery = searchQuery.toLowerCase();
         return allVehicles.filter(v =>
-            v.titulo.toLowerCase().includes(lowercasedQuery) ||
+            v.title.toLowerCase().includes(lowercasedQuery) ||
             String(v.id).includes(lowercasedQuery) ||
             v.ordencompra?.toLowerCase().includes(lowercasedQuery)
         );
@@ -69,9 +69,9 @@ const AdminInspectionsListPage: React.FC = () => {
                             <li key={vehicle.id}>
                                 <Link href={`/escritorio/admin/inspections/${vehicle.id}`} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
                                     <div className="flex items-center gap-4">
-                                        <img src={imageSrc} alt={vehicle.titulo} className="w-20 h-16 object-cover rounded-md flex-shrink-0" />
+                                        <img src={imageSrc} alt={vehicle.title} className="w-20 h-16 object-cover rounded-md flex-shrink-0" />
                                         <div>
-                                            <p className="font-semibold text-gray-800">{vehicle.titulo}</p>
+                                            <p className="font-semibold text-gray-800">{vehicle.title}</p>
                                             <p className="text-sm text-gray-500">ID: {vehicle.id} | OC: {vehicle.ordencompra || 'N/A'}</p>
                                         </div>
                                     </div>

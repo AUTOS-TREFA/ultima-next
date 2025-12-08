@@ -230,7 +230,7 @@ const EnhancedApplication: React.FC = () => {
             if (vehicle) {
               const featureImage = getVehicleImage(vehicle);
               const carData = {
-                _vehicleTitle: vehicle.titulo,
+                _vehicleTitle: vehicle.title,
                 _ordenCompra: vehicle.ordencompra,
                 _featureImage: featureImage,
                 precio: vehicle.precio,
@@ -269,7 +269,7 @@ const EnhancedApplication: React.FC = () => {
     if (!applicationId) return;
     const featureImage = getVehicleImage(vehicle);
     const carData = {
-      _vehicleTitle: vehicle.titulo,
+      _vehicleTitle: vehicle.title,
       _ordenCompra: vehicle.ordencompra,
       _featureImage: featureImage,
       precio: vehicle.precio,

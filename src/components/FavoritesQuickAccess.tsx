@@ -69,14 +69,14 @@ const FavoritesQuickAccess: React.FC<FavoritesQuickAccessProps> = ({ variant = '
                   <div className="relative aspect-[4/3]">
                     <LazyImage
                       src={getVehicleImage(vehicle)}
-                      alt={vehicle.titulo}
+                      alt={vehicle.title}
                       className="w-full h-full"
                       objectFit="cover"
                     />
                   </div>
                   <div className="p-2">
                     <p className="text-xs font-semibold text-gray-800 truncate group-hover:text-primary-600 transition-colors">
-                      {vehicle.titulo}
+                      {vehicle.title}
                     </p>
                     <p className="text-xs font-bold text-primary-600 mt-0.5">
                       {formatPrice(vehicle.precio)}
@@ -117,14 +117,14 @@ const FavoritesQuickAccess: React.FC<FavoritesQuickAccessProps> = ({ variant = '
                 <div className="relative aspect-[4/3]">
                   <LazyImage
                     src={getVehicleImage(vehicle)}
-                    alt={vehicle.titulo}
+                    alt={vehicle.title}
                     className="w-full h-full"
                     objectFit="cover"
                   />
                 </div>
                 <div className="p-2">
                   <p className="text-xs font-semibold text-gray-800 truncate">
-                    {vehicle.titulo}
+                    {vehicle.title}
                   </p>
                   <p className="text-xs font-bold text-primary-600 mt-0.5">
                     {formatPrice(vehicle.precio)}

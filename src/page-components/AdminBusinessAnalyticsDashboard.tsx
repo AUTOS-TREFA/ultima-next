@@ -294,7 +294,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                                         {vehicle.thumbnail ? (
                                             <img
                                                 src={vehicle.thumbnail}
-                                                alt={vehicle.titulo}
+                                                alt={vehicle.title}
                                                 className="w-20 h-20 rounded-lg object-cover"
                                             />
                                         ) : (
@@ -306,7 +306,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-start justify-between gap-2">
                                             <p className="font-semibold text-gray-900 text-sm line-clamp-2">
-                                                {vehicle.titulo}
+                                                {vehicle.title}
                                             </p>
                                             <span className="flex-shrink-0 text-2xl font-bold text-orange-600">
                                                 #{index + 1}
@@ -400,7 +400,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                                         </span>
                                         <div className="flex-1 min-w-0">
                                             <span className="text-sm font-medium text-gray-900 truncate block">
-                                                {vehicle.titulo}
+                                                {vehicle.title}
                                             </span>
                                             <div className="flex items-center gap-4 mt-1">
                                                 <span className="text-xs text-gray-500">

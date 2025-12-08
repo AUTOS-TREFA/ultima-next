@@ -15,7 +15,7 @@ export type VehiclePortfolioItem = {
   id: number
   slug: string
   image: string
-  titulo: string
+  title: string
   precio: number
 }
 
@@ -41,7 +41,7 @@ const Portfolio = ({
         const supabase = createBrowserSupabaseClient()
         const { data, error } = await supabase
           .from('inventario_cache')
-          .select('id, slug, titulo, precio, feature_image, galeria_exterior, fotos_exterior_url, separado, vendido')
+          .select('id, slug, title, precio, feature_image, galeria_exterior, fotos_exterior_url, separado, vendido')
           .eq('separado', false)
           .eq('vendido', false)
           .order('id', { ascending: false })
@@ -60,7 +60,7 @@ const Portfolio = ({
                 id: vehicle.id,
                 slug: vehicle.slug || '',
                 image: vehicleImage,
-                titulo: vehicle.titulo || 'Vehículo',
+                title: vehicle.title || 'Vehículo',
                 precio: vehicle.precio || 0
               }
             })
@@ -178,7 +178,7 @@ const Portfolio = ({
                     <Link href={`/autos/${vehicle.slug}`}>
                       <img
                         src={vehicle.image}
-                        alt={vehicle.titulo}
+                        alt={vehicle.title}
                         className='aspect-auto w-full object-cover'
                       />
 
@@ -187,7 +187,7 @@ const Portfolio = ({
                       <Card className='border-primary group-hover:animate-in group-hover:slide-in-from-bottom-4 group-hover:fade-in absolute inset-x-6 bottom-6 py-4 opacity-0 transition-all duration-500 group-hover:opacity-100'>
                         <CardContent className='space-y-1 px-4 text-center'>
                           <h3 className='text-lg font-semibold line-clamp-2'>
-                            {vehicle.titulo}
+                            {vehicle.title}
                           </h3>
                           <p className='text-primary font-bold text-base'>
                             ${vehicle.precio.toLocaleString('es-MX')}

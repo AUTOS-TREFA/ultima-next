@@ -86,7 +86,7 @@ const ExplorarPage: React.FC = () => {
 
         if (direction === 'right') {
             toggleFavorite(car.id);
-            toast.success(`${car.titulo} guardado en favoritos!`, {
+            toast.success(`${car.title} guardado en favoritos!`, {
                 icon: <Heart className="w-4 h-4 text-red-500" />,
             });
         } else {
@@ -376,7 +376,7 @@ const ExplorarPage: React.FC = () => {
                                         {/* Image */}
                                         <img
                                             src={currentImage}
-                                            alt={car.titulo}
+                                            alt={car.title}
                                             className="w-full h-full object-cover select-none"
                                             draggable="false"
                                         />
@@ -405,7 +405,7 @@ const ExplorarPage: React.FC = () => {
                                         {/* Car Info */}
                                         <div className="absolute bottom-0 left-0 right-0 p-6 text-white z-10 pointer-events-none">
                                             <h2 className="text-2xl font-bold mb-2 drop-shadow-lg">
-                                                {car.titulo}
+                                                {car.title}
                                             </h2>
                                             <div className="flex items-center gap-3 text-sm font-medium mb-2">
                                                 <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-lg">

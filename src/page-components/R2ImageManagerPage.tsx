@@ -116,7 +116,7 @@ const R2ImageManagerPage: React.FC = () => {
         const { data: { user } } = await supabase.auth.getUser();
         const { error } = await supabase.from('r2_images').insert([{
           vehicle_id: selectedVehicleId,
-          vehicle_title: selectedVehicle.titulo,
+          vehicle_title: selectedVehicle.title,
           file_name: upload.file.name,
           file_path: path,
           file_url: url,
@@ -258,7 +258,7 @@ const R2ImageManagerPage: React.FC = () => {
                 <option value="">-- Selecciona un vehículo --</option>
                 {vehicles.map(vehicle => (
                   <option key={vehicle.id} value={vehicle.id}>
-                    {vehicle.titulo} (ID: {vehicle.id})
+                    {vehicle.title} (ID: {vehicle.id})
                   </option>
                 ))}
               </select>
@@ -386,7 +386,7 @@ const R2ImageManagerPage: React.FC = () => {
                   <option value="">Todos los vehículos</option>
                   {vehicles.map(vehicle => (
                     <option key={vehicle.id} value={vehicle.id}>
-                      {vehicle.titulo}
+                      {vehicle.title}
                     </option>
                   ))}
                 </select>

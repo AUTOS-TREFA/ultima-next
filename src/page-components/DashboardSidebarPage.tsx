@@ -265,7 +265,7 @@ const DashboardSidebarPage: React.FC = () => {
           const vehicleIds = favorites.map(f => f.vehicle_id);
           const { data: favVehicles, error: vehError } = await supabase
             .from('inventario_cache')
-            .select('id, slug, titulo, precio, feature_image, fotos_exterior_url, galeria_exterior')
+            .select('id, slug, title, precio, feature_image, fotos_exterior_url, galeria_exterior')
             .in('id', vehicleIds)
             .limit(3);
 
@@ -294,7 +294,7 @@ const DashboardSidebarPage: React.FC = () => {
         if (!vehiclesLoaded) {
           const { data: suggestions, error: sugError } = await supabase
             .from('inventario_cache')
-            .select('id, slug, titulo, precio, feature_image, fotos_exterior_url, galeria_exterior')
+            .select('id, slug, title, precio, feature_image, fotos_exterior_url, galeria_exterior')
             .eq('disponibilidad', 'disponible')
             .order('created_at', { ascending: false })
             .limit(3);
@@ -754,7 +754,7 @@ const DashboardSidebarPage: React.FC = () => {
                         {selectedVehicle.feature_image || selectedVehicle.fotos_exterior_url?.[0] ? (
                           <img
                             src={selectedVehicle.feature_image || selectedVehicle.fotos_exterior_url?.[0]}
-                            alt={selectedVehicle.titulo}
+                            alt={selectedVehicle.title}
                             className="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-lg flex-shrink-0"
                           />
                         ) : (
@@ -762,7 +762,7 @@ const DashboardSidebarPage: React.FC = () => {
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm sm:text-base text-gray-900 truncate">
-                            {selectedVehicle.titulo || 'Vehículo'}
+                            {selectedVehicle.title || 'Vehículo'}
                           </p>
                           <p className="text-xs text-gray-500">ID: {selectedVehicle.id}</p>
                           <p className="text-xs sm:text-sm text-gray-600">Ver detalles</p>
@@ -842,7 +842,7 @@ const DashboardSidebarPage: React.FC = () => {
                               {imageUrl ? (
                                 <img
                                   src={imageUrl}
-                                  alt={vehicle.titulo}
+                                  alt={vehicle.title}
                                   className="w-20 h-15 object-cover rounded flex-shrink-0"
                                 />
                               ) : (
@@ -852,7 +852,7 @@ const DashboardSidebarPage: React.FC = () => {
                               )}
                               <div className="flex-1 min-w-0">
                                 <p className="font-semibold text-sm text-gray-900 line-clamp-2">
-                                  {vehicle.titulo}
+                                  {vehicle.title}
                                 </p>
                                 <p className="text-sm text-primary-600 font-bold mt-1">
                                   ${vehicle.precio?.toLocaleString()}
@@ -1041,7 +1041,7 @@ const DashboardSidebarPage: React.FC = () => {
                           {imageUrl ? (
                             <img
                               src={imageUrl}
-                              alt={vehicle.titulo}
+                              alt={vehicle.title}
                               className="w-12 h-9 object-cover rounded flex-shrink-0"
                             />
                           ) : (
@@ -1051,7 +1051,7 @@ const DashboardSidebarPage: React.FC = () => {
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="text-[10px] font-semibold truncate">
-                              {vehicle.titulo}
+                              {vehicle.title}
                             </p>
                             <p className="text-[10px] text-primary font-bold">
                               ${vehicle.precio?.toLocaleString()}

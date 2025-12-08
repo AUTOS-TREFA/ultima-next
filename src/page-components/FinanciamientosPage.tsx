@@ -85,7 +85,7 @@ const MasonryVehicleCard: React.FC<{ vehicle: Vehicle; urlParams?: string }> = (
     // Track vehicle click with Facebook Pixel
     if (typeof window !== 'undefined' && (window as any).fbq) {
       (window as any).fbq('track', 'ViewContent', {
-        content_name: vehicle.titulo,
+        content_name: vehicle.title,
         content_ids: [vehicle.id],
         content_type: 'product',
         value: vehicle.precio,
@@ -98,7 +98,7 @@ const MasonryVehicleCard: React.FC<{ vehicle: Vehicle; urlParams?: string }> = (
       (window as any).dataLayer.push({
         event: 'vehicle_click',
         vehicleId: vehicle.id,
-        vehicleName: vehicle.titulo,
+        vehicleName: vehicle.title,
         vehiclePrice: vehicle.precio,
         source: 'financiamientos_inventory'
       });
@@ -115,14 +115,14 @@ const MasonryVehicleCard: React.FC<{ vehicle: Vehicle; urlParams?: string }> = (
         <div className={`aspect-[4/3] bg-gray-100 ${isPopular ? 'overflow-hidden rounded-t-lg' : ''}`}>
           <LazyImage
             src={imageSrc}
-            alt={vehicle.titulo}
+            alt={vehicle.title}
             className="w-full h-full"
             objectFit="cover"
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-3">
-          <h4 className="text-white font-bold text-sm truncate drop-shadow-md" title={vehicle.titulo}>
-            {vehicle.titulo}
+          <h4 className="text-white font-bold text-sm truncate drop-shadow-md" title={vehicle.title}>
+            {vehicle.title}
           </h4>
           <p className="text-white font-black text-base drop-shadow-md">
             {formatPrice(vehicle.precio)}

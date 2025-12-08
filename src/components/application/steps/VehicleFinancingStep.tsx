@@ -111,12 +111,12 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
 
     const term = searchTerm.toLowerCase();
     const filtered = vehicles.filter(vehicle => {
-      const titulo = vehicle.titulo?.toLowerCase() || '';
+      const title = vehicle.title?.toLowerCase() || '';
       const marca = vehicle.marca?.toLowerCase() || '';
       const modelo = vehicle.modelo?.toLowerCase() || '';
       const year = vehicle.autoano?.toString() || '';
 
-      return titulo.includes(term) ||
+      return title.includes(term) ||
              marca.includes(term) ||
              modelo.includes(term) ||
              year.includes(term);
@@ -159,7 +159,7 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
                 <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
                 <img
                   src={getVehicleImage(selectedVehicle)}
-                  alt={selectedVehicle.titulo}
+                  alt={selectedVehicle.title}
                   className="w-20 h-14 object-cover rounded flex-shrink-0"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -168,7 +168,7 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-green-700 font-medium">Vehículo Seleccionado</p>
-                  <p className="font-bold text-gray-900 truncate">{selectedVehicle.titulo}</p>
+                  <p className="font-bold text-gray-900 truncate">{selectedVehicle.title}</p>
                   <p className="text-sm font-semibold text-primary-600">
                     {formatCurrency(selectedVehicle.precio)}
                   </p>
@@ -331,7 +331,7 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
                 <div className="aspect-video w-full mb-3 overflow-hidden rounded-md bg-gray-100">
                   <img
                     src={getVehicleImage(vehicle)}
-                    alt={vehicle.titulo}
+                    alt={vehicle.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -341,7 +341,7 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-bold text-sm text-gray-900 line-clamp-2 group-hover:text-primary-600">
-                    {vehicle.titulo}
+                    {vehicle.title}
                   </h3>
                   <p className="text-lg font-bold text-primary-600">
                     {formatCurrency(vehicle.precio)}

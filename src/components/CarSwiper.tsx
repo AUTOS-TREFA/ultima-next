@@ -59,7 +59,7 @@ const CardContent: React.FC<{ car: WordPressVehicle; mediaIndex: number }> = Rea
 
             <img
                 src={currentMedia}
-                alt={car.titulo}
+                alt={car.title}
                 className="w-full h-full object-cover"
                 draggable="false"
             />
@@ -68,7 +68,7 @@ const CardContent: React.FC<{ car: WordPressVehicle; mediaIndex: number }> = Rea
 
             <div className="absolute bottom-0 left-0 right-0 p-6 text-white z-10">
                 <h2 className="text-2xl font-bold mb-1" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
-                    {car.titulo}
+                    {car.title}
                 </h2>
                 <div className="flex items-center gap-3 text-sm font-medium opacity-95" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
                     <span className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded-md">{car.autoano}</span>

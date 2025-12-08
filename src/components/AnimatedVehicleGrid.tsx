@@ -194,7 +194,7 @@ const AnimatedVehicleGrid: React.FC<AnimatedVehicleGridProps> = ({
               >
                 <img
                   src={imageSrc}
-                  alt={vehicle.titulo}
+                  alt={vehicle.title}
                   className="w-full h-full object-cover"
                   loading="lazy"
                   decoding="async"

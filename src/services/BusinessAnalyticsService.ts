@@ -3,7 +3,7 @@ import { config } from '../pages/config';
 
 export interface VehicleInsight {
     id: string;
-    titulo: string;
+    title: string;
     ordenstatus: string;
     precio: number;
     applicationCount: number;
@@ -15,7 +15,7 @@ export interface VehicleInsight {
 
 export interface InventoryVehicleWithApplications {
     id: string;
-    titulo: string;
+    title: string;
     ordenstatus: string;
     precio: number;
     ongoingApplications: number;
@@ -129,7 +129,7 @@ export class BusinessAnalyticsService {
 
                 return {
                     id: vehicle.id,
-                    titulo: vehicle.title || 'Sin título',
+                    title: vehicle.title || 'Sin título',
                     ordenstatus: vehicle.ordenstatus || 'Disponible',
                     precio: vehicle.precio || 0,
                     ongoingApplications: appCount,
@@ -150,7 +150,7 @@ export class BusinessAnalyticsService {
 
             console.log(`[BusinessAnalytics] Returning ${sorted.length} vehicles with application counts`);
             console.log(`[BusinessAnalytics] Top 3 vehicles:`, sorted.slice(0, 3).map(v => ({
-                titulo: v.titulo,
+                title: v.title,
                 apps: v.ongoingApplications
             })));
 
@@ -218,7 +218,7 @@ export class BusinessAnalyticsService {
 
                 return {
                     id: vehicle.id,
-                    titulo: vehicle.title || 'Sin título',
+                    title: vehicle.title || 'Sin título',
                     ordenstatus: vehicle.ordenstatus || 'Disponible',
                     precio: vehicle.precio || 0,
                     applicationCount: stats?.apps.length || 0,

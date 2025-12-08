@@ -21,7 +21,7 @@ const SimpleVehicleCard: React.FC<SimpleVehicleCardProps> = ({ vehicle }) => {
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
           <LazyImage
             src={imageSrc}
-            alt={vehicle.titulo}
+            alt={vehicle.title}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
           />
           {/* Gradient overlay for better text contrast */}
@@ -32,9 +32,9 @@ const SimpleVehicleCard: React.FC<SimpleVehicleCardProps> = ({ vehicle }) => {
         <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
           <h3
             className="text-sm sm:text-base font-semibold text-white line-clamp-2 leading-tight drop-shadow-lg"
-            title={vehicle.titulo}
+            title={vehicle.title}
           >
-            {vehicle.titulo}
+            {vehicle.title}
           </h3>
         </div>
       </div>

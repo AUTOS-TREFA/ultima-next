@@ -494,7 +494,7 @@ const ImageGeneratorTab: React.FC<ImageGeneratorTabProps> = ({ vehicles, isLoadi
                     vehiclesWithGalleries.map(vehicle => (
                         <div key={vehicle.id} className={`w-full text-left bg-white rounded-xl shadow-sm border p-4 transition-all duration-200 ${selectedVehicle?.id === vehicle.id ? 'border-primary-500 ring-2 ring-primary-500/50' : 'border-gray-200'}`}>
                             <button onClick={() => handleSelectVehicle(vehicle)} className='w-full text-left'>
-                                <h2 className="font-bold text-gray-800 truncate">{vehicle.titulo}</h2>
+                                <h2 className="font-bold text-gray-800 truncate">{vehicle.title}</h2>
                                 <p className="text-sm text-gray-500 mb-2">ID: {vehicle.id}</p>
                             </button>
                         </div>
@@ -736,7 +736,7 @@ const WebEditorHistoryTab: React.FC = () => {
                                         {trackedVehicle && (
                                             <div className="mt-1 inline-flex items-center gap-1 px-2 py-1 bg-primary-50 text-primary-700 rounded-md text-xs font-medium">
                                                 <Camera className="w-3 h-3" />
-                                                {trackedVehicle.titulo}
+                                                {trackedVehicle.title}
                                             </div>
                                         )}
                                     </div>
@@ -759,7 +759,7 @@ const WebEditorHistoryTab: React.FC = () => {
                                         <option value="">Seleccionar vehículo... ({vehicles.length} disponibles)</option>
                                         {vehicles.map((v: any) => (
                                             <option key={v.id} value={v.id}>
-                                                {v.titulo} - {v.marca || ''} {v.modelo || ''} {v.anio || ''} (ID: {v.id})
+                                                {v.title} - {v.marca || ''} {v.modelo || ''} {v.anio || ''} (ID: {v.id})
                                             </option>
                                         ))}
                                     </select>

@@ -579,9 +579,13 @@ const Dashboard: React.FC = () => {
             ) : (
                 drafts.length === 0 && (
                     <div className="relative rounded-xl border-2 border-dashed border-orange-200 p-8 text-center overflow-hidden bg-orange-50">
-                      <div 
-                        className="absolute inset-0 bg-repeat opacity-10" 
-                        style={{ backgroundImage: `url(${proxyImage('http://5.183.8.48/wp-content/uploads/2024/09/circulos-naranjas-trefa-fondo.png')})` }}>
+                      {/* Patrón de círculos naranjas decorativo */}
+                      <div
+                        className="absolute inset-0 opacity-10"
+                        style={{
+                          backgroundImage: `radial-gradient(circle, #FF6801 2px, transparent 2px)`,
+                          backgroundSize: '24px 24px'
+                        }}>
                       </div>
                       <div className="relative">
                         <CreditCard className="w-10 h-12 text-primary-600 mx-auto mb-4" />

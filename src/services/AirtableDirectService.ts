@@ -143,7 +143,7 @@ export default class AirtableDirectService {
             };
 
             // Use Airtable's "Auto" field first, then construct as fallback
-            const titulo = fields.Auto ||
+            const title = fields.Auto ||
                 (fields.AutoMarca && fields.AutoSubmarcaVersion && fields.AutoAno
                     ? `${fields.AutoMarca} ${fields.AutoSubmarcaVersion} ${fields.AutoAno}`.trim()
                     : 'Auto sin título');
@@ -163,7 +163,7 @@ export default class AirtableDirectService {
 
             // Use Airtable's slug field first, then ligawp, then generate from other fields
             const slugBase = fields.slug || fields.ligawp ||
-                (fields.OrdenCompra || titulo || recordId).toLowerCase().replace(/\s+/g, '-');
+                (fields.OrdenCompra || title || recordId).toLowerCase().replace(/\s+/g, '-');
 
             // Process images
             const exteriorImages = getImageUrls(fields.fotos_exterior);
@@ -191,15 +191,15 @@ export default class AirtableDirectService {
                 ordenid: fields.OrdenCompra || '',
 
                 // ========== TÍTULO Y DESCRIPCIÓN ==========
-                titulo: titulo,
-                title: titulo,
-                label: titulo,
+                title: title,
+                title: title,
+                label: title,
                 descripcion: fields.descripcion || fields.Descripcion || '',
                 description: fields.descripcion || fields.Descripcion || '',
                 post_content: fields.descripcion || fields.Descripcion || '',
                 metadescripcion: fields.description || '',
                 post_excerpt: fields.descripcion?.substring(0, 150) || '',
-                titulometa: titulo,
+                titlemeta: title,
                 permalink: `/autos/${slugBase}`,
 
                 // ========== MARCA Y MODELO ==========
@@ -333,14 +333,14 @@ export default class AirtableDirectService {
         console.log(`🔍 [Airtable] Validating ${normalized.length} normalized records...`);
 
         const validRecords = normalized.filter((record, idx) => {
-            const isValid = record.id && record.slug && record.titulo && record.precio > 0;
+            const isValid = record.id && record.slug && record.title && record.precio > 0;
             if (!isValid) {
                 console.warn(`⚠️ [Airtable] Skipping invalid record ${idx}:`, {
                     id: record.id,
                     slug: record.slug,
-                    titulo: record.titulo,
+                    title: record.title,
                     precio: record.precio,
-                    reason: !record.id ? 'no id' : !record.slug ? 'no slug' : !record.titulo ? 'no titulo' : 'precio <= 0'
+                    reason: !record.id ? 'no id' : !record.slug ? 'no slug' : !record.title ? 'no title' : 'precio <= 0'
                 });
             }
             return isValid;
@@ -355,7 +355,7 @@ export default class AirtableDirectService {
             console.log('📋 [Airtable] Sample normalized vehicle:', {
                 id: sample.id,
                 slug: sample.slug,
-                titulo: sample.titulo,
+                title: sample.title,
                 precio: sample.precio,
                 feature_image: sample.feature_image ? '✓ Has image' : '✗ No image',
                 ordencompra: sample.ordencompra || 'N/A',

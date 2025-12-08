@@ -78,7 +78,7 @@ const VehicleGridCard: React.FC<VehicleGridCardProps> = ({ vehicle }) => {
         <div className={`block relative ${isPopular ? 'overflow-hidden rounded-t-3xl' : ''}`}>
             <ImageCarousel
               images={imagesForCarousel}
-              alt={vehicle.titulo}
+              alt={vehicle.title}
               isSeparado={isSeparado}
               garantia={vehicle.garantia}
               sucursal={vehicle.ubicacion}
@@ -122,8 +122,8 @@ const VehicleGridCard: React.FC<VehicleGridCardProps> = ({ vehicle }) => {
                         );
                     })}
                 </div>
-                <h3 className="font-bold text-base text-gray-900 group-hover:text-primary-600 transition-colors truncate mb-2" title={vehicle.titulo}>
-                    {vehicle.titulo} {(vehicle.autoano || vehicle.year) && <span className="text-gray-600">{vehicle.autoano || vehicle.year}</span>}
+                <h3 className="font-bold text-base text-gray-900 group-hover:text-primary-600 transition-colors truncate mb-2" title={vehicle.title}>
+                    {vehicle.title} {(vehicle.autoano || vehicle.year) && <span className="text-gray-600">{vehicle.autoano || vehicle.year}</span>}
                 </h3>
 
                 {/* Specs badges in white section */}
