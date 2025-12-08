@@ -82,7 +82,7 @@ const Header: React.FC = () => {
                    </>
                 ) : (
                   <>
-                    <Button asChild size="sm" variant="outline" className="border-primary-600 text-primary-600 hover:bg-primary-50">
+                    <Button asChild size="sm" variant="outline" className="border-2 border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white bg-white">
                         <Link href="/registro" data-gtm-id="header-register-button">
                             Registro
                         </Link>

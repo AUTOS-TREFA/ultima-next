@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { MotionPreset } from '@/components/ui/motion-preset'
 import { cn } from '@/lib/utils'
-import { supabase } from '../../../../../supabaseClient'
+import { createBrowserSupabaseClient } from '@/lib/supabase/client'
 import { getVehicleImage } from '@/utils/getVehicleImage'
 import { DEFAULT_PLACEHOLDER_IMAGE } from '@/utils/constants'
 import type { Vehicle } from '@/types/types'
@@ -38,6 +38,7 @@ const Portfolio = ({
   useEffect(() => {
     const fetchVehicles = async () => {
       try {
+        const supabase = createBrowserSupabaseClient()
         const { data, error } = await supabase
           .from('inventario_cache')
           .select('id, slug, titulo, precio, feature_image, galeria_exterior, fotos_exterior_url, separado, vendido')

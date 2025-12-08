@@ -56,3 +56,12 @@ supabase/.temp/
 next-env.d.ts
 .vercel
 .env*.local
+
+# Archivos temporales de migración de imágenes
+temp-images-migration/
+
+# Wrangler local
+.wrangler/
+
+# Scripts de prueba SMTP
+test-smtp.cjs

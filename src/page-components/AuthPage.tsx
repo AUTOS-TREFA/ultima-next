@@ -158,7 +158,7 @@ const AuthPage: React.FC = () => {
                 if (vehicle) setVehicleToFinance(vehicle);
             }).catch(err => {
                 console.error("Error fetching vehicle for AuthPage:", err);
-                setError("No pudimos cargar la informacion del vehiculo. Por favor, intenta nuevamente o continua sin esta informacion.");
+                setError("No pudimos cargar la información del vehículo. Puedes continuar con tu inicio de sesión de todas formas.");
             }).finally(() => setIsLoadingVehicle(false));
         }
     }, [searchParams]);
@@ -171,7 +171,7 @@ const AuthPage: React.FC = () => {
             // Validate email format
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                setError('Por favor, ingresa un correo electronico valido.');
+                setError('Por favor, ingresa un correo electrónico válido. Ejemplo: tunombre@ejemplo.com');
                 setLoading(false);
                 return;
             }
@@ -201,19 +201,19 @@ const AuthPage: React.FC = () => {
             if (error) {
                 console.error('OTP Send Error:', error);
 
-                // Better error messages
+                // Mensajes de error amigables e informativos
                 if (error.message.includes('rate limit')) {
-                    throw new Error('Has solicitado demasiados codigos. Por favor espera unos minutos antes de intentar de nuevo.');
+                    throw new Error('Has solicitado demasiados códigos de acceso. Por tu seguridad, espera 5 minutos antes de intentar de nuevo.');
                 } else if (error.message.includes('Email not confirmed')) {
-                    throw new Error('Tu correo electronico no ha sido confirmado. Por favor verifica tu bandeja de entrada.');
+                    throw new Error('Tu correo electrónico aún no ha sido confirmado. Revisa tu bandeja de entrada y haz clic en el enlace de confirmación que te enviamos.');
                 } else if (error.message.includes('User not found') || error.message.includes('Signups not allowed') || error.message.includes('not allowed for otp')) {
                     // User doesn't exist - show friendly error message
                     console.log('Usuario no encontrado en Supabase Auth');
                     setError(
                         <div className="text-left">
-                            <p className="text-xl font-bold mb-3 text-blue-900">Este correo no esta registrado</p>
+                            <p className="text-xl font-bold mb-3 text-blue-900">Este correo no está registrado</p>
                             <p className="text-sm text-blue-800 mb-4">
-                                <strong>{email}</strong> no tiene cuenta. Creala gratis en segundos!
+                                <strong>{email}</strong> no tiene cuenta todavía. ¡Créala gratis en segundos!
                             </p>
                             <button
                                 onClick={() => {
@@ -237,6 +237,9 @@ const AuthPage: React.FC = () => {
                     );
                     setLoading(false);
                     return;
+                } else if (error.message.includes('Error sending') || error.message.includes('SMTP') || error.status === 500) {
+                    // SMTP configuration error
+                    throw new Error('No pudimos enviar el correo de verificación. Por favor intenta de nuevo en unos minutos. Si el problema persiste, contáctanos en hola@trefa.mx o llama al (81) 8421-3900.');
                 } else {
                     throw error;
                 }
@@ -253,7 +256,7 @@ const AuthPage: React.FC = () => {
             setView('verifyOtp');
         } catch (error: any) {
             console.error('Full Email Submit Error:', error);
-            setError(error.message || `No pudimos enviar el codigo de verificacion. Por favor, verifica que tu correo electronico este escrito correctamente e intentalo nuevamente. Si el problema persiste, contacta con soporte.`);
+            setError(error.message || 'Ocurrió un problema al enviar el código de verificación. Verifica que tu correo electrónico esté escrito correctamente e intenta de nuevo. Si el problema continúa, contáctanos en hola@trefa.mx');
         } finally {
             setLoading(false);
         }
@@ -266,7 +269,7 @@ const AuthPage: React.FC = () => {
         try {
             // Validate OTP format (6 digits)
             if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
-                setError('El codigo debe tener 6 digitos numericos.');
+                setError('El código debe tener 6 dígitos numéricos. Por favor verifica e intenta de nuevo.');
                 setLoading(false);
                 return;
             }
@@ -280,15 +283,15 @@ const AuthPage: React.FC = () => {
             if (error) {
                 console.error('OTP Verification Error:', error);
 
-                // Provide specific error messages based on error type
+                // Mensajes de error específicos y amigables
                 if (error.message.includes('expired') || error.message.includes('Token has expired')) {
-                    throw new Error('El codigo ha expirado. Por favor solicita un nuevo codigo.');
+                    throw new Error('El código ha expirado. Los códigos son válidos por 5 minutos. Por favor solicita uno nuevo haciendo clic en "Cambiar de correo" y vuelve a ingresar tu correo.');
                 } else if (error.message.includes('invalid') || error.message.includes('Token')) {
-                    throw new Error('El codigo ingresado es incorrecto. Por favor verifica e intenta de nuevo.');
+                    throw new Error('El código ingresado es incorrecto. Verifica que hayas escrito los 6 dígitos correctamente. Revisa tu correo electrónico y copia el código exacto.');
                 } else if (error.message.includes('not found') || error.message.includes('User not found')) {
-                    throw new Error('No se encontro una cuenta con este correo electronico. Por favor registrate primero.');
+                    throw new Error('No se encontró una cuenta con este correo electrónico. Primero debes crear tu cuenta en la página de registro.');
                 } else if (error.message.includes('too many')) {
-                    throw new Error('Demasiados intentos fallidos. Por favor espera unos minutos antes de intentar de nuevo.');
+                    throw new Error('Demasiados intentos fallidos. Por tu seguridad, espera 5 minutos antes de intentar de nuevo.');
                 } else {
                     throw error;
                 }
@@ -331,7 +334,7 @@ const AuthPage: React.FC = () => {
 
         } catch (error: any) {
              console.error('Full OTP Verification Error:', error);
-             setError(error.message || 'El codigo que ingresaste es invalido o ha expirado. Por favor, solicita un nuevo codigo o verifica que lo hayas ingresado correctamente.');
+             setError(error.message || 'El código que ingresaste es inválido o ha expirado. Verifica que los 6 dígitos sean correctos o solicita un nuevo código haciendo clic en "Cambiar de correo".');
         } finally {
             setLoading(false);
         }
@@ -354,7 +357,7 @@ const AuthPage: React.FC = () => {
             },
         });
         if (error) {
-            setError('No pudimos completar el inicio de sesion con Google. Por favor, verifica que hayas autorizado el acceso y intenta nuevamente. Si el problema persiste, prueba iniciar sesion con tu correo electronico.');
+            setError('No pudimos completar el inicio de sesión con Google. Asegúrate de permitir el acceso cuando Google te lo solicite. Si el problema continúa, intenta iniciar sesión con tu correo electrónico o contáctanos en hola@trefa.mx');
             setLoading(false);
         }
         // The AuthHandler component will handle the redirect after successful login.
