@@ -745,7 +745,7 @@ const ChangelogPage: React.FC = () => {
                 <ul className="space-y-2 text-gray-700">
                   <li className="flex items-start">
                     <span className="mr-2">🗺️</span>
-                    <span>Agregados tags <code className="bg-gray-100 px-2 py-0.5 rounded">&lt;lastmod&gt;</code> con timestamps reales de actualización de cada vehículo</span>
+                    <span>Agregados tags <code className="bg-gray-100 px-2 py-0.5 rounded">&lt;lastmod&gt;</code> con timestamps reales de actualización de cada auto</span>
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2">🗺️</span>
@@ -757,7 +757,7 @@ const ChangelogPage: React.FC = () => {
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2">🖼️</span>
-                    <span><strong>Image Sitemap implementado:</strong> Cada vehículo incluye hasta 6 imágenes con títulos y captions optimizados para Google Images</span>
+                    <span><strong>Image Sitemap implementado:</strong> Cada auto incluye hasta 6 imágenes con títulos y captions optimizados para Google Images</span>
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2">🖼️</span>
@@ -869,11 +869,11 @@ const ChangelogPage: React.FC = () => {
                     Nueva Funcionalidad Principal
                   </span>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Dashboard de Compras de Vehículos</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Dashboard de Compras de Autos</h3>
                 <ul className="space-y-2 text-gray-700">
                   <li className="flex items-start">
                     <span className="mr-2">✅</span>
-                    <span>Sistema completo de gestión de vehículos que usuarios desean vender a la empresa</span>
+                    <span>Sistema completo de gestión de autos que usuarios desean vender a la empresa</span>
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2">✅</span>
@@ -881,7 +881,7 @@ const ChangelogPage: React.FC = () => {
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2">✅</span>
-                    <span>Página de detalles con información completa del vehículo y propietario</span>
+                    <span>Página de detalles con información completa del auto y propietario</span>
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2">✅</span>
@@ -897,7 +897,7 @@ const ChangelogPage: React.FC = () => {
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2">✅</span>
-                    <span>Íconos descriptivos para todos los campos de información del vehículo</span>
+                    <span>Íconos descriptivos para todos los campos de información del auto</span>
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2">✅</span>
@@ -1007,9 +1007,9 @@ const ChangelogPage: React.FC = () => {
                     <div className="flex-1">
                       <strong>Imágenes Orientadas a Familias</strong>
                       <p className="text-gray-600 text-sm mt-1">
-                        Todas las imágenes placeholder reemplazadas con vehículos familiares (SUVs y sedanes)
+                        Todas las imágenes placeholder reemplazadas con autos familiares (SUVs y sedanes)
                         de Unsplash, alineadas con los valores de marca de TREFA: familia, seguridad y accesibilidad.
-                        Sin asociación con vehículos de lujo, deportivos o carreras.
+                        Sin asociación con autos de lujo, deportivos o carreras.
                       </p>
                     </div>
                   </li>
@@ -1129,7 +1129,7 @@ const ChangelogPage: React.FC = () => {
                   <li className="flex gap-3">
                     <span className="text-orange-500 text-xl">⚡</span>
                     <div className="flex-1">
-                      <strong>Scroll Instantáneo en Detalle de Vehículo</strong>
+                      <strong>Scroll Instantáneo en Detalle de Auto</strong>
                       <p className="text-gray-600 text-sm mt-1">
                         Corregido el comportamiento de scroll to top en VehicleDetailPage. Cambiado de smooth scroll
                         a instant scroll (window.scrollTo(0, 0)) para mejor rendimiento móvil. Elimina el problema de
@@ -1343,7 +1343,7 @@ const ChangelogPage: React.FC = () => {
                       <strong>Fuente del Lead Mejorada</strong>
                       <p className="text-gray-600 text-sm mt-1">
                         La sección "Fuente del Lead" ahora muestra información detallada: origen del registro, referencia (rfdm),
-                        vehículo de interés (ordencompra), Facebook Click ID (fbclid), y todos los parámetros UTM (source, medium, campaign, etc).
+                        auto de interés (ordencompra), Facebook Click ID (fbclid), y todos los parámetros UTM (source, medium, campaign, etc).
                       </p>
                     </div>
                   </li>
@@ -1478,10 +1478,10 @@ const ChangelogPage: React.FC = () => {
                   <li className="flex gap-3">
                     <span className="text-orange-500 text-xl">🖼️</span>
                     <div className="flex-1">
-                      <strong>Visualización de imágenes de Car Studio en tarjetas de vehículos</strong>
+                      <strong>Visualización de imágenes de Car Studio en tarjetas de autos</strong>
                       <p className="text-gray-600 text-sm mt-1">
                         Se corrigió el problema donde las imágenes procesadas por Car Studio AI no se mostraban en las
-                        tarjetas de vehículos. El getVehicleImage utility ahora prioriza car_studio_feature_image y
+                        tarjetas de autos. El getVehicleImage utility ahora prioriza car_studio_feature_image y
                         car_studio_gallery cuando la bandera use_car_studio_images está activada, afectando tanto la
                         vista de lista como la vista de cuadrícula.
                       </p>
@@ -1492,7 +1492,7 @@ const ChangelogPage: React.FC = () => {
                     <div className="flex-1">
                       <strong>Mejora visual del borde de tarjetas populares</strong>
                       <p className="text-gray-600 text-sm mt-1">
-                        Se mejoró el efecto de borde gradiente animado para vehículos con 1000+ visitas. Ahora utiliza
+                        Se mejoró el efecto de borde gradiente animado para autos con 1000+ visitas. Ahora utiliza
                         colores más pronunciados (naranja, ámbar oscuro, rojo-naranja) con animación de pulso y brillo
                         para mayor visibilidad, similar al efecto de la barra de búsqueda.
                       </p>
@@ -1501,7 +1501,7 @@ const ChangelogPage: React.FC = () => {
                   <li className="flex gap-3">
                     <span className="text-orange-500 text-xl">🔐</span>
                     <div className="flex-1">
-                      <strong>Autenticación requerida para vender vehículos en línea</strong>
+                      <strong>Autenticación requerida para vender autos en línea</strong>
                       <p className="text-gray-600 text-sm mt-1">
                         Se implementó validación de autenticación antes de continuar con el proceso de venta en línea.
                         Los datos de valuación se preservan durante el flujo de inicio de sesión usando localStorage,
@@ -1547,7 +1547,7 @@ const ChangelogPage: React.FC = () => {
                     <div className="flex-1">
                       <strong>Corrección de Reportes de Inspección</strong>
                       <p className="text-gray-600 text-sm mt-1">
-                        Se solucionó el error "ID de vehículo no válido" que aparecía al intentar acceder a reportes de
+                        Se solucionó el error "ID de auto no válido" que aparecía al intentar acceder a reportes de
                         inspección. El problema era una discrepancia entre el parámetro de ruta definido como :id y el
                         código que intentaba extraerlo como vehicleId.
                       </p>
@@ -1559,7 +1559,7 @@ const ChangelogPage: React.FC = () => {
                       <strong>Corrección de recorte de imágenes en CarStudio</strong>
                       <p className="text-gray-600 text-sm mt-1">
                         Se cambió la visualización de imágenes en el selector de CarStudio de object-cover a object-contain
-                        para evitar el recorte vertical de las fotos de vehículos y permitir ver la imagen completa antes
+                        para evitar el recorte vertical de las fotos de autos y permitir ver la imagen completa antes
                         de procesar con IA.
                       </p>
                     </div>
@@ -1604,7 +1604,7 @@ const ChangelogPage: React.FC = () => {
                       <strong>Corrección de sincronización de campo "Separado" desde Airtable</strong>
                       <p className="text-gray-600 text-sm mt-1">
                         Se mejoró la función de sincronización airtable-sync para manejar correctamente cualquier valor truthy
-                        del campo "Separado" (no solo booleanos estrictos). Esto resuelve el problema donde vehículos marcados
+                        del campo "Separado" (no solo booleanos estrictos). Esto resuelve el problema donde autos marcados
                         como separados en Airtable no se reflejaban correctamente en la base de datos.
                       </p>
                     </div>
@@ -1612,9 +1612,9 @@ const ChangelogPage: React.FC = () => {
                   <li className="flex gap-3">
                     <span className="text-orange-500 text-xl">🎨</span>
                     <div className="flex-1">
-                      <strong>Corrección de visibilidad de bordes animados en vehículos populares</strong>
+                      <strong>Corrección de visibilidad de bordes animados en autos populares</strong>
                       <p className="text-gray-600 text-sm mt-1">
-                        Se corrigió el problema de z-index que impedía ver los bordes gradientes animados en vehículos con
+                        Se corrigió el problema de z-index que impedía ver los bordes gradientes animados en autos con
                         1000+ visitas. La solución utiliza negative z-index con isolation context para garantizar que el borde
                         se muestre detrás del contenido pero por encima del fondo.
                       </p>
@@ -1625,7 +1625,7 @@ const ChangelogPage: React.FC = () => {
                     <div className="flex-1">
                       <strong>Corrección de error al guardar imágenes en Car Studio</strong>
                       <p className="text-gray-600 text-sm mt-1">
-                        Se solucionó el error "No se pudo guardar las nuevas imágenes en el registro del vehículo" convirtiendo
+                        Se solucionó el error "No se pudo guardar las nuevas imágenes en el registro del auto" convirtiendo
                         el array de URLs a formato comma-separated string para el campo fotos_exterior_url (tipo TEXT), mientras
                         se mantiene el formato JSONB array para galeria_exterior.
                       </p>
@@ -1767,7 +1767,7 @@ const ChangelogPage: React.FC = () => {
                       <strong>Template HTML para notificaciones administrativas</strong>
                       <p className="text-gray-600 text-sm mt-1">
                         Se añadió un nuevo template "admin_notification" en la Edge Function send-brevo-email con diseño
-                        responsive y branded de TREFA. El template incluye información del cliente, vehículo de interés,
+                        responsive y branded de TREFA. El template incluye información del cliente, auto de interés,
                         asesor asignado, próximas acciones recomendadas, y botón de acceso directo al perfil.
                       </p>
                     </div>
@@ -1787,9 +1787,9 @@ const ChangelogPage: React.FC = () => {
                   <li className="flex gap-3">
                     <span className="text-orange-500 text-xl">✨</span>
                     <div className="flex-1">
-                      <strong>Efecto de vidrio líquido en tarjetas de vehículos</strong>
+                      <strong>Efecto de vidrio líquido en tarjetas de autos</strong>
                       <p className="text-gray-600 text-sm mt-1">
-                        Las tarjetas de vehículos ahora tienen un elegante efecto glassmorphism con fondo semi-transparente
+                        Las tarjetas de autos ahora tienen un elegante efecto glassmorphism con fondo semi-transparente
                         (85% opacidad), backdrop-filter blur de 20px, y bordes sutiles. El efecto mantiene excelente
                         legibilidad del texto mientras añade profundidad visual y modernidad al diseño.
                       </p>
@@ -1803,17 +1803,17 @@ const ChangelogPage: React.FC = () => {
                         Se añadieron tres blobs de gradiente de colores (naranja-rojo, azul-púrpura, verde-azul) que se
                         mueven muy lentamente en el fondo (70-90 segundos por ciclo). Los blobs están estirados
                         diagonalmente y usan transformaciones complejas (translate, rotate, scale) para crear movimiento
-                        orgánico y elegante que no distrae de los vehículos.
+                        orgánico y elegante que no distrae de los autos.
                       </p>
                     </div>
                   </li>
                   <li className="flex gap-3">
                     <span className="text-orange-500 text-xl">🌟</span>
                     <div className="flex-1">
-                      <strong>Badges para vehículos populares y recién llegados</strong>
+                      <strong>Badges para autos populares y recién llegados</strong>
                       <p className="text-gray-600 text-sm mt-1">
-                        Los vehículos con 1000+ visitas ahora muestran un borde gradiente animado (popular-card class) que
-                        usa isolation context y negative z-index para visibilidad correcta. Los vehículos agregados en los
+                        Los autos con 1000+ visitas ahora muestran un borde gradiente animado (popular-card class) que
+                        usa isolation context y negative z-index para visibilidad correcta. Los autos agregados en los
                         últimos 3 días muestran un badge "¡Recién llegado!" en gradiente naranja-rojo con icono de estrella.
                       </p>
                     </div>
@@ -1871,7 +1871,7 @@ const ChangelogPage: React.FC = () => {
                       <p className="text-gray-600 text-sm mt-1">
                         El sistema genera automáticamente un sitemap.xml actualizado cada día consultando la Edge Function
                         rapid-processor. El sitemap incluye todas las páginas estáticas de la plataforma y URLs dinámicas
-                        para cada vehículo activo en inventario, con prioridades y frecuencias de cambio optimizadas.
+                        para cada auto activo en inventario, con prioridades y frecuencias de cambio optimizadas.
                       </p>
                     </div>
                   </li>
@@ -1881,9 +1881,9 @@ const ChangelogPage: React.FC = () => {
                       <strong>Beneficios SEO y de rendimiento</strong>
                       <p className="text-gray-600 text-sm mt-1">
                         La generación automática de sitemap mejora significativamente el SEO al facilitar que los motores
-                        de búsqueda descubran e indexen todas las páginas de vehículos. El proceso usa datos cacheados de
+                        de búsqueda descubran e indexen todas las páginas de autos. El proceso usa datos cacheados de
                         rapid-processor (inventario_cache) para generación rápida sin impactar la base de datos principal.
-                        Los vehículos nuevos aparecen en el sitemap automáticamente al día siguiente de ser agregados.
+                        Los autos nuevos aparecen en el sitemap automáticamente al día siguiente de ser agregados.
                       </p>
                     </div>
                   </li>
@@ -1893,7 +1893,7 @@ const ChangelogPage: React.FC = () => {
                       <strong>Integración con rapid-processor</strong>
                       <p className="text-gray-600 text-sm mt-1">
                         El sistema consulta rapid-processor/sitemap-data que retorna slugs y fechas de última modificación
-                        de todos los vehículos activos. Esto garantiza que el sitemap siempre refleje el estado actual del
+                        de todos los autos activos. Esto garantiza que el sitemap siempre refleje el estado actual del
                         inventario, con URLs válidas y metadata precisa para mejorar la tasa de indexación.
                       </p>
                     </div>
@@ -1929,7 +1929,7 @@ const ChangelogPage: React.FC = () => {
                       <strong>Flujo simplificado: airtable-sync → rapid-processor → frontend</strong>
                       <p className="text-gray-600 text-sm mt-1">
                         El sistema ahora opera con un pipeline claro y optimizado: Airtable envía webhooks a airtable-sync,
-                        que sincroniza datos con inventario_cache, rapid-processor sirve la API pública de vehículos,
+                        que sincroniza datos con inventario_cache, rapid-processor sirve la API pública de autos,
                         y el frontend consume directamente esta API. Esto reduce complejidad y mejora mantenibilidad.
                       </p>
                     </div>
@@ -1975,7 +1975,7 @@ const ChangelogPage: React.FC = () => {
                     <div className="flex-1">
                       <strong>Integración en airtable-sync con descarga desde Airtable</strong>
                       <p className="text-gray-600 text-sm mt-1">
-                        La Edge Function airtable-sync ahora descarga todas las imágenes de vehículos directamente
+                        La Edge Function airtable-sync ahora descarga todas las imágenes de autos directamente
                         desde Airtable y las sube a Cloudflare R2 en tiempo real durante la sincronización. Si alguna
                         imagen falla al subirse, el proceso continúa sin interrumpir la sincronización completa. Los
                         URLs de R2 se almacenan en la base de datos (feature_image, fotos_exterior, fotos_interior).
@@ -1990,7 +1990,7 @@ const ChangelogPage: React.FC = () => {
                         La función buildPublicUrl en rapid-processor ahora detecta si el path es una URL completa
                         (inicia con http:// o https://) y la retorna tal cual. Esto garantiza que las imágenes antiguas
                         de Airtable y Supabase Storage sigan funcionando mientras se migran gradualmente a R2. No hay
-                        breaking changes para vehículos existentes.
+                        breaking changes para autos existentes.
                       </p>
                     </div>
                   </li>
@@ -2036,7 +2036,7 @@ const ChangelogPage: React.FC = () => {
                   <li className="flex gap-3">
                     <span className="text-red-500 text-xl">💰</span>
                     <div className="flex-1">
-                      <strong>CRÍTICO: Corregidas ofertas incorrectas en valuaciones de vehículos</strong>
+                      <strong>CRÍTICO: Corregidas ofertas incorrectas en valuaciones de autos</strong>
                       <p className="text-gray-700 text-sm mt-2 font-semibold">
                         ⚠️ PROBLEMA IDENTIFICADO:
                       </p>
@@ -2124,7 +2124,7 @@ const ChangelogPage: React.FC = () => {
                         <li>✅ Se eliminó el riesgo de hacer ofertas incorrectas que cuestan dinero real</li>
                         <li>✅ Mayor precisión en valuaciones (datos de mercado reales)</li>
                         <li>✅ Cumplimiento total con especificaciones de API de Intelimotor</li>
-                        <li>✅ Transparencia: El usuario sabe si su vehículo no puede ser valuado</li>
+                        <li>✅ Transparencia: El usuario sabe si su auto no puede ser valuado</li>
                       </ul>
 
                       <div className="mt-4 p-3 bg-red-50 rounded-lg border border-red-200">
@@ -2159,7 +2159,7 @@ const ChangelogPage: React.FC = () => {
                   <span className="bg-green-100 text-green-800 px-3 py-1 rounded-lg text-xs font-bold uppercase">
                     Corrección
                   </span>
-                  <h3 className="text-xl font-semibold">Filtros de Vehículos</h3>
+                  <h3 className="text-xl font-semibold">Filtros de Autos</h3>
                 </div>
                 <ul className="space-y-3">
                   <li className="flex gap-3">
@@ -2191,7 +2191,7 @@ const ChangelogPage: React.FC = () => {
                       <strong>Imágenes optimizadas vía Cloudflare CDN</strong>
                       <span className="ml-2 font-mono text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">9ed95d1</span>
                       <p className="text-gray-600 text-sm mt-1">
-                        Todas las imágenes de vehículos ahora se cargan desde Cloudflare CDN (images.trefa.mx) en lugar de Supabase,
+                        Todas las imágenes de autos ahora se cargan desde Cloudflare CDN (images.trefa.mx) en lugar de Supabase,
                         mejorando significativamente la velocidad de carga y reduciendo costos.
                       </p>
                     </div>
@@ -2214,7 +2214,7 @@ const ChangelogPage: React.FC = () => {
                       <strong>Sidebar ahora visible en escritorio</strong>
                       <span className="ml-2 font-mono text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">c0f83c1</span>
                       <p className="text-gray-600 text-sm mt-1">
-                        Se eliminó la renderización condicional que ocultaba el sidebar de filtros en la página de listado de vehículos.
+                        Se eliminó la renderización condicional que ocultaba el sidebar de filtros en la página de listado de autos.
                       </p>
                     </div>
                   </li>
@@ -2259,7 +2259,7 @@ const ChangelogPage: React.FC = () => {
                       <strong>Corregido error 401 al obtener valuaciones de autos</strong>
                       <span className="ml-2 font-mono text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">1b6bfbd</span>
                       <p className="text-gray-600 text-sm mt-1">
-                        Se solucionó el error "Error de autenticación con Intelimotor (401)" que impedía obtener valuaciones de vehículos.
+                        Se solucionó el error "Error de autenticación con Intelimotor (401)" que impedía obtener valuaciones de autos.
                         La API de Intelimotor requiere que las credenciales (API Key y API Secret) se envíen como parámetros en la URL,
                         no como headers. El proxy ahora extrae las credenciales de los headers y las agrega correctamente a la URL.
                       </p>
@@ -2440,7 +2440,7 @@ const ChangelogPage: React.FC = () => {
                   <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-lg text-xs font-bold uppercase">
                     Nueva Funcionalidad
                   </span>
-                  <h3 className="text-xl font-semibold">Sistema de Valuación de Vehículos</h3>
+                  <h3 className="text-xl font-semibold">Sistema de Valuación de Autos</h3>
                 </div>
                 <ul className="space-y-3">
                   <li className="flex gap-3">
@@ -2479,10 +2479,10 @@ const ChangelogPage: React.FC = () => {
                   <li className="flex gap-3">
                     <span className="text-blue-500 text-xl">🤖</span>
                     <div className="flex-1">
-                      <strong>Extracción automática de datos de vehículos</strong>
+                      <strong>Extracción automática de datos de autos</strong>
                       <span className="ml-2 font-mono text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">ce04ae5</span>
                       <p className="text-gray-600 text-sm mt-1">
-                        AI que analiza fotos de vehículos para extraer marca, modelo, año, color y más.
+                        AI que analiza fotos de autos para extraer marca, modelo, año, color y más.
                         Incluye manejo robusto de errores para imágenes de baja calidad o fondos complejos.
                       </p>
                     </div>
@@ -2575,7 +2575,7 @@ const ChangelogPage: React.FC = () => {
                   <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-lg text-xs font-bold uppercase">
                     Mejora
                   </span>
-                  <h3 className="text-xl font-semibold">Sistema de Vehículos</h3>
+                  <h3 className="text-xl font-semibold">Sistema de Autos</h3>
                 </div>
                 <ul className="space-y-3">
                   <li className="flex gap-3">
@@ -2583,7 +2583,7 @@ const ChangelogPage: React.FC = () => {
                     <div className="flex-1">
                       <strong>Fetching centralizado con VehicleContext</strong>
                       <p className="text-gray-600 text-sm mt-1">
-                        Todos los vehículos se obtienen vía VehicleContext usando TanStack Query.
+                        Todos los autos se obtienen vía VehicleContext usando TanStack Query.
                         Fallback automático de inventario_cache a smooth-handler Edge Function.
                         Caché de 1 hora en IndexedDB para rendimiento óptimo.
                       </p>
@@ -2719,7 +2719,7 @@ const ChangelogPage: React.FC = () => {
                       <p className="text-gray-600 text-sm mt-1">
                         Se lanzó la versión beta del Portal Digital TREFA, una plataforma revolucionaria que permite a los clientes
                         comprar, vender y financiar autos seminuevos 100% en línea. Características principales:<br/><br/>
-                        • <strong>Catálogo interactivo:</strong> Más de 70 vehículos con filtros avanzados<br/>
+                        • <strong>Catálogo interactivo:</strong> Más de 70 autos con filtros avanzados<br/>
                         • <strong>Solicitud de crédito digital:</strong> Formulario multi-paso con validación en tiempo real<br/>
                         • <strong>Valuación con IA:</strong> "Vende tu Auto" usando API de Intelimotor<br/>
                         • <strong>Portal de usuario:</strong> Dashboard personalizado con favoritos y seguimiento<br/>
@@ -2802,7 +2802,7 @@ const ChangelogPage: React.FC = () => {
                   <li className="flex gap-3">
                     <span className="text-purple-500 text-xl">🖼️</span>
                     <div className="flex-1">
-                      <strong>Normalización de imágenes de vehículos</strong>
+                      <strong>Normalización de imágenes de autos</strong>
                       <p className="text-gray-600 text-sm mt-1">
                         Las fotos no se mostraban correctamente. Se arregló el procesamiento para manejar diferentes
                         formatos de datos (Airtable, smooth-handler, inventario_cache).

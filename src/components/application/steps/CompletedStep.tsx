@@ -30,7 +30,7 @@ const CompletedStep: React.FC<CompletedStepProps> = ({ vehicleInfo, applicationI
       {/* Vehicle Info */}
       {vehicleInfo?._vehicleTitle && (
         <div className="w-full max-w-lg bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
-          <p className="text-xs text-gray-500 mb-2">Vehículo de Interés</p>
+          <p className="text-xs text-gray-500 mb-2">Auto de Interés</p>
           <div className="flex items-center gap-3">
             <img
               src={vehicleInfo._featureImage}
@@ -150,7 +150,7 @@ const CompletedStep: React.FC<CompletedStepProps> = ({ vehicleInfo, applicationI
           href="/explorar"
           className="text-sm text-primary-600 hover:text-primary-700 font-semibold"
         >
-          Explorar Más Vehículos →
+          Explorar Más Autos →
         </Link>
       </div>
 

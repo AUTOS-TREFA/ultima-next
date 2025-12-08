@@ -58,11 +58,11 @@ const ContactPage: React.FC = () => {
     },
     {
       question: '¿Necesito hacer cita para visitar el showroom?',
-      answer: 'No es necesario hacer cita, pero te recomendamos avisarnos por WhatsApp para asegurar que el vehículo de tu interés esté disponible y que un asesor te pueda atender personalmente.'
+      answer: 'No es necesario hacer cita, pero te recomendamos avisarnos por WhatsApp para asegurar que el auto de tu interés esté disponible y que un asesor te pueda atender personalmente.'
     },
     {
       question: '¿Puedo probar los autos antes de comprar?',
-      answer: 'Sí, ofrecemos pruebas de manejo para todos nuestros vehículos. Solo necesitas presentar tu licencia de conducir vigente y agendar tu prueba con anticipación.'
+      answer: 'Sí, ofrecemos pruebas de manejo para todos nuestros autos. Solo necesitas presentar tu licencia de conducir vigente y agendar tu prueba con anticipación.'
     },
     {
       question: '¿Cómo funciona el proceso de financiamiento?',
@@ -220,7 +220,7 @@ const ContactPage: React.FC = () => {
                 En TREFA, cada cliente es único. Nuestro equipo de asesores expertos está capacitado para entender tus necesidades específicas y ofrecerte las mejores opciones.
               </p>
               <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                Ya sea que estés buscando tu primer auto, necesites un vehículo familiar, o quieras vender tu auto actual, estamos aquí para guiarte en cada paso del proceso.
+                Ya sea que estés buscando tu primer auto, necesites un auto familiar, o quieras vender tu auto actual, estamos aquí para guiarte en cada paso del proceso.
               </p>
               <p className="text-lg text-gray-700 leading-relaxed">
                 Nuestro compromiso es brindarte una experiencia excepcional desde el primer contacto hasta que te vayas manejando tu nuevo auto.

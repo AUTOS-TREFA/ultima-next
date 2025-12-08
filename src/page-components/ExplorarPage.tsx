@@ -180,7 +180,7 @@ const ExplorarPage: React.FC = () => {
         return (
             <div className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 gap-4">
                 <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin" />
-                <p className="text-white/60 text-sm">Cargando vehículos...</p>
+                <p className="text-white/60 text-sm">Cargando autos...</p>
             </div>
         );
     }
@@ -190,10 +190,10 @@ const ExplorarPage: React.FC = () => {
             <div className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 gap-4 px-6">
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-8 max-w-md text-center">
                     <h2 className="text-2xl font-bold text-white mb-3">
-                        {error ? 'Error al cargar vehículos' : 'No hay vehículos disponibles'}
+                        {error ? 'Error al cargar autos' : 'No hay autos disponibles'}
                     </h2>
                     <p className="text-white/60 text-sm mb-6">
-                        {error?.message || 'En este momento no tenemos vehículos en inventario.'}
+                        {error?.message || 'En este momento no tenemos autos en inventario.'}
                     </p>
                     <button
                         onClick={() => router.push('/')}
@@ -240,7 +240,7 @@ const ExplorarPage: React.FC = () => {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-white mb-1">Toca la imagen</h3>
-                                    <p className="text-sm">Para ver más fotos del vehículo</p>
+                                    <p className="text-sm">Para ver más fotos del auto</p>
                                 </div>
                             </div>
                         </div>
@@ -471,7 +471,7 @@ const ExplorarPage: React.FC = () => {
                     <div className="bg-gray-900 rounded-3xl max-w-md w-full max-h-[80vh] overflow-hidden border border-white/10">
                         <div className="p-6 border-b border-white/10">
                             <h2 className="text-2xl font-bold text-white">Elegir Categoría</h2>
-                            <p className="text-white/60 text-sm mt-1">Selecciona el tipo de vehículo</p>
+                            <p className="text-white/60 text-sm mt-1">Selecciona el tipo de auto</p>
                         </div>
 
                         <div className="overflow-y-auto max-h-[calc(80vh-180px)] p-6 space-y-2">

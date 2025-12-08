@@ -317,7 +317,7 @@ const VentasSolicitudesPage: React.FC = () => {
           'Nombre Cliente': `${app.lead.first_name} ${app.lead.last_name}`,
           'Email': app.lead.email,
           'Teléfono': app.lead.phone,
-          'Vehículo': app.car_info?._vehicleTitle || 'Sin vehículo',
+          'Vehículo': app.car_info?._vehicleTitle || 'Sin auto',
           'Estatus': statusConfig.text,
           'Documentos': app.documents_count || 0,
           'Asesor': app.lead.asesor_nombre || 'Sin asignar',
@@ -366,7 +366,7 @@ const VentasSolicitudesPage: React.FC = () => {
           'Nombre Cliente': `${app.lead.first_name} ${app.lead.last_name}`,
           'Email': app.lead.email,
           'Teléfono': app.lead.phone,
-          'Vehículo': app.car_info?._vehicleTitle || 'Sin vehículo',
+          'Vehículo': app.car_info?._vehicleTitle || 'Sin auto',
           'Estatus': statusConfig.text,
           'Documentos': app.documents_count || 0,
           'Asesor': app.lead.asesor_nombre || 'Sin asignar',
@@ -386,7 +386,7 @@ const VentasSolicitudesPage: React.FC = () => {
         { wch: 25 }, // Nombre Cliente
         { wch: 30 }, // Email
         { wch: 15 }, // Teléfono
-        { wch: 40 }, // Vehículo
+        { wch: 40 }, // Auto
         { wch: 20 }, // Estatus
         { wch: 12 }, // Documentos
         { wch: 25 }, // Asesor
@@ -501,7 +501,7 @@ const VentasSolicitudesPage: React.FC = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   type="text"
-                  placeholder="Buscar por nombre, email, teléfono o vehículo..."
+                  placeholder="Buscar por nombre, email, teléfono o auto..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -645,7 +645,7 @@ const VentasSolicitudesPage: React.FC = () => {
                         <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">
-                            {app.car_info?._vehicleTitle || 'Sin vehículo especificado'}
+                            {app.car_info?._vehicleTitle || 'Sin auto especificado'}
                           </p>
                           <p className="text-xs text-gray-600">
                             Docs: {app.documents_count || 0}

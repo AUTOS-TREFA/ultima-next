@@ -29,7 +29,7 @@ type PortfolioProps = {
 const Portfolio = ({
   maxVehicles = 12,
   title = "Nuestros Vehículos",
-  subtitle = "Explora nuestra selección de vehículos de calidad, desde autos ejecutivos hasta camiones de trabajo, todos cuidadosamente seleccionados para ofrecerte las mejores opciones.",
+  subtitle = "Explora nuestra selección de autos de calidad, desde autos ejecutivos hasta camiones de trabajo, todos cuidadosamente seleccionados para ofrecerte las mejores opciones.",
   showButton = true
 }: PortfolioProps) => {
   const [vehicles, setVehicles] = useState<VehiclePortfolioItem[]>([])
@@ -84,7 +84,7 @@ const Portfolio = ({
       <section className='bg-muted py-8 sm:py-16 lg:py-24'>
         <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
           <div className='text-center'>
-            <p className='text-muted-foreground'>Cargando vehículos...</p>
+            <p className='text-muted-foreground'>Cargando autos...</p>
           </div>
         </div>
       </section>
@@ -97,7 +97,7 @@ const Portfolio = ({
         <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
           <div className='text-center'>
             <h2 className='text-2xl font-semibold mb-4'>{title}</h2>
-            <p className='text-muted-foreground'>No hay vehículos disponibles en este momento.</p>
+            <p className='text-muted-foreground'>No hay autos disponibles en este momento.</p>
           </div>
         </div>
       </section>

@@ -633,14 +633,14 @@ export default function UnifiedAdminDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Inventario con Demanda</CardTitle>
-                <CardDescription>Vehículos con solicitudes</CardDescription>
+                <CardDescription>Autos con solicitudes</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold mb-2">
                   {business.inventoryVehiclesWithApplications.filter(v => v.ongoingApplications > 0).length}
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  De {business.inventoryVehiclesWithApplications.length} vehículos totales
+                  De {business.inventoryVehiclesWithApplications.length} autos totales
                 </p>
               </CardContent>
             </Card>
@@ -652,7 +652,7 @@ export default function UnifiedAdminDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5" />
-                  Solicitudes con Vehículos No Disponibles
+                  Solicitudes con Autos No Disponibles
                 </CardTitle>
                 <CardDescription>
                   {business.unavailableVehicleApplications.length} solicitudes requieren atención
@@ -706,8 +706,8 @@ export default function UnifiedAdminDashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Vehículos con Más Solicitudes</CardTitle>
-                  <CardDescription>Vehículos más solicitados</CardDescription>
+                  <CardTitle>Autos con Más Solicitudes</CardTitle>
+                  <CardDescription>Autos más solicitados</CardDescription>
                 </div>
                 <Badge variant="secondary">
                   {business.inventoryVehiclesWithApplications.filter(v => v.ongoingApplications > 0).length} vehículos

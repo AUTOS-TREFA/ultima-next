@@ -197,7 +197,7 @@ const UserApplicationsPage: React.FC = () => {
                         <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4"/>
                         <h2 className="text-xl font-bold text-gray-900 text-center">Eliminar Solicitud</h2>
                         <p className="text-gray-600 mt-2 text-sm text-center">
-                            Estás a punto de eliminar la solicitud para <strong>{deletingApp.car_info?._vehicleTitle || 'este vehículo'}</strong>.
+                            Estás a punto de eliminar la solicitud para <strong>{deletingApp.car_info?._vehicleTitle || 'este auto'}</strong>.
                         </p>
                         <p className="text-gray-600 mt-2 text-sm text-center">
                             Esta acción no se puede deshacer. Para confirmar, escribe exactamente:

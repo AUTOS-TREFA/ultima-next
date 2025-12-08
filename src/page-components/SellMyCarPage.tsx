@@ -24,7 +24,7 @@ const sellCarSchema = z.object({
   invoice_status: z.enum(['liberada', 'financiada'], { message: "El estado de la factura es requerido." }),
   financing_entity_type: z.enum(['banco', 'agencia']).optional(),
   financing_entity_name: z.string().optional(),
-  vehicle_state: z.string().min(1, "El estado del vehículo es requerido."),
+  vehicle_state: z.string().min(1, "El estado del auto es requerido."),
   plate_registration_state: z.string().min(1, "El estado de las placas es requerido."),
   accident_history: z.string().min(1, "El historial de accidentes es requerido."),
   reason_for_selling: z.string().min(1, "El motivo de venta es requerido."),
@@ -180,7 +180,7 @@ const SellMyCarPage: React.FC = () => {
             </div>
 
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <p className="text-sm font-semibold text-blue-800">Vehículo a vender:</p>
+                <p className="text-sm font-semibold text-blue-800">Auto a vender:</p>
                 <p className="text-lg font-bold text-blue-900">{valuationData?.vehicle?.label}</p>
                 <p className="text-sm font-semibold text-blue-800 mt-2">Oferta Inicial:</p>
                 <p className="text-2xl font-bold text-green-600">{new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(valuationData?.valuation?.suggestedOffer)}</p>
@@ -246,7 +246,7 @@ const SellMyCarPage: React.FC = () => {
                 )}
                 
                 <div className="grid md:grid-cols-2 gap-4">
-                    <FormField label="¿En qué estado se encuentra el vehículo?" error={errors.vehicle_state?.message}>
+                    <FormField label="¿En qué estado se encuentra el auto?" error={errors.vehicle_state?.message}>
                         <select {...register('vehicle_state')} className={inputClass}><option value="">Seleccionar...</option>{MEXICAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}</select>
                     </FormField>
                     <FormField label="¿En qué estado están registradas las placas?" error={errors.plate_registration_state?.message}>

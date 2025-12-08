@@ -120,7 +120,7 @@ const defaultConversionEvents: ConversionEvent[] = [
     id: 'viewcontent',
     name: 'Ver Contenido',
     event_type: 'ViewContent',
-    trigger_location: 'Páginas de vehículos',
+    trigger_location: 'Páginas de autos',
     enabled: true,
     fb_enabled: true,
     gtm_enabled: true,

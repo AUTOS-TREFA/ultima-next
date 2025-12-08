@@ -90,7 +90,7 @@ const VehicleForSaleDetailPage: React.FC = () => {
         return (
             <div className="p-4 bg-red-100 text-red-800 rounded-md">
                 <AlertTriangle className="inline w-5 h-5 mr-2" />
-                {error?.message || 'No se pudo cargar el vehículo'}
+                {error?.message || 'No se pudo cargar el auto'}
             </div>
         );
     }

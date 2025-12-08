@@ -64,7 +64,7 @@ const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
           </h3>
           <div className="grid md:grid-cols-2 gap-4 mb-4">
             <div>
-              <p className="text-xs text-gray-600">Vehículo Seleccionado</p>
+              <p className="text-xs text-gray-600">Auto Seleccionado</p>
               <p className="font-semibold text-gray-900">{vehicleInfo._vehicleTitle}</p>
             </div>
             <div>

@@ -100,7 +100,7 @@ const ApplicationDetailView: React.FC<{ application: ApplicationData }> = ({ app
                                 <CardHeader className="p-3 sm:p-4 md:p-6">
                                     <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 flex items-center gap-2">
                                         <Car className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600" />
-                                        Vehículo en tu Solicitud
+                                        Auto en tu Solicitud
                                     </h3>
                                 </CardHeader>
                                 <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
@@ -452,7 +452,7 @@ const SeguimientoPage: React.FC = () => {
                                 Aún no has creado ninguna solicitud
                               </p>
                               <p className="text-sm text-gray-500 mb-6">
-                                Comienza tu proceso de financiamiento seleccionando un vehículo
+                                Comienza tu proceso de financiamiento seleccionando un auto
                               </p>
                               <Link
                                 href="/autos"

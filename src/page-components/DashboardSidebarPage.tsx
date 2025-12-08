@@ -177,7 +177,7 @@ const DashboardSidebarPage: React.FC = () => {
 
         documentosPendientes = 4 - docsPresentes;
 
-        // Obtener vehículo seleccionado
+        // Obtener auto seleccionado
         if (latestApp.car_info?._ordenCompra) {
           const { data: vehicle } = await supabase
             .from('inventario_cache')
@@ -250,7 +250,7 @@ const DashboardSidebarPage: React.FC = () => {
         }
       }
 
-      // Cargar vehículos para sidebar: favoritos > recently viewed > sugerencias
+      // Cargar autos para sidebar: favoritos > recently viewed > sugerencias
       let vehiclesLoaded = false;
 
       try {
@@ -305,7 +305,7 @@ const DashboardSidebarPage: React.FC = () => {
           }
         }
       } catch (error) {
-        console.error('Error cargando vehículos para sidebar:', error);
+        console.error('Error cargando autos para sidebar:', error);
       }
     } catch (error) {
       console.error('Error cargando estadísticas:', error);
@@ -619,7 +619,7 @@ const DashboardSidebarPage: React.FC = () => {
                         <div className="flex justify-between items-center">
                           <div>
                             <p className="font-medium text-gray-800">
-                              {app.car_info?._vehicleTitle || app.car_info?.vehicleTitle || 'Solicitud sin vehículo'}
+                              {app.car_info?._vehicleTitle || app.car_info?.vehicleTitle || 'Solicitud sin auto'}
                             </p>
                             <p className="text-sm text-gray-600">
                               Creada: {formatDate(app.created_at)}
@@ -650,7 +650,7 @@ const DashboardSidebarPage: React.FC = () => {
                         <div className="flex justify-between items-center">
                           <div>
                             <p className="font-medium text-gray-800">
-                              {app.car_info?._vehicleTitle || app.car_info?.vehicleTitle || 'Solicitud sin vehículo'}
+                              {app.car_info?._vehicleTitle || app.car_info?.vehicleTitle || 'Solicitud sin auto'}
                             </p>
                             <p className="text-sm text-gray-600">
                               Enviada: {formatDate(app.created_at)}
@@ -745,7 +745,7 @@ const DashboardSidebarPage: React.FC = () => {
                 </Card>
               </Link>
 
-              {/* Vehículo Seleccionado */}
+              {/* Auto Seleccionado */}
               {selectedVehicle ? (
                 <Link href={`/autos/${selectedVehicle.slug || selectedVehicle.id}`} className="touch-manipulation">
                   <Card className="hover:shadow-md transition-all hover:scale-[1.02] h-full">
@@ -762,7 +762,7 @@ const DashboardSidebarPage: React.FC = () => {
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm sm:text-base text-gray-900 truncate">
-                            {selectedVehicle.title || 'Vehículo'}
+                            {selectedVehicle.title || 'Auto'}
                           </p>
                           <p className="text-xs text-gray-500">ID: {selectedVehicle.id}</p>
                           <p className="text-xs sm:text-sm text-gray-600">Ver detalles</p>
@@ -778,7 +778,7 @@ const DashboardSidebarPage: React.FC = () => {
                       <div className="flex items-center gap-3">
                         <Car className="w-8 h-8 text-gray-400" />
                         <div>
-                          <p className="font-semibold text-gray-600">Sin vehículo</p>
+                          <p className="font-semibold text-gray-600">Sin auto</p>
                           <p className="text-sm text-gray-500">Selecciona uno</p>
                         </div>
                       </div>

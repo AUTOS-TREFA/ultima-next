@@ -38,7 +38,7 @@ const EVENT_TEMPLATES = [
   {
     value: 'ViewContent',
     label: 'Ver Contenido',
-    description: 'Usuario ve contenido específico (ej: vehículo)',
+    description: 'Usuario ve contenido específico (ej: auto)',
     icon: Target,
     color: 'text-purple-600',
     bgColor: 'bg-purple-100'

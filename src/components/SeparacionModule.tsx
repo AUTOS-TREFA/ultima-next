@@ -28,7 +28,7 @@ const SeparacionModule: React.FC<SeparacionModuleProps> = ({ applicationStatus, 
         disabled={!isApproved}
         className="w-full font-bold py-3 px-6 rounded-lg transition-colors disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed bg-green-600 text-white hover:bg-green-700"
       >
-        Separar Vehículo
+        Separar Auto
       </button>
 
       {!isApproved && (

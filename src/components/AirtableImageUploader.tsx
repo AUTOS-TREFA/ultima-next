@@ -129,7 +129,7 @@ const AirtableImageUploader: React.FC = () => {
         {loading ? (
           <div className="flex items-center justify-center h-24">
             <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
-            <p className="ml-3 text-gray-600">Cargando vehículos sin imágenes...</p>
+            <p className="ml-3 text-gray-600">Cargando autos sin imágenes...</p>
           </div>
         ) : (
           <div>
@@ -146,7 +146,7 @@ const AirtableImageUploader: React.FC = () => {
                 }}
                 className="block w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                <option value="" disabled>Selecciona un vehículo</option>
+                <option value="" disabled>Selecciona un auto</option>
                 {Array.isArray(vehicles) && vehicles.filter(v => v.ordenCompra).map(v => (
                     <option key={v.id} value={v.id}>{String(v.ordenCompra)}</option>
                 ))}

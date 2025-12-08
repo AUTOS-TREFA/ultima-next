@@ -89,7 +89,7 @@ const ApplicationDetailView: React.FC<{ application: ApplicationData }> = ({ app
 
                         {carInfo._vehicleTitle && (
                             <div className="p-6 bg-white rounded-xl shadow-sm border">
-                                <h3 className="font-bold text-gray-800 mb-4">Vehículo en tu Solicitud</h3>
+                                <h3 className="font-bold text-gray-800 mb-4">Auto en tu Solicitud</h3>
                                 <div className="flex items-center gap-4">
                                     <img src={carInfo._featureImage} alt={carInfo._vehicleTitle} className="w-24 h-20 object-cover rounded-md flex-shrink-0" />
                                     <div>

@@ -203,7 +203,7 @@ const ApplicationConfirmationPage: React.FC = () => {
         {vehicleInfo?._vehicleTitle && (
           <Card className="mb-3 sm:mb-4 md:mb-6">
             <CardHeader className="p-3 sm:p-4 md:p-6">
-              <CardTitle className="text-sm sm:text-base md:text-lg">Vehículo de Interés</CardTitle>
+              <CardTitle className="text-sm sm:text-base md:text-lg">Auto de Interés</CardTitle>
             </CardHeader>
             <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
               <div className="flex items-center gap-3 sm:gap-4">
@@ -306,7 +306,7 @@ const ApplicationConfirmationPage: React.FC = () => {
               <div className="flex-1">
                 <h4 className="font-semibold text-sm sm:text-base text-gray-900 mb-1">Aprobación y Siguiente Paso</h4>
                 <p className="text-xs sm:text-sm text-gray-600">
-                  Una vez aprobado tu crédito, podrás separar el vehículo de tu preferencia y coordinar la entrega.
+                  Una vez aprobado tu crédito, podrás separar el auto de tu preferencia y coordinar la entrega.
                 </p>
               </div>
             </div>

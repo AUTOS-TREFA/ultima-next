@@ -400,7 +400,7 @@ const SalesPerformanceDashboard: React.FC = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="text-sm text-gray-900">
-                                                        {app.car_info?._vehicleTitle || 'Sin vehículo'}
+                                                        {app.car_info?._vehicleTitle || 'Sin auto'}
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">

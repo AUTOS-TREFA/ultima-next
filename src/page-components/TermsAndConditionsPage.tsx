@@ -32,11 +32,11 @@ const TermsAndConditionsPage: React.FC = () => {
           <h2>2. Servicios Ofrecidos</h2>
           <p>TREFA es una agencia especializada en la venta de autos seminuevos con múltiples sucursales en Nuevo León, México. Nuestros servicios incluyen:</p>
           <ul>
-            <li><strong>Venta de vehículos seminuevos</strong> con garantía y financiamiento disponible.</li>
-            <li><strong>Plataforma digital</strong> para buscar, comparar y solicitar información sobre vehículos.</li>
+            <li><strong>Venta de autos seminuevos</strong> con garantía y financiamiento disponible.</li>
+            <li><strong>Plataforma digital</strong> para buscar, comparar y solicitar información sobre autos.</li>
             <li><strong>Asesoría de financiamiento</strong> a través de instituciones bancarias y financieras autorizadas.</li>
-            <li><strong>Servicio de apartado</strong> para reservar vehículos de interés.</li>
-            <li><strong>Inspección y certificación</strong> de vehículos disponibles en inventario.</li>
+            <li><strong>Servicio de apartado</strong> para reservar autos de interés.</li>
+            <li><strong>Inspección y certificación</strong> de autos disponibles en inventario.</li>
           </ul>
 
           <h2>3. Registro y Cuenta de Usuario</h2>
@@ -59,25 +59,25 @@ const TermsAndConditionsPage: React.FC = () => {
             <li>Extraer, copiar o distribuir contenido de nuestro sitio sin autorización previa.</li>
           </ul>
 
-          <h2>5. Compra y Apartado de Vehículos</h2>
+          <h2>5. Compra y Apartado de Autos</h2>
 
           <h3>5.1 Proceso de Compra</h3>
-          <p>La compra de un vehículo a través de TREFA está sujeta a:</p>
+          <p>La compra de un auto a través de TREFA está sujeta a:</p>
           <ul>
-            <li>Disponibilidad del vehículo al momento de la transacción.</li>
+            <li>Disponibilidad del auto al momento de la transacción.</li>
             <li>Verificación y aprobación de documentación requerida.</li>
             <li>Cumplimiento de los requisitos de financiamiento (si aplica).</li>
             <li>Firma de contrato de compraventa ante las autoridades correspondientes.</li>
           </ul>
 
-          <h3>5.2 Apartado de Vehículos</h3>
-          <p>El servicio de apartado permite reservar un vehículo mediante un pago anticipado. Condiciones:</p>
+          <h3>5.2 Apartado de Autos</h3>
+          <p>El servicio de apartado permite reservar un auto mediante un pago anticipado. Condiciones:</p>
           <ul>
-            <li>El monto del apartado se aplicará como anticipo al precio total del vehículo.</li>
+            <li>El monto del apartado se aplicará como anticipo al precio total del auto.</li>
             <li>El apartado tiene una vigencia máxima de 7 días naturales, salvo acuerdo distinto.</li>
             <li>Si la solicitud de financiamiento es rechazada por la institución financiera, el apartado será reembolsado en su totalidad.</li>
             <li>Si el cliente decide no continuar con la compra por razones distintas al rechazo de financiamiento, el apartado no será reembolsable, salvo casos excepcionales evaluados por TREFA.</li>
-            <li>TREFA se reserva el derecho de cancelar el apartado y devolver el monto si el vehículo resulta no disponible por causas ajenas a nuestra voluntad.</li>
+            <li>TREFA se reserva el derecho de cancelar el apartado y devolver el monto si el auto resulta no disponible por causas ajenas a nuestra voluntad.</li>
           </ul>
 
           <h2>6. Financiamiento y Crédito</h2>
@@ -93,25 +93,25 @@ const TermsAndConditionsPage: React.FC = () => {
           <h2>7. Precios y Disponibilidad</h2>
           <ul>
             <li>Todos los precios mostrados en nuestro sitio web están en pesos mexicanos (MXN) e incluyen IVA, salvo que se indique lo contrario.</li>
-            <li>Los precios, promociones y disponibilidad de vehículos están sujetos a cambios sin previo aviso.</li>
+            <li>Los precios, promociones y disponibilidad de autos están sujetos a cambios sin previo aviso.</li>
             <li>Nos esforzamos por mantener información actualizada, pero errores tipográficos o de sistema pueden ocurrir. En tales casos, TREFA se reserva el derecho de corregir el error y notificar al cliente.</li>
             <li>Las fotografías e imágenes son referenciales y pueden diferir ligeramente del producto real.</li>
           </ul>
 
-          <h2>8. Garantías y Condición de los Vehículos</h2>
-          <p>Todos los vehículos comercializados por TREFA pasan por inspecciones exhaustivas. Sin embargo:</p>
+          <h2>8. Garantías y Condición de los Autos</h2>
+          <p>Todos los autos comercializados por TREFA pasan por inspecciones exhaustivas. Sin embargo:</p>
           <ul>
-            <li>Los vehículos seminuevos se venden en el estado en que se encuentran al momento de la entrega.</li>
+            <li>Los autos seminuevos se venden en el estado en que se encuentran al momento de la entrega.</li>
             <li>Se ofrece garantía limitada según lo especificado en el contrato de compraventa.</li>
             <li>La garantía no cubre daños por uso indebido, negligencia o accidentes posteriores a la entrega.</li>
-            <li>Es responsabilidad del comprador revisar el vehículo antes de finalizar la compra.</li>
+            <li>Es responsabilidad del comprador revisar el auto antes de finalizar la compra.</li>
           </ul>
 
           <h2>9. Devoluciones y Cancelaciones</h2>
           <ul>
-            <li>Las ventas de vehículos son finales y no se aceptan devoluciones una vez firmado el contrato de compraventa y entregado el vehículo.</li>
+            <li>Las ventas de autos son finales y no se aceptan devoluciones una vez firmado el contrato de compraventa y entregado el auto.</li>
             <li>Casos excepcionales serán evaluados individualmente por TREFA.</li>
-            <li>El comprador tiene derecho a cancelar antes de la entrega del vehículo, sujeto a los términos del apartado y contrato.</li>
+            <li>El comprador tiene derecho a cancelar antes de la entrega del auto, sujeto a los términos del apartado y contrato.</li>
           </ul>
 
           <h2>10. Propiedad Intelectual</h2>

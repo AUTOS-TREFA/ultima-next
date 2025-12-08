@@ -464,7 +464,7 @@ const LeadSourceInfo: React.FC<{ metadata: any; source: string }> = ({ metadata,
             <div className="space-y-3">
                 {source && <ProfileDataItem label="Origen" value={source} />}
                 {metadata?.rfdm && <ProfileDataItem label="Referencia (rfdm)" value={metadata.rfdm} />}
-                {metadata?.ordencompra && <ProfileDataItem label="Vehículo de Interés" value={metadata.ordencompra} />}
+                {metadata?.ordencompra && <ProfileDataItem label="Auto de Interés" value={metadata.ordencompra} />}
                 {fbclid && <ProfileDataItem label="Facebook Click ID" value={fbclid} />}
                 {utmParams.length > 0 && (
                     <div>

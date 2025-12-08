@@ -210,14 +210,14 @@ const CustomerJourneysGuide: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Step 2: Ver detalle de vehículo */}
+                    {/* Step 2: Ver detalle de auto */}
                     <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-3">
                       <div className="flex items-center gap-2 mb-2">
                         <Target className="w-4 h-4 text-purple-600" />
                         <span className="font-semibold text-purple-900">Paso 2: Usuario ve detalle de vehículo</span>
                       </div>
                       <div className="text-sm space-y-1 text-gray-700">
-                        <div><strong>Nombre del paso:</strong> Ver Detalle de Vehículo</div>
+                        <div><strong>Nombre del paso:</strong> Ver Detalle de Auto</div>
                         <div><strong>Ruta de la página:</strong> <code className="bg-white px-2 py-0.5 rounded border">/autos/:id</code></div>
                         <div><strong>Tipo de evento:</strong> ViewContent</div>
                         <div><strong>Tipo de trigger:</strong> Pageview</div>

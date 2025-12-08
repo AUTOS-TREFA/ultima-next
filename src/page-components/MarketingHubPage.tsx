@@ -263,7 +263,7 @@ const MarketingHubPage: React.FC = () => {
               <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5"></div>
               <div>
                 <span className="font-medium text-gray-900">ViewContent:</span>
-                <span className="text-gray-600 ml-1">Registra vistas de vehículos</span>
+                <span className="text-gray-600 ml-1">Registra vistas de autos</span>
               </div>
             </div>
             <div className="flex items-start gap-2">

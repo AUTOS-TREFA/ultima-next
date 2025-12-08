@@ -205,7 +205,7 @@ const R2ImageManagerPage: React.FC = () => {
           Gestor de Imágenes R2
         </h1>
         <p className="mt-2 text-gray-600">
-          Sube y administra imágenes de vehículos en Cloudflare R2
+          Sube y administra imágenes de autos en Cloudflare R2
         </p>
       </div>
 
@@ -243,7 +243,7 @@ const R2ImageManagerPage: React.FC = () => {
           {/* Vehicle Selector */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Selecciona el Vehículo
+              Selecciona el Auto
             </label>
             {loadingVehicles ? (
               <div className="flex items-center justify-center py-8">
@@ -255,7 +255,7 @@ const R2ImageManagerPage: React.FC = () => {
                 onChange={(e) => setSelectedVehicleId(Number(e.target.value) || null)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
               >
-                <option value="">-- Selecciona un vehículo --</option>
+                <option value="">-- Selecciona un auto --</option>
                 {vehicles.map(vehicle => (
                   <option key={vehicle.id} value={vehicle.id}>
                     {vehicle.title} (ID: {vehicle.id})
@@ -369,21 +369,21 @@ const R2ImageManagerPage: React.FC = () => {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Buscar por nombre de archivo o vehículo..."
+                  placeholder="Buscar por nombre de archivo o auto..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Filter className="w-4 h-4 inline mr-2" />
-                  Filtrar por Vehículo
+                  Filtrar por Auto
                 </label>
                 <select
                   value={filterVehicle || ''}
                   onChange={(e) => setFilterVehicle(Number(e.target.value) || null)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                 >
-                  <option value="">Todos los vehículos</option>
+                  <option value="">Todos los autos</option>
                   {vehicles.map(vehicle => (
                     <option key={vehicle.id} value={vehicle.id}>
                       {vehicle.title}

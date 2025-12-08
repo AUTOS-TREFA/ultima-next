@@ -357,14 +357,14 @@ const ImageGeneratorTab: React.FC<ImageGeneratorTabProps> = ({ vehicles, isLoadi
                 const errorMsg = `⚠️ CarStudio AI no pudo procesar ${faultyImages.length} imagen(es):\n\n` +
                     faultyErrors.join('\n') +
                     '\n\n🔍 Posibles causas:\n' +
-                    '• La imagen no contiene un vehículo claramente visible\n' +
+                    '• La imagen no contiene un auto claramente visible\n' +
                     '• El fondo es demasiado complejo para el AI\n' +
                     '• La calidad de la imagen es muy baja (< 800px)\n' +
                     '• La imagen está muy borrosa, sobreexpuesta o mal iluminada\n' +
-                    '• El vehículo está parcialmente oculto o cortado\n' +
-                    '• La imagen tiene marca de agua o texto sobre el vehículo\n\n' +
+                    '• El auto está parcialmente oculto o cortado\n' +
+                    '• La imagen tiene marca de agua o texto sobre el auto\n\n' +
                     '✅ Recomendaciones:\n' +
-                    '• Usa imágenes con el vehículo completo y centrado\n' +
+                    '• Usa imágenes con el auto completo y centrado\n' +
                     '• Preferir fondos simples y uniformes\n' +
                     '• Buena iluminación natural o de estudio\n' +
                     '• Mínimo 1200x800px de resolución\n' +
@@ -488,7 +488,7 @@ const ImageGeneratorTab: React.FC<ImageGeneratorTabProps> = ({ vehicles, isLoadi
                     <ErrorDisplay title="Fallo al Cargar autos" message={globalError} />
                 ) : vehiclesWithGalleries.length === 0 ? (
                     <div className="p-4 bg-gray-50 rounded-lg text-center text-gray-500">
-                        No hay vehículos con galerías disponibles
+                        No hay autos con galerías disponibles
                     </div>
                 ) : (
                     vehiclesWithGalleries.map(vehicle => (
@@ -527,7 +527,7 @@ const ImageGeneratorTab: React.FC<ImageGeneratorTabProps> = ({ vehicles, isLoadi
                         </div>
                         {availableImages.length === 0 ? (
                             <div className="p-4 bg-gray-50 rounded-lg text-center text-gray-500 text-sm">
-                                Selecciona un vehículo para ver sus imágenes
+                                Selecciona un auto para ver sus imágenes
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-2">
@@ -756,7 +756,7 @@ const WebEditorHistoryTab: React.FC = () => {
                                         onChange={(e) => setSelectedVehicleId(prev => ({...prev, [itemId]: Number(e.target.value)}))}
                                         className="flex-1 px-3 py-2 border rounded-md text-sm"
                                     >
-                                        <option value="">Seleccionar vehículo... ({vehicles.length} disponibles)</option>
+                                        <option value="">Seleccionar auto... ({vehicles.length} disponibles)</option>
                                         {vehicles.map((v: any) => (
                                             <option key={v.id} value={v.id}>
                                                 {v.title} - {v.marca || ''} {v.modelo || ''} {v.anio || ''} (ID: {v.id})
@@ -800,7 +800,7 @@ const OrderHistoryTab: React.FC<OrderHistoryTabProps> = ({ vehicles: _vehicles }
         <div className="bg-white p-6 rounded-xl shadow-sm border">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Historial de Órdenes (por Usuario)</h2>
             <InfoBox title="En Construcción">
-                <p>Esta sección te permitirá ver las órdenes de procesamiento asociadas a tu cuenta, visualizar los resultados y asignarlos a un vehículo del inventario.</p>
+                <p>Esta sección te permitirá ver las órdenes de procesamiento asociadas a tu cuenta, visualizar los resultados y asignarlos a un auto del inventario.</p>
             </InfoBox>
         </div>
     );

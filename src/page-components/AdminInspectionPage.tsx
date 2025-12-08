@@ -120,7 +120,7 @@ const AdminInspectionPage: React.FC<AdminInspectionPageProps> = ({ id: vehicleId
     useEffect(() => {
         const fetchAllData = async () => {
             if (!vehicleId) {
-                setError('ID de vehículo no válido.');
+                setError('ID de auto no válido.');
                 setIsLoading(false);
                 return;
             }

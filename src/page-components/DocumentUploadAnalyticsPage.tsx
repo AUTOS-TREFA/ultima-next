@@ -418,7 +418,7 @@ const DocumentUploadAnalyticsPage: React.FC = () => {
                       </td>
                       <td className="px-4 py-4">
                         <div className="text-sm text-gray-900">
-                          {app.car_info?._vehicleTitle || 'Sin vehículo'}
+                          {app.car_info?._vehicleTitle || 'Sin auto'}
                         </div>
                         {app.car_info?._precioFormateado && (
                           <div className="text-sm text-gray-500">{app.car_info._precioFormateado}</div>

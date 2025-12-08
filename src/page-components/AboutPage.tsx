@@ -65,7 +65,7 @@ const AboutPage: React.FC = () => {
               Conócenos
             </h1>
             <p className="text-xl sm:text-2xl text-white/90 leading-relaxed">
-              Somos la agencia de autos seminuevos que está transformando la forma de comprar y vender vehículos en Monterrey
+              Somos la agencia de autos seminuevos que está transformando la forma de comprar y vender autos en Monterrey
             </p>
           </div>
         </div>
@@ -91,7 +91,7 @@ const AboutPage: React.FC = () => {
                 En TREFA, nuestra misión es hacer que la compra y venta de autos seminuevos sea una experiencia simple, transparente y confiable para todos nuestros clientes en Monterrey y el área metropolitana.
               </p>
               <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                Nos comprometemos a ofrecer vehículos de la más alta calidad, respaldados por inspecciones rigurosas y un proceso de financiamiento ágil que pone a nuestros clientes primero.
+                Nos comprometemos a ofrecer autos de la más alta calidad, respaldados por inspecciones rigurosas y un proceso de financiamiento ágil que pone a nuestros clientes primero.
               </p>
               <p className="text-lg text-gray-700 leading-relaxed">
                 Creemos que cada persona merece tener acceso a un auto confiable que se ajuste a su presupuesto, y trabajamos todos los días para hacer esa visión una realidad.

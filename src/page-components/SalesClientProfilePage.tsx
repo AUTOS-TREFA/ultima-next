@@ -258,7 +258,7 @@ const LeadSourceInfo: React.FC<{ metadata: any }> = ({ metadata }) => {
             <h2 className="text-lg font-semibold text-gray-800 mb-4">Fuente del Lead</h2>
             <div className="space-y-3">
                 {metadata.rfdm && <ProfileDataItem label="Referencia (rfdm)" value={metadata.rfdm} />}
-                {metadata.ordencompra && <ProfileDataItem label="Vehículo de Interés (ordencompra)" value={metadata.ordencompra} />}
+                {metadata.ordencompra && <ProfileDataItem label="Auto de Interés (ordencompra)" value={metadata.ordencompra} />}
                 {utmParams.length > 0 && (
                     <div>
                         <p className="text-xs text-gray-500 uppercase tracking-wider">Parámetros UTM</p>

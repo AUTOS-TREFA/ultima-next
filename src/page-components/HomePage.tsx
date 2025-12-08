@@ -128,7 +128,7 @@ const LandingPageHero: React.FC<{ content: HeroContent | null }> = ({ content })
   const defaultContent: HeroContent = {
     badgeText: "Autos Seminuevos Certificados",
     title: "Tu próximo auto seminuevo te está esperando",
-    description: "Encuentra el auto perfecto en nuestra selección de vehículos seminuevos 2019 en adelante. SUVs, Sedanes, Hatchbacks y Pick Ups con garantía y financiamiento disponible.",
+    description: "Encuentra el auto perfecto en nuestra selección de autos seminuevos 2019 en adelante. SUVs, Sedanes, Hatchbacks y Pick Ups con garantía y financiamiento disponible.",
     desktopImageLeft: "https://r2.trefa.mx/r9GDYibmXVaw8Zv93n4Bfi9TIs.png.webp",
     desktopImageRight: "https://r2.trefa.mx/Frame%2040%20(1).png",
     mobileImage: "https://r2.trefa.mx/r9GDYibmXVaw8Zv93n4Bfi9TIs.png.webp",
@@ -518,11 +518,11 @@ const FeaturedInventorySection: React.FC = () => {
       </div>
       <div className="mt-16 lg:mt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {isLoading ? (
-          <div className="col-span-full text-center text-gray-500">Cargando vehículos...</div>
+          <div className="col-span-full text-center text-gray-500">Cargando autos...</div>
         ) : displayVehicles.length > 0 ? (
           displayVehicles.map(vehicle => <VehicleGridCard key={vehicle.id} vehicle={vehicle} />)
         ) : (
-          <div className="col-span-full text-center text-gray-500">No hay vehículos disponibles</div>
+          <div className="col-span-full text-center text-gray-500">No hay autos disponibles</div>
         )}
       </div>
       <div className="mt-12 text-center">
@@ -635,7 +635,7 @@ const CarroceriaCarouselSection: React.FC<{ content: CarroceriaCarouselContent |
   // Default fallback content
   const defaultContent: CarroceriaCarouselContent = {
     title: "Explora por Tipo de Carrocería",
-    subtitle: "Encuentra el vehículo perfecto según tu estilo de vida. Desde SUVs familiares hasta Pick Ups robustas.",
+    subtitle: "Encuentra el auto perfecto según tu estilo de vida. Desde SUVs familiares hasta Pick Ups robustas.",
     items: [
       {
         title: "SUV",

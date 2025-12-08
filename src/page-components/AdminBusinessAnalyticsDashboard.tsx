@@ -85,7 +85,7 @@ export default function AdminBusinessAnalyticsDashboard() {
     };
 
     const handleSendAvailabilityEmail = async (app: any) => {
-        if (!window.confirm(`¿Enviar email a ${app.applicantName} notificando que el vehículo ya no está disponible?`)) {
+        if (!window.confirm(`¿Enviar email a ${app.applicantName} notificando que el auto ya no está disponible?`)) {
             return;
         }
 
@@ -173,7 +173,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                                 Datos
                             </h1>
                             <p className="text-sm text-gray-500 mt-1">
-                                Análisis de vehículos, ventas y tendencias de mercado
+                                Análisis de autos, ventas y tendencias de mercado
                             </p>
                         </div>
                         <div className="flex items-center gap-4">
@@ -222,7 +222,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                             <AlertTriangle className="w-6 h-6 text-red-600" />
                             <div>
                                 <h3 className="text-lg font-bold text-red-900">
-                                    Solicitudes con Vehículos No Disponibles
+                                    Solicitudes con Autos No Disponibles
                                 </h3>
                                 <p className="text-sm text-red-700">
                                     {metrics.unavailableVehicleApplications.length} aplicaciones requieren acción inmediata
@@ -272,14 +272,14 @@ export default function AdminBusinessAnalyticsDashboard() {
                                 Vehículos con Mayor Demanda
                             </h3>
                             <p className="text-sm text-gray-600 mt-1">
-                                Top 10 vehículos por cantidad de solicitudes activas
+                                Top 10 autos por cantidad de solicitudes activas
                             </p>
                         </div>
                     </div>
                     {metrics.vehicleInsights.length === 0 ? (
                         <div className="text-center py-12">
                             <Car className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                            <p className="text-gray-500 text-sm">No hay datos de solicitudes por vehículo aún</p>
+                            <p className="text-gray-500 text-sm">No hay datos de solicitudes por auto aún</p>
                             <p className="text-gray-400 text-xs mt-2">Los datos aparecerán cuando haya solicitudes activas</p>
                         </div>
                     ) : (
@@ -374,14 +374,14 @@ export default function AdminBusinessAnalyticsDashboard() {
                                 Inventario con Solicitudes Activas
                             </h3>
                             <p className="text-sm text-gray-600 mt-1">
-                                Todos los vehículos en inventario con aplicaciones activas
+                                Todos los autos en inventario con aplicaciones activas
                             </p>
                         </div>
                     </div>
                     {metrics.inventoryVehiclesWithApplications.length === 0 ? (
                         <div className="text-center py-12">
                             <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                            <p className="text-gray-500 text-sm">No hay vehículos en inventario con solicitudes activas</p>
+                            <p className="text-gray-500 text-sm">No hay autos en inventario con solicitudes activas</p>
                             <p className="text-gray-400 text-xs mt-2">Los datos aparecerán cuando haya solicitudes en proceso</p>
                         </div>
                     ) : (
@@ -429,7 +429,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                             ))}
                             {metrics.inventoryVehiclesWithApplications.filter(v => v.ongoingApplications > 0).length === 0 && (
                                 <div className="text-center py-8 text-gray-500 text-sm">
-                                    No hay vehículos en inventario con solicitudes activas en este momento
+                                    No hay autos en inventario con solicitudes activas en este momento
                                 </div>
                             )}
                         </div>

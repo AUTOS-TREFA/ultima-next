@@ -390,7 +390,7 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
 
         // Validate vehicleInfo with comprehensive null checks
         if (!vehicleInfo || !vehicleInfo._ordenCompra) {
-            setSubmissionError("Aún no has seleccionado un vehículo para tu solicitud de financiamiento. Por favor, selecciona el auto que te interesa para continuar.");
+            setSubmissionError("Aún no has seleccionado un auto para tu solicitud de financiamiento. Por favor, selecciona el auto que te interesa para continuar.");
             setShowVehicleSelector(true);
             return;
         }
@@ -598,7 +598,7 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
                              {/* Vehicle Info (if selected) */}
                              {vehicleInfo?._vehicleTitle && (
                                  <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
-                                     <p className="text-xs text-gray-500 mb-2">Vehículo de Interés</p>
+                                     <p className="text-xs text-gray-500 mb-2">Auto de Interés</p>
                                      <div className="flex items-center gap-3">
                                          <img src={vehicleInfo._featureImage} alt={vehicleInfo._vehicleTitle} className="w-20 h-14 object-cover rounded flex-shrink-0" />
                                          <h3 className="text-sm font-bold text-gray-900">{vehicleInfo._vehicleTitle}</h3>
@@ -609,7 +609,7 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
                              {/* Important Notice */}
                              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                                  <p className="text-sm text-blue-900">
-                                     <strong>Próximo Paso:</strong> Revisaremos tu solicitud y documentos. Una vez aprobado tu crédito, podrás separar el vehículo de tu preferencia.
+                                     <strong>Próximo Paso:</strong> Revisaremos tu solicitud y documentos. Una vez aprobado tu crédito, podrás separar el auto de tu preferencia.
                                  </p>
                              </div>
 
@@ -627,7 +627,7 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
                                      className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-200 text-gray-500 font-semibold rounded-lg cursor-not-allowed"
                                      title="Disponible después de la aprobación"
                                  >
-                                     Separar Vehículo
+                                     Separar Auto
                                      <span className="text-xs">(Disponible al aprobar)</span>
                                  </button>
                              </div>
@@ -638,7 +638,7 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
                                      href="/explorar"
                                      className="text-sm text-primary-600 hover:text-primary-700 font-semibold"
                                  >
-                                     Explorar Más Vehículos →
+                                     Explorar Más Autos →
                                  </Link>
                              </div>
                          </div>
@@ -1253,7 +1253,7 @@ const SummaryStep: React.FC<{ applicationData: any, profile: Profile | null, veh
                         <img src={vehicleInfo._featureImage} alt={vehicleInfo._vehicleTitle} className="w-24 h-16 rounded object-cover flex-shrink-0" />
                     )}
                     <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-600">Vehículo Seleccionado</p>
+                        <p className="text-xs text-gray-600">Auto Seleccionado</p>
                         <p className="font-semibold text-primary-700 truncate">{vehicleInfo?._vehicleTitle}</p>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -1410,9 +1410,9 @@ const FinancingPreferencesSection: React.FC<{ control: any; vehicleInfo: any; se
                 <div className="flex items-center gap-3">
                     <AlertCircle className="w-6 h-6 text-yellow-600" />
                     <div>
-                        <p className="font-semibold text-yellow-900">Información del Vehículo Faltante</p>
+                        <p className="font-semibold text-yellow-900">Información del Auto Faltante</p>
                         <p className="text-sm text-yellow-800 mt-1">
-                            No pudimos cargar el precio del vehículo. Por favor, regresa al inicio y selecciona tu vehículo nuevamente.
+                            No pudimos cargar el precio del auto. Por favor, regresa al inicio y selecciona tu auto nuevamente.
                         </p>
                     </div>
                 </div>

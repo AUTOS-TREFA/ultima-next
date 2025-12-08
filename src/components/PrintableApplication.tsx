@@ -323,7 +323,7 @@ const PrintableApplication: React.FC<{ application: any }> = ({ application }) =
 
             <main className="mt-4 space-y-3">
                 {/* Vehicle Information */}
-                <SectionHeader title="Vehículo de Interés" />
+                <SectionHeader title="Auto de Interés" />
                 <div className="rounded-b-md overflow-hidden">
                     <DataRow label="Auto" value={carInfo._vehicleTitle} />
                     <DataRow label="ID del Auto" value={carInfo._ordenCompra} />

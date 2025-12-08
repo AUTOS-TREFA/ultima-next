@@ -26,12 +26,12 @@ import { formatPrice } from '../utils/formatters';
 
 const faqData = [
   {
-    question: '¿Qué años de vehículos manejan?',
-    answer: 'Nos especializamos en vehículos seminuevos del 2019 en adelante. Todos nuestros autos pasan por una inspección rigurosa de 150 puntos para garantizar su calidad y confiabilidad.'
+    question: '¿Qué años de autos manejan?',
+    answer: 'Nos especializamos en autos seminuevos del 2019 en adelante. Todos nuestros autos pasan por una inspección rigurosa de 150 puntos para garantizar su calidad y confiabilidad.'
   },
   {
     question: '¿Qué incluye la garantía?',
-    answer: 'Todos nuestros vehículos incluyen garantía de 6 meses o 10,000 kilómetros (lo que ocurra primero) que cubre motor, transmisión y componentes principales. También ofrecemos garantías extendidas opcionales.'
+    answer: 'Todos nuestros autos incluyen garantía de 6 meses o 10,000 kilómetros (lo que ocurra primero) que cubre motor, transmisión y componentes principales. También ofrecemos garantías extendidas opcionales.'
   },
   {
     question: '¿Puedo financiar mi auto?',
@@ -39,7 +39,7 @@ const faqData = [
   },
   {
     question: '¿Reciben autos en intercambio?',
-    answer: '¡Por supuesto! Recibimos cualquier marca y modelo como parte de pago. Realizamos una evaluación gratuita y transparente de tu vehículo actual para ofrecerte el mejor precio del mercado.'
+    answer: '¡Por supuesto! Recibimos cualquier marca y modelo como parte de pago. Realizamos una evaluación gratuita y transparente de tu auto actual para ofrecerte el mejor precio del mercado.'
   },
   {
     question: '¿Qué documentos necesito para comprar?',
@@ -413,7 +413,7 @@ const LandingPage: React.FC = () => {
               transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
               className="text-lg md:text-xl lg:text-2xl text-gray-700 max-w-3xl leading-relaxed font-medium"
             >
-              Encuentra el auto perfecto en nuestra selección de vehículos seminuevos 2019 en
+              Encuentra el auto perfecto en nuestra selección de autos seminuevos 2019 en
               adelante. SUVs, Sedanes, Hatchbacks y Pick Ups con{' '}
               <span className="text-primary font-black">garantía y financiamiento disponible</span>.
             </motion.p>
@@ -606,7 +606,7 @@ const LandingPage: React.FC = () => {
           >
             <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-black text-gray-900">Nuestro Inventario TREFA</h2>
             <p className="text-lg md:text-xl text-gray-700 max-w-3xl mx-auto font-medium">
-              Vehículos seminuevos 2019 en adelante con inspección de 150 puntos,{' '}
+              Autos seminuevos 2019 en adelante con inspección de 150 puntos,{' '}
               <span className="text-primary font-black">garantía blindada</span> y el Kit de Seguridad TREFA incluido
             </p>
           </motion.div>
@@ -1010,7 +1010,7 @@ const LandingPage: React.FC = () => {
                 <Award className="w-12 h-12 text-primary mx-auto mb-3" />
                 <h4 className="font-semibold text-lg mb-2 text-primary">Calidad Garantizada</h4>
                 <p className="text-muted-foreground text-sm">
-                  Solo vehículos 2019+ con inspección de 150 puntos
+                  Solo autos 2019+ con inspección de 150 puntos
                 </p>
               </div>
             </div>
@@ -1138,7 +1138,7 @@ const LandingPage: React.FC = () => {
             </h2>
             <p className="text-lg md:text-xl text-white/95 leading-relaxed font-bold">
               Visita nuestro showroom o agenda una cita para conocer nuestro inventario de autos
-              seminuevos. Te ayudamos a encontrar el vehículo perfecto para ti y tu familia.
+              seminuevos. Te ayudamos a encontrar el auto perfecto para ti y tu familia.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Link href="/autos" className="group relative overflow-hidden inline-flex items-center justify-center gap-2 bg-white text-primary hover:bg-white/95 px-8 py-4 rounded-xl font-black shadow-2xl transition-all hover:scale-105 text-lg">

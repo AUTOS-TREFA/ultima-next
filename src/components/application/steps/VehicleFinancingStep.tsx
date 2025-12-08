@@ -167,7 +167,7 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
                   }}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-green-700 font-medium">Vehículo Seleccionado</p>
+                  <p className="text-xs text-green-700 font-medium">Auto Seleccionado</p>
                   <p className="font-bold text-gray-900 truncate">{selectedVehicle.title}</p>
                   <p className="text-sm font-semibold text-primary-600">
                     {formatCurrency(selectedVehicle.precio)}
@@ -220,7 +220,7 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
                   ))}
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Plazo máximo para este vehículo: {maxTerm} meses
+                  Plazo máximo para este auto: {maxTerm} meses
                 </p>
               </div>
 
@@ -313,7 +313,7 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
       {loading && !showCalculator && (
         <div className="flex justify-center items-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
-          <span className="ml-3 text-gray-600">Cargando vehículos...</span>
+          <span className="ml-3 text-gray-600">Cargando autos...</span>
         </div>
       )}
 
@@ -359,7 +359,7 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
             <div className="col-span-full text-center py-12">
               <Car className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500">
-                {searchTerm ? 'No se encontraron vehículos' : 'No hay vehículos disponibles'}
+                {searchTerm ? 'No se encontraron vehículos' : 'No hay autos disponibles'}
               </p>
             </div>
           )}

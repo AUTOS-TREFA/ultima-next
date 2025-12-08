@@ -1282,7 +1282,7 @@ const FinanciamientosPage: React.FC = () => {
               ))}
             </div>
           ) : (
-            <p className="text-gray-600 text-center py-12 font-medium">Cargando selección de vehículos...</p>
+            <p className="text-gray-600 text-center py-12 font-medium">Cargando selección de autos...</p>
           )}
 
           <div className="text-center mt-8">

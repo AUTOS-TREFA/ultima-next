@@ -85,7 +85,7 @@ const ResponsiveInventoryPage: React.FC = () => {
         return (
             <div className="fixed inset-0 flex flex-col items-center justify-center bg-gray-900 gap-4 overflow-hidden">
                 <Loader2 className="w-12 h-12 animate-spin text-white" />
-                <p className="text-gray-400 text-sm">Cargando vehículos...</p>
+                <p className="text-gray-400 text-sm">Cargando autos...</p>
             </div>
         );
     }
@@ -94,9 +94,9 @@ const ResponsiveInventoryPage: React.FC = () => {
         return (
             <div className="fixed inset-0 flex flex-col items-center justify-center bg-gray-900 gap-4 px-4 overflow-hidden">
                 <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 max-w-md">
-                    <h2 className="text-xl font-bold text-red-500 mb-2">Error al cargar vehículos</h2>
+                    <h2 className="text-xl font-bold text-red-500 mb-2">Error al cargar autos</h2>
                     <p className="text-gray-300 text-sm mb-4">
-                        {error.message || 'No se pudieron cargar los vehículos. Por favor, intenta de nuevo.'}
+                        {error.message || 'No se pudieron cargar los autos. Por favor, intenta de nuevo.'}
                     </p>
                     <button
                         onClick={() => window.location.reload()}
@@ -113,9 +113,9 @@ const ResponsiveInventoryPage: React.FC = () => {
         return (
             <div className="fixed inset-0 flex flex-col items-center justify-center bg-gray-900 gap-4 px-4 overflow-hidden">
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6 max-w-md text-center">
-                    <h2 className="text-xl font-bold text-white mb-2">No hay vehículos disponibles</h2>
+                    <h2 className="text-xl font-bold text-white mb-2">No hay autos disponibles</h2>
                     <p className="text-gray-400 text-sm mb-4">
-                        En este momento no tenemos vehículos en inventario. Por favor, vuelve más tarde.
+                        En este momento no tenemos autos en inventario. Por favor, vuelve más tarde.
                     </p>
                     <button
                         onClick={() => router.push('/')}
@@ -231,7 +231,7 @@ const ResponsiveInventoryPage: React.FC = () => {
                     <div className="bg-gray-900 rounded-2xl max-w-md w-full max-h-[80vh] overflow-hidden border border-white/10">
                         <div className="p-6 border-b border-white/10">
                             <h2 className="text-2xl font-bold text-white">Elegir Categoría</h2>
-                            <p className="text-gray-400 text-sm mt-1">Selecciona el tipo de vehículo que quieres explorar</p>
+                            <p className="text-gray-400 text-sm mt-1">Selecciona el tipo de auto que quieres explorar</p>
                         </div>
 
                         <div className="overflow-y-auto max-h-[calc(80vh-180px)] p-6 space-y-2">
