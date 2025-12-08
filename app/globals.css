@@ -87,129 +87,56 @@
   }
 
   /* ===================================================================
-     CRITICAL FIX: ALL ORANGE/PRIMARY BACKGROUNDS MUST HAVE WHITE TEXT
+     TEXTO BLANCO SOLO PARA BOTONES Y ELEMENTOS CON FONDO NARANJA
      ================================================================ */
 
-  /* Base rule: ALL elements with primary or orange background get white text */
-  .bg-primary,
-  .bg-primary-100,
-  .bg-primary-200,
-  .bg-primary-300,
-  .bg-primary-400,
-  .bg-primary-500,
-  .bg-primary-600,
-  .bg-primary-700,
-  .bg-primary-800,
-  .bg-primary-900,
-  .bg-brand-primary,
-  [class*="bg-primary"],
-  .bg-\[\#FF6801\],
-  .bg-\[\#ff6801\],
-  [style*="background-color: #FF6801"],
-  [style*="background-color:#FF6801"],
-  [style*="background-color: #ff6801"],
-  [style*="background-color:#ff6801"],
-  [style*="background-color: rgb(255, 104, 1)"],
-  [style*="background-color:rgb(255, 104, 1)"],
-  [style*="background: #FF6801"],
-  [style*="background:#FF6801"],
-  [style*="background: #ff6801"],
-  [style*="background:#ff6801"] {
-    color: white !important;
-  }
-
-  /* ALL children and descendants of orange backgrounds get white text */
-  .bg-primary *,
-  .bg-primary-100 *,
-  .bg-primary-200 *,
-  .bg-primary-300 *,
-  .bg-primary-400 *,
-  .bg-primary-500 *,
-  .bg-primary-600 *,
-  .bg-primary-700 *,
-  .bg-primary-800 *,
-  .bg-primary-900 *,
-  .bg-brand-primary *,
-  [class*="bg-primary"] *,
-  .bg-\[\#FF6801\] *,
-  .bg-\[\#ff6801\] *,
-  [style*="background-color: #FF6801"] *,
-  [style*="background-color:#FF6801"] *,
-  [style*="background-color: #ff6801"] *,
-  [style*="background-color:#ff6801"] *,
-  [style*="background-color: rgb(255, 104, 1)"] *,
-  [style*="background-color:rgb(255, 104, 1)"] *,
-  [style*="background: #FF6801"] *,
-  [style*="background:#FF6801"] *,
-  [style*="background: #ff6801"] *,
-  [style*="background:#ff6801"] * {
-    color: white !important;
-  }
-
-  /* Special overrides for ALL element types that might have orange backgrounds */
+  /* Solo BOTONES y LINKS con fondo naranja tienen texto blanco */
   button.bg-primary,
+  button.bg-primary-600,
+  button.bg-primary-700,
+  button.bg-primary-800,
+  button.bg-primary-900,
   button[class*="bg-primary"],
   button.bg-\[\#FF6801\],
   button.bg-\[\#ff6801\],
-  button.bg-primary *,
-  button[class*="bg-primary"] *,
-  button.bg-\[\#FF6801\] *,
-  button.bg-\[\#ff6801\] *,
+  button[style*="background-color: #FF6801"],
+  button[style*="background-color:#FF6801"],
+  button[style*="background-color: #ff6801"],
+  button[style*="background-color:#ff6801"],
+  button[style*="background: #FF6801"],
+  button[style*="background:#FF6801"],
   a.bg-primary,
+  a.bg-primary-600,
+  a.bg-primary-700,
   a[class*="bg-primary"],
   a.bg-\[\#FF6801\],
   a.bg-\[\#ff6801\],
-  a.bg-primary *,
-  a[class*="bg-primary"] *,
-  span.bg-primary,
-  span[class*="bg-primary"],
-  span.bg-\[\#FF6801\],
-  span.bg-\[\#ff6801\],
-  div.bg-primary,
-  div[class*="bg-primary"],
-  div.bg-\[\#FF6801\],
-  div.bg-\[\#ff6801\],
-  .btn-primary,
-  .btn-primary *,
-  [class*="badge"].bg-primary,
-  [class*="badge"][class*="bg-primary"],
-  [class*="badge"].bg-\[\#FF6801\],
-  [class*="tag"].bg-primary,
-  [class*="tag"][class*="bg-primary"],
-  [class*="tag"].bg-\[\#FF6801\] {
-    color: white !important;
-  }
-
-  /* Nuclear option: Override any text color classes when inside orange backgrounds */
-  .bg-primary .text-black,
-  .bg-primary .text-gray-900,
-  .bg-primary .text-neutral-900,
-  [class*="bg-primary"] .text-black,
-  [class*="bg-primary"] .text-gray-900,
-  [class*="bg-primary"] .text-neutral-900,
-  .bg-\[\#FF6801\] .text-black,
-  .bg-\[\#FF6801\] .text-gray-900,
-  .bg-\[\#ff6801\] .text-black,
-  .bg-\[\#ff6801\] .text-gray-900 {
-    color: white !important;
-  }
-
-  /* CRITICAL: Force ALL shadcn/ui primary buttons to use white text */
-  button[class*="bg-primary"],
-  button.bg-primary,
-  a[class*="bg-primary"],
-  a.bg-primary,
+  a[style*="background-color: #FF6801"],
+  a[style*="background: #FF6801"],
+  [role="button"].bg-primary,
   [role="button"][class*="bg-primary"],
-  /* Specific shadcn button class */
-  .inline-flex.items-center.justify-center.bg-primary,
+  [role="button"].bg-\[\#FF6801\],
+  .btn-primary,
+  /* Clase específica de shadcn button */
   button.inline-flex.items-center.justify-center.bg-primary,
   a.inline-flex.items-center.justify-center.bg-primary {
     color: white !important;
   }
 
-  /* Force text-primary-foreground to always be white */
-  .text-primary-foreground,
-  [class*="text-primary-foreground"] {
+  /* Solo BADGES y TAGS con fondo naranja tienen texto blanco */
+  [class*="badge"].bg-primary,
+  [class*="badge"][class*="bg-primary"],
+  [class*="badge"].bg-\[\#FF6801\],
+  [class*="tag"].bg-primary,
+  [class*="tag"][class*="bg-primary"],
+  [class*="tag"].bg-\[\#FF6801\],
+  span.bg-primary:not(.bg-white):not(.bg-gray):not([class*="bg-gray"]),
+  span[class*="bg-primary"]:not(.bg-white):not(.bg-gray):not([class*="bg-gray"]) {
+    color: white !important;
+  }
+
+  /* text-primary-foreground se usa para texto sobre fondos primary */
+  .text-primary-foreground {
     color: white !important;
   }
 }
