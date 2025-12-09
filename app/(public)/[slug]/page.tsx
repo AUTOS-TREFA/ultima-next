@@ -1,7 +1,5 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
 import DynamicLandingPage from '@/page-components/DynamicLandingPage';
 
 interface PageProps {

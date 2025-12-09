@@ -1,7 +1,5 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
 import AdminCandidatesPage from '@/page-components/AdminCandidatesPage';
 
 interface PageProps {

@@ -1,8 +1,6 @@
 import { Metadata } from 'next';
 import BrandsPage from '@/page-components/BrandsPage';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata: Metadata = {
   title: 'Marcas de Autos Disponibles',
   description: 'Explora todas las marcas de autos disponibles en TREFA. Honda, Toyota, Nissan, Mazda, Jeep, Kia y mas.',

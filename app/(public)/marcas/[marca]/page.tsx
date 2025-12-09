@@ -1,7 +1,5 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
 import MarketingCategoryPage from '@/page-components/MarketingCategoryPage';
 
 interface PageProps {
