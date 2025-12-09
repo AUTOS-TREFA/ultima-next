@@ -7,7 +7,7 @@ import type { VehicleFilters } from '../types/types';
 import { useVehicles } from '../context/VehicleContext';
 import { useFilters } from '../context/FilterContext';
 import VehicleService from '../services/VehicleService';
-import { facebookPixelService } from '../services/FacebookPixelService';
+import type { FacebookPixelService } from '../services/FacebookPixelService';
 import VehicleCard from '../components/VehicleCard';
 import VehicleCardSkeleton from '../components/VehicleCardSkeleton';
 import VehicleGridCard from '../components/VehicleGridCard';
@@ -46,6 +46,14 @@ const VehicleListPage: React.FC = () => {
   const { vehicles, totalCount, isLoading: vehiclesLoading, error: vehiclesError } = useVehicles();
   const { filters, handleFiltersChange, onRemoveFilter, handleClearFilters, currentPage, handlePageChange } = useFilters();
   const isInitialMount = useRef(true);
+  const [facebookPixelService, setFacebookPixelService] = useState<any>(null);
+
+  // Dynamically import FacebookPixelService only on client side
+  useEffect(() => {
+    import('../services/FacebookPixelService').then(module => {
+      setFacebookPixelService(module.facebookPixelService);
+    });
+  }, []);
 
   // Initialize showTutorial based on localStorage to prevent flash
   const [showTutorial, setShowTutorial] = useState(() => {
@@ -273,10 +281,12 @@ const VehicleListPage: React.FC = () => {
 
     const searchQuery = searchParts.join(' ') || 'browse_inventory';
 
-    // Track the search with filters
-    facebookPixelService.trackSearch(searchQuery, filters)
-      .catch(err => console.warn('[FB Pixel] Error tracking Search:', err));
-  }, [filters]);
+    // Track the search with filters (only if service is loaded)
+    if (facebookPixelService) {
+      facebookPixelService.trackSearch(searchQuery, filters)
+        .catch(err => console.warn('[FB Pixel] Error tracking Search:', err));
+    }
+  }, [filters, facebookPixelService]);
 
   useEffect(() => {
     // Prevent body scroll when sheet is open
