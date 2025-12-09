@@ -8,11 +8,11 @@ import { createClient } from '@supabase/supabase-js';
 const FALLBACK_URL = 'https://pemgwyymodlwabaexxrb.supabase.co';
 const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlbWd3eXltb2Rsd2FiYWV4eHJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5OTE1MTYsImV4cCI6MjA3ODU2NzUxNn0.wfwBKfCuDYmBX_Hi5KvqtNmLLpbgQllPnUaPfoDrYok';
 
-// Next.js environment variables - supports both NEXT_PUBLIC_ and VITE_ prefixes
-const envUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const envKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+// Next.js environment variables - direct reference for static replacement
+const envUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const envKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-const supabaseUrl = (typeof envUrl === 'string' && envUrl.startsWith('http')) ? envUrl : FALLBACK_URL;
+const supabaseUrl = (envUrl && typeof envUrl === 'string' && envUrl.startsWith('http')) ? envUrl : FALLBACK_URL;
 
 /**
  * Validates if the Supabase key is a valid JWT for the specific project.
