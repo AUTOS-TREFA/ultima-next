@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: {
       title: title,
       description: description.slice(0, 200),
-      type: 'product',
+      type: 'website',
       url: `https://trefa.mx/autos/${params.slug}`,
       siteName: 'TREFA',
       images: [

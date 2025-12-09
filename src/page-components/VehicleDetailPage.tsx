@@ -37,7 +37,7 @@ import { useAuth } from '../context/AuthContext';
 import InspectionReport from '../components/InspectionReport';
 import { InspectionService } from '../services/InspectionService';
 import { FavoritesService } from '../services/FavoritesService';
-import { facebookPixelService } from '../services/FacebookPixelService';
+import type { FacebookPixelService } from '../services/FacebookPixelService';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import AuthBenefitsBlock from '../components/AuthBenefitsBlock';
 import TestimonialCta from '../components/TestimonialCta';
@@ -647,6 +647,14 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
     const [inspectionData, setInspectionData] = useState<InspectionReportData | null>(null);
     const [inspectionLoading, setInspectionLoading] = useState(true);
     const [favoriteCount, setFavoriteCount] = useState(0);
+    const [facebookPixelService, setFacebookPixelService] = useState<any>(null);
+
+    // Dynamically import FacebookPixelService only on client side
+    useEffect(() => {
+      import('../services/FacebookPixelService').then(module => {
+        setFacebookPixelService(module.facebookPixelService);
+      });
+    }, []);
 
     const adminEmails = ['mariano.morales@autostrefa.mx', 'alejandro.trevino@autostrefa.mx'];
     const isAdmin = !!(user?.email && adminEmails.includes(user.email));
@@ -697,17 +705,19 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
     const handleFinancingClick = () => {
         if (!vehicle) return;
 
-        // Facebook Pixel: Tracking InitiateCheckout
-        facebookPixelService.trackInitiateCheckout({
-            id: vehicle.record_id || vehicle.id,
-            title: vehicle.title,
-            price: vehicle.autoprecio,
-            brand: vehicle.automarca,
-            model: vehicle.autosubmarcaversion,
-            year: vehicle.autoano,
-            category: vehicle.carroceria,
-            slug: vehicle.slug,
-        }).catch(err => console.warn('[FB Pixel] Error tracking InitiateCheckout:', err));
+        // Facebook Pixel: Tracking InitiateCheckout (only if service is loaded)
+        if (facebookPixelService) {
+          facebookPixelService.trackInitiateCheckout({
+              id: vehicle.record_id || vehicle.id,
+              title: vehicle.title,
+              price: vehicle.autoprecio,
+              brand: vehicle.automarca,
+              model: vehicle.autosubmarcaversion,
+              year: vehicle.autoano,
+              category: vehicle.carroceria,
+              slug: vehicle.slug,
+          }).catch(err => console.warn('[FB Pixel] Error tracking InitiateCheckout:', err));
+        }
 
         const financingUrl = session ? '/escritorio/aplicacion' : '/acceder';
         const urlWithParams = vehicle.ordencompra ? `${financingUrl}?ordencompra=${vehicle.ordencompra}` : financingUrl;
@@ -717,24 +727,26 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
     const handleWhatsAppClick = () => {
         if (!vehicle) return;
 
-        // Facebook Pixel: Tracking AddToCart (WhatsApp interaction)
-        facebookPixelService.trackAddToCart({
-            id: vehicle.record_id || vehicle.id,
-            title: vehicle.title,
-            price: vehicle.autoprecio,
-            brand: vehicle.automarca,
-            model: vehicle.autosubmarcaversion,
-            year: vehicle.autoano,
-            category: vehicle.carroceria,
-            slug: vehicle.slug,
-        }, 'whatsapp').catch(err => console.warn('[FB Pixel] Error tracking AddToCart:', err));
+        // Facebook Pixel: Tracking AddToCart (WhatsApp interaction - only if service is loaded)
+        if (facebookPixelService) {
+          facebookPixelService.trackAddToCart({
+              id: vehicle.record_id || vehicle.id,
+              title: vehicle.title,
+              price: vehicle.autoprecio,
+              brand: vehicle.automarca,
+              model: vehicle.autosubmarcaversion,
+              year: vehicle.autoano,
+              category: vehicle.carroceria,
+              slug: vehicle.slug,
+          }, 'whatsapp').catch(err => console.warn('[FB Pixel] Error tracking AddToCart:', err));
+        }
     };
 
     const handleTabChange = (tab: 'specs' | 'calculator' | 'inspection') => {
         setActiveTab(tab);
 
-        // Facebook Pixel: Tracking AddToCart when calculator tab is clicked
-        if (tab === 'calculator' && vehicle) {
+        // Facebook Pixel: Tracking AddToCart when calculator tab is clicked (only if service is loaded)
+        if (tab === 'calculator' && vehicle && facebookPixelService) {
             facebookPixelService.trackAddToCart({
                 id: vehicle.record_id || vehicle.id,
                 title: vehicle.title,
@@ -764,18 +776,20 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
                 if (vehicleData) {
                     setVehicle(vehicleData);
 
-                    // Facebook Pixel: Tracking ViewContent
-                    facebookPixelService.trackViewContent({
-                        id: vehicleData.record_id || vehicleData.id,
-                        title: vehicleData.title,
-                        price: vehicleData.autoprecio,
-                        brand: vehicleData.automarca,
-                        model: vehicleData.autosubmarcaversion,
-                        year: vehicleData.autoano,
-                        category: vehicleData.carroceria,
-                        slug: vehicleData.slug,
-                        image_url: getVehicleImage(vehicleData),
-                    }).catch(err => console.warn('[FB Pixel] Error tracking ViewContent:', err));
+                    // Facebook Pixel: Tracking ViewContent (only if service is loaded)
+                    if (facebookPixelService) {
+                      facebookPixelService.trackViewContent({
+                          id: vehicleData.record_id || vehicleData.id,
+                          title: vehicleData.title,
+                          price: vehicleData.autoprecio,
+                          brand: vehicleData.automarca,
+                          model: vehicleData.autosubmarcaversion,
+                          year: vehicleData.autoano,
+                          category: vehicleData.carroceria,
+                          slug: vehicleData.slug,
+                          image_url: getVehicleImage(vehicleData),
+                      }).catch(err => console.warn('[FB Pixel] Error tracking ViewContent:', err));
+                    }
 
                     setInspectionLoading(true);
                     try {
