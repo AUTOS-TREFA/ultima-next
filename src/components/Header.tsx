@@ -82,13 +82,13 @@ const Header: React.FC = () => {
                    </>
                 ) : (
                   <>
-                    <Button asChild size="sm" variant="outline" className="border-2 border-primary-600 !text-primary-600 hover:bg-primary-600 hover:!text-white bg-white">
-                        <Link href="/registro" data-gtm-id="header-register-button">
+                    <Button asChild size="sm" variant="ghost" className="border-2 border-primary-600 hover:bg-primary-600 bg-white font-medium">
+                        <Link href="/registro" data-gtm-id="header-register-button" style={{ color: 'rgb(79, 70, 229) !important' }} className="hover:text-white">
                             Registro
                         </Link>
                     </Button>
-                    <Button asChild size="sm" className="bg-[#FF6801] hover:bg-[#E55E01] !text-white">
-                        <Link href="/acceder" data-gtm-id="header-login-button">
+                    <Button asChild size="sm" variant="ghost" className="bg-[#FF6801] hover:bg-[#E55E01] font-medium">
+                        <Link href="/acceder" data-gtm-id="header-login-button" style={{ color: 'white !important' }}>
                             Iniciar Sesión
                         </Link>
                     </Button>
