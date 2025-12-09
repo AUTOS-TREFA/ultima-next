@@ -57,12 +57,24 @@ import BottomNav from './BottomNav';
 import { motion } from 'framer-motion';
 
 const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { profile, isAdmin, isSales, signOut } = useAuth();
+    const { profile, isAdmin, isSales, signOut, loading } = useAuth();
     const pathname = usePathname();
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(true); // Default abierta
     const [isToolsExpanded, setIsToolsExpanded] = useState(false); // Dropdown de Herramientas
     const [isOtherPagesExpanded, setIsOtherPagesExpanded] = useState(false); // Dropdown de Otras Páginas
+
+    // Show loading state while auth is initializing
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Cargando...</p>
+                </div>
+            </div>
+        );
+    }
 
     // Toggle sidebar manually
     const toggleSidebar = () => {
