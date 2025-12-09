@@ -154,7 +154,7 @@ const KeyEventsSummary: React.FC<KeyEventsSummaryProps> = ({ events, loading = f
                 </div>
                 {event.link && (
                   <Link
-                    to={event.link}
+                    href={event.link}
                     className="inline-flex items-center text-xs font-medium text-primary-600 hover:text-primary-700 mt-2"
                   >
                     Ver detalles →

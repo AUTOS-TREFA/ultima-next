@@ -155,14 +155,14 @@ const UserDashboardLayout: React.FC<UserDashboardLayoutProps> = ({ children }) =
             pathname !== '/escritorio/profile' &&
             !hasAttemptedRedirect.current) {
             hasAttemptedRedirect.current = true;
-            router.push('/escritorio/profile', { replace: true });
+            router.replace('/escritorio/profile');
         }
 
         // Reset redirect flag when navigating away from profile page
         if (pathname === '/escritorio/profile') {
             hasAttemptedRedirect.current = false;
         }
-    }, [profile, isProfileComplete, pathname, navigate]);
+    }, [profile, isProfileComplete, pathname, router]);
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-gray-50">

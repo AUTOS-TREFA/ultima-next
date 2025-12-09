@@ -2,14 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Mail, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { BrevoEmailService } from '../services/BrevoEmailService';
 
 interface EmailNotificationsHistoryProps {
     userId?: string;
     recipientEmail?: string;
 }
-
-// Brevo API key should be stored in environment variables in production
-const BREVO_API_KEY = process.env.NEXT_PUBLIC_BREVO_API_KEY || '';
 
 const EmailNotificationsHistory: React.FC<EmailNotificationsHistoryProps> = ({ userId, recipientEmail }) => {
     const [emails, setEmails] = useState<any[]>([]);
@@ -18,28 +16,19 @@ const EmailNotificationsHistory: React.FC<EmailNotificationsHistoryProps> = ({ u
     useEffect(() => {
         const fetchEmails = async () => {
             try {
-                if (!recipientEmail) {
-                    setEmails([]);
-                    setLoading(false);
-                    return;
-                }
+                // Use the secure BrevoEmailService which fetches from Supabase
+                // This avoids exposing API keys to the client
+                const emailHistory = await BrevoEmailService.getRecentEmailHistory(50);
 
-                // Fetch from Brevo API
-                const response = await fetch(`https://api.brevo.com/v3/smtp/emails?email=${encodeURIComponent(recipientEmail)}&limit=50&sort=desc`, {
-                    headers: {
-                        'accept': 'application/json',
-                        'api-key': BREVO_API_KEY
-                    }
-                });
+                // Filter by recipient email if provided
+                const filteredEmails = recipientEmail
+                    ? emailHistory.filter((email: any) => email.recipient_email === recipientEmail)
+                    : emailHistory;
 
-                if (!response.ok) {
-                    throw new Error(`Brevo API error: ${response.status}`);
-                }
-
-                const data = await response.json();
-                setEmails(data.transactionalEmails || []);
+                setEmails(filteredEmails);
             } catch (error) {
-                console.error('Error fetching email notifications from Brevo:', error);
+                console.error('Error fetching email notifications:', error);
+                setEmails([]);
             } finally {
                 setLoading(false);
             }
@@ -48,29 +37,24 @@ const EmailNotificationsHistory: React.FC<EmailNotificationsHistoryProps> = ({ u
         fetchEmails();
     }, [userId, recipientEmail]);
 
-    const getStatusIcon = (event: string) => {
-        // Brevo uses event types like 'delivered', 'opened', 'clicked', 'bounced', 'softBounced', 'hardBounced'
-        if (event === 'delivered' || event === 'opened' || event === 'clicked') {
+    const getStatusIcon = (status: string) => {
+        if (status === 'sent' || status === 'delivered') {
             return <CheckCircle className="w-4 h-4 text-green-600" />;
-        } else if (event === 'hardBounced' || event === 'softBounced' || event === 'bounced' || event === 'invalid') {
+        } else if (status === 'failed' || status === 'bounced') {
             return <XCircle className="w-4 h-4 text-red-600" />;
         }
         return <Clock className="w-4 h-4 text-gray-600" />;
     };
 
-    const getEventLabel = (event: string) => {
+    const getStatusLabel = (status: string) => {
         const labels: { [key: string]: string } = {
+            'sent': 'Enviado',
             'delivered': 'Entregado',
-            'opened': 'Abierto',
-            'clicked': 'Clic en enlace',
-            'hardBounced': 'Rebotado (permanente)',
-            'softBounced': 'Rebotado (temporal)',
+            'failed': 'Fallido',
             'bounced': 'Rebotado',
-            'invalid': 'Email inválido',
-            'deferred': 'Diferido',
-            'sent': 'Enviado'
+            'pending': 'Pendiente'
         };
-        return labels[event] || event;
+        return labels[status] || status;
     };
 
     if (loading) {
@@ -93,15 +77,20 @@ const EmailNotificationsHistory: React.FC<EmailNotificationsHistoryProps> = ({ u
             </h2>
             <div className="space-y-3 max-h-60 overflow-y-auto">
                 {emails.length > 0 ? emails.map((email, index) => (
-                    <div key={email.messageId || index} className="p-3 bg-gray-50 rounded-lg border">
+                    <div key={email.id || index} className="p-3 bg-gray-50 rounded-lg border">
                         <div className="flex items-start gap-3">
-                            {getStatusIcon(email.event || 'sent')}
+                            {getStatusIcon(email.status || 'sent')}
                             <div className="flex-grow">
                                 <div className="flex justify-between items-start">
                                     <p className="text-sm font-semibold text-gray-800">{email.subject || 'Sin asunto'}</p>
-                                    <span className="text-xs text-gray-500">{new Date(email.date).toLocaleDateString('es-MX')}</span>
+                                    <span className="text-xs text-gray-500">
+                                        {email.created_at ? new Date(email.created_at).toLocaleDateString('es-MX') : ''}
+                                    </span>
                                 </div>
-                                <p className="text-xs text-gray-600 mt-1">{getEventLabel(email.event || 'sent')}</p>
+                                <p className="text-xs text-gray-600 mt-1">{getStatusLabel(email.status || 'sent')}</p>
+                                {email.recipient_email && (
+                                    <p className="text-xs text-gray-400 mt-0.5">{email.recipient_email}</p>
+                                )}
                             </div>
                         </div>
                     </div>

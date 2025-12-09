@@ -12,7 +12,7 @@ let cachedCsv: string | null = null;
 let cacheTimestamp = 0;
 
 // Base URL for your website
-const BASE_URL = Deno.env.get("PUBLIC_SITE_URL") || "https://trefa.mx";
+const BASE_URL = Deno.env.get("PUBLIC_SITE_URL") || "https://autostrefa.mx";
 
 // Cloudflare CDN URL for optimized image delivery (reduces Supabase egress by 70-90%)
 const IMAGE_CDN_URL = "https://images.trefa.mx";

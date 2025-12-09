@@ -17,14 +17,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://trefa.mx'),
+  metadataBase: new URL('https://autostrefa.mx'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'TREFA - Autos Seminuevos con Financiamiento',
     description: 'Encuentra tu auto ideal con financiamiento. Autos seminuevos certificados en Monterrey.',
-    url: 'https://trefa.mx',
+    url: 'https://autostrefa.mx',
     siteName: 'TREFA',
     locale: 'es_MX',
     type: 'website',

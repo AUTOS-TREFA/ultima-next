@@ -27,7 +27,7 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
   onVehicleSelect,
   onNext
 }) => {
-  const { vehicles, loading } = useVehicles();
+  const { vehicles, isLoading: loading } = useVehicles();
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredVehicles, setFilteredVehicles] = useState<WordPressVehicle[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<WordPressVehicle | null>(null);

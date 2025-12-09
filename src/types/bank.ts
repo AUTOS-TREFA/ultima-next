@@ -90,6 +90,8 @@ export interface BankRepresentativeProfile {
   login_count: number;
   created_at: string;
   updated_at: string;
+  pin_hash?: string;
+  has_completed_onboarding?: boolean;
 }
 
 export type AssignmentStatus =

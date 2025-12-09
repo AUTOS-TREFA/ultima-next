@@ -171,7 +171,7 @@ const MobileHeader: React.FC = () => {
                                         className="w-full text-left flex items-center gap-3 p-3 hover:bg-gray-50 active:bg-gray-100 transition-colors"
                                     >
                                         <img
-                                            src={vehicle.feature_image}
+                                            src={vehicle.feature_image?.[0] || '/placeholder-vehicle.webp'}
                                             alt={vehicle.title}
                                             className="w-20 h-16 object-cover rounded-lg flex-shrink-0"
                                         />

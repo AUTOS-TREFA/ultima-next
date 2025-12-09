@@ -17,7 +17,7 @@ interface RoadmapItem {
 }
 
 const AdminRoadmapManager: React.FC = () => {
-  const { user, userProfile } = useAuth();
+  const { user, profile } = useAuth();
   const [items, setItems] = useState<RoadmapItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<RoadmapItem | null>(null);
@@ -35,10 +35,10 @@ const AdminRoadmapManager: React.FC = () => {
   };
 
   useEffect(() => {
-    if (userProfile?.role === 'admin') {
+    if (profile?.role === 'admin') {
       loadItems();
     }
-  }, [userProfile]);
+  }, [profile]);
 
   const loadItems = async () => {
     setLoading(true);
@@ -119,7 +119,7 @@ const AdminRoadmapManager: React.FC = () => {
     setShowForm(true);
   };
 
-  if (userProfile?.role !== 'admin') {
+  if (profile?.role !== 'admin') {
     return null;
   }
 

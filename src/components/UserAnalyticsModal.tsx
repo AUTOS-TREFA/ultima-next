@@ -255,7 +255,7 @@ const UserAnalyticsModal: React.FC<UserAnalyticsModalProps> = ({ userId, onClose
                                                 {analytics.recent_leads.map((lead) => (
                                                     <Link
                                                         key={lead.id}
-                                                        to={`/escritorio/admin/cliente/${lead.id}`}
+                                                        href={`/escritorio/admin/cliente/${lead.id}`}
                                                         className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
                                                     >
                                                         <div className="flex-1">

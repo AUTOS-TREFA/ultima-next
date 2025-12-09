@@ -64,8 +64,6 @@ const HeroVehicleCard: React.FC<HeroVehicleCardProps> = ({ vehicle }) => {
 
                         className="align-center h-full w-full"
 
-                        objectFit="cover"
-
                     />
 
                      {/* Hover Overlay */}

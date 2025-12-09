@@ -464,7 +464,7 @@ const sendBrevoEmail = async (to: string, toName: string, subject: string, htmlC
     body: JSON.stringify({
       sender: {
         name: 'Autos TREFA',
-        email: 'hola@trefa.mx'
+        email: 'hola@autostrefa.mx'
       },
       to: [{
         email: to,
@@ -775,9 +775,13 @@ serve(async (req) => {
     }
 
     // 4. Find valuation-only leads from Airtable (created > 24 hours ago)
-    const AIRTABLE_API_KEY = Deno.env.get('AIRTABLE_VALUATION_API_KEY') || 'patTNLaky9mzf4QVH.565b7cebe5070e4fa09eadd888d3187f5afc38aa537873abd6175c1e21ff6535';
-    const AIRTABLE_BASE_ID = Deno.env.get('AIRTABLE_VALUATION_BASE_ID') || 'appbOPKYqQRW2HgyB';
-    const AIRTABLE_STORAGE_TABLE_ID = Deno.env.get('AIRTABLE_VALUATIONS_STORAGE_TABLE_ID') || 'tbl66UyGNcOfOxQUm';
+    const AIRTABLE_API_KEY = Deno.env.get('AIRTABLE_VALUATION_API_KEY');
+    const AIRTABLE_BASE_ID = Deno.env.get('AIRTABLE_VALUATION_BASE_ID');
+    const AIRTABLE_STORAGE_TABLE_ID = Deno.env.get('AIRTABLE_VALUATIONS_STORAGE_TABLE_ID');
+
+    if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID || !AIRTABLE_STORAGE_TABLE_ID) {
+      console.warn('[Email Notifications] Airtable credentials not configured, skipping valuation leads check');
+    }
 
     try {
       const airtableResponse = await fetch(

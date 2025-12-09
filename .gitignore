@@ -1,9 +1,17 @@
 # Environment variables and secrets
 .env
 .env.local
+.env.local.backup*
+.env.example.backup
 .env.production
 .env.staging
 cloud-build-vars.yaml
+.mcp.json
+SECRETS_SUPABASE.md
+
+# Backup files (may contain secrets)
+*.backup
+*.backup.*
 
 # Dependencies
 node_modules/

@@ -241,6 +241,29 @@ export const BrevoEmailService = {
     },
 
     /**
+     * Send survey invitation email to client after application submission
+     */
+    async sendSurveyInvitation(
+        clientEmail: string,
+        clientName: string,
+        userId: string
+    ): Promise<boolean> {
+        const surveyUrl = `${window.location.origin}/anonymous-survey?ref=${userId}`;
+
+        return this.sendEmail({
+            to: clientEmail,
+            toName: clientName,
+            subject: '📝 Tu opinión es importante - Encuesta TREFA',
+            templateType: 'admin_notification' as any,
+            templateData: {
+                clientName,
+                message: `Gracias por confiar en TREFA para tu solicitud de financiamiento. Nos encantaría conocer tu experiencia para seguir mejorando nuestro servicio.`,
+                surveyUrl
+            }
+        });
+    },
+
+    /**
      * Send vehicle unavailable notification to client
      */
     async sendVehicleUnavailableEmail(params: {

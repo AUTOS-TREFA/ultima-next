@@ -92,8 +92,7 @@ const VehicleSelector: React.FC<VehicleSelectorProps> = ({ isOpen, onClose, onSe
                     </div>
                   </button>
                   <Link
-                    // FIX: Corrected property access from `ligawp` to `slug`
-                    to={`/autos/${vehicle.slug}`}
+                    href={`/autos/${vehicle.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}

@@ -6,7 +6,7 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
 );
 
-const SITE_URL = "https://trefa.mx";
+const SITE_URL = Deno.env.get("PUBLIC_SITE_URL") || "https://autostrefa.mx";
 const SITEMAP_BUCKET = "public-assets";
 const RAPID_PROCESSOR_URL = `${Deno.env.get("SUPABASE_URL")}/functions/v1/rapid-processor`;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");

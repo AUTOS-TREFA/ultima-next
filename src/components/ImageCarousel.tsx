@@ -84,8 +84,6 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, alt, className, i
                     src={imgSrc}
                     alt={`${alt} - ${index + 1}`}
                     className={`w-full h-full object-cover ${isSeparado ? 'filter grayscale' : ''}`}
-                    // Use eager loading for first image
-                    priority={index === 0}
                   />
 
                   {/* Dark fadeout gradient at bottom for better text readability */}

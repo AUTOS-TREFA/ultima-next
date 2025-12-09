@@ -69,12 +69,12 @@ const ResourceHints: React.FC = () => {
 
   // Preload critical fonts
   useEffect(() => {
-    const fontUrls = [
+    const fontUrls: string[] = [
       // Add your critical font URLs here if using custom fonts
       // Example: 'https://fonts.gstatic.com/s/inter/v12/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7.woff2'
     ];
 
-    fontUrls.forEach(url => {
+    fontUrls.forEach((url: string) => {
       const link = document.createElement('link');
       link.rel = 'preload';
       link.href = url;
@@ -139,10 +139,10 @@ const ResourceHints: React.FC = () => {
     const componentPrefetchMap: Record<string, () => void> = {
       // Map component selectors to their prefetch functions
       '[data-prefetch="vehicle-detail"]': () => {
-        import('../pages/VehicleDetailPage');
+        import('../page-components/VehicleDetailPage');
       },
       '[data-prefetch="application"]': () => {
-        import('../pages/Application');
+        import('../page-components/Application');
       },
       // Add more mappings as needed
     };

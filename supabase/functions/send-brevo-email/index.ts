@@ -385,8 +385,8 @@ const sendBrevoEmail = async (to: string, toName: string, subject: string, htmlC
     },
     body: JSON.stringify({
       sender: {
-        name: 'TREFA',
-        email: 'hola@trefa.mx'
+        name: 'Autos TREFA',
+        email: 'hola@autostrefa.mx'
       },
       to: [{
         email: to,

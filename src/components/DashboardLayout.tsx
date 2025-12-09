@@ -192,7 +192,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
                         {/* Logo + Toggle */}
                         <div className="flex items-center justify-between px-1 mb-2">
                             {isSidebarExpanded ? (
-                                <Link to="/" className="flex items-center gap-2">
+                                <Link href="/" className="flex items-center gap-2">
                                     <img
                                         src="/images/trefalogo.png"
                                         alt="TREFA"
@@ -509,7 +509,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
                                 <Menu className="h-5 w-5" />
                             </button>
                         )}
-                        <Link to="/" className="flex items-center gap-2">
+                        <Link href="/" className="flex items-center gap-2">
                             <img
                                 src="/images/trefalogo.png"
                                 alt="TREFA"
@@ -551,7 +551,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
                             {/* Close Button */}
                             <div className="flex items-center justify-between">
                                 <Link
-                                    to="/"
+                                    href="/"
                                     className="flex items-center gap-2"
                                     onClick={() => setIsMobileSidebarOpen(false)}
                                 >

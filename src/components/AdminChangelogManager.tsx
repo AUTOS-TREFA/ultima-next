@@ -16,7 +16,7 @@ interface ChangelogItem {
 }
 
 const AdminChangelogManager: React.FC = () => {
-  const { user, userProfile } = useAuth();
+  const { user, profile } = useAuth();
   const [items, setItems] = useState<ChangelogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<ChangelogItem | null>(null);
@@ -35,10 +35,10 @@ const AdminChangelogManager: React.FC = () => {
   };
 
   useEffect(() => {
-    if (userProfile?.role === 'admin') {
+    if (profile?.role === 'admin') {
       loadItems();
     }
-  }, [userProfile]);
+  }, [profile]);
 
   const loadItems = async () => {
     setLoading(true);
@@ -131,7 +131,7 @@ const AdminChangelogManager: React.FC = () => {
     }
   };
 
-  if (userProfile?.role !== 'admin') {
+  if (profile?.role !== 'admin') {
     return null;
   }
 
