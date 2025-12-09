@@ -1,7 +1,6 @@
-import { InventoryProvider } from '@/context/VehicleContext';
+'use client';
 
-// Force dynamic rendering for this route segment
-export const dynamic = 'force-dynamic';
+import { InventoryProvider } from '@/context/VehicleContext';
 
 export default function StandaloneLayout({
   children,

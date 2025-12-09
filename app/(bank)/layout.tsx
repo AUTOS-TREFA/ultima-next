@@ -1,7 +1,6 @@
-import BankDashboardLayout from '@/components/BankDashboardLayout';
+'use client';
 
-// Force dynamic rendering for this route segment since it depends on auth context
-export const dynamic = 'force-dynamic';
+import BankDashboardLayout from '@/components/BankDashboardLayout';
 
 export default function BankLayout({
   children,
