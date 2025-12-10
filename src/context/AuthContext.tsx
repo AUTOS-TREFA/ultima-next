@@ -328,6 +328,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         };
     }, [fetchProfile]); // fetchProfile is now stable (no dependencies)
 
+    // Listen for profile updates from ProfileService
+    useEffect(() => {
+        const handleProfileUpdate = (event: CustomEvent<Profile>) => {
+            console.log('[AuthContext] Profile update event received');
+            if (event.detail && event.detail.id === user?.id) {
+                setProfile(event.detail);
+            }
+        };
+
+        window.addEventListener('profileUpdated', handleProfileUpdate as EventListener);
+        return () => {
+            window.removeEventListener('profileUpdated', handleProfileUpdate as EventListener);
+        };
+    }, [user?.id]);
+
     useEffect(() => {
         // Only run once when profile is first loaded and needs agent assignment
         // Use ref to track if assignment is in progress or already done

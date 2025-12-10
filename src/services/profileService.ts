@@ -71,6 +71,18 @@ export const ProfileService = {
       throw new Error('No se pudo obtener el perfil actualizado después de guardar.');
     }
 
+    // Update sessionStorage cache to keep in sync with database
+    try {
+      sessionStorage.setItem('userProfile', JSON.stringify(updatedProfile));
+      console.log('✅ Profile cache updated in sessionStorage');
+    } catch (e) {
+      console.warn('Could not update sessionStorage cache:', e);
+      // Non-critical error - don't throw, profile was successfully updated in DB
+    }
+
+    // Dispatch custom event to notify AuthContext of profile update
+    window.dispatchEvent(new CustomEvent('profileUpdated', { detail: updatedProfile }));
+
     return updatedProfile;
   },
 

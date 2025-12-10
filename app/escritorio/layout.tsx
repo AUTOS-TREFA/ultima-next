@@ -1,6 +1,6 @@
 'use client';
 
-import DashboardLayout from '@/components/DashboardLayout';
+import UnifiedDashboardLayout from '@/components/UnifiedDashboardLayout';
 import { InventoryProvider } from '@/context/VehicleContext';
 
 export default function EscritorioLayout({
@@ -10,9 +10,9 @@ export default function EscritorioLayout({
 }) {
   return (
     <InventoryProvider>
-      <DashboardLayout>
+      <UnifiedDashboardLayout>
         {children}
-      </DashboardLayout>
+      </UnifiedDashboardLayout>
     </InventoryProvider>
   );
 }

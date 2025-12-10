@@ -1,72 +1,60 @@
 #!/bin/bash
-# Script para aplicar optimizaciones críticas a la base de datos
-# Fecha: 2025-12-05
-# Ejecutar: bash scripts/apply-db-optimizations.sh
+# =============================================================================
+# Script para aplicar optimizaciones de base de datos
+# Proyecto TREFA - Supabase
+# =============================================================================
 
 set -e
 
-echo "🚀 Iniciando aplicación de optimizaciones críticas a la base de datos..."
+PROJECT_REF="pemgwyymodlwabaexxrb"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SQL_FILE="$SCRIPT_DIR/apply-db-optimizations.sql"
+
+echo "=============================================="
+echo "  Aplicando Optimizaciones de Base de Datos"
+echo "  Proyecto: $PROJECT_REF"
+echo "=============================================="
 echo ""
 
-# Colores
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
-
-# Verificar que estamos en el directorio correcto
-if [ ! -d "supabase/migrations" ]; then
-    echo -e "${RED}❌ Error: Directorio supabase/migrations no encontrado${NC}"
-    echo "   Ejecuta este script desde la raíz del proyecto"
+# Verificar que existe el archivo SQL
+if [ ! -f "$SQL_FILE" ]; then
+    echo "ERROR: No se encontro el archivo SQL: $SQL_FILE"
     exit 1
 fi
 
-# Contar migraciones
-MIGRATION_COUNT=$(ls -1 supabase/migrations/*.sql 2>/dev/null | wc -l | tr -d ' ')
-echo -e "${YELLOW}📊 Migraciones locales encontradas: ${MIGRATION_COUNT}${NC}"
+echo "El archivo SQL contiene las siguientes optimizaciones:"
+echo ""
+echo "1. INDICES PARA FOREIGN KEYS"
+echo "   - idx_financing_calculations_application_id"
+echo "   - idx_financing_calculations_bank_id"
+echo "   - idx_form_submissions_user_id"
+echo "   - idx_funnel_events_lead_id"
+echo "   - idx_funnel_events_vehicle_id"
+echo "   - idx_inventory_sync_logs_vehicle_id"
+echo "   - idx_kommo_contacts_profile_id"
+echo "   - idx_kommo_leads_profile_id"
+echo "   - idx_lead_assignments_lead_id"
+echo "   - idx_upload_documents_application_id"
+echo "   - idx_upload_documents_user_id"
+echo ""
+echo "2. POLITICAS RLS (comentadas por defecto)"
+echo "   - Revisa y descomenta las que necesites en el archivo SQL"
 echo ""
 
-# Verificar link de Supabase
-echo "🔗 Verificando conexión a Supabase..."
-if npx supabase projects list 2>&1 | grep -q "pemgwyymodlwabaexxrb"; then
-    echo -e "${GREEN}✅ Proyecto pemgwyymodlwabaexxrb encontrado${NC}"
-else
-    echo -e "${YELLOW}⚠️  Ejecutando login de Supabase...${NC}"
-    npx supabase login
-fi
+echo "=============================================="
+echo "  INSTRUCCIONES"
+echo "=============================================="
 echo ""
-
-# Link al proyecto si no está linkeado
-if [ ! -f ".temp/project-ref" ]; then
-    echo "🔗 Linkeando al proyecto..."
-    npx supabase link --project-ref pemgwyymodlwabaexxrb
-fi
+echo "Para aplicar estas optimizaciones:"
 echo ""
-
-# Aplicar todas las migraciones pendientes
-echo "📤 Aplicando migraciones pendientes..."
-echo -e "${YELLOW}   Esto puede tardar varios minutos...${NC}"
-npx supabase db push --linked
-
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✅ Migraciones aplicadas exitosamente${NC}"
-else
-    echo -e "${RED}❌ Error al aplicar migraciones${NC}"
-    exit 1
-fi
+echo "1. Abre el SQL Editor de Supabase:"
+echo "   https://supabase.com/dashboard/project/$PROJECT_REF/editor"
 echo ""
-
-# Verificar estado de migraciones
-echo "📋 Verificando estado de migraciones..."
-npx supabase migration list --linked
+echo "2. Copia el contenido de:"
+echo "   $SQL_FILE"
 echo ""
-
-echo -e "${GREEN}🎉 Optimizaciones aplicadas correctamente!${NC}"
+echo "3. Pega y ejecuta en el SQL Editor"
 echo ""
-echo "📊 Mejoras esperadas:"
-echo "   - Dashboard de ventas: 40-60% más rápido"
-echo "   - Queries con RLS (sales): 50-70% más rápidas"
-echo "   - Espacio en disco: 10-15% reducción"
-echo "   - INSERT/UPDATE: 5-10% más rápido"
+echo "4. Revisa los resultados de las consultas de verificacion"
 echo ""
-echo "⚠️  IMPORTANTE: Monitorea la aplicación durante las próximas 24 horas"
+echo "=============================================="

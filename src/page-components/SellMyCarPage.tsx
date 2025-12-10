@@ -46,13 +46,21 @@ const SellMyCarPage: React.FC = () => {
     const { user } = useAuth();
     const pathname = usePathname();
     const router = useRouter();
-    
-    // Check for data passed from ValuationApp navigation, sessionStorage, or localStorage (for post-login redirect)
-    const initialValuationData =
-                                  JSON.parse(sessionStorage.getItem('sellCarValuation') || 'null') ||
-                                  JSON.parse(localStorage.getItem('pendingValuationData') || 'null');
 
-    const [valuationData] = useState<any>(initialValuationData);
+    // Initialize valuation data as null - will be loaded in useEffect
+    const [valuationData, setValuationData] = useState<any>(null);
+
+    // Load valuation data from storage on client-side only
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const sessionData = sessionStorage.getItem('sellCarValuation');
+            const localData = localStorage.getItem('pendingValuationData');
+            const initialValuationData = JSON.parse(sessionData || 'null') || JSON.parse(localData || 'null');
+            if (initialValuationData) {
+                setValuationData(initialValuationData);
+            }
+        }
+    }, []);
     const [status, setStatus] = useState<'form' | 'submitting' | 'success' | 'error'>('form');
     const [exteriorPhotos, setExteriorPhotos] = useState<File[]>([]);
     const [interiorPhotos, setInteriorPhotos] = useState<File[]>([]);
@@ -72,7 +80,7 @@ const SellMyCarPage: React.FC = () => {
 
     useEffect(() => {
         // If valuation data exists, save it to session storage to persist across reloads
-        if (valuationData) {
+        if (typeof window !== 'undefined' && valuationData) {
             sessionStorage.setItem('sellCarValuation', JSON.stringify(valuationData));
             // Clear the pendingValuationData from localStorage after we've loaded it
             localStorage.removeItem('pendingValuationData');
