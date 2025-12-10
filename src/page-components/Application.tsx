@@ -444,7 +444,7 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
                 city: data.current_city,
                 state: data.current_state,
                 zip_code: data.current_zip_code,
-            });
+            }, user.id);
 
             const payload = {
                 personal_info_snapshot: profile,

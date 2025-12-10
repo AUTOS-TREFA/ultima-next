@@ -1,7 +1,7 @@
 'use client';
 
-import DashboardPage from '@/page-components/DashboardPage';
+import DashboardSidebarPage from '@/page-components/DashboardSidebarPage';
 
 export default function Page() {
-  return <DashboardPage />;
+  return <DashboardSidebarPage />;
 }

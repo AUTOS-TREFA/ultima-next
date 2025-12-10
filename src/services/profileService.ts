@@ -7,15 +7,31 @@ export const ProfileService = {
     first_name?: string;
     last_name?: string;
     [key: string]: any;
-  }) {
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+  }, providedUserId?: string) {
+    // Use provided userId or get from session
+    let userId = providedUserId;
 
-    if (authError || !user) {
+    if (!userId) {
+      // Try getSession first (more reliable than getUser for immediate checks)
+      const { data: { session } } = await supabase.auth.getSession();
+      userId = session?.user?.id;
+
+      // Fallback to getUser if session doesn't have user
+      if (!userId) {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError) {
+          console.error('[ProfileService] Auth error:', authError.message);
+        }
+        userId = user?.id;
+      }
+    }
+
+    if (!userId) {
       throw new Error('Usuario no autenticado');
     }
+
+    // Create a user-like object for compatibility
+    const user = { id: userId };
 
     // Check for source tracking data and include it if available (only on first save)
     let finalProfileData = { ...profileData };

@@ -242,7 +242,7 @@ const ProfilePage: React.FC = () => {
         payload.picture_url = pictureUrl;
       }
 
-      await ProfileService.updateProfile(payload);
+      await ProfileService.updateProfile(payload, user.id);
       return true;
     } catch (error) {
       console.error('Error saving profile:', error);

@@ -103,7 +103,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
-    const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
+    const fetchProfile = useCallback(async (userId: string, authUser?: User | null): Promise<Profile | null> => {
         // Try to get from cache first
         try {
             const cachedProfile = sessionStorage.getItem('userProfile');
@@ -157,12 +157,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
             // Profile doesn't exist (PGRST116 error), create it
             console.log('[AuthContext] Profile not found, creating new profile...');
-            const { data: { user } } = await supabase.auth.getUser();
 
-            if (!user) {
+            // Use the authUser passed from the session event, or try to get it as fallback
+            let userForProfile = authUser;
+            if (!userForProfile) {
+                console.log('[AuthContext] No authUser provided, attempting getUser() as fallback...');
+                const { data: { user: fetchedUser } } = await supabase.auth.getUser();
+                userForProfile = fetchedUser;
+            }
+
+            if (!userForProfile) {
                 console.error('[AuthContext] Cannot create profile: user not found');
                 return null;
             }
+
+            console.log('[AuthContext] Creating profile for user:', userForProfile.email);
 
             // Determine role based on email
             const adminEmails = [
@@ -173,7 +182,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 'evelia.castillo@autostrefa.mx',
                 'fernando.trevino@autostrefa.mx'
             ];
-            const role = adminEmails.includes(user.email || '') ? 'admin' : 'user';
+            const role = adminEmails.includes(userForProfile.email || '') ? 'admin' : 'user';
+            console.log('[AuthContext] Determined role for', userForProfile.email, ':', role);
 
             // Retrieve tracking data from sessionStorage
             const leadSourceDataStr = sessionStorage.getItem('leadSourceData');
@@ -181,7 +191,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
             // Merge user metadata with tracking data
             const combinedMetadata = {
-                ...user.user_metadata,
+                ...userForProfile.user_metadata,
                 ...leadSourceData,
                 captured_at: new Date().toISOString(),
             };
@@ -202,10 +212,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
             const newProfile = {
                 id: userId,
-                email: user.email,
-                first_name: user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || null,
-                last_name: user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || null,
-                phone: user.phone || null,
+                email: userForProfile.email,
+                first_name: userForProfile.user_metadata?.first_name || userForProfile.user_metadata?.full_name?.split(' ')[0] || null,
+                last_name: userForProfile.user_metadata?.last_name || userForProfile.user_metadata?.full_name?.split(' ').slice(1).join(' ') || null,
+                phone: userForProfile.phone || null,
                 role: role,
                 metadata: combinedMetadata,
                 source: primarySource,
@@ -266,7 +276,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                         const currentUser = session?.user ?? null;
                         setUser(currentUser);
                         if (currentUser) {
-                            await fetchProfile(currentUser.id);
+                            // Pass the user object to avoid race conditions
+                            await fetchProfile(currentUser.id, currentUser);
                         } else {
                             setProfile(null);
                             sessionStorage.removeItem('userProfile');
@@ -303,7 +314,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                                     .from('profiles')
                                     .update({ last_sign_in_at: new Date().toISOString() })
                                     .eq('id', currentUser.id);
-                                await fetchProfile(currentUser.id);
+                                // Pass the user object to avoid race conditions
+                                await fetchProfile(currentUser.id, currentUser);
                             }
                         }
                     } else if (event === 'SIGNED_OUT') {
