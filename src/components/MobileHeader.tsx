@@ -9,6 +9,9 @@ import { useVehicles } from '../context/VehicleContext';
 import type { WordPressVehicle } from '../types/types';
 import { formatPrice } from '../utils/formatters';
 
+// Use absolute URL to ensure logo loads correctly across all domains
+const LOGO_URL = 'https://trefa.mx/images/trefalogo.png';
+
 const MenuIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -94,7 +97,7 @@ const MobileHeader: React.FC = () => {
                     {/* Logo */}
                     <Link href="/" className="flex-shrink-0">
                         <img
-                            src="/images/trefalogo.png"
+                            src={LOGO_URL}
                             alt="TREFA"
                             className="h-6 w-auto object-contain"
                         />

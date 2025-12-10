@@ -10,6 +10,9 @@ import HeaderSearchBar from './HeaderSearchBar';
 import MobileHeader from './MobileHeader';
 import { Button } from './ui/button';
 
+// Use absolute URL to ensure logo loads correctly across all domains
+const LOGO_URL = 'https://trefa.mx/images/trefalogo.png';
+
 const Header: React.FC = () => {
     const [megaMenuOpen, setMegaMenuOpen] = useState(false);
     const { session, profile, signOut } = useAuth();
@@ -35,7 +38,7 @@ const Header: React.FC = () => {
               <div className="flex-shrink-0">
                   <Link href="/" className="flex items-center">
                     <img
-                      src={"/images/trefalogo.png"}
+                      src={LOGO_URL}
                       alt="TREFA"
                       className="h-9 w-auto object-contain"
                     />
