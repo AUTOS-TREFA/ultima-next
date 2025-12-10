@@ -7,7 +7,12 @@
  * - Fallback to direct Supabase URLs
  */
 
-const SUPABASE_STORAGE_BASE = 'https://pemgwyymodlwabaexxrb.supabase.co/storage/v1/object/public';
+// Current Supabase project storage URL - only convert these to CDN
+const CURRENT_SUPABASE_STORAGE_BASE = 'https://pemgwyymodlwabaexxrb.supabase.co/storage/v1/object/public';
+// Legacy Supabase storage URLs - do NOT convert these (images not migrated to R2)
+const LEGACY_SUPABASE_HOSTS = [
+  'jjepfehmuybpctdzipnu.supabase.co'
+];
 const IMAGE_CDN_URL = process.env.NEXT_PUBLIC_IMAGE_CDN_URL || '';
 const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || '';
 
@@ -49,6 +54,12 @@ export function getCdnUrl(url: string | null | undefined, options?: ImageOptions
 
   // If CDN is not configured, return original URL
   if (!IMAGE_CDN_URL) {
+    return url;
+  }
+
+  // Skip conversion for legacy Supabase URLs (images not migrated to R2)
+  const isLegacyUrl = LEGACY_SUPABASE_HOSTS.some(host => url.includes(host));
+  if (isLegacyUrl) {
     return url;
   }
 
