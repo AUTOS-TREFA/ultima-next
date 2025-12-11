@@ -146,72 +146,84 @@ const BranchesSection: React.FC<BranchesSectionProps> = ({ content }) => {
         {/* Expanded Card */}
         <AnimatePresence>
           {active ? (
-            <div className="fixed inset-0 grid place-items-center z-[100] p-4 sm:p-6 lg:p-8 bg-black/50">
-              <motion.button
-                key={`button-${active.title}-${id}`}
-                layout
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0, transition: { duration: 0.05 } }}
-                className="flex absolute top-4 right-4 sm:top-6 sm:right-6 items-center justify-center bg-white rounded-full h-12 w-12 shadow-xl z-[110] hover:bg-gray-100 transition-colors border-2 border-gray-200"
-                onClick={() => setActive(null)}
-                aria-label="Cerrar"
-              >
-                <CloseIcon />
-              </motion.button>
-              <motion.div
-                layoutId={`card-${active.title}-${id}`}
-                ref={ref}
-                className="w-full max-w-[500px] max-h-[85vh] sm:max-h-[calc(100vh-3rem)] lg:max-h-[90vh] flex flex-col bg-white dark:bg-neutral-900 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl relative"
-              >
-                <motion.div layoutId={`image-${active.title}-${id}`}>
-                  <img
-                    src={active.src}
-                    alt={active.title}
-                    className="w-full h-64 lg:h-80 sm:rounded-tr-lg sm:rounded-tl-lg object-cover"
-                  />
-                </motion.div>
+            <div
+              className="fixed inset-0 z-[100] overflow-y-auto"
+              onClick={() => setActive(null)}
+            >
+              {/* Dark overlay background */}
+              <div className="min-h-screen px-4 py-8 sm:py-12 lg:py-16 flex items-center justify-center bg-black/60">
+                {/* Close button - positioned relative to viewport for visibility */}
+                <motion.button
+                  key={`close-${active.title}-${id}`}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.1 } }}
+                  className="fixed top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 flex items-center justify-center bg-white rounded-full h-12 w-12 shadow-xl z-[110] hover:bg-gray-100 transition-colors border-2 border-gray-200"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActive(null);
+                  }}
+                  aria-label="Cerrar"
+                >
+                  <CloseIcon />
+                </motion.button>
 
-                <div className="flex-1 overflow-auto">
-                  <div className="flex justify-between items-start p-6">
-                    <div className="flex-1">
-                      <motion.h3
-                        layoutId={`title-${active.title}-${id}`}
-                        className="font-bold text-2xl text-neutral-800 dark:text-neutral-200"
+                {/* Modal card */}
+                <motion.div
+                  layoutId={`card-${active.title}-${id}`}
+                  ref={ref}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full max-w-[500px] max-h-[80vh] flex flex-col bg-white dark:bg-neutral-900 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl relative"
+                >
+                  <motion.div layoutId={`image-${active.title}-${id}`} className="flex-shrink-0">
+                    <img
+                      src={active.src}
+                      alt={active.title}
+                      className="w-full h-48 sm:h-56 lg:h-64 object-cover"
+                    />
+                  </motion.div>
+
+                  <div className="flex-1 overflow-auto">
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-3 p-4 sm:p-6">
+                      <div className="flex-1">
+                        <motion.h3
+                          layoutId={`title-${active.title}-${id}`}
+                          className="font-bold text-xl sm:text-2xl text-neutral-800 dark:text-neutral-200"
+                        >
+                          {active.title}
+                        </motion.h3>
+                        <motion.p
+                          layoutId={`description-${active.description}-${id}`}
+                          className="text-neutral-600 dark:text-neutral-400 mt-1"
+                        >
+                          {active.description}
+                        </motion.p>
+                      </div>
+
+                      <motion.a
+                        layoutId={`button-${active.title}-${id}`}
+                        href={active.ctaLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 text-sm rounded-full font-bold bg-primary-600 hover:bg-primary-700 text-white transition-colors flex-shrink-0 shadow-sm"
                       >
-                        {active.title}
-                      </motion.h3>
-                      <motion.p
-                        layoutId={`description-${active.description}-${id}`}
-                        className="text-neutral-600 dark:text-neutral-400 mt-1"
-                      >
-                        {active.description}
-                      </motion.p>
+                        {active.ctaText}
+                      </motion.a>
                     </div>
-
-                    <motion.a
-                      layoutId={`button-${active.title}-${id}`}
-                      href={active.ctaLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 py-2 text-sm rounded-full font-bold bg-primary-600 hover:bg-primary-700 text-white transition-colors flex-shrink-0 ml-4"
-                    >
-                      {active.ctaText}
-                    </motion.a>
+                    <div className="px-4 sm:px-6 pb-4 sm:pb-6">
+                      <motion.div
+                        layout
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="text-neutral-600 dark:text-neutral-400"
+                      >
+                        {active.content()}
+                      </motion.div>
+                    </div>
                   </div>
-                  <div className="px-6 pb-6">
-                    <motion.div
-                      layout
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="text-neutral-600 dark:text-neutral-400"
-                    >
-                      {active.content()}
-                    </motion.div>
-                  </div>
-                </div>
-              </motion.div>
+                </motion.div>
+              </div>
             </div>
           ) : null}
         </AnimatePresence>
@@ -250,7 +262,7 @@ const BranchesSection: React.FC<BranchesSectionProps> = ({ content }) => {
                   </div>
                   <motion.button
                     layoutId={`button-${card.title}-${id}`}
-                    className="px-4 py-2 text-sm rounded-full font-semibold bg-gray-100 hover:bg-primary-600 hover:text-white text-gray-800 transition-colors"
+                    className="px-4 py-2 text-sm rounded-full font-semibold bg-primary-600 hover:bg-primary-700 text-white transition-colors shadow-sm"
                   >
                     Ver más
                   </motion.button>
