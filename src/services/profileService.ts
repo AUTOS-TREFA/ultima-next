@@ -72,11 +72,11 @@ export const ProfileService = {
       console.log('Could not retrieve source tracking data:', e);
     }
 
+    // Usar función RPC SECURITY DEFINER para evitar problemas de RLS
     const { data: updatedProfile, error: upsertError } = await supabase
-      .from('profiles')
-      .upsert({ id: user.id, ...finalProfileData }, { onConflict: 'id' })
-      .select()
-      .single();
+      .rpc('safe_upsert_profile', {
+        profile_data: { id: user.id, ...finalProfileData }
+      });
 
     if (upsertError) {
       console.error('Error upserting public profile:', upsertError);
