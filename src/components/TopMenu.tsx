@@ -55,6 +55,7 @@ const TopMenu: React.FC = () => {
 
     const handleSignOut = async () => {
         await signOut();
+        window.location.href = '/';
     };
 
     // Only show for admin and sales users

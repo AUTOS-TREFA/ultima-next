@@ -170,7 +170,7 @@ serve(async (req) => {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        sender: { name: 'TREFA', email: 'hola@autostrefa.mx' },
+        sender: { name: 'TREFA', email: 'notificaciones@trefa.mx' },
         to: [{ email: user.email }],
         subject: subject,
         htmlContent: htmlContent,

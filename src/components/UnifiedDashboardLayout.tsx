@@ -199,9 +199,9 @@ const AppSidebarContent: React.FC = () => {
         return items.filter(item => !item.roles || item.roles.includes(userRole));
     };
 
-    const handleSignOut = () => {
-        signOut();
-        router.push('/');
+    const handleSignOut = async () => {
+        await signOut();
+        window.location.href = '/';
     };
 
     return (
@@ -515,10 +515,10 @@ const MobileSidebarContent: React.FC<{ onClose?: () => void }> = ({ onClose }) =
         return items.filter(item => !item.roles || item.roles.includes(userRole));
     };
 
-    const handleSignOut = () => {
-        signOut();
-        router.push('/');
+    const handleSignOut = async () => {
+        await signOut();
         onClose?.();
+        window.location.href = '/';
     };
 
     const handleNavClick = () => {

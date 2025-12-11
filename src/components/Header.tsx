@@ -23,6 +23,7 @@ const Header: React.FC = () => {
 
     const handleSignOut = async () => {
         await signOut();
+        window.location.href = '/';
     };
 
     return (

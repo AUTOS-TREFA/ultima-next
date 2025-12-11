@@ -33,6 +33,7 @@ const MobileHeader: React.FC = () => {
     const handleSignOut = async () => {
         await signOut();
         setMobileMenuOpen(false);
+        window.location.href = '/';
     };
 
     const handleMobileLinkClick = (path: string) => {

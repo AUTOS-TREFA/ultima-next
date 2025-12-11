@@ -154,9 +154,10 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose, triggerRef }) => {
         };
     }, [isOpen, onClose, triggerRef]);
 
-    const handleSignOut = () => {
+    const handleSignOut = async () => {
         onClose();
-        signOut();
+        await signOut();
+        window.location.href = '/';
     };
     
     const handleLinkClick = (to: string, authRequired: boolean) => {

@@ -107,6 +107,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
 
     const handleSignOut = async () => {
         await signOut();
+        window.location.href = '/';
     };
 
     const navItems = [
