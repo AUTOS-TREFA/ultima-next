@@ -31,9 +31,13 @@ const MobileHeader: React.FC = () => {
     const isSalesUser = profile?.role === 'sales';
 
     const handleSignOut = async () => {
-        await signOut();
         setMobileMenuOpen(false);
-        window.location.href = '/';
+        try {
+            await signOut();
+        } finally {
+            // Force full page reload to clear all state
+            window.location.replace('/');
+        }
     };
 
     const handleMobileLinkClick = (path: string) => {

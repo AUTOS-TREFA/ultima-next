@@ -22,8 +22,12 @@ const Header: React.FC = () => {
     const isSalesUser = profile?.role === 'sales';
 
     const handleSignOut = async () => {
-        await signOut();
-        window.location.href = '/';
+        try {
+            await signOut();
+        } finally {
+            // Force full page reload to clear all state
+            window.location.replace('/');
+        }
     };
 
     return (
@@ -86,8 +90,8 @@ const Header: React.FC = () => {
                    </>
                 ) : (
                   <>
-                    <Button asChild size="sm" variant="ghost" className="border-2 border-primary-600 hover:bg-primary-600 bg-white font-medium">
-                        <Link href="/registro" data-gtm-id="header-register-button" style={{ color: 'rgb(79, 70, 229) !important' }} className="hover:text-white">
+                    <Button asChild size="sm" variant="ghost" className="border-2 border-primary-600 hover:bg-primary-600 bg-white font-medium text-primary-600 hover:text-white">
+                        <Link href="/registro" data-gtm-id="header-register-button">
                             Registro
                         </Link>
                     </Button>

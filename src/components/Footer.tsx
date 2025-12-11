@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation';
 import { FacebookIcon, InstagramIcon, LinkedInIcon, GoogleIcon } from './icons';
 import { useAuth } from '../context/AuthContext';
 
+// Use absolute URL to ensure logo loads correctly across all domains
+const LOGO_URL = 'https://trefa.mx/images/logoblanco.png';
+
 const Footer: React.FC = () => {
     const socialLinks = [
         { name: 'Facebook', href: 'https://facebook.com/autostrefamx', icon: FacebookIcon },
@@ -49,7 +52,7 @@ const Footer: React.FC = () => {
                     <div className="space-y-4">
                         <Link href="/" aria-label="Volver a la página de inicio">
                             <img
-                                src="/images/logoblanco.png"
+                                src={LOGO_URL}
                                 alt="TREFA Logo"
                                 className="h-20 lg:h-24 w-auto"
                                 loading="lazy"
