@@ -901,9 +901,9 @@ const UnifiedDashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
                         {/* User Avatar with Dropdown Menu */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="relative h-8 w-8 rounded-full ml-1">
-                                    <Avatar className="h-8 w-8">
-                                        <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                                <Button variant="ghost" className="relative h-8 w-8 rounded-full ml-1 p-0">
+                                    <Avatar className="h-8 w-8 border-2 border-primary/20">
+                                        <AvatarFallback className="bg-primary-600 text-white text-xs font-semibold">
                                             {profile?.first_name?.[0]?.toUpperCase() || 'U'}
                                         </AvatarFallback>
                                     </Avatar>
