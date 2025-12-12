@@ -73,18 +73,51 @@ export const ProfileService = {
     }
 
     // Usar función RPC SECURITY DEFINER para evitar problemas de RLS
-    const { data: updatedProfile, error: upsertError } = await supabase
-      .rpc('safe_upsert_profile', {
-        profile_data: { id: user.id, ...finalProfileData }
-      });
+    // Add retry logic for auth timing issues (P0001 error when JWT hasn't propagated yet)
+    let updatedProfile = null;
+    let lastError = null;
+    const maxRetries = 3;
+    const retryDelayMs = 500;
 
-    if (upsertError) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      const { data, error: upsertError } = await supabase
+        .rpc('safe_upsert_profile', {
+          profile_data: { id: user.id, ...finalProfileData }
+        });
+
+      if (!upsertError) {
+        updatedProfile = data;
+        break;
+      }
+
+      // Check if this is an auth timing error (P0001 = "Usuario no autenticado")
+      if (upsertError.code === 'P0001' && attempt < maxRetries) {
+        console.warn(`[ProfileService] Auth not ready yet (attempt ${attempt}/${maxRetries}), retrying in ${retryDelayMs}ms...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelayMs * attempt)); // Exponential backoff
+        lastError = upsertError;
+        continue;
+      }
+
+      // For other errors or final retry, throw
       console.error('Error upserting public profile:', upsertError);
       throw new Error(`Error al actualizar el perfil: ${upsertError.message}`);
     }
 
     if (!updatedProfile) {
-      throw new Error('No se pudo obtener el perfil actualizado después de guardar.');
+      // If all retries failed, try to fetch existing profile as fallback
+      console.warn('[ProfileService] RPC failed after retries, attempting fallback fetch...');
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (existingProfile) {
+        updatedProfile = existingProfile;
+        console.log('[ProfileService] Fallback fetch successful');
+      } else {
+        throw new Error('No se pudo obtener el perfil actualizado después de guardar.');
+      }
     }
 
     // Update sessionStorage cache to keep in sync with database
