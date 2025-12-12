@@ -490,7 +490,7 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
             BrevoEmailService.notifyAdminsNewApplication(
                 clientName,
                 clientEmail,
-                profile.phone,
+                profile.phone ?? null,
                 vehicleTitle,
                 user.id, // Using user.id for the client profile URL
                 advisorName
@@ -503,7 +503,7 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
                     advisorName,
                     clientName,
                     clientEmail,
-                    profile.phone,
+                    profile.phone ?? null,
                     vehicleTitle,
                     user.id
                 ).catch(err => console.error('[Application] Error sending advisor email:', err));

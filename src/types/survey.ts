@@ -2,7 +2,7 @@
 
 export interface SurveyResponse {
   id: string;
-  responses: Record<number, string>;
+  responses: Record<string, string>;
   coupon_code: string;
   completed_at: string;
   created_at: string;

@@ -143,10 +143,12 @@ export interface Profile {
     first_name?: string;
     last_name?: string;
     phone?: string;
+    phone_verified?: boolean;
     cellphone_company?: string;
     role: 'user' | 'admin' | 'sales' | 'marketing';
     asesor_asignado_id?: string;
     asesor_asignado_name?: string;
+    picture_url?: string;
     [key: string]: any;
 }
 

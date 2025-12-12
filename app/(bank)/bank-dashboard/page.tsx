@@ -172,7 +172,7 @@ const BankDashboardPage: React.FC = () => {
       toast.loading('Descargando documentos...');
       await BankService.downloadAllDocuments(
         pendingDownloadLead.lead_id,
-        pendingDownloadLead.application_id
+        pendingDownloadLead.application_id ?? null
       );
       toast.dismiss();
       toast.success('Documentos descargados exitosamente');

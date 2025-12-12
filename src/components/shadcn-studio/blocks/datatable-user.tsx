@@ -389,7 +389,7 @@ export default UserDatatable
 function Filter({ column }: { column: Column<any, unknown> }) {
   const id = useId()
   const columnFilterValue = column.getFilterValue()
-  const { filterVariant } = column.columnDef.meta ?? {}
+  const { filterVariant } = (column.columnDef.meta as { filterVariant?: 'text' | 'range' | 'select' } | undefined) ?? {}
   const columnHeader = typeof column.columnDef.header === 'string' ? column.columnDef.header : ''
 
   const sortedUniqueValues = useMemo(() => {

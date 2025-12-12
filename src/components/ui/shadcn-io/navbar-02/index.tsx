@@ -169,7 +169,7 @@ export const Navbar02 = React.forwardRef<HTMLElement, Navbar02Props>(
     ref
   ) => {
     const [isMobile, setIsMobile] = useState(false);
-    const containerRef = useRef<HTMLElement>(null);
+    const containerRef = useRef<HTMLElement | null>(null);
 
     useEffect(() => {
       const checkWidth = () => {
@@ -197,7 +197,7 @@ export const Navbar02 = React.forwardRef<HTMLElement, Navbar02Props>(
       if (typeof ref === 'function') {
         ref(node);
       } else if (ref) {
-        ref.current = node;
+        (ref as React.MutableRefObject<HTMLElement | null>).current = node;
       }
     }, [ref]);
 

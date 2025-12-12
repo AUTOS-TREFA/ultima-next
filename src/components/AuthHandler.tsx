@@ -8,10 +8,12 @@ import { conversionTracking } from '../services/ConversionTrackingService';
 
 // Admin email addresses that should be redirected to admin dashboard
 const ADMIN_EMAILS = [
+    'marianomorales@outlook.com',
     'mariano.morales@autostrefa.mx',
     'alejandro.trevino@autostrefa.mx',
     'evelia.castillo@autostrefa.mx',
-    'fernando.trevino@autostrefa.mx'
+    'fernando.trevino@autostrefa.mx',
+    'genauservices@gmail.com'
 ];
 
 // Check if an email is an admin email
@@ -30,14 +32,17 @@ export const checkApplicationProfileCompleteness = (p: Profile | null): boolean 
     });
 };
 
-// Check if profile has basic information complete (first_name, last_name, phone)
+// Check if profile has basic information complete (first_name, last_name, phone, phone_verified)
 export const checkBasicProfileCompleteness = (p: Profile | null): boolean => {
     if (!p) return false;
     const basicFields: (keyof Profile)[] = ['first_name', 'last_name', 'phone'];
-    return basicFields.every(field => {
+    const hasBasicFields = basicFields.every(field => {
         const value = p[field];
         return value !== null && value !== undefined && String(value).trim() !== '';
     });
+    // Also require phone_verified for complete profile
+    const hasVerifiedPhone = p.phone_verified === true;
+    return hasBasicFields && hasVerifiedPhone;
 };
 
 const AuthHandler: React.FC = () => {

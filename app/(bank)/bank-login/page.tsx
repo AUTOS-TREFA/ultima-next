@@ -138,7 +138,8 @@ const BankLoginPage: React.FC = () => {
         .single();
 
       if (existingProfile && existingProfile.bank_affiliation !== selectedBank) {
-        setError(`Este correo está registrado con ${BANKS[existingProfile.bank_affiliation].name}. Por favor, selecciona el banco correcto.`);
+        const bankAffiliation = existingProfile.bank_affiliation as BankName;
+        setError(`Este correo está registrado con ${BANKS[bankAffiliation].name}. Por favor, selecciona el banco correcto.`);
         setLoading(false);
         return;
       }

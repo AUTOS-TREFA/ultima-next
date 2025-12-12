@@ -23,7 +23,7 @@ export async function getCurrentUser() {
   }
 
   const { data: profile } = await supabase
-    .from('user_profiles')
+    .from('profiles')
     .select('*')
     .eq('id', session.user.id)
     .single();

@@ -48,7 +48,7 @@ const ReviewCard: React.FC<{ review: Review, index: number }> = ({ review, index
             >
                 <div className="flex items-center mb-4">
                     {hasAvatar ? (
-                        <img src={review.avatar} alt={review.name} className="w-12 h-12 rounded-full object-cover mr-4" />
+                        <img src={review.avatar ?? undefined} alt={review.name} className="w-12 h-12 rounded-full object-cover mr-4" />
                     ) : (
                         <div className={`w-12 h-12 rounded-full mr-4 flex items-center justify-center text-white font-bold ${getAvatarColor(review.name)}`}>
                             {getInitials(review.name)}

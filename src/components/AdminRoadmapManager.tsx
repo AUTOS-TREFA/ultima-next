@@ -88,7 +88,8 @@ const AdminRoadmapManager: React.FC = () => {
       setEditingItem(null);
     } catch (error) {
       console.error('Error saving roadmap item:', error);
-      alert(`Error al guardar: ${error.message || 'Error desconocido'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      alert(`Error al guardar: ${errorMessage}`);
     }
   };
 

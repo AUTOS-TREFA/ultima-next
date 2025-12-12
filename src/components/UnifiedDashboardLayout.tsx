@@ -83,6 +83,13 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 // Types for navigation items
 interface NavItem {
@@ -102,6 +109,7 @@ interface NavGroup {
 
 // Navigation configuration
 const commonNavItems: NavItem[] = [
+    { to: '/escritorio', label: 'Escritorio', icon: LayoutDashboard, roles: ['admin', 'sales', 'user'], end: true },
     { to: '/autos', label: 'Inventario', icon: Car, roles: ['admin', 'sales', 'user'] },
     { to: '/escritorio/vende-tu-auto', label: 'Vender mi auto', icon: HandCoins, roles: ['admin', 'sales', 'user'] },
     { to: '/escritorio/profile', label: 'Mi Perfil', icon: User, roles: ['admin', 'sales', 'user'] },
@@ -750,8 +758,14 @@ const MobileSidebarContent: React.FC<{ onClose?: () => void }> = ({ onClose }) =
 // Main Layout Component
 const UnifiedDashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const pathname = usePathname();
-    const { profile } = useAuth();
+    const router = useRouter();
+    const { profile, signOut } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
+    const handleSignOut = async () => {
+        await signOut();
+        window.location.href = '/';
+    };
 
     // Generate breadcrumbs from current path
     const generateBreadcrumbs = () => {
@@ -884,12 +898,47 @@ const UnifiedDashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
                             <span className="sr-only">Notificaciones</span>
                         </Button>
 
-                        {/* User Avatar */}
-                        <Avatar className="h-8 w-8 ml-1">
-                            <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
-                                {profile?.first_name?.[0]?.toUpperCase() || 'U'}
-                            </AvatarFallback>
-                        </Avatar>
+                        {/* User Avatar with Dropdown Menu */}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="relative h-8 w-8 rounded-full ml-1">
+                                    <Avatar className="h-8 w-8">
+                                        <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                                            {profile?.first_name?.[0]?.toUpperCase() || 'U'}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-56" align="end" forceMount>
+                                <div className="flex items-center justify-start gap-2 p-2">
+                                    <div className="flex flex-col space-y-1 leading-none">
+                                        <p className="font-medium">{profile?.first_name || 'Usuario'}</p>
+                                        <p className="text-xs text-muted-foreground">{profile?.email || ''}</p>
+                                    </div>
+                                </div>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                    <Link href="/escritorio/profile" className="cursor-pointer">
+                                        <User className="mr-2 h-4 w-4" />
+                                        <span>Editar perfil</span>
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link href="/escritorio/perfilacion-bancaria" className="cursor-pointer">
+                                        <Building2 className="mr-2 h-4 w-4" />
+                                        <span>Perfilacion Bancaria</span>
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    onClick={handleSignOut}
+                                    className="cursor-pointer text-destructive focus:text-destructive"
+                                >
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    <span>Cerrar Sesion</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                     </div>
                 </header>

@@ -242,7 +242,7 @@ const MiAsesor: React.FC<{ asesorId: string }> = ({ asesorId }) => {
     const asesorName = `${asesor.first_name || ''} ${asesor.last_name || ''}`.trim() || 'Tu Asesor';
     const asesorPhone = asesor.phone || '5218187049079';
     const whatsappLink = `https://wa.me/${asesorPhone.replace(/\D/g, '')}?text=Hola%20${encodeURIComponent(asesor.first_name || 'asesor')},%20tengo%20una%20pregunta%20sobre%20mi%20solicitud`;
-    const profilePicture = (asesor as any).picture_url || (asesor as any).avatar_url || (asesor as any).profile_picture_url;
+    const profilePicture = asesor.picture_url;
 
     return (
         <div className="bg-gradient-to-br from-white to-primary-50/30 rounded-2xl shadow-lg p-6 sm:p-8 lg:p-10">

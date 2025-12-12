@@ -11,8 +11,33 @@ import { supabase } from '../../supabaseClient';
 import { toast } from 'sonner';
 import { Gift, Lock, ArrowRight, ArrowLeft } from 'lucide-react';
 
+// Type definitions for survey questions
+interface BaseQuestion {
+  id: string;
+  question: string;
+}
+
+interface MultipleChoiceQuestion extends BaseQuestion {
+  type: 'multiple-choice' | 'likert-4';
+  options: Array<{ value: string; label: string }>;
+}
+
+interface RatingHorizontalQuestion extends BaseQuestion {
+  type: 'rating-horizontal';
+  min: number;
+  max: number;
+  labels: { min: string; max: string };
+}
+
+interface TextQuestion extends BaseQuestion {
+  type: 'text';
+  placeholder?: string;
+}
+
+type SurveyQuestion = MultipleChoiceQuestion | RatingHorizontalQuestion | TextQuestion;
+
 // Comprehensive survey questions (48 total: 41 original - 8 removed + 15 added)
-const surveyQuestions = [
+const surveyQuestions: SurveyQuestion[] = [
   // Demographics (5 questions)
   {
     id: 'age',

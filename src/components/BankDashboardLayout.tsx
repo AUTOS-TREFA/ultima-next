@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { createBrowserSupabaseClient } from '@/lib/supabase/client';
 import { BankService } from '@/services/BankService';
-import { BANKS } from '@/types/bank';
+import { BANKS, type BankName } from '@/types/bank';
 import {
   LayoutDashboard,
   FileText,
@@ -63,7 +63,7 @@ const BankDashboardLayout: React.FC<BankDashboardLayoutProps> = ({ children }) =
     const profile = await BankService.getBankRepProfile();
     setBankRepProfile(profile);
     // Show onboarding after PIN is set
-    if (!profile.has_completed_onboarding) {
+    if (profile && !profile.has_completed_onboarding) {
       setShowOnboarding(true);
     }
   };
@@ -147,12 +147,12 @@ const BankDashboardLayout: React.FC<BankDashboardLayoutProps> = ({ children }) =
                 <>
                   <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
                     <span className="text-lg font-bold text-white">
-                      {BANKS[bankRepProfile.bank_affiliation]?.name.charAt(0) || 'B'}
+                      {BANKS[bankRepProfile.bank_affiliation as BankName]?.name.charAt(0) || 'B'}
                     </span>
                   </div>
                   <div>
                     <h2 className="font-bold text-gray-900 text-sm">
-                      {BANKS[bankRepProfile.bank_affiliation]?.name}
+                      {BANKS[bankRepProfile.bank_affiliation as BankName]?.name}
                     </h2>
                     <p className="text-xs text-gray-500">Portal Bancario</p>
                   </div>
@@ -236,11 +236,11 @@ const BankDashboardLayout: React.FC<BankDashboardLayoutProps> = ({ children }) =
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
                   <span className="text-sm font-bold text-white">
-                    {BANKS[bankRepProfile.bank_affiliation]?.name.charAt(0) || 'B'}
+                    {BANKS[bankRepProfile.bank_affiliation as BankName]?.name.charAt(0) || 'B'}
                   </span>
                 </div>
                 <span className="text-sm font-semibold text-gray-900">
-                  {BANKS[bankRepProfile.bank_affiliation]?.name}
+                  {BANKS[bankRepProfile.bank_affiliation as BankName]?.name}
                 </span>
               </div>
             )}

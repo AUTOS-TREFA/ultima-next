@@ -77,7 +77,7 @@ export function usePaginatedSurveyResponses(
         total: count || 0
       };
     },
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
     staleTime: 30000
-  });
+  }) as UseQueryResult<{ data: SurveyResponse[]; total: number }, Error>;
 }

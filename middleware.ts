@@ -88,7 +88,7 @@ export async function middleware(req: NextRequest) {
 
     // Get user profile for role checking
     const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('role')
       .eq('id', session.user.id)
       .maybeSingle();

@@ -340,7 +340,7 @@ const EnhancedApplication: React.FC = () => {
 
     if (!vehicleInfo?._ordenCompra) {
       setSubmissionError("Aún no has seleccionado un vehículo para tu solicitud. Por favor, regresa al paso de selección.");
-      stepper.goTo('vehicle-selection');
+      stepper.goTo('vehicle-financing');
       return;
     }
 
@@ -426,7 +426,7 @@ const EnhancedApplication: React.FC = () => {
       BrevoEmailService.notifyAdminsNewApplication(
         clientName,
         clientEmail,
-        profile.phone,
+        profile.phone ?? null,
         vehicleTitle,
         user.id,
         advisorName
@@ -438,7 +438,7 @@ const EnhancedApplication: React.FC = () => {
           advisorName,
           clientName,
           clientEmail,
-          profile.phone,
+          profile.phone ?? null,
           vehicleTitle,
           user.id
         ).catch(err => console.error('[Application] Error sending advisor email:', err));

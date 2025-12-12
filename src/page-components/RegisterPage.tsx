@@ -343,6 +343,7 @@ const RegisterPage: React.FC = () => {
         last_name: lastName,
         mother_last_name: motherLastName,
         phone: cleanPhone,
+        phone_verified: true, // Phone was verified via SMS OTP during registration
         email: email,
         // Datos de tracking
         ordencompra: urlTrackingData.ordencompra || null,

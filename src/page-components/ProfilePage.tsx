@@ -9,7 +9,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ProfileService } from '../services/profileService';
 import { supabase } from '../../supabaseClient';
-import { User, ArrowLeft, CheckCircle, Loader2, Info, ChevronRight, ChevronLeft } from 'lucide-react';
+import { User, ArrowLeft, CheckCircle, Loader2, Info, ChevronRight, ChevronLeft, Phone } from 'lucide-react';
+import PhoneVerification from '../components/PhoneVerification';
 import type { Profile } from '../types/types';
 import { calculateRFC } from '../utils/rfcCalculator';
 import { toast } from 'sonner';
@@ -101,6 +102,8 @@ const ProfilePage: React.FC = () => {
   const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [countryCode, setCountryCode] = useState<string>('+52');
+  const [needsPhoneVerification, setNeedsPhoneVerification] = useState(false);
+  const [phoneForVerification, setPhoneForVerification] = useState('');
 
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -130,12 +133,24 @@ const ProfilePage: React.FC = () => {
     if (profile && !formInitialized.current) {
       formInitialized.current = true;
 
+      // Check if phone verification is needed (new users without verified phone)
+      const phoneVerified = profile.phone_verified === true;
+      const hasPhone = profile.phone && profile.phone.length >= 10;
+
+      // Need verification if: phone not verified AND (no phone OR is a new user)
+      if (!phoneVerified) {
+        setNeedsPhoneVerification(true);
+        setPhoneForVerification(profile.phone || '');
+      }
+
       const requiredFields = ['first_name', 'last_name', 'mother_last_name', 'phone', 'birth_date', 'homoclave', 'fiscal_situation', 'civil_status', 'rfc'];
       const isComplete = requiredFields.every(field => profile[field as keyof Profile] && String(profile[field as keyof Profile]).trim() !== '');
 
-      if (isComplete) {
+      if (isComplete && phoneVerified) {
         setIsProfileComplete(true);
         setCurrentStep(3); // Set to last step so progress shows 100%
+      } else if (!phoneVerified) {
+        setIsFirstTimeUser(true);
       } else {
         setIsFirstTimeUser(true);
       }
@@ -388,6 +403,16 @@ const ProfilePage: React.FC = () => {
     }
   };
 
+  // Handle phone verification completion
+  const handlePhoneVerified = async () => {
+    setNeedsPhoneVerification(false);
+    // Update the form with the verified phone
+    setValue('phone', phoneForVerification);
+    // Reload profile to get updated phone_verified status
+    await reloadProfile();
+    toast.success('¡Teléfono verificado! Continúa completando tu perfil.');
+  };
+
   // Show 100% progress if profile is complete, otherwise based on current step
   const progress = isProfileComplete ? 100 : (currentStep / STEPS.length) * 100;
 
@@ -425,7 +450,7 @@ const ProfilePage: React.FC = () => {
         </div>
       )}
 
-      {isFirstTimeUser && (
+      {isFirstTimeUser && !needsPhoneVerification && (
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 lg:p-5 mb-4 lg:mb-6 rounded-r-lg">
           <h3 className="font-bold text-gray-900 text-sm sm:text-base lg:text-lg">
             ¡Te has registrado con éxito!
@@ -436,6 +461,34 @@ const ProfilePage: React.FC = () => {
         </div>
       )}
 
+      {/* Phone Verification Step - Shows before profile form if phone not verified */}
+      {needsPhoneVerification && user && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Phone className="w-5 h-5 text-primary-600" />
+              Verificación de teléfono requerida
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-amber-800">
+                Para tu seguridad y para poder contactarte sobre tu solicitud, necesitamos verificar tu número de teléfono celular.
+              </p>
+            </div>
+            <PhoneVerification
+              phone={phoneForVerification}
+              onPhoneChange={setPhoneForVerification}
+              onVerified={handlePhoneVerified}
+              userId={user.id}
+              showSkip={false}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Hide profile form when phone verification is needed */}
+      {!needsPhoneVerification && (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {/* Progress Bar */}
@@ -762,6 +815,7 @@ const ProfilePage: React.FC = () => {
           </Card>
         </div>
       </div>
+      )}
     </div>
   );
 };

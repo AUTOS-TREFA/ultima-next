@@ -17,10 +17,12 @@ import { checkBasicProfileCompleteness } from '@/components/AuthHandler';
 
 // Admin email addresses that should be redirected to admin dashboard
 const ADMIN_EMAILS = [
+    'marianomorales@outlook.com',
     'mariano.morales@autostrefa.mx',
     'alejandro.trevino@autostrefa.mx',
     'evelia.castillo@autostrefa.mx',
-    'fernando.trevino@autostrefa.mx'
+    'fernando.trevino@autostrefa.mx',
+    'genauservices@gmail.com'
 ];
 
 // Check if an email is an admin email
@@ -80,7 +82,7 @@ const AuthPage: React.FC = () => {
     const [error, setError] = useState<string | React.ReactNode | null>(null);
     const [view, setView] = useState<'signIn' | 'verifyOtp'>('signIn');
     const router = useRouter();
-    const { session, profile } = useAuth();
+    const { session, profile, loading: authLoading } = useAuth();
     const searchParams = useSearchParams();
     const [vehicleToFinance, setVehicleToFinance] = useState<WordPressVehicle | null>(null);
     const [isLoadingVehicle, setIsLoadingVehicle] = useState(false);
@@ -162,6 +164,17 @@ const AuthPage: React.FC = () => {
             }).finally(() => setIsLoadingVehicle(false));
         }
     }, [searchParams]);
+
+    // Handle edge case: session exists but profile failed to load
+    // This prevents users from getting stuck if their profile doesn't exist
+    useEffect(() => {
+        if (session && !profile && !authLoading) {
+            console.log('[AuthPage] Session exists but no profile loaded - redirecting to dashboard');
+            // Session exists but profile didn't load - still redirect (profile will be created by AuthContext)
+            const redirectPath = isAdminEmail(session.user?.email) ? '/escritorio/dashboard' : '/escritorio';
+            router.replace(redirectPath);
+        }
+    }, [session, profile, authLoading, router]);
 
     const handleEmailSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -364,7 +377,11 @@ const AuthPage: React.FC = () => {
     };
 
 
-    if (session) {
+    // Show loading only if:
+    // 1. AuthContext is still loading, OR
+    // 2. Session exists AND profile exists (redirect is happening)
+    // Don't show loading if session exists but profile is null (prevents infinite loading)
+    if (authLoading || (session && profile)) {
         return (
             <div className="flex justify-center items-center h-screen w-full transparent">
                 <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary-600"></div>
