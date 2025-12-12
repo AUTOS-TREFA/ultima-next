@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useForm, Controller, useController } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { BankProfilingService, getBankColor, getBankLogo } from '../services/BankProfilingService';
@@ -203,19 +203,23 @@ const PerfilacionBancariaPage: React.FC = () => {
         fetchBankProfile();
     }, [user, profile, authLoading, reset]);
 
+    const searchParams = useSearchParams();
+
     useEffect(() => {
         if (status === 'success') {
-            const path = localStorage.getItem('loginRedirect') || '/escritorio/aplicacion';
-
+            const basePath = localStorage.getItem('loginRedirect') || '/escritorio/aplicacion';
             localStorage.removeItem('loginRedirect');
 
+            const params = new URLSearchParams(searchParams.toString());
+            const redirectPath = `${basePath}?${params.toString()}`;
+
             const timer = setTimeout(() => {
-                router.push(path);
+                router.push(redirectPath);
             }, 7000); // Redirect after 7 seconds
 
             return () => clearTimeout(timer);
         }
-    }, [status, router]);
+    }, [status, router, searchParams]);
 
 
     const onSubmit = async (data: BankProfileFormData) => {
