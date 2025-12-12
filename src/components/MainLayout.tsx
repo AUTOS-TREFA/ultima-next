@@ -23,7 +23,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <div className="flex flex-col min-h-screen bg-gray-50 overflow-x-hidden relative">
             <AnimatedBlobs />
             <Header />
-            <main className="flex-grow pt-24 lg:pt-28 pb-36 lg:pb-0 relative z-10">
+            <main className="flex-grow pt-20 lg:pt-20 pb-36 lg:pb-0 relative z-10">
                 {children}
             </main>
             <Footer />
