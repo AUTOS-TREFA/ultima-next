@@ -38,14 +38,14 @@ const Header: React.FC = () => {
         {/* Desktop Header - Hidden on mobile */}
         <header className="hidden lg:block fixed top-0 left-0 right-0 z-30 bg-white shadow-sm border-b border-gray-200/80">
           <div className="relative max-w-7xl mx-auto px-4 lg:px-8">
-            <div className="flex items-center h-28 gap-x-4">
+            <div className="flex items-center h-16 gap-x-4">
               {/* Logo */}
               <div className="flex-shrink-0">
                   <Link href="/" className="flex items-center">
                     <img
                       src={LOGO_URL}
                       alt="TREFA"
-                      className="h-9 w-auto object-contain"
+                      className="h-7 w-auto object-contain"
                     />
                   </Link>
               </div>
@@ -90,11 +90,14 @@ const Header: React.FC = () => {
                    </>
                 ) : (
                   <>
-                    <Button asChild size="sm" variant="ghost" className="border-2 border-primary-600 hover:bg-primary-600 bg-white font-medium text-primary-600 hover:text-white">
-                        <Link href="/registro" data-gtm-id="header-register-button">
-                            Registro
-                        </Link>
-                    </Button>
+                    <Link
+                        href="/registro"
+                        data-gtm-id="header-register-button"
+                        className="inline-flex items-center justify-center h-9 px-3 rounded-md text-sm font-medium border-2 border-primary-600 bg-white hover:bg-primary-600 hover:text-white transition-colors"
+                        style={{ color: '#F56100' }}
+                    >
+                        Registro
+                    </Link>
                     <Button asChild size="sm" variant="ghost" className="bg-[#FF6801] hover:bg-[#E55E01] font-medium">
                         <Link href="/acceder" data-gtm-id="header-login-button" style={{ color: 'white !important' }}>
                             Iniciar Sesión

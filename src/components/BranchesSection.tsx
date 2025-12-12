@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useOutsideClick } from "../hooks/useOutsideClick";
 import { branchData } from "../utils/constants";
@@ -48,8 +49,14 @@ interface BranchesSectionProps {
 
 const BranchesSection: React.FC<BranchesSectionProps> = ({ content }) => {
   const [active, setActive] = useState<BranchCard | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const id = useId();
+
+  // Track when component is mounted (client-side) for portal rendering
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Always use branchData to ensure all 4 branches are displayed
   const branchesContent: BranchesContent = {
@@ -143,132 +150,156 @@ const BranchesSection: React.FC<BranchesSectionProps> = ({ content }) => {
           )}
         </AnimatePresence>
 
-        {/* Expanded Card */}
-        <AnimatePresence>
-          {active ? (
-            <div
-              className="fixed inset-0 z-[100] overflow-y-auto"
-              onClick={() => setActive(null)}
-            >
-              {/* Dark overlay background */}
-              <div className="min-h-screen px-4 py-8 sm:py-12 lg:py-16 flex items-center justify-center bg-black/60">
-                {/* Close button - positioned relative to viewport for visibility */}
-                <motion.button
-                  key={`close-${active.title}-${id}`}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.1 } }}
-                  className="fixed top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 flex items-center justify-center bg-white rounded-full h-12 w-12 shadow-xl z-[110] hover:bg-gray-100 transition-colors border-2 border-gray-200"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActive(null);
-                  }}
-                  aria-label="Cerrar"
-                >
-                  <CloseIcon />
-                </motion.button>
-
-                {/* Modal card */}
+        {/* Expanded Card Modal - Using Portal to render at document body */}
+        {isMounted && createPortal(
+          <AnimatePresence>
+            {active ? (
+              <>
+                {/* Backdrop overlay */}
                 <motion.div
-                  layoutId={`card-${active.title}-${id}`}
-                  ref={ref}
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-full max-w-[500px] max-h-[80vh] flex flex-col bg-white dark:bg-neutral-900 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl relative"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setActive(null)}
+                  style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    zIndex: 9998,
+                  }}
+                />
+
+                {/* Modal container */}
+                <div
+                  style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '1rem',
+                    zIndex: 9999,
+                    pointerEvents: 'none',
+                  }}
                 >
-                  <motion.div layoutId={`image-${active.title}-${id}`} className="flex-shrink-0">
-                    <img
-                      src={active.src}
-                      alt={active.title}
-                      className="w-full h-48 sm:h-56 lg:h-64 object-cover"
-                    />
-                  </motion.div>
+                  {/* Close button */}
+                  <button
+                    className="bg-white rounded-full shadow-xl hover:bg-gray-100 transition-colors border-2 border-gray-200"
+                    onClick={() => setActive(null)}
+                    aria-label="Cerrar"
+                    style={{
+                      position: 'fixed',
+                      top: '1rem',
+                      right: '1rem',
+                      width: '48px',
+                      height: '48px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      zIndex: 10000,
+                      pointerEvents: 'auto',
+                    }}
+                  >
+                    <CloseIcon />
+                  </button>
 
-                  <div className="flex-1 overflow-auto">
-                    <div className="flex flex-col sm:flex-row justify-between items-start gap-3 p-4 sm:p-6">
-                      <div className="flex-1">
-                        <motion.h3
-                          layoutId={`title-${active.title}-${id}`}
-                          className="font-bold text-xl sm:text-2xl text-neutral-800 dark:text-neutral-200"
+                  {/* Modal card */}
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                    ref={ref}
+                    onClick={(e) => e.stopPropagation()}
+                    className="bg-white rounded-2xl overflow-hidden shadow-2xl"
+                    style={{
+                      width: '100%',
+                      maxWidth: '500px',
+                      maxHeight: '85vh',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      pointerEvents: 'auto',
+                    }}
+                  >
+                    <div style={{ flexShrink: 0 }}>
+                      <img
+                        src={active.src}
+                        alt={active.title}
+                        className="w-full h-48 sm:h-56 object-cover"
+                      />
+                    </div>
+
+                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                      <div className="flex flex-col sm:flex-row justify-between items-start gap-3 p-4 sm:p-6">
+                        <div className="flex-1">
+                          <h3 className="font-bold text-xl sm:text-2xl text-neutral-800">
+                            {active.title}
+                          </h3>
+                          <p className="text-neutral-600 mt-1">
+                            {active.description}
+                          </p>
+                        </div>
+
+                        <a
+                          href={active.ctaLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 text-sm rounded-full font-bold bg-primary-600 hover:bg-primary-700 text-white transition-colors flex-shrink-0 shadow-sm"
                         >
-                          {active.title}
-                        </motion.h3>
-                        <motion.p
-                          layoutId={`description-${active.description}-${id}`}
-                          className="text-neutral-600 dark:text-neutral-400 mt-1"
-                        >
-                          {active.description}
-                        </motion.p>
+                          {active.ctaText}
+                        </a>
                       </div>
-
-                      <motion.a
-                        layoutId={`button-${active.title}-${id}`}
-                        href={active.ctaLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-4 py-2 text-sm rounded-full font-bold bg-primary-600 hover:bg-primary-700 text-white transition-colors flex-shrink-0 shadow-sm"
-                      >
-                        {active.ctaText}
-                      </motion.a>
+                      <div className="px-4 sm:px-6 pb-4 sm:pb-6">
+                        <div className="text-neutral-600">
+                          {active.content()}
+                        </div>
+                      </div>
                     </div>
-                    <div className="px-4 sm:px-6 pb-4 sm:pb-6">
-                      <motion.div
-                        layout
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="text-neutral-600 dark:text-neutral-400"
-                      >
-                        {active.content()}
-                      </motion.div>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-          ) : null}
-        </AnimatePresence>
+                  </motion.div>
+                </div>
+              </>
+            ) : null}
+          </AnimatePresence>,
+          document.body
+        )}
 
         {/* Branch Cards Grid */}
         <ul className="max-w-5xl mx-auto w-full grid grid-cols-1 sm:grid-cols-2 gap-6">
           {cards.map((card) => (
-            <motion.li
-              layoutId={`card-${card.title}-${id}`}
+            <li
               key={card.title}
               onClick={() => setActive(card)}
-              className="p-4 flex flex-col hover:bg-white rounded-2xl cursor-pointer transition-all duration-300 hover:shadow-lg bg-white border border-gray-200"
+              className="p-4 flex flex-col rounded-2xl cursor-pointer transition-all duration-300 hover:shadow-lg bg-white border border-gray-200"
             >
               <div className="flex gap-4 flex-col w-full">
-                <motion.div layoutId={`image-${card.title}-${id}`} className="relative overflow-hidden rounded-xl">
+                <div className="relative overflow-hidden rounded-xl">
                   <img
                     src={card.src}
                     alt={card.title}
                     className="h-48 w-full rounded-xl object-cover transition-transform duration-300 hover:scale-105"
                   />
-                </motion.div>
+                </div>
                 <div className="flex justify-between items-center">
                   <div className="flex-1">
-                    <motion.h3
-                      layoutId={`title-${card.title}-${id}`}
-                      className="font-bold text-lg text-neutral-800 dark:text-neutral-200"
-                    >
+                    <h3 className="font-bold text-lg text-neutral-800">
                       {card.title}
-                    </motion.h3>
-                    <motion.p
-                      layoutId={`description-${card.description}-${id}`}
-                      className="text-neutral-600 dark:text-neutral-400 text-sm"
-                    >
+                    </h3>
+                    <p className="text-neutral-600 text-sm">
                       {card.description}
-                    </motion.p>
+                    </p>
                   </div>
-                  <motion.button
-                    layoutId={`button-${card.title}-${id}`}
-                    className="px-4 py-2 text-sm rounded-full font-semibold bg-primary-600 hover:bg-primary-700 text-white transition-colors shadow-sm"
-                  >
+                  <button className="px-4 py-2 text-sm rounded-full font-semibold bg-primary-600 hover:bg-primary-700 text-white transition-colors shadow-sm">
                     Ver más
-                  </motion.button>
+                  </button>
                 </div>
               </div>
-            </motion.li>
+            </li>
           ))}
         </ul>
 
