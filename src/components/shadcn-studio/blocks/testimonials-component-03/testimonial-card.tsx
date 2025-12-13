@@ -19,7 +19,7 @@ const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => {
       <CardContent className='flex flex-col gap-6'>
         <div className='flex flex-wrap items-center justify-between gap-3'>
           {/* Ratings */}
-          <Rating readOnly variant='yellow' size={24} value={testimonial.rating} precision={0.5} />
+          <Rating readOnly variant='yellow' size={16} value={testimonial.rating} precision={0.5} />
 
           {/* Platform Details */}
           <div className='flex items-center gap-1.5'>
@@ -38,7 +38,7 @@ const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => {
         <div className='flex items-center gap-3'>
           <Avatar className='w-12 h-12'>
             <AvatarImage src={testimonial.avatar} alt={testimonial.name} className='w-12 h-12 object-cover' />
-            <AvatarFallback className='text-sm'>
+            <AvatarFallback className='text-sm flex items-center justify-center w-full h-full'>
               {testimonial.name
                 .split(' ', 2)
                 .map(n => n[0])

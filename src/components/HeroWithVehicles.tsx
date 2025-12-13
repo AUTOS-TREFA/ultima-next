@@ -243,12 +243,12 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
           transition={{ duration: 0.7, ease: 'easeOut' }}
           className="relative max-lg:hidden py-4 -mr-4 sm:-mr-6 lg:-mr-8 xl:-mr-0"
         >
-          {/* Top fade overlay */}
-          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-orange-50/90 via-orange-50/50 to-transparent z-10 pointer-events-none" />
-          {/* Bottom fade overlay */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-orange-50/90 via-orange-50/50 to-transparent z-10 pointer-events-none" />
+          {/* Top fade overlay - clean fade to white */}
+          <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-white via-white/80 to-transparent z-10 pointer-events-none" />
+          {/* Bottom fade overlay - clean fade to white */}
+          <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-white via-white/80 to-transparent z-10 pointer-events-none" />
           {/* Right fade overlay for seamless edge */}
-          <div className="absolute top-0 bottom-0 right-0 w-16 bg-gradient-to-l from-orange-50/80 to-transparent z-10 pointer-events-none" />
+          <div className="absolute top-0 bottom-0 right-0 w-24 bg-gradient-to-l from-white/90 via-white/50 to-transparent z-10 pointer-events-none" />
 
           <div className="grid grid-cols-2 gap-3 pr-2">
             {leftVehicles.length > 0 && (

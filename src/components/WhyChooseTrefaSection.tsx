@@ -128,7 +128,7 @@ const WhyChooseTrefaSection = () => {
             <img
               src='/images/landing-asset-main.png'
               alt='Asesor TREFA'
-              className='mx-auto h-auto w-full max-w-sm object-contain md:max-w-md lg:max-w-lg'
+              className='mx-auto h-auto w-full max-w-md object-contain md:max-w-lg lg:max-w-xl xl:max-w-2xl'
             />
           </MotionPreset>
 

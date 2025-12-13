@@ -78,26 +78,25 @@ const TestimonialsComponent = ({ heroSlides, testimonials }: TestimonialsCompone
           slide={{ direction: 'down' }}
           delay={0.6}
           transition={{ duration: 0.5 }}
-          className='relative grid sm:grid-cols-2 lg:grid-cols-4'
+          className='relative grid sm:grid-cols-2 lg:grid-cols-3'
         >
-          <div className='from-muted absolute top-0 z-1 h-1/3 w-full bg-gradient-to-b to-transparent' />
-          <Marquee vertical pauseOnHover delay={0.9} duration={20} gap={3} className='h-200'>
-            {testimonials.slice(0, 3).map((testimonial, index) => (
+          {/* Top fade overlay - clean fade to transparent */}
+          <div className='absolute top-0 z-10 h-32 w-full bg-gradient-to-b from-muted via-muted/70 to-transparent pointer-events-none' />
+          {/* Bottom fade overlay - clean fade to transparent */}
+          <div className='absolute bottom-0 z-10 h-32 w-full bg-gradient-to-t from-muted via-muted/70 to-transparent pointer-events-none' />
+
+          <Marquee vertical pauseOnHover delay={0.9} duration={18} gap={2.5} className='h-[32rem]'>
+            {testimonials.slice(0, 2).map((testimonial, index) => (
               <TestimonialCard key={index} testimonial={testimonial} />
             ))}
           </Marquee>
-          <Marquee vertical pauseOnHover delay={0.9} duration={20} gap={3} reverse className='h-200 max-sm:hidden'>
-            {testimonials.slice(3, 6).map((testimonial, index) => (
+          <Marquee vertical pauseOnHover delay={0.9} duration={20} gap={2.5} reverse className='h-[32rem] max-sm:hidden'>
+            {testimonials.slice(2, 4).map((testimonial, index) => (
               <TestimonialCard key={index} testimonial={testimonial} />
             ))}
           </Marquee>
-          <Marquee vertical pauseOnHover delay={0.9} duration={20} gap={3} className='h-200 max-lg:hidden'>
-            {testimonials.slice(6, 9).map((testimonial, index) => (
-              <TestimonialCard key={index} testimonial={testimonial} />
-            ))}
-          </Marquee>
-          <Marquee vertical pauseOnHover delay={0.9} duration={20} gap={3} reverse className='h-200 max-lg:hidden'>
-            {testimonials.slice(9, 12).map((testimonial, index) => (
+          <Marquee vertical pauseOnHover delay={0.9} duration={22} gap={2.5} className='h-[32rem] max-lg:hidden'>
+            {testimonials.slice(4, 6).map((testimonial, index) => (
               <TestimonialCard key={index} testimonial={testimonial} />
             ))}
           </Marquee>
