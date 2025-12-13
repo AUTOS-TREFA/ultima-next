@@ -40,7 +40,7 @@ const guarantees = [
   },
   {
     title: 'Kit de Seguridad',
-    description: 'GPS, seguros y asistencia vial incluidos',
+    description: 'Garantía blindada, recompra garantizada y más',
     icon: '🛡️',
   },
   {

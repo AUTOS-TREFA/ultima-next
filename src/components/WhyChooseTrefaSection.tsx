@@ -32,7 +32,7 @@ const rightFeatures: FeatureItem[] = [
   {
     icon: Lock,
     title: "Kit de Seguridad TREFA",
-    description: "Todos nuestros autos incluyen GPS, seguro de robo y asistencia vial. Tu inversión siempre protegida."
+    description: "Garantía blindada de $100,000 MXN, programa de recompra garantizada, y certificado de procedencia segura incluidos."
   },
   {
     icon: MessageCircle,

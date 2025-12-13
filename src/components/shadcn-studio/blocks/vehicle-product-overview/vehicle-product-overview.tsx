@@ -1030,7 +1030,7 @@ const VehicleProductOverview = ({
                     </li>
                     <li className="flex items-start gap-3 text-sm">
                       <CheckIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
-                      <span><span className="font-semibold">Kit de seguridad</span> incluido (GPS + seguros)</span>
+                      <span><span className="font-semibold">Kit de seguridad</span> incluido (garantía + recompra)</span>
                     </li>
                     <li className="flex items-start gap-3 text-sm">
                       <CheckIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
