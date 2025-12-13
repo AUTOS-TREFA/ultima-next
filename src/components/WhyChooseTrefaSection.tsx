@@ -48,7 +48,7 @@ const rightFeatures: FeatureItem[] = [
 
 const WhyChooseTrefaSection = () => {
   return (
-    <section className='py-8 sm:py-16 lg:py-24 bg-gray-50'>
+    <section className='py-8 sm:py-16 lg:py-24 bg-gradient-to-b from-muted to-white'>
       <div className='mx-auto flex max-w-7xl flex-col gap-8 px-4 sm:gap-16 sm:px-6 lg:gap-24 lg:px-8'>
         {/* Header */}
         <div className='space-y-4 text-center'>
