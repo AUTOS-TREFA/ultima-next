@@ -124,7 +124,7 @@ export default function ValuePropositionStatement() {
         {/* Main Statement */}
         <div className="text-center">
           <p className="text-2xl sm:text-3xl lg:text-4xl font-medium text-neutral-800" style={{ lineHeight: '2.0' }}>
-            Somos la agencia de autos seminuevos de servicio personalizado{' '}
+            Somos la agencia de autos seminuevos 🚗 de servicio personalizado{' '}
             <TooltipProvider delayDuration={100}>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -227,7 +227,7 @@ export default function ValuePropositionStatement() {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            , ahora con{' '}
+            , ahora con 📍{' '}
             <TooltipProvider delayDuration={100}>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -280,7 +280,7 @@ export default function ValuePropositionStatement() {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>{' '}
-            para estar más cerca de ti.
+            para estar más cerca de ti. ✨
           </p>
         </div>
       </div>
