@@ -10,7 +10,7 @@ import Link from 'next/link';
 import type { Vehicle } from '@/types/types';
 import { getVehicleImage } from '@/utils/getVehicleImage';
 
-// Compact vehicle card for the marquee - optimized with hover reveal
+// Compact vehicle card for the marquee - hover overlay
 const VehicleMarqueeCard = ({ vehicle }: { vehicle: Vehicle }) => {
   const imageUrl = getVehicleImage(vehicle);
   const formattedPrice = new Intl.NumberFormat('es-MX', {
@@ -22,7 +22,7 @@ const VehicleMarqueeCard = ({ vehicle }: { vehicle: Vehicle }) => {
   return (
     <Link
       href={`/autos/${vehicle.slug}`}
-      className="group block bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 ease-out overflow-hidden w-[280px] border border-gray-100 hover:-translate-y-1"
+      className="group block bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 ease-out overflow-hidden w-[260px] border border-gray-100 hover:-translate-y-1"
     >
       <div className="relative h-44 overflow-hidden">
         <img
@@ -31,6 +31,7 @@ const VehicleMarqueeCard = ({ vehicle }: { vehicle: Vehicle }) => {
           className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           loading="lazy"
         />
+        {/* Badges - always visible */}
         {vehicle.garantia && (
           <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full flex items-center gap-1">
             <Shield className="w-3 h-3" />
@@ -42,26 +43,17 @@ const VehicleMarqueeCard = ({ vehicle }: { vehicle: Vehicle }) => {
             Promoción
           </div>
         )}
-      </div>
-      {/* Info section - visible on hover */}
-      <div className="p-4 transition-all duration-300 ease-out opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-32 overflow-hidden">
-        <h3 className="font-semibold text-sm text-gray-900 line-clamp-1">
-          {vehicle.titulo || vehicle.title}
-        </h3>
-        <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-          <span>{vehicle.autoano || vehicle.year}</span>
-          <span>•</span>
-          <span>{vehicle.kilometraje?.toLocaleString()} km</span>
-        </div>
-        <div className="mt-2 flex items-end justify-between">
-          <div>
-            <p className="text-lg font-bold text-[#FF6801]">{formattedPrice}</p>
-            {vehicle.mensualidad_recomendada && (
-              <p className="text-xs text-gray-500">
-                Desde ${vehicle.mensualidad_recomendada.toLocaleString()}/mes
-              </p>
-            )}
+        {/* Hover overlay with info */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+          <h3 className="font-semibold text-sm text-white line-clamp-1">
+            {vehicle.titulo || vehicle.title}
+          </h3>
+          <div className="flex items-center gap-2 mt-1 text-xs text-white/80">
+            <span>{vehicle.autoano || vehicle.year}</span>
+            <span>•</span>
+            <span>{vehicle.kilometraje?.toLocaleString()} km</span>
           </div>
+          <p className="text-lg font-bold text-[#FF6801] mt-1">{formattedPrice}</p>
         </div>
       </div>
     </Link>
@@ -80,9 +72,9 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
 
   return (
     <section className="from-primary/10 via-orange-50/50 to-background flex min-h-screen flex-1 flex-col bg-gradient-to-bl to-60% overflow-hidden">
-      <div className="mx-auto grid w-full max-w-7xl flex-1 gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-        {/* Left Content - removed top padding */}
-        <div className="flex max-w-2xl flex-col justify-center gap-8 pt-16 pb-12 lg:pt-20">
+      <div className="mx-auto grid w-full max-w-7xl flex-1 gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_auto] lg:px-8">
+        {/* Left Content - extended width */}
+        <div className="flex max-w-3xl flex-col justify-center gap-8 pt-16 pb-12 lg:pt-20 lg:pr-8">
           <div className="flex flex-col items-start gap-6">
             <MotionPreset
               fade
@@ -203,46 +195,53 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
           </MotionPreset>
         </div>
 
-        {/* Right Content - Vehicle Marquees with more spacing */}
+        {/* Right Content - Vehicle Marquees with fades */}
         <MotionPreset
           fade
           blur
           transition={{ duration: 0.7, ease: 'easeOut' }}
-          className="grid grid-cols-2 gap-6 max-lg:hidden py-4"
+          className="relative max-lg:hidden py-4 ml-4"
         >
-          {leftVehicles.length > 0 && (
-            <Marquee
-              vertical
-              pauseOnHover
-              duration={40}
-              gap={4}
-              className="h-screen min-h-[700px] overflow-hidden"
-            >
-              {leftVehicles.map((vehicle) => (
-                <VehicleMarqueeCard key={vehicle.id} vehicle={vehicle} />
-              ))}
-            </Marquee>
-          )}
+          {/* Top fade overlay */}
+          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-orange-50/90 via-orange-50/50 to-transparent z-10 pointer-events-none" />
+          {/* Bottom fade overlay */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-orange-50/90 via-orange-50/50 to-transparent z-10 pointer-events-none" />
 
-          {rightVehicles.length > 0 && (
-            <Marquee
-              vertical
-              pauseOnHover
-              duration={45}
-              gap={4}
-              reverse
-              className="h-screen min-h-[700px] overflow-hidden"
-            >
-              {rightVehicles.map((vehicle) => (
-                <VehicleMarqueeCard key={vehicle.id} vehicle={vehicle} />
-              ))}
-            </Marquee>
-          )}
+          <div className="grid grid-cols-2 gap-8">
+            {leftVehicles.length > 0 && (
+              <Marquee
+                vertical
+                pauseOnHover
+                duration={40}
+                gap={24}
+                className="h-screen min-h-[700px] overflow-hidden"
+              >
+                {leftVehicles.map((vehicle) => (
+                  <VehicleMarqueeCard key={vehicle.id} vehicle={vehicle} />
+                ))}
+              </Marquee>
+            )}
+
+            {rightVehicles.length > 0 && (
+              <Marquee
+                vertical
+                pauseOnHover
+                duration={45}
+                gap={24}
+                reverse
+                className="h-screen min-h-[700px] overflow-hidden"
+              >
+                {rightVehicles.map((vehicle) => (
+                  <VehicleMarqueeCard key={vehicle.id} vehicle={vehicle} />
+                ))}
+              </Marquee>
+            )}
+          </div>
         </MotionPreset>
 
         {/* Mobile: Show a few vehicles in a grid */}
         <div className="lg:hidden pb-12">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             {vehicles.slice(0, 4).map((vehicle) => (
               <VehicleMarqueeCard key={vehicle.id} vehicle={vehicle} />
             ))}
