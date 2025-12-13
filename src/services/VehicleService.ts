@@ -288,8 +288,15 @@ class VehicleService {
         }
 
         // --- Complex Text Search / Array-like Filters ---
+        // Carroceria filter - case-insensitive, checks both carroceria and clasificacionid fields
         if (filters.carroceria && filters.carroceria.length > 0) {
-            query = query.in('carroceria', filters.carroceria);
+            // Build OR conditions for each carroceria value to be case-insensitive
+            const carroceriaConditions = filters.carroceria.map(c => {
+                const lowerVal = c.toLowerCase();
+                // Match carroceria field (case-insensitive) OR clasificacionid array contains the value
+                return `carroceria.ilike.${lowerVal},clasificacionid.cs.["${c}"],clasificacionid.cs.["${lowerVal}"],clasificacionid.cs.["${c.toUpperCase()}"]`;
+            }).join(',');
+            query = query.or(carroceriaConditions);
         }
         if (filters.ubicacion && filters.ubicacion.length > 0) {
             const rawSucursales = filters.ubicacion.map(s => reverseSucursalMapping[s] || s);
