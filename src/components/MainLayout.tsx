@@ -3,7 +3,7 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Header from './Header';
-import Footer from './Footer';
+import Footer from './shadcn-studio/blocks/footer-component-02/footer-component-02';
 import BottomNav from './BottomNav';
 import AnimatedBlobs from './AnimatedBlobs';
 

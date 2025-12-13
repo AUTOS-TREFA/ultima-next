@@ -1,14 +1,14 @@
 'use client'
 
+import React, { forwardRef } from 'react'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Shield, MapPin, ChevronRight, Star } from 'lucide-react'
+import { Shield, MapPin, ChevronRight, Star, Car, Sparkles, Heart, CheckCircle2, Award, Zap } from 'lucide-react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { branchData } from '@/utils/constants'
 
 // Transform branchData for display in tooltips + add the new Lindavista branch
@@ -71,51 +71,58 @@ const reviews = [
   },
 ]
 
-// Shining button component with trace effect
-const ShiningButton = ({
-  children,
-  className,
-  delay = 0
-}: {
-  children: React.ReactNode
-  className: string
-  delay?: number
-}) => (
-  <motion.button
-    initial={{ opacity: 0, y: 10 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ duration: 0.5, delay }}
-    className={`${className} relative overflow-hidden`}
+// Shining button component with trace effect - using forwardRef for tooltip compatibility
+const ShiningButton = forwardRef<
+  HTMLButtonElement,
+  { children: React.ReactNode; className: string; delay?: number } & React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ children, className, delay = 0, ...props }, ref) => (
+  <button
+    ref={ref}
+    className={`${className} relative overflow-hidden group/btn`}
+    {...props}
   >
     {children}
-    {/* Shining trace effect */}
-    <motion.span
-      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -skew-x-12"
-      initial={{ x: '-100%' }}
-      whileInView={{ x: '200%' }}
-      viewport={{ once: true }}
-      transition={{
-        duration: 1.2,
-        delay: delay + 0.5,
-        ease: 'easeInOut'
-      }}
+    {/* Shining trace effect on hover */}
+    <span
+      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -skew-x-12 -translate-x-full group-hover/btn:translate-x-[200%] transition-transform duration-1000 ease-out"
     />
-  </motion.button>
+  </button>
+))
+ShiningButton.displayName = 'ShiningButton'
+
+// Floating decorative icon component
+const FloatingIcon = ({
+  icon: Icon,
+  className,
+  size = 'w-6 h-6',
+  color = 'text-neutral-300'
+}: {
+  icon: typeof Car;
+  className: string;
+  size?: string;
+  color?: string;
+}) => (
+  <div className={`absolute ${className} opacity-80`}>
+    <Icon className={`${size} ${color}`} />
+  </div>
 )
 
 export default function ValuePropositionStatement() {
   return (
-    <section className="bg-white py-20 sm:py-28 lg:py-36 border-b border-neutral-100 flex items-center min-h-[60vh]">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="bg-white py-20 sm:py-28 lg:py-36 border-b border-neutral-100 flex items-center min-h-[60vh] relative overflow-hidden">
+      {/* Decorative floating icons */}
+      <FloatingIcon icon={Car} className="top-16 left-[8%] hidden lg:block" size="w-10 h-10" color="text-amber-300" />
+      <FloatingIcon icon={Sparkles} className="top-24 right-[12%] hidden lg:block" size="w-8 h-8" color="text-emerald-300" />
+      <FloatingIcon icon={Heart} className="bottom-20 left-[15%] hidden lg:block" size="w-7 h-7" color="text-rose-300" />
+      <FloatingIcon icon={CheckCircle2} className="top-32 left-[20%] hidden md:block" size="w-6 h-6" color="text-blue-300" />
+      <FloatingIcon icon={Award} className="bottom-28 right-[10%] hidden lg:block" size="w-9 h-9" color="text-amber-300" />
+      <FloatingIcon icon={Zap} className="top-20 right-[25%] hidden md:block" size="w-7 h-7" color="text-yellow-400" />
+      <FloatingIcon icon={Star} className="bottom-16 right-[20%] hidden lg:block" size="w-6 h-6" color="text-amber-400" />
+      <FloatingIcon icon={Shield} className="bottom-24 left-[25%] hidden md:block" size="w-7 h-7" color="text-emerald-300" />
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Main Statement */}
-        <motion.div
-          className="text-center"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-        >
+        <div className="text-center">
           <p className="text-2xl sm:text-3xl lg:text-4xl font-medium text-neutral-800" style={{ lineHeight: '2.0' }}>
             Somos la agencia de autos seminuevos de servicio personalizado{' '}
             <TooltipProvider delayDuration={100}>
@@ -275,7 +282,7 @@ export default function ValuePropositionStatement() {
             </TooltipProvider>{' '}
             para estar más cerca de ti.
           </p>
-        </motion.div>
+        </div>
       </div>
     </section>
   )

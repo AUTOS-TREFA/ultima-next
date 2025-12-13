@@ -327,7 +327,7 @@ const FinanceHighlightItem: React.FC<{ title: string; subtitle: string; downPaym
     <div className={`p-3 md:p-4 rounded-lg ${isRecommended ? 'bg-primary-50 border-primary-200' : 'bg-gray-100 border-gray-200'} border`}>
         <p className={`font-bold text-sm md:text-base ${isRecommended ? 'text-primary-800' : 'text-gray-800'}`}>{title}</p>
         <p className="text-xs text-gray-500">{subtitle}</p>
-        <p className="text-xs font-semibold text-orange-600 mt-1">Plazo: {term} meses | Tasa: 17%</p>
+        <p className="text-xs font-semibold text-orange-600 mt-1">Plazo: {term} meses | Tasa: 12.99%</p>
         <div className="mt-3 space-y-2 text-sm text-gray-800">
             <div className="flex justify-between"><span>Enganche:</span> <span className="font-semibold">{downPayment}</span></div>
             <div className="flex justify-between"><span>Mensualidad Aprox:</span> <span className="font-semibold">{monthlyPayment}</span></div>
@@ -606,7 +606,7 @@ const TabsSection: React.FC<{
                     </div>
                     <div className="mt-4 pt-4 border-t border-dashed">
                         <SummaryRow label="Mensualidad estimada" value={formatPrice(financeData.monthlyPayment)} isLarge />
-                        <SummaryRow label="Tasa de interes" value="17%* puede variar" />
+                        <SummaryRow label="Tasa de interes" value="12.99%* puede variar" />
                     </div>
                     <p className="text-xs text-gray-500 text-center pt-2">
                         *Tasa de interes puede variar segun el banco. Incluye seguro con valor del 5% del auto (amortizado mensualmente).

@@ -9,7 +9,7 @@ import { createBrowserSupabaseClient } from '@/lib/supabase/client'
 import { getVehicleImage } from '@/utils/getVehicleImage'
 import { DEFAULT_PLACEHOLDER_IMAGE, BRAND_LOGOS } from '@/utils/constants'
 import type { Vehicle } from '@/types/types'
-import { Car, Truck, DollarSign, Sparkles, ArrowRight } from 'lucide-react'
+import { Car, DollarSign, Sparkles, ArrowRight } from 'lucide-react'
 
 export type VehiclePortfolioItem = {
   id: number
@@ -19,43 +19,54 @@ export type VehiclePortfolioItem = {
   precio: number
 }
 
-// Filter shortcuts that appear between vehicles
-const filterShortcuts = [
+// Filter types for color coding
+type FilterType = 'carroceria' | 'brand' | 'other'
+
+// Filter shortcuts with type for color coding
+const filterShortcuts: Array<{
+  id: string
+  label: string
+  description: string
+  href: string
+  icon: typeof Car | null
+  bgImage: string | null
+  type: FilterType
+}> = [
   {
     id: 'suv',
     label: 'SUVs',
     description: 'Espaciosas y versátiles',
-    href: '/autos?carroceria=SUV',
+    href: '/carroceria/suv',
     icon: Car,
-    gradient: 'from-blue-500 to-indigo-600',
     bgImage: null,
+    type: 'carroceria',
   },
   {
-    id: 'pickup',
-    label: 'Pick Ups',
-    description: 'Potencia y capacidad',
-    href: '/autos?carroceria=Pick-Up',
-    icon: Truck,
-    gradient: 'from-amber-500 to-orange-600',
+    id: 'sedan',
+    label: 'Sedanes',
+    description: 'Elegancia y confort',
+    href: '/carroceria/sedan',
+    icon: Car,
     bgImage: null,
+    type: 'carroceria',
   },
   {
     id: 'mazda',
     label: 'Mazda',
     description: 'Diseño y rendimiento',
-    href: '/autos?marca=Mazda',
+    href: '/marca/Mazda',
     icon: null,
-    gradient: 'from-red-500 to-rose-600',
     bgImage: '/images/Mazda.png',
+    type: 'brand',
   },
   {
     id: 'toyota',
     label: 'Toyota',
     description: 'Confiabilidad garantizada',
-    href: '/autos?marca=Toyota',
+    href: '/marca/Toyota',
     icon: null,
-    gradient: 'from-gray-700 to-gray-900',
     bgImage: '/images/Toyota.png',
+    type: 'brand',
   },
   {
     id: 'budget',
@@ -63,8 +74,8 @@ const filterShortcuts = [
     description: 'Las mejores opciones',
     href: '/autos?precio_max=350000',
     icon: DollarSign,
-    gradient: 'from-emerald-500 to-teal-600',
     bgImage: null,
+    type: 'other',
   },
   {
     id: 'newest',
@@ -72,10 +83,22 @@ const filterShortcuts = [
     description: 'Lo más nuevo',
     href: '/autos?sort=newest',
     icon: Sparkles,
-    gradient: 'from-purple-500 to-pink-600',
     bgImage: null,
+    type: 'other',
   },
 ]
+
+// Get gradient based on filter type
+const getFilterGradient = (type: FilterType): string => {
+  switch (type) {
+    case 'carroceria':
+      return 'from-[#FF6801] to-[#E55A00]' // Orange for body types
+    case 'brand':
+      return 'from-[#1e3a5f] to-[#0f1f33]' // Dark blue for brands
+    case 'other':
+      return 'from-neutral-600 to-neutral-800' // Gray for other filters
+  }
+}
 
 type PortfolioProps = {
   maxVehicles?: number
@@ -84,7 +107,7 @@ type PortfolioProps = {
   showButton?: boolean
 }
 
-// Filter card component
+// Filter card component with type-based gradient and shining effect
 const FilterCard = ({
   filter,
   delay = 0,
@@ -97,6 +120,8 @@ const FilterCard = ({
   aspectClass?: string
 }) => {
   const Icon = filter.icon
+  const gradient = getFilterGradient(filter.type)
+
   return (
     <MotionPreset
       fade
@@ -106,13 +131,13 @@ const FilterCard = ({
       transition={{ duration: 0.4 }}
       className={cn('group relative overflow-hidden rounded-xl transition-all duration-500 hover:shadow-2xl hover:-translate-y-1', className)}
     >
-      <Link href={filter.href} className={cn('block h-full bg-gradient-to-br', filter.gradient, aspectClass)}>
+      <Link href={filter.href} className={cn('block h-full bg-gradient-to-br', gradient, aspectClass)}>
         <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
           {filter.bgImage ? (
             <img
               src={filter.bgImage}
               alt={filter.label}
-              className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-3 opacity-90 group-hover:scale-110 transition-transform duration-300"
+              className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-3 opacity-90 group-hover:scale-110 transition-transform duration-300 brightness-0 invert"
             />
           ) : Icon ? (
             <Icon className="w-12 h-12 sm:w-16 sm:h-16 text-white/90 mb-3 group-hover:scale-110 transition-transform duration-300" />
@@ -128,8 +153,8 @@ const FilterCard = ({
             <ArrowRight className="w-4 h-4" />
           </div>
         </div>
-        {/* Shimmer effect on hover */}
-        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {/* Shining gradient sweep effect on hover */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-[200%] transition-transform duration-1000 ease-out" />
       </Link>
     </MotionPreset>
   )
@@ -177,9 +202,9 @@ const VehicleCard = ({
 )
 
 const Portfolio = ({
-  maxVehicles = 12,
+  maxVehicles = 8,
   title = "Nuestros Vehículos",
-  subtitle = "Explora nuestra selección de autos de calidad, desde autos ejecutivos hasta camiones de trabajo, todos cuidadosamente seleccionados para ofrecerte las mejores opciones.",
+  subtitle = "Explora nuestro amplio inventario de autos seminuevos garantizados, elegidos e inspeccionados rigurosamente para ofrecerte una tranquilidad total al estrenar.",
   showButton = true
 }: PortfolioProps) => {
   const [vehicles, setVehicles] = useState<VehiclePortfolioItem[]>([])
@@ -460,106 +485,77 @@ const Portfolio = ({
           {renderMobileMosaic()}
         </div>
 
-        {/* Desktop 4-Column Layout with interleaved filter cards */}
-        <div className='hidden sm:grid grid-cols-2 lg:grid-cols-4 gap-6'>
-          {Array.from({ length: 4 }).map((_, colIndex) => {
-            // Get vehicles for this column
-            const columnVehicles = vehicles.filter((_, index) => index % 4 === colIndex)
-            // Determine which filter to show in this column (if any)
-            const filterForColumn = colIndex < filterShortcuts.length ? filterShortcuts[colIndex] : null
-            // Insert filter after first vehicle in each column
-            const filterInsertIndex = 1
+        {/* Desktop Mosaic - Varied vehicle sizes, consistent small filter cards */}
+        <div className='hidden sm:flex flex-col gap-4'>
+          {(() => {
+            const elements: JSX.Element[] = []
+            let idx = 0
+            const baseDelay = 0.5
 
-            return (
-              <div
-                key={colIndex}
-                className={cn('space-y-6', {
-                  'sm:mt-12': colIndex === 1 || colIndex === 3
-                })}
-              >
-                {columnVehicles.map((vehicle, index) => {
-                  const baseDelay = 0.9 + ((colIndex * 3 + index) * 0.05)
-                  const elements: JSX.Element[] = []
+            // Row 1: Large vehicle (2 cols) + vehicle + filter
+            if (vehicles[idx] && vehicles[idx + 1]) {
+              elements.push(
+                <div key="row1" className="grid grid-cols-4 gap-4">
+                  <VehicleCard vehicle={vehicles[idx]} delay={baseDelay} className="col-span-2" aspectClass="aspect-[16/9]" />
+                  <VehicleCard vehicle={vehicles[idx + 1]} delay={baseDelay + 0.05} aspectClass="aspect-[4/3]" />
+                  <FilterCard filter={filterShortcuts[0]} delay={baseDelay + 0.1} aspectClass="aspect-[4/3]" />
+                </div>
+              )
+              idx += 2
+            }
 
-                  // Add vehicle card
-                  elements.push(
-                    <MotionPreset
-                      key={vehicle.id}
-                      fade
-                      delay={baseDelay}
-                      slide={{ direction: 'up', offset: 6 }}
-                      blur
-                      transition={{ duration: 0.4 }}
-                      className='group relative overflow-hidden rounded-xl transition-shadow duration-500 hover:shadow-2xl'
-                    >
-                      <Link href={`/autos/${vehicle.slug}`}>
-                        <img
-                          src={vehicle.image}
-                          alt={vehicle.title}
-                          className='aspect-auto w-full object-cover'
-                        />
-                        <div className='absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100' />
-                        <div className='absolute inset-x-0 bottom-0 p-4 opacity-0 translate-y-4 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0'>
-                          <h3 className='text-lg font-bold text-white line-clamp-2 drop-shadow-lg'>
-                            {vehicle.title}
-                          </h3>
-                          <p className='text-[#FF6801] font-bold text-xl mt-1 drop-shadow-lg'>
-                            ${vehicle.precio.toLocaleString('es-MX')}
-                          </p>
-                        </div>
-                      </Link>
-                    </MotionPreset>
-                  )
+            // Row 2: Filter + vehicle + large vehicle (2 cols)
+            if (vehicles[idx] && vehicles[idx + 1]) {
+              elements.push(
+                <div key="row2" className="grid grid-cols-4 gap-4">
+                  <FilterCard filter={filterShortcuts[1]} delay={baseDelay + 0.15} aspectClass="aspect-[4/3]" />
+                  <VehicleCard vehicle={vehicles[idx]} delay={baseDelay + 0.2} aspectClass="aspect-[4/3]" />
+                  <VehicleCard vehicle={vehicles[idx + 1]} delay={baseDelay + 0.25} className="col-span-2" aspectClass="aspect-[16/9]" />
+                </div>
+              )
+              idx += 2
+            }
 
-                  // Insert filter card after first vehicle in each column
-                  if (index === filterInsertIndex && filterForColumn) {
-                    elements.push(
-                      <FilterCard
-                        key={`filter-${filterForColumn.id}`}
-                        filter={filterForColumn}
-                        delay={baseDelay + 0.05}
-                        aspectClass="aspect-[4/3]"
-                      />
-                    )
-                  }
+            // Row 3: Vehicle + filter + vehicle + vehicle
+            if (vehicles[idx] && vehicles[idx + 1] && vehicles[idx + 2]) {
+              elements.push(
+                <div key="row3" className="grid grid-cols-4 gap-4">
+                  <VehicleCard vehicle={vehicles[idx]} delay={baseDelay + 0.3} aspectClass="aspect-[4/3]" />
+                  <FilterCard filter={filterShortcuts[2]} delay={baseDelay + 0.35} aspectClass="aspect-[4/3]" />
+                  <VehicleCard vehicle={vehicles[idx + 1]} delay={baseDelay + 0.4} aspectClass="aspect-[4/3]" />
+                  <VehicleCard vehicle={vehicles[idx + 2]} delay={baseDelay + 0.45} aspectClass="aspect-[4/3]" />
+                </div>
+              )
+              idx += 3
+            }
 
-                  return elements
-                })}
+            // Row 4: Large vehicle (2 cols) + filter + vehicle
+            if (vehicles[idx]) {
+              elements.push(
+                <div key="row4" className="grid grid-cols-4 gap-4">
+                  <VehicleCard vehicle={vehicles[idx]} delay={baseDelay + 0.5} className="col-span-2" aspectClass="aspect-[16/9]" />
+                  <FilterCard filter={filterShortcuts[3]} delay={baseDelay + 0.55} aspectClass="aspect-[4/3]" />
+                  <FilterCard filter={filterShortcuts[4]} delay={baseDelay + 0.6} aspectClass="aspect-[4/3]" />
+                </div>
+              )
+              idx += 1
+            }
 
-                {/* Add remaining filters to columns that have fewer vehicles */}
-                {columnVehicles.length <= filterInsertIndex && filterForColumn && (
-                  <FilterCard
-                    key={`filter-${filterForColumn.id}`}
-                    filter={filterForColumn}
-                    delay={0.9 + (colIndex * 0.1)}
-                    aspectClass="aspect-[4/3]"
-                  />
-                )}
-              </div>
-            )
-          })}
+            // Row 5: Remaining filters + vehicle if any
+            if (filterShortcuts[5]) {
+              elements.push(
+                <div key="row5" className="grid grid-cols-4 gap-4">
+                  <FilterCard filter={filterShortcuts[5]} delay={baseDelay + 0.65} aspectClass="aspect-[4/3]" />
+                  {vehicles[idx] && <VehicleCard vehicle={vehicles[idx]} delay={baseDelay + 0.7} className="col-span-2" aspectClass="aspect-[16/9]" />}
+                  {vehicles[idx + 1] && <VehicleCard vehicle={vehicles[idx + 1]} delay={baseDelay + 0.75} aspectClass="aspect-[4/3]" />}
+                </div>
+              )
+            }
+
+            return elements
+          })()}
         </div>
 
-        {/* Additional filter shortcuts row on desktop */}
-        <div className='hidden sm:grid grid-cols-3 lg:grid-cols-6 gap-4 mt-8'>
-          {filterShortcuts.map((filter, idx) => (
-            <Link
-              key={filter.id}
-              href={filter.href}
-              className={cn(
-                'group flex items-center gap-3 p-4 rounded-xl bg-gradient-to-br transition-all duration-300 hover:shadow-lg hover:-translate-y-1',
-                filter.gradient
-              )}
-            >
-              {filter.bgImage ? (
-                <img src={filter.bgImage} alt={filter.label} className="w-8 h-8 object-contain" />
-              ) : filter.icon ? (
-                <filter.icon className="w-6 h-6 text-white" />
-              ) : null}
-              <span className="text-white font-semibold text-sm">{filter.label}</span>
-            </Link>
-          ))}
-        </div>
       </div>
     </section>
   )

@@ -820,7 +820,7 @@ const VehicleProductOverview = ({
                           <div className="flex justify-between items-center">
                             <div>
                               <p className="text-sm text-orange-800 font-medium">Mensualidad estimada</p>
-                              <p className="text-xs text-orange-600 mt-0.5">Tasa de 17%* (puede variar)</p>
+                              <p className="text-xs text-orange-600 mt-0.5">Tasa de 12.99%* (puede variar)</p>
                             </div>
                             <span className="text-3xl font-black text-orange-600">{formatPrice(financeData.monthlyPayment)}</span>
                           </div>
