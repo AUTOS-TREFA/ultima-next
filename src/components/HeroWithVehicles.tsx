@@ -7,8 +7,18 @@ import { MotionPreset } from '@/components/ui/motion-preset';
 import { Rating } from '@/components/ui/rating';
 import { Shield, LockKeyhole, Zap } from 'lucide-react';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import type { Vehicle } from '@/types/types';
 import { getVehicleImage } from '@/utils/getVehicleImage';
+
+const rotatingPhrases = [
+  'con tranquilidad absoluta',
+  'con garantías extendidas',
+  'con programas de recompra',
+  'con financiamiento a tu medida',
+  'con asesoría personalizada',
+  'con seguridad y confianza',
+];
 
 // Compact vehicle card for the marquee - hover overlay
 const VehicleMarqueeCard = ({ vehicle }: { vehicle: Vehicle }) => {
@@ -65,6 +75,15 @@ interface HeroWithVehiclesProps {
 }
 
 const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
+  const [phraseIndex, setPhraseIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPhraseIndex((prev) => (prev + 1) % rotatingPhrases.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Split vehicles into two groups for the marquees
   const halfLength = Math.ceil(vehicles.length / 2);
   const leftVehicles = vehicles.slice(0, halfLength);
@@ -73,8 +92,8 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
   return (
     <section className="from-primary/10 via-orange-50/50 to-background flex min-h-screen flex-1 flex-col bg-gradient-to-bl to-60% overflow-hidden">
       <div className="mx-auto grid w-full max-w-7xl flex-1 gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_auto] lg:px-8">
-        {/* Left Content - extended width */}
-        <div className="flex max-w-3xl flex-col justify-center gap-8 pt-16 pb-12 lg:pt-20 lg:pr-8">
+        {/* Left Content - extended width, no top padding */}
+        <div className="flex max-w-3xl flex-col justify-center gap-8 pb-12 lg:pr-8">
           <div className="flex flex-col items-start gap-6">
             <MotionPreset
               fade
@@ -97,9 +116,12 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
               transition={{ duration: 0.5, ease: 'easeOut' }}
               className="text-3xl leading-tight font-bold text-balance sm:text-4xl lg:text-5xl text-gray-900"
             >
-              Estrena tu auto seminuevo en{' '}
-              <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">
-                tiempo récord
+              Estrena un auto seminuevo{' '}
+              <span
+                key={phraseIndex}
+                className="text-[#FF6801] inline-block animate-text-rotate"
+              >
+                {rotatingPhrases[phraseIndex]}
               </span>
             </MotionPreset>
 
@@ -164,7 +186,7 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
 
               <div className="space-y-1">
                 <div className="flex items-center gap-1">
-                  <Rating readOnly variant="yellow" size={20} value={5} precision={0.5} />
+                  <Rating readOnly variant="yellow" size={20} value={5} precision={0.5} className="[&_svg]:fill-amber-400 [&_svg]:text-amber-400" />
                   <span className="font-semibold text-sm ml-1">4.9</span>
                 </div>
                 <p className="text-xs text-gray-500">La mejor calificada del país</p>
@@ -200,20 +222,20 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
           fade
           blur
           transition={{ duration: 0.7, ease: 'easeOut' }}
-          className="relative max-lg:hidden py-4 ml-4"
+          className="relative max-lg:hidden py-4 ml-4 -mr-8"
         >
           {/* Top fade overlay */}
           <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-orange-50/90 via-orange-50/50 to-transparent z-10 pointer-events-none" />
           {/* Bottom fade overlay */}
           <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-orange-50/90 via-orange-50/50 to-transparent z-10 pointer-events-none" />
 
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-2 gap-3">
             {leftVehicles.length > 0 && (
               <Marquee
                 vertical
                 pauseOnHover
                 duration={40}
-                gap={24}
+                gap={32}
                 className="h-screen min-h-[700px] overflow-hidden"
               >
                 {leftVehicles.map((vehicle) => (
@@ -227,7 +249,7 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
                 vertical
                 pauseOnHover
                 duration={45}
-                gap={24}
+                gap={32}
                 reverse
                 className="h-screen min-h-[700px] overflow-hidden"
               >

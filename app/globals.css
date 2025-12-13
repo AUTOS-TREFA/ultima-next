@@ -419,6 +419,16 @@ h1-be-vietnam-pro-black {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+@keyframes text-rotate-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 @keyframes swipe-right-indicator {
   0%, 100% { transform: translateX(0); opacity: 0.8; }
   50% { transform: translateX(40px) rotate(5deg); opacity: 1; }
@@ -609,6 +619,7 @@ h1-be-vietnam-pro-black {
   }
 
   .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+  .animate-text-rotate { animation: text-rotate-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
   .animate-swipe-right-indicator { animation: swipe-right-indicator 2s ease-in-out infinite; }
   .animate-swipe-left-indicator { animation: swipe-left-indicator 2s ease-in-out infinite 0.2s; }
   .animate-swipe-up-indicator { animation: swipe-up-indicator 2s ease-in-out infinite 0.4s; }
