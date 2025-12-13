@@ -28,13 +28,15 @@ function Marquee(props: MarqueeProps) {
     ...rest
   } = props
 
-  // Animation style for the inner elements
+  // Animation style for the inner elements with GPU acceleration
   const animationStyle: React.CSSProperties = {
     animation: vertical
       ? `marquee-vertical ${duration}s linear infinite`
       : `marquee-horizontal ${duration}s linear infinite`,
     animationDelay: `${delay}s`,
     animationDirection: reverse ? 'reverse' : 'normal',
+    willChange: 'transform',
+    backfaceVisibility: 'hidden',
   }
 
   return (

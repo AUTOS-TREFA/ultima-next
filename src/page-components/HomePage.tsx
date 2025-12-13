@@ -722,7 +722,7 @@ const CTACardsSection: React.FC<{ content: CTACardsContent | null }> = ({ conten
         description: "Obtén una asesoría personalizada de un experto de nuestro equipo.",
         buttonText: "Iniciar Chat",
         buttonLink: "https://wa.me/5218187049079",
-        image: "/images/fer-help.png"
+        image: "/images/landing-asset-main.png"
       },
       {
         type: 'financing',

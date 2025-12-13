@@ -206,7 +206,7 @@ const ContactPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="relative h-[400px] lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl order-2 lg:order-1">
               <LazyImage
-                src="/images/fer-help.png"
+                src="/images/landing-asset-main.png"
                 alt="Equipo de atención al cliente TREFA"
                 className="w-full h-full"
                 objectFit="contain"

@@ -345,7 +345,7 @@ function HeroTrefa({ isMobile = false }: HeroTrefaProps) {
                 <figure className="flex gap-2">
                   <div className="xl:w-20 xl:h-20 w-16 h-16 sm:w-18 sm:h-18 flex items-center justify-center flex-shrink-0">
                     <img
-                      src="/images/fer-help.png"
+                      src="/images/landing-asset-main.png"
                       alt="Asesor TREFA"
                       className="w-full h-full object-cover rounded-full"
                     />

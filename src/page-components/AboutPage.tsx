@@ -201,7 +201,7 @@ const AboutPage: React.FC = () => {
             </div>
             <div className="relative h-[400px] lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl">
               <LazyImage
-                src="/images/fer-help.png"
+                src="/images/landing-asset-main.png"
                 alt="Equipo TREFA"
                 className="w-full h-full"
                 objectFit="contain"

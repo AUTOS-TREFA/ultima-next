@@ -94,9 +94,9 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
     <section className="from-primary/10 via-orange-50/50 to-background flex min-h-screen flex-1 flex-col bg-gradient-to-bl to-60% overflow-hidden relative">
       {/* Mobile background images - only visible on mobile */}
       <div className="lg:hidden absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Fer-help image - positioned bottom right with transparency */}
+        {/* Advisor image - positioned bottom right with transparency */}
         <img
-          src="/images/fer-help.png"
+          src="/images/landing-asset-main.png"
           alt=""
           aria-hidden="true"
           className="absolute bottom-0 right-0 w-64 h-auto opacity-[0.12] translate-x-8 translate-y-4"
@@ -110,9 +110,9 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
         />
       </div>
 
-      <div className="mx-auto grid w-full max-w-7xl flex-1 gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_auto] lg:px-8 items-center relative z-10">
+      <div className="grid w-full flex-1 gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:pl-8 xl:pl-16 2xl:pl-24 lg:pr-0 items-center relative z-10">
         {/* Left Content - extended width, vertically centered */}
-        <div className="flex max-w-3xl flex-col justify-center gap-8 py-8 lg:py-12 lg:pr-8">
+        <div className="flex max-w-2xl flex-col justify-center gap-8 py-8 lg:py-12 lg:pr-8 xl:max-w-3xl">
           <div className="flex flex-col items-start gap-6">
             <MotionPreset
               fade
@@ -236,19 +236,21 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
           </MotionPreset>
         </div>
 
-        {/* Right Content - Vehicle Marquees with fades */}
+        {/* Right Content - Vehicle Marquees with fades - pushed to far right */}
         <MotionPreset
           fade
           blur
           transition={{ duration: 0.7, ease: 'easeOut' }}
-          className="relative max-lg:hidden py-4 ml-4 -mr-8"
+          className="relative max-lg:hidden py-4 -mr-4 sm:-mr-6 lg:-mr-8 xl:-mr-0"
         >
           {/* Top fade overlay */}
           <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-orange-50/90 via-orange-50/50 to-transparent z-10 pointer-events-none" />
           {/* Bottom fade overlay */}
           <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-orange-50/90 via-orange-50/50 to-transparent z-10 pointer-events-none" />
+          {/* Right fade overlay for seamless edge */}
+          <div className="absolute top-0 bottom-0 right-0 w-16 bg-gradient-to-l from-orange-50/80 to-transparent z-10 pointer-events-none" />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 pr-2">
             {leftVehicles.length > 0 && (
               <Marquee
                 vertical

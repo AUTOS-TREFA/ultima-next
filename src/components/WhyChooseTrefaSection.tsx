@@ -126,7 +126,7 @@ const WhyChooseTrefaSection = () => {
             transition={{ duration: 0.9 }}
           >
             <img
-              src='/images/fer-help.png'
+              src='/images/landing-asset-main.png'
               alt='Asesor TREFA'
               className='mx-auto h-auto w-full max-w-sm object-contain md:max-w-md lg:max-w-lg'
             />
