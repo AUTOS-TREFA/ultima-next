@@ -36,6 +36,7 @@ echo -e "${YELLOW}📦 Creating backup file: ${BACKUP_FILE}${NC}"
 echo -e "${YELLOW}📍 Connecting to: ${DB_HOST}${NC}"
 
 # Create the backup using pg_dump
+# Note: Excluding tracking_events table due to large size causing SSL timeout
 PGPASSWORD="${DB_PASSWORD}" pg_dump \
   -h "${DB_HOST}" \
   -p "${DB_PORT}" \
@@ -46,6 +47,7 @@ PGPASSWORD="${DB_PASSWORD}" pg_dump \
   --no-acl \
   --clean \
   --if-exists \
+  --exclude-table=tracking_events \
   -f "${BACKUP_FILE}"
 
 # Check if backup was successful
