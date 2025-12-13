@@ -1,59 +1,169 @@
-import React from 'react';
-import { ShieldCheckIcon, TrendingUpIcon, CheckCircleIcon, HeartIcon, StarIcon, AwardIcon, UsersIcon, ClockIcon } from './icons';
+'use client'
 
-const Feature: React.FC<{ icon: React.ElementType; title: string; description: string }> = ({ icon: Icon, title, description }) => (
-  <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300">
-    <div className="flex items-center mb-4">
-      <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center mr-4">
-        <Icon className="w-6 h-6 text-primary-600" />
-      </div>
-      <h3 className="text-lg font-bold text-gray-800">{title}</h3>
-    </div>
-    <p className="text-gray-600">{description}</p>
-  </div>
-);
+import type { ComponentType } from 'react'
+import { MotionPreset } from '@/components/ui/motion-preset'
+import { ShieldCheck, TrendingUp, Heart, Lock, MessageCircle, Users } from 'lucide-react'
 
-const WhyChooseTrefaSection: React.FC = () => {
-  const features = [
-    { icon: ShieldCheckIcon, title: "Seminuevos garantizados", description: "Cada auto pasa por una rigurosa inspección de 150 puntos para garantizar su calidad y tu tranquilidad." },
-    { icon: TrendingUpIcon, title: "Financiamiento ágil", description: "Trabajamos con los mejores bancos para ofrecerte perfilación personalizada y aumentar tus probabilidades de aprobar tu solicitud." },
-    { icon: CheckCircleIcon, title: "Proceso 100% Digital", description: "Completa todo el proceso desde la comodidad de tu casa, y recibe una respuesta en 24 horas o menos. Sin filas ni papeleos interminables." },
-    { icon: HeartIcon, title: "Tranquilidad absoluta", description: "En TREFA no solicitamos pagos por adelantado. Paga tu enganche en sucursal después de conocer y manejar tu nuevo auto" },
-  ];
+interface FeatureItem {
+  icon: ComponentType<{ className?: string }>
+  title: string
+  description: string
+}
 
-  const stats = [
-    { icon: StarIcon, value: '5 estrellas', label: 'Calificación promedio' },
-    { icon: UsersIcon, value: '5,000+', label: 'Clientes satisfechos' },
-    { icon: ClockIcon, value: '24h o menos', label: 'Respuesta de crédito' },
-    { icon: AwardIcon, value: '100% en línea', label: 'Portal de financiamiento' },
-  ];
+const leftFeatures: FeatureItem[] = [
+  {
+    icon: ShieldCheck,
+    title: "Garantía TREFA",
+    description: "Cada auto pasa por una rigurosa inspección de 150 puntos. Si algo falla, nosotros respondemos."
+  },
+  {
+    icon: TrendingUp,
+    title: "Financiamiento 100% Digital",
+    description: "Aplica desde tu celular y recibe respuesta en 24 horas. Trabajamos con los mejores bancos del país."
+  },
+  {
+    icon: Users,
+    title: "Más de 5,000 clientes satisfechos",
+    description: "Somos la agencia de seminuevos mejor calificada en el noreste de México. Tu confianza nos respalda."
+  },
+]
 
+const rightFeatures: FeatureItem[] = [
+  {
+    icon: Lock,
+    title: "Kit de Seguridad TREFA",
+    description: "Todos nuestros autos incluyen GPS, seguro de robo y asistencia vial. Tu inversión siempre protegida."
+  },
+  {
+    icon: MessageCircle,
+    title: "Asesoría personalizada",
+    description: "Un asesor te acompaña en cada paso del proceso vía WhatsApp. Resolvemos todas tus dudas al instante."
+  },
+  {
+    icon: Heart,
+    title: "Tranquilidad absoluta",
+    description: "No solicitamos pagos por adelantado. Paga tu enganche en sucursal después de conocer y manejar tu auto."
+  },
+]
+
+const WhyChooseTrefaSection = () => {
   return (
-    <section className="py-20 sm:py-24 lg:py-32 bg-white pt-80">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900 leading-snug lg:leading-tight">¿Por qué elegir TREFA?</h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">Simplificamos cada paso para que tu experiencia sea segura, transparente y excepcional.</p>
+    <section className='py-8 sm:py-16 lg:py-24 bg-gray-50'>
+      <div className='mx-auto flex max-w-7xl flex-col gap-8 px-4 sm:gap-16 sm:px-6 lg:gap-24 lg:px-8'>
+        {/* Header */}
+        <div className='space-y-4 text-center'>
+          <MotionPreset
+            component='h2'
+            className='text-2xl font-bold md:text-3xl lg:text-4xl'
+            fade
+            slide={{ direction: 'up', offset: 50 }}
+            blur
+            transition={{ duration: 0.5 }}
+          >
+            ¿Por qué elegir{' '}
+            <span className='relative z-10 text-[#FF6801]'>
+              TREFA
+              <span
+                className='bg-[#FF6801] absolute bottom-0 left-0 -z-10 h-px w-full max-sm:hidden'
+                aria-hidden='true'
+              />
+            </span>
+            ?
+          </MotionPreset>
+          <MotionPreset
+            component='p'
+            className='text-muted-foreground text-lg lg:text-xl max-w-3xl mx-auto'
+            fade
+            slide={{ direction: 'up', offset: 50 }}
+            blur
+            delay={0.3}
+            transition={{ duration: 0.5 }}
+          >
+            Simplificamos cada paso para que tu experiencia sea segura, transparente y excepcional.
+          </MotionPreset>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, index) => (
-            <Feature key={index} {...feature} />
-          ))}
-        </div>
-        <div className="mt-16 bg-white rounded-2xl shadow-lg p-8">
-          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {stats.map((stat, index) => (
-              <div key={index}>
-                <stat.icon className="w-10 h-10 text-primary-500 mx-auto" />
-                <p className="text-3xl font-extrabold text-gray-900 mt-2">{stat.value}</p>
-                <p className="text-gray-500">{stat.label}</p>
-              </div>
-            ))}
+
+        {/* Content */}
+        <div className='grid grid-cols-1 items-center gap-16 max-md:gap-9 md:grid-cols-2 lg:grid-cols-3'>
+          {/* Left Features */}
+          <div className='w-full space-y-9 max-lg:order-2 max-lg:mx-auto max-lg:max-w-md'>
+            {leftFeatures.map((item, index) => {
+              const IconComponent = item.icon
+
+              return (
+                <MotionPreset
+                  component='div'
+                  key={item.title}
+                  className='flex items-center gap-4 max-lg:justify-end'
+                  fade
+                  slide={{ direction: 'down', offset: 50 }}
+                  blur
+                  delay={0.4 * index + 1.5}
+                  transition={{ duration: 0.5 }}
+                >
+                  <div className='border-[#FF6801]/60 bg-[#FF6801]/10 flex size-16 shrink-0 items-center justify-center rounded-xl border lg:hidden'>
+                    <IconComponent className='size-8 stroke-[1.5] text-[#FF6801]' />
+                  </div>
+                  <div className='space-y-2 lg:text-right'>
+                    <h4 className='text-lg font-semibold'>{item.title}</h4>
+                    <p className='text-muted-foreground text-sm'>{item.description}</p>
+                  </div>
+                  <div className='border-[#FF6801]/60 bg-[#FF6801]/10 flex size-16 shrink-0 items-center justify-center rounded-xl border max-lg:hidden'>
+                    <IconComponent className='size-8 stroke-[1.5] text-[#FF6801]' />
+                  </div>
+                </MotionPreset>
+              )
+            })}
+          </div>
+
+          {/* Center Image */}
+          <MotionPreset
+            component='div'
+            className='max-lg:order-1 md:max-lg:col-span-2'
+            fade
+            blur
+            delay={0.6}
+            transition={{ duration: 0.9 }}
+          >
+            <img
+              src='/images/fer-help.png'
+              alt='Asesor TREFA'
+              className='mx-auto h-auto w-full max-w-sm object-contain md:max-w-md lg:max-w-lg'
+            />
+          </MotionPreset>
+
+          {/* Right Features */}
+          <div className='w-full space-y-9 max-lg:order-3 max-lg:mx-auto max-lg:max-w-md'>
+            {rightFeatures.map((item, index) => {
+              const IconComponent = item.icon
+              const leftSectionDelay = 0.4 * (leftFeatures.length - 1) + 1.5 + 0.5
+
+              return (
+                <MotionPreset
+                  component='div'
+                  key={item.title}
+                  className='flex items-center gap-4'
+                  fade
+                  slide={{ direction: 'down', offset: 50 }}
+                  blur
+                  delay={leftSectionDelay + 0.4 * index}
+                  transition={{ duration: 0.5 }}
+                >
+                  <div className='border-[#FF6801]/60 bg-[#FF6801]/10 flex size-16 shrink-0 items-center justify-center rounded-xl border'>
+                    <IconComponent className='size-8 stroke-[1.5] text-[#FF6801]' />
+                  </div>
+                  <div className='space-y-2'>
+                    <h4 className='text-lg font-semibold'>{item.title}</h4>
+                    <p className='text-muted-foreground text-sm'>{item.description}</p>
+                  </div>
+                </MotionPreset>
+              )
+            })}
           </div>
         </div>
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default WhyChooseTrefaSection;
+export default WhyChooseTrefaSection

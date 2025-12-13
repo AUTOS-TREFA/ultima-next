@@ -90,10 +90,28 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
   const rightVehicles = vehicles.slice(halfLength);
 
   return (
-    <section className="from-primary/10 via-orange-50/50 to-background flex min-h-screen flex-1 flex-col bg-gradient-to-bl to-60% overflow-hidden">
-      <div className="mx-auto grid w-full max-w-7xl flex-1 gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_auto] lg:px-8">
-        {/* Left Content - extended width, no top padding */}
-        <div className="flex max-w-3xl flex-col justify-center gap-8 pb-12 lg:pr-8">
+    <section className="from-primary/10 via-orange-50/50 to-background flex min-h-screen flex-1 flex-col bg-gradient-to-bl to-60% overflow-hidden relative">
+      {/* Mobile background images - only visible on mobile */}
+      <div className="lg:hidden absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Fer-help image - positioned bottom right with transparency */}
+        <img
+          src="/images/fer-help.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute bottom-0 right-0 w-64 h-auto opacity-[0.12] translate-x-8 translate-y-4"
+        />
+        {/* Vehicle silhouette - positioned top left with different transparency */}
+        <img
+          src="/images/sedan-filter.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute top-20 -left-12 w-72 h-auto opacity-[0.06] -rotate-12"
+        />
+      </div>
+
+      <div className="mx-auto grid w-full max-w-7xl flex-1 gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_auto] lg:px-8 items-center relative z-10">
+        {/* Left Content - extended width, vertically centered */}
+        <div className="flex max-w-3xl flex-col justify-center gap-8 py-8 lg:py-12 lg:pr-8">
           <div className="flex flex-col items-start gap-6">
             <MotionPreset
               fade
@@ -114,7 +132,7 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
               slide
               delay={0.3}
               transition={{ duration: 0.5, ease: 'easeOut' }}
-              className="text-3xl leading-tight font-bold text-balance sm:text-4xl lg:text-5xl text-gray-900"
+              className="text-3xl leading-tight font-extrabold text-balance sm:text-4xl sm:font-bold lg:text-5xl text-gray-900"
             >
               Estrena un auto seminuevo{' '}
               <span
@@ -144,7 +162,7 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
               transition={{ duration: 0.5, ease: 'easeOut' }}
               className="flex flex-wrap items-center gap-4"
             >
-              <Button size="lg" asChild className="bg-[#FF6801] hover:bg-[#E55E01] shadow-lg h-14 px-8">
+              <Button size="lg" asChild className="bg-[#FF6801] hover:bg-[#E55E01] shadow-lg h-14 px-8 text-lg font-bold">
                 <Link href="/autos">
                   <Zap className="w-5 h-5 mr-2" />
                   Ver Inventario
@@ -154,7 +172,7 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
                 size="lg"
                 variant="outline"
                 asChild
-                className="border-[#FF6801] border-2 hover:bg-[#FF6801]/5 text-[#FF6801] h-14 px-8"
+                className="border-[#FF6801] border-2 hover:bg-[#FF6801]/5 text-[#FF6801] h-14 px-8 text-lg font-bold"
               >
                 <Link href="/financiamientos">Contactar a un Asesor</Link>
               </Button>
@@ -234,8 +252,8 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
               <Marquee
                 vertical
                 pauseOnHover
-                duration={40}
-                gap={32}
+                duration={20}
+                gap={1.5}
                 className="h-screen min-h-[700px] overflow-hidden"
               >
                 {leftVehicles.map((vehicle) => (
@@ -248,8 +266,8 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
               <Marquee
                 vertical
                 pauseOnHover
-                duration={45}
-                gap={32}
+                duration={22}
+                gap={1.5}
                 reverse
                 className="h-screen min-h-[700px] overflow-hidden"
               >

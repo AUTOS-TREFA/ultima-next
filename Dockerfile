@@ -1,5 +1,6 @@
+# syntax=docker/dockerfile:1.4
 # Multi-stage build for Next.js on Cloud Run
-# Optimized for production deployment
+# Optimized for production deployment with BuildKit caching
 
 # Stage 1: Dependencies
 FROM node:20-alpine AS deps
@@ -9,8 +10,9 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install ALL dependencies (including devDependencies needed for build)
-RUN npm ci && \
+# Install ALL dependencies with BuildKit cache mount for npm
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci && \
     npm cache clean --force
 
 # Stage 2: Builder
@@ -28,7 +30,6 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
 # Accept build arguments for Next.js public environment variables
-# Note: These are baked into the build and cannot be changed at runtime
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 ARG NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID
@@ -44,6 +45,9 @@ ARG NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_BASE_ID
 ARG NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_TABLE_ID
 ARG NEXT_PUBLIC_IMAGE_CDN_URL
 ARG NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL
+ARG NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID
+ARG NEXT_PUBLIC_CLOUDFLARE_R2_ACCESS_KEY_ID
+ARG NEXT_PUBLIC_CLOUDFLARE_R2_SECRET_ACCESS_KEY
 ARG NEXT_PUBLIC_CAR_STUDIO_API_KEY
 ARG NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL
 ARG NEXT_PUBLIC_LANDING_WEBHOOK_URL
@@ -60,7 +64,6 @@ ARG NEXT_PUBLIC_BUILD_DATE
 ARG NEXT_PUBLIC_ENVIRONMENT
 
 # Set them as environment variables for the build
-# These are embedded in the JavaScript bundle during build
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
 ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 ENV NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID=$NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID
@@ -76,6 +79,9 @@ ENV NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_BASE_ID=$NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE
 ENV NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_TABLE_ID=$NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_TABLE_ID
 ENV NEXT_PUBLIC_IMAGE_CDN_URL=$NEXT_PUBLIC_IMAGE_CDN_URL
 ENV NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL=$NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL
+ENV NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID=$NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID
+ENV NEXT_PUBLIC_CLOUDFLARE_R2_ACCESS_KEY_ID=$NEXT_PUBLIC_CLOUDFLARE_R2_ACCESS_KEY_ID
+ENV NEXT_PUBLIC_CLOUDFLARE_R2_SECRET_ACCESS_KEY=$NEXT_PUBLIC_CLOUDFLARE_R2_SECRET_ACCESS_KEY
 ENV NEXT_PUBLIC_CAR_STUDIO_API_KEY=$NEXT_PUBLIC_CAR_STUDIO_API_KEY
 ENV NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL=$NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL
 ENV NEXT_PUBLIC_LANDING_WEBHOOK_URL=$NEXT_PUBLIC_LANDING_WEBHOOK_URL
@@ -91,8 +97,9 @@ ENV NEXT_PUBLIC_GIT_COMMIT=$NEXT_PUBLIC_GIT_COMMIT
 ENV NEXT_PUBLIC_BUILD_DATE=$NEXT_PUBLIC_BUILD_DATE
 ENV NEXT_PUBLIC_ENVIRONMENT=$NEXT_PUBLIC_ENVIRONMENT
 
-# Build Next.js application
-RUN npm run build
+# Build Next.js application with BuildKit cache for Next.js cache
+RUN --mount=type=cache,target=/app/.next/cache \
+    npm run build
 
 # Stage 3: Runner
 FROM node:20-alpine AS runner
@@ -103,8 +110,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=8080
 
 # Create non-root user for security
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
 # Copy necessary files from builder
 COPY --from=builder /app/public ./public

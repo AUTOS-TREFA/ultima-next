@@ -90,6 +90,11 @@
     color: hsl(var(--foreground));
   }
 
+  /* Reducir espaciado de letras en headings para mejor legibilidad */
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.02em;
+  }
+
   /* ===================================================================
      TEXTO BLANCO SOLO PARA BOTONES Y ELEMENTOS CON FONDO NARANJA
      ================================================================ */
@@ -924,21 +929,29 @@ background: radial-gradient(circle, rgba(255, 120, 10, 1) 18%, rgba(255, 104, 1,
   }
 }
 
-@theme inline {
-  @keyframes marquee-horizontal {
+/* Marquee Animations - CSS Variables based */
+@keyframes marquee-horizontal {
   from {
     transform: translateX(0);
-    }
+  }
   to {
     transform: translateX(calc(-100% - var(--marquee-gap)));
-    }
   }
-  @keyframes marquee-vertical {
+}
+
+@keyframes marquee-vertical {
   from {
     transform: translateY(0);
-    }
+  }
   to {
     transform: translateY(calc(-100% - var(--marquee-gap)));
-    }
   }
+}
+
+.animate-marquee-horizontal {
+  animation: marquee-horizontal var(--marquee-duration) linear infinite;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--marquee-duration) linear infinite;
 }

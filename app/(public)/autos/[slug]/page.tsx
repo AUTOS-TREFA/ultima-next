@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import VehicleDetailPage from '@/page-components/VehicleDetailPage';
+import VehicleDetailPageV2 from '@/page-components/VehicleDetailPageV2';
 import { VehicleStructuredData } from '@/components/StructuredData';
 import VehicleService from '@/services/VehicleService';
 import { getVehicleImage } from '@/utils/getVehicleImage';
@@ -168,8 +168,8 @@ export default async function Page({ params }: PageProps) {
       {/* Datos estructurados para SEO (JSON-LD) */}
       <VehicleStructuredData vehicle={vehicle} url={url} />
 
-      {/* Client component que mantiene TODO el tracking intacto */}
-      <VehicleDetailPage slug={params.slug} />
+      {/* Client component con nuevo diseño shadcn y tracking completo */}
+      <VehicleDetailPageV2 slug={params.slug} />
     </>
   );
 }

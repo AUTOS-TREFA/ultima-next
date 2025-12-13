@@ -4,7 +4,7 @@ import VehicleService from '@/services/VehicleService';
 import { VehicleStructuredData } from '@/components/StructuredData';
 import { getVehicleImage } from '@/utils/getVehicleImage';
 import { formatPrice, formatMileage } from '@/utils/formatters';
-import VehicleDetailPageV2 from './VehicleDetailPageV2';
+import VehicleDetailPageV2 from '@/page-components/VehicleDetailPageV2';
 
 interface PageProps {
   params: { slug: string };

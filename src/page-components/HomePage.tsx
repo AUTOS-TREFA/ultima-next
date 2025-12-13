@@ -943,7 +943,7 @@ const HomePage: React.FC = () => {
       <HeroWithVehicles vehicles={heroVehicles} />
 
       {/* Additional sections */}
-      <Portfolio maxVehicles={12} />
+      <Portfolio maxVehicles={12} title="Autos TREFA" />
       <WallOfLove />
       <WhyChooseTrefaSection />
 

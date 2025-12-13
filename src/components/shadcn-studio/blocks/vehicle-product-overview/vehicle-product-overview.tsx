@@ -1,6 +1,7 @@
 'use client'
 
-import { useId, useState, useMemo, useCallback } from 'react'
+import { useId, useState, useMemo, useCallback, useRef, useEffect } from 'react'
+import { motion, AnimatePresence, PanInfo } from 'framer-motion'
 
 import {
   HeartIcon,
@@ -25,7 +26,10 @@ import {
   CalculatorIcon,
   CheckIcon,
   CalendarIcon,
-  WrenchIcon
+  WrenchIcon,
+  XIcon,
+  MaximizeIcon,
+  ZoomInIcon
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -45,11 +49,17 @@ interface InspectionReportData {
   past_owners?: number
 }
 
+type LightboxMediaItem = {
+  type: 'image' | 'video'
+  url: string
+}
+
 type VehicleProductOverviewProps = {
   vehicle: WordPressVehicle
   onFinancingClick: () => void
   onWhatsAppClick: () => void
   onFavoriteClick: () => void
+  onCalculatorInteraction?: () => void
   isFavorite: boolean
   favoriteCount: number
   inspectionData?: InspectionReportData | null
@@ -63,11 +73,159 @@ const TABS = [
   { id: 'inspection' as TabId, label: 'Inspección', icon: ShieldCheckIcon },
 ]
 
+// Lightbox Component
+const Lightbox = ({
+  media,
+  currentIndex,
+  onClose,
+  onPrev,
+  onNext,
+  setCurrentIndex
+}: {
+  media: LightboxMediaItem[]
+  currentIndex: number
+  onClose: () => void
+  onPrev: () => void
+  onNext: () => void
+  setCurrentIndex: (index: number) => void
+}) => {
+  const [showZoom, setShowZoom] = useState(false)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const ZOOM_LEVEL = 3
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+      if (e.key === 'ArrowLeft') onPrev()
+      if (e.key === 'ArrowRight') onNext()
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = 'unset'
+    }
+  }, [onClose, onPrev, onNext])
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLImageElement>) => {
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect()
+    const x = ((e.pageX - left) / width) * 100
+    const y = ((e.pageY - top) / height) * 100
+    setMousePosition({ x, y })
+  }
+
+  const currentItem = media[currentIndex]
+  if (!currentItem) return null
+
+  return (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 backdrop-blur-sm">
+      {/* Close button - VERY visible */}
+      <button
+        onClick={onClose}
+        className="fixed top-4 right-4 z-[1001] flex items-center gap-2 px-4 py-2 bg-white text-black font-bold rounded-full shadow-xl hover:bg-gray-100 transition-all"
+        aria-label="Cerrar"
+      >
+        <XIcon className="w-5 h-5" />
+        <span>Cerrar</span>
+      </button>
+
+      {/* Zoom indicator */}
+      <div className="fixed top-4 left-4 z-[1001] flex items-center gap-2 px-3 py-2 bg-black/60 text-white text-sm rounded-full">
+        <ZoomInIcon className="w-4 h-4" />
+        <span>Pasa el mouse para hacer zoom</span>
+      </div>
+
+      {/* Prev button */}
+      {media.length > 1 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onPrev() }}
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-white z-10 p-3 bg-black/50 hover:bg-black/70 rounded-full transition-all"
+          aria-label="Anterior"
+        >
+          <ChevronLeftIcon className="w-8 h-8" />
+        </button>
+      )}
+
+      {/* Content */}
+      <div
+        className="max-w-screen-xl max-h-[85vh] w-full flex items-center justify-center px-16"
+        onClick={onClose}
+      >
+        {currentItem.type === 'image' && (
+          <div
+            className="relative cursor-crosshair"
+            onMouseEnter={() => setShowZoom(true)}
+            onMouseLeave={() => setShowZoom(false)}
+            onMouseMove={handleMouseMove}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={currentItem.url}
+              alt={`Imagen ${currentIndex + 1} de ${media.length}`}
+              className="object-contain w-auto h-auto max-w-full max-h-[85vh] rounded-lg"
+            />
+            {showZoom && (
+              <div
+                className="absolute pointer-events-none w-64 h-64 rounded-full border-4 border-white/80 bg-no-repeat shadow-2xl"
+                style={{
+                  left: `${mousePosition.x}%`,
+                  top: `${mousePosition.y}%`,
+                  transform: 'translate(-50%, -50%)',
+                  backgroundImage: `url(${currentItem.url})`,
+                  backgroundSize: `${100 * ZOOM_LEVEL}%`,
+                  backgroundPosition: `${mousePosition.x}% ${mousePosition.y}%`,
+                }}
+              />
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Next button */}
+      {media.length > 1 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onNext() }}
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-white z-10 p-3 bg-black/50 hover:bg-black/70 rounded-full transition-all"
+          aria-label="Siguiente"
+        >
+          <ChevronRightIcon className="w-8 h-8" />
+        </button>
+      )}
+
+      {/* Counter and thumbnails at bottom */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-10">
+        {/* Thumbnail strip */}
+        <div className="flex gap-2 bg-black/60 p-2 rounded-xl">
+          {media.slice(0, 8).map((item, idx) => (
+            <button
+              key={idx}
+              onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx) }}
+              className={cn(
+                'w-16 h-12 rounded-md overflow-hidden border-2 transition-all',
+                currentIndex === idx ? 'border-white scale-110' : 'border-transparent opacity-60 hover:opacity-100'
+              )}
+            >
+              <img src={item.url} alt="" className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+        {/* Counter */}
+        <div className="bg-black/60 text-white text-sm px-4 py-1.5 rounded-full font-medium">
+          {currentIndex + 1} / {media.length}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const VehicleProductOverview = ({
   vehicle,
   onFinancingClick,
   onWhatsAppClick,
   onFavoriteClick,
+  onCalculatorInteraction,
   isFavorite,
   favoriteCount,
   inspectionData = null,
@@ -81,7 +239,9 @@ const VehicleProductOverview = ({
   const [downPayment, setDownPayment] = useState(0)
   const [loanTerm, setLoanTerm] = useState(48)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+  const thumbnailContainerRef = useRef<HTMLDivElement>(null)
 
   // Get all vehicle images for gallery
   const allImages = useMemo(() => {
@@ -89,7 +249,6 @@ const VehicleProductOverview = ({
     const exteriorGallery = vehicle.galeria_exterior || []
     const interiorGallery = vehicle.galeria_interior || []
 
-    // Combine all images, starting with main, then exterior, then interior
     const images: string[] = []
     if (mainImage) images.push(mainImage)
     exteriorGallery.forEach(img => {
@@ -101,6 +260,11 @@ const VehicleProductOverview = ({
 
     return images.length > 0 ? images : ['/placeholder-car.jpg']
   }, [vehicle])
+
+  // Lightbox media
+  const lightboxMedia = useMemo<LightboxMediaItem[]>(() => {
+    return allImages.map(url => ({ type: 'image' as const, url }))
+  }, [allImages])
 
   // Navigation handlers for gallery
   const goToPrevImage = useCallback(() => {
@@ -115,18 +279,28 @@ const VehicleProductOverview = ({
     setCurrentImageIndex(index)
   }, [])
 
-  // Thumbnail navigation (show 5 at a time)
-  const visibleThumbnails = 5
-  const canScrollThumbnailsLeft = thumbnailStartIndex > 0
-  const canScrollThumbnailsRight = thumbnailStartIndex + visibleThumbnails < allImages.length
+  // Swipe handlers
+  const handleDragStart = () => setIsDragging(true)
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const swipeThreshold = 50
+    if (info.offset.x > swipeThreshold) {
+      goToPrevImage()
+    } else if (info.offset.x < -swipeThreshold) {
+      goToNextImage()
+    }
+    setTimeout(() => setIsDragging(false), 100)
+  }
 
-  const scrollThumbnailsLeft = useCallback(() => {
-    setThumbnailStartIndex(prev => Math.max(0, prev - 1))
-  }, [])
-
-  const scrollThumbnailsRight = useCallback(() => {
-    setThumbnailStartIndex(prev => Math.min(allImages.length - visibleThumbnails, prev + 1))
-  }, [allImages.length])
+  // Scroll thumbnail into view
+  useEffect(() => {
+    if (thumbnailContainerRef.current) {
+      const container = thumbnailContainerRef.current
+      const activeThumb = container.children[currentImageIndex] as HTMLElement
+      if (activeThumb) {
+        activeThumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+      }
+    }
+  }, [currentImageIndex])
 
   // Finance data
   const financeData = useMemo(() => {
@@ -152,6 +326,21 @@ const VehicleProductOverview = ({
       setDownPayment(financeData.minDownPayment)
     }
   }, [financeData.minDownPayment, downPayment])
+
+  // Handle tab change with tracking
+  const handleTabChange = (tab: TabId) => {
+    setActiveTab(tab)
+    if (tab === 'calculator' && onCalculatorInteraction) {
+      onCalculatorInteraction()
+    }
+  }
+
+  // Handle calculator interaction
+  const handleCalculatorChange = () => {
+    if (onCalculatorInteraction) {
+      onCalculatorInteraction()
+    }
+  }
 
   // Specifications for Ficha tab
   const specifications = useMemo(() => {
@@ -245,427 +434,444 @@ const VehicleProductOverview = ({
   }, [inspectionData])
 
   return (
-    <section className='py-4 sm:py-6'>
-      <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
-        <div>
-          {/* Image Gallery with Navigation */}
-          <div className='mb-4 space-y-3'>
-            {/* Main Image with Navigation Arrows */}
-            <div className='relative overflow-hidden rounded-xl bg-gray-100 aspect-[16/9]'>
-              <img
-                src={allImages[currentImageIndex]}
-                alt={`${vehicle.title} - Imagen ${currentImageIndex + 1}`}
-                className='w-full h-full object-cover transition-opacity duration-300'
-              />
-
-              {/* Navigation Arrows */}
-              {allImages.length > 1 && (
-                <>
-                  <button
-                    onClick={goToPrevImage}
-                    className='absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 rounded-full p-2.5 shadow-lg transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-500'
-                    aria-label='Imagen anterior'
-                  >
-                    <ChevronLeftIcon className='size-5' />
-                  </button>
-                  <button
-                    onClick={goToNextImage}
-                    className='absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 rounded-full p-2.5 shadow-lg transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-500'
-                    aria-label='Siguiente imagen'
-                  >
-                    <ChevronRightIcon className='size-5' />
-                  </button>
-                </>
-              )}
-
-              {/* Image Counter */}
-              <div className='absolute bottom-3 right-3 bg-black/60 text-white text-xs font-medium px-2.5 py-1 rounded-full'>
-                {currentImageIndex + 1} / {allImages.length}
-              </div>
-            </div>
-
-            {/* Thumbnail Slider */}
-            {allImages.length > 1 && (
-              <div className='relative flex items-center gap-2'>
-                {/* Left Arrow for Thumbnails */}
-                <button
-                  onClick={scrollThumbnailsLeft}
-                  disabled={!canScrollThumbnailsLeft}
-                  className={cn(
-                    'shrink-0 p-1.5 rounded-full border transition-all',
-                    canScrollThumbnailsLeft
-                      ? 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700'
-                      : 'bg-gray-100 border-gray-100 text-gray-300 cursor-not-allowed'
-                  )}
-                  aria-label='Ver miniaturas anteriores'
-                >
-                  <ChevronLeftIcon className='size-4' />
-                </button>
-
-                {/* Thumbnails Container */}
-                <div className='flex-1 overflow-hidden'>
-                  <div className='flex gap-2 transition-transform duration-300'>
-                    {allImages.slice(thumbnailStartIndex, thumbnailStartIndex + visibleThumbnails).map((img, idx) => {
-                      const actualIndex = thumbnailStartIndex + idx
-                      return (
-                        <button
-                          key={actualIndex}
-                          onClick={() => goToImage(actualIndex)}
-                          className={cn(
-                            'shrink-0 w-[calc(20%-6.4px)] aspect-[16/10] rounded-lg overflow-hidden border-2 transition-all',
-                            currentImageIndex === actualIndex
-                              ? 'border-orange-500 ring-2 ring-orange-200'
-                              : 'border-transparent hover:border-gray-300'
-                          )}
-                        >
-                          <img
-                            src={img}
-                            alt={`Miniatura ${actualIndex + 1}`}
-                            className='w-full h-full object-cover'
-                          />
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* Right Arrow for Thumbnails */}
-                <button
-                  onClick={scrollThumbnailsRight}
-                  disabled={!canScrollThumbnailsRight}
-                  className={cn(
-                    'shrink-0 p-1.5 rounded-full border transition-all',
-                    canScrollThumbnailsRight
-                      ? 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700'
-                      : 'bg-gray-100 border-gray-100 text-gray-300 cursor-not-allowed'
-                  )}
-                  aria-label='Ver más miniaturas'
-                >
-                  <ChevronRightIcon className='size-4' />
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Content Grid */}
-          <div className='grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-            {/* Left Column - Vehicle Info */}
-            <div className='space-y-4 sm:space-y-5 lg:col-span-2'>
-              {/* Title and Price Row */}
-              <div className='space-y-2 sm:space-y-3'>
-                <div className='flex items-start justify-between gap-3 flex-wrap'>
-                  <div className='space-y-0.5'>
-                    <h1 className='text-xl sm:text-2xl lg:text-3xl font-bold leading-tight'>
-                      {vehicle.title} <span className='text-muted-foreground font-normal'>{vehicle.autoano || vehicle.year}</span>
-                    </h1>
-                    {hasPromotion && (
-                      <Badge className='px-2 py-0.5 bg-green-100 text-green-700 border-none text-xs'>
-                        Promoción
-                      </Badge>
-                    )}
-                  </div>
-                  {/* Price in header */}
-                  <div className='text-right'>
-                    {!hasPromotion ? (
-                      <h2 className='text-xl sm:text-2xl lg:text-3xl font-extrabold text-orange-500'>
-                        {formatPrice(vehicle.precio)}
-                      </h2>
-                    ) : (
-                      <div className='space-y-0.5'>
-                        <h2 className='text-xl sm:text-2xl lg:text-3xl font-extrabold text-orange-500'>{formatPrice(vehicle.precio_reduccion || vehicle.precio)}</h2>
-                        {vehicle.precio_reduccion && vehicle.precio_reduccion < vehicle.precio && (
-                          <span className='text-sm sm:text-base text-muted-foreground line-through'>{formatPrice(vehicle.precio)}</span>
-                        )}
-                      </div>
-                    )}
-                    <span className='text-xs sm:text-sm text-muted-foreground'>MXN</span>
-                  </div>
-                </div>
-
-                {/* Stats row */}
-                <div className='flex items-center gap-2 sm:gap-3 flex-wrap'>
-                  {/* Active promotions for this vehicle */}
-                  {hasPromotion && vehicle.promociones?.map((promo, index) => (
-                    <Badge key={index} className='gap-1.5 rounded-md border-none bg-orange-500 px-3 py-1.5 text-white'>
-                      <StarIcon className='size-3.5 fill-white stroke-white' />
-                      {promo}
-                    </Badge>
-                  ))}
-                  <span className='text-muted-foreground text-sm flex items-center gap-1'>
-                    <EyeIcon className='size-4' />
-                    {(vehicle.view_count || 0).toLocaleString('es-MX')} vistas
-                  </span>
-                  <span className='text-muted-foreground text-sm flex items-center gap-1'>
-                    <HeartIcon className='size-4' />
-                    {favoriteCount} favoritos
-                  </span>
-                </div>
-              </div>
-
-              {/* Vehicle Specs Tags */}
-              <div className='flex flex-wrap gap-1.5 sm:gap-2'>
-                {vehicleSpecs.map((spec, index) => (
-                  <div
-                    key={index}
-                    className='flex items-center gap-1.5 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-gray-100 text-gray-700'
-                  >
-                    <spec.icon className='size-3.5 sm:size-4 text-orange-500' />
-                    <span className='font-medium text-xs sm:text-sm'>{spec.text}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Action Cards - Purchase Options */}
-              <div className='space-y-2 sm:space-y-3'>
-                <h3 className='flex items-center gap-2 text-base sm:text-lg font-semibold'>
-                  <WalletIcon className='text-orange-500 size-4 sm:size-5' />
-                  Opciones de Compra
-                </h3>
-                <div className='grid gap-2 sm:gap-4 sm:grid-cols-3'>
-                  {actionCards.map(card => (
-                    <button
-                      key={card.title}
-                      onClick={card.onClick}
-                      className='group text-left space-y-1 sm:space-y-2 rounded-xl border-2 border-gray-200 hover:border-orange-300 px-3 py-2.5 sm:px-5 sm:py-4 transition-all hover:shadow-md bg-white'
-                    >
-                      <div className='flex items-center gap-2'>
-                        <card.icon className={cn('size-4 sm:size-5', card.color)} />
-                        <h4 className='font-semibold text-gray-900 text-sm sm:text-base'>{card.title}</h4>
-                      </div>
-                      <p className='text-muted-foreground text-xs sm:text-sm'>{card.subtitle}</p>
-                      <span className='inline-flex items-center gap-1 text-orange-500 font-medium text-xs sm:text-sm group-hover:gap-2 transition-all'>
-                        {card.action}
-                        <ChevronRightIcon className='size-3.5 sm:size-4' />
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Description */}
-              {description && (
-                <div className='space-y-2 sm:space-y-3'>
-                  <h3 className='text-base sm:text-lg font-semibold'>Descripción</h3>
-                  <div
-                    className='prose prose-sm max-w-none text-gray-600 prose-headings:text-gray-900 prose-strong:text-gray-900'
-                    dangerouslySetInnerHTML={{ __html: displayDescription }}
+    <>
+      <section className='py-4 sm:py-6'>
+        <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+          <div>
+            {/* Image Gallery with Navigation */}
+            <div className='mb-4 space-y-3'>
+              {/* Main Image with Navigation Arrows - Swipeable */}
+              <motion.div
+                className='relative overflow-hidden rounded-xl bg-gray-100 aspect-[16/9] cursor-grab active:cursor-grabbing group'
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.1}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={currentImageIndex}
+                    src={allImages[currentImageIndex]}
+                    alt={`${vehicle.title} - Imagen ${currentImageIndex + 1}`}
+                    className='w-full h-full object-cover'
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    onClick={() => {
+                      if (!isDragging) setIsLightboxOpen(true)
+                    }}
                   />
-                  {wordCount > 500 && (
-                    <button
-                      onClick={() => setShowFullDescription(!showFullDescription)}
-                      className='text-orange-500 hover:text-orange-600 font-medium text-sm inline-flex items-center gap-1'
-                    >
-                      {showFullDescription ? 'Ver menos' : 'Leer más'}
-                      <ChevronRightIcon className={cn('size-4 transition-transform', showFullDescription && 'rotate-90')} />
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
+                </AnimatePresence>
 
-            {/* Right Column - Tabs & Actions */}
-            <div className='space-y-4 sm:space-y-6'>
-              {/* Tabs Section */}
-              <div className='rounded-xl border-2 border-gray-200 bg-white overflow-hidden'>
-                {/* Tab Headers */}
-                <div className='flex border-b'>
-                  {TABS.map(tab => (
+                {/* Expand/Lightbox button */}
+                <button
+                  onClick={() => setIsLightboxOpen(true)}
+                  className='absolute top-3 right-3 bg-black/50 hover:bg-black/70 text-white rounded-full p-2.5 transition-all opacity-0 group-hover:opacity-100 z-20'
+                  aria-label='Ver en pantalla completa'
+                >
+                  <MaximizeIcon className='size-5' />
+                </button>
+
+                {/* Navigation Arrows */}
+                {allImages.length > 1 && (
+                  <>
                     <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
+                      onClick={(e) => { e.stopPropagation(); goToPrevImage() }}
+                      className='absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 rounded-full p-2.5 shadow-lg transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-500 opacity-0 group-hover:opacity-100 z-20'
+                      aria-label='Imagen anterior'
+                    >
+                      <ChevronLeftIcon className='size-5' />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); goToNextImage() }}
+                      className='absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 rounded-full p-2.5 shadow-lg transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-500 opacity-0 group-hover:opacity-100 z-20'
+                      aria-label='Siguiente imagen'
+                    >
+                      <ChevronRightIcon className='size-5' />
+                    </button>
+                  </>
+                )}
+
+                {/* Image Counter */}
+                <div className='absolute bottom-3 right-3 bg-black/60 text-white text-xs font-medium px-2.5 py-1 rounded-full z-10'>
+                  {currentImageIndex + 1} / {allImages.length}
+                </div>
+
+                {/* Swipe hint on mobile */}
+                <div className='absolute bottom-3 left-3 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full z-10 sm:hidden'>
+                  ← Desliza →
+                </div>
+              </motion.div>
+
+              {/* Thumbnail Slider - Horizontal scrollable */}
+              {allImages.length > 1 && (
+                <div
+                  ref={thumbnailContainerRef}
+                  className='flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scroll-smooth snap-x snap-mandatory'
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                  {allImages.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => goToImage(idx)}
                       className={cn(
-                        'flex-1 flex items-center justify-center gap-1.5 px-3 py-3 text-sm font-semibold transition-colors',
-                        activeTab === tab.id
-                          ? 'border-b-2 border-orange-500 text-orange-600 bg-orange-50'
-                          : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
+                        'shrink-0 w-20 sm:w-24 aspect-[16/10] rounded-lg overflow-hidden border-2 transition-all snap-start',
+                        currentImageIndex === idx
+                          ? 'border-orange-500 ring-2 ring-orange-200'
+                          : 'border-transparent hover:border-gray-300'
                       )}
                     >
-                      <tab.icon className='size-4' />
-                      <span className='hidden sm:inline'>{tab.label}</span>
+                      <img
+                        src={img}
+                        alt={`Miniatura ${idx + 1}`}
+                        className='w-full h-full object-cover'
+                      />
                     </button>
                   ))}
                 </div>
+              )}
+            </div>
 
-                {/* Tab Content */}
-                <div className='p-4'>
-                  {/* Ficha Técnica */}
-                  {activeTab === 'specs' && (
-                    <dl className='space-y-1'>
-                      {specifications.map(spec => (
-                        <div key={spec.label} className='flex justify-between py-2 border-b border-gray-100'>
-                          <dt className='text-sm text-gray-600'>{spec.label}</dt>
-                          <dd className='text-sm font-semibold text-gray-900'>{spec.value}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  )}
-
-                  {/* Calculadora */}
-                  {activeTab === 'calculator' && (
-                    <div className='space-y-5'>
-                      <div>
-                        <label htmlFor='downPayment' className='block text-sm font-medium text-gray-700 mb-2'>
-                          Enganche: <span className='font-bold text-orange-600'>{formatPrice(downPayment)}</span>
-                        </label>
-                        <input
-                          id='downPayment'
-                          type='range'
-                          min={financeData.minDownPayment}
-                          max={financeData.maxDownPayment}
-                          step='5000'
-                          value={downPayment}
-                          onChange={e => setDownPayment(Number(e.target.value))}
-                          className='w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500'
-                        />
-                        <div className='flex justify-between text-xs text-gray-500 mt-1'>
-                          <span>{formatPrice(financeData.minDownPayment)}</span>
-                          <span>{formatPrice(financeData.maxDownPayment)}</span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className='block text-sm font-medium text-gray-700 mb-2'>Plazo (meses):</label>
-                        <div className='grid grid-cols-4 gap-2'>
-                          {financeData.loanTerms.map((term: number) => (
-                            <button
-                              key={term}
-                              onClick={() => setLoanTerm(term)}
-                              className={cn(
-                                'px-2 py-1.5 text-xs font-semibold rounded-md transition-colors',
-                                loanTerm === term
-                                  ? 'bg-orange-500 text-white'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                              )}
-                            >
-                              {term}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className='pt-4 border-t border-dashed'>
-                        <div className='flex justify-between items-baseline py-1'>
-                          <span className='text-sm font-semibold text-gray-800'>Mensualidad estimada</span>
-                          <span className='text-2xl font-bold text-orange-600'>{formatPrice(financeData.monthlyPayment)}</span>
-                        </div>
-                        <div className='flex justify-between items-baseline py-1'>
-                          <span className='text-sm text-gray-600'>Tasa de interés</span>
-                          <span className='text-sm font-semibold text-gray-800'>17%* puede variar</span>
-                        </div>
-                      </div>
-
-                      <p className='text-xs text-gray-500 text-center'>
-                        *Tasa de interés puede variar según el banco. Incluye seguro con valor del 5% del auto.
-                      </p>
+            {/* Content Grid */}
+            <div className='grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+              {/* Left Column - Vehicle Info */}
+              <div className='space-y-4 sm:space-y-5 lg:col-span-2'>
+                {/* Title and Price Row */}
+                <div className='space-y-2 sm:space-y-3'>
+                  <div className='flex items-start justify-between gap-3 flex-wrap'>
+                    <div className='space-y-0.5'>
+                      <h1 className='text-xl sm:text-2xl lg:text-3xl font-bold leading-tight'>
+                        {vehicle.title} <span className='text-muted-foreground font-normal'>{vehicle.autoano || vehicle.year}</span>
+                      </h1>
+                      {hasPromotion && (
+                        <Badge className='px-2 py-0.5 bg-green-100 text-green-700 border-none text-xs'>
+                          Promoción
+                        </Badge>
+                      )}
                     </div>
-                  )}
-
-                  {/* Inspección */}
-                  {activeTab === 'inspection' && (
-                    inspectionLoading ? (
-                      <p className='text-gray-500 text-sm'>Cargando reporte...</p>
-                    ) : inspectionData ? (
-                      <div className='space-y-3'>
-                        <div className='flex items-center gap-2'>
-                          <ShieldCheckIcon className='size-5 text-orange-500' />
-                          <h4 className='font-bold text-orange-600'>TREFA Certificado</h4>
+                    {/* Price in header */}
+                    <div className='text-right'>
+                      {!hasPromotion ? (
+                        <h2 className='text-xl sm:text-2xl lg:text-3xl font-extrabold text-orange-500'>
+                          {formatPrice(vehicle.precio)}
+                        </h2>
+                      ) : (
+                        <div className='space-y-0.5'>
+                          <h2 className='text-xl sm:text-2xl lg:text-3xl font-extrabold text-orange-500'>{formatPrice(vehicle.precio_reduccion || vehicle.precio)}</h2>
+                          {vehicle.precio_reduccion && vehicle.precio_reduccion < vehicle.precio && (
+                            <span className='text-sm sm:text-base text-muted-foreground line-through'>{formatPrice(vehicle.precio)}</span>
+                          )}
                         </div>
-                        <ul className='space-y-2 text-sm text-gray-700'>
-                          {inspectionPoints.slice(0, 4).map((point, i) => (
-                            <li key={i} className='flex items-start gap-2'>
-                              <CheckIcon className='size-4 text-green-500 flex-shrink-0 mt-0.5' />
-                              <span>{point}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        <button className='text-sm font-semibold text-orange-500 hover:underline'>
-                          Ver reporte de inspección completo →
-                        </button>
-                      </div>
-                    ) : (
-                      <div className='text-center p-4 bg-gray-50 rounded-lg'>
-                        <p className='text-sm font-semibold text-gray-700'>Reporte de Inspección no Disponible</p>
-                        <p className='text-xs text-gray-500 mt-1'>Este auto aún no tiene un reporte de inspección público.</p>
-                      </div>
-                    )
-                  )}
+                      )}
+                      <span className='text-xs sm:text-sm text-muted-foreground'>MXN</span>
+                    </div>
+                  </div>
+
+                  {/* Stats row */}
+                  <div className='flex items-center gap-2 sm:gap-3 flex-wrap'>
+                    {hasPromotion && vehicle.promociones?.map((promo, index) => (
+                      <Badge key={index} className='gap-1.5 rounded-md border-none bg-orange-500 px-3 py-1.5 text-white'>
+                        <StarIcon className='size-3.5 fill-white stroke-white' />
+                        {promo}
+                      </Badge>
+                    ))}
+                    <span className='text-muted-foreground text-sm flex items-center gap-1'>
+                      <EyeIcon className='size-4' />
+                      {(vehicle.view_count || 0).toLocaleString('es-MX')} vistas
+                    </span>
+                    <span className='text-muted-foreground text-sm flex items-center gap-1'>
+                      <HeartIcon className='size-4' />
+                      {favoriteCount} favoritos
+                    </span>
+                  </div>
                 </div>
+
+                {/* Vehicle Specs Tags */}
+                <div className='flex flex-wrap gap-1.5 sm:gap-2'>
+                  {vehicleSpecs.map((spec, index) => (
+                    <div
+                      key={index}
+                      className='flex items-center gap-1.5 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-gray-100 text-gray-700'
+                    >
+                      <spec.icon className='size-3.5 sm:size-4 text-orange-500' />
+                      <span className='font-medium text-xs sm:text-sm'>{spec.text}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Action Cards - Purchase Options */}
+                <div className='space-y-2 sm:space-y-3'>
+                  <h3 className='flex items-center gap-2 text-base sm:text-lg font-semibold'>
+                    <WalletIcon className='text-orange-500 size-4 sm:size-5' />
+                    Opciones de Compra
+                  </h3>
+                  <div className='grid gap-2 sm:gap-4 sm:grid-cols-3'>
+                    {actionCards.map(card => (
+                      <button
+                        key={card.title}
+                        onClick={card.onClick}
+                        className='group text-left space-y-1 sm:space-y-2 rounded-xl border-2 border-gray-200 hover:border-orange-300 px-3 py-2.5 sm:px-5 sm:py-4 transition-all hover:shadow-md bg-white'
+                      >
+                        <div className='flex items-center gap-2'>
+                          <card.icon className={cn('size-4 sm:size-5', card.color)} />
+                          <h4 className='font-semibold text-gray-900 text-sm sm:text-base'>{card.title}</h4>
+                        </div>
+                        <p className='text-muted-foreground text-xs sm:text-sm'>{card.subtitle}</p>
+                        <span className='inline-flex items-center gap-1 text-orange-500 font-medium text-xs sm:text-sm group-hover:gap-2 transition-all'>
+                          {card.action}
+                          <ChevronRightIcon className='size-3.5 sm:size-4' />
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Description */}
+                {description && (
+                  <div className='space-y-2 sm:space-y-3'>
+                    <h3 className='text-base sm:text-lg font-semibold'>Descripción</h3>
+                    <div
+                      className='prose prose-sm max-w-none text-gray-600 prose-headings:text-gray-900 prose-strong:text-gray-900'
+                      dangerouslySetInnerHTML={{ __html: displayDescription }}
+                    />
+                    {wordCount > 500 && (
+                      <button
+                        onClick={() => setShowFullDescription(!showFullDescription)}
+                        className='text-orange-500 hover:text-orange-600 font-medium text-sm inline-flex items-center gap-1'
+                      >
+                        {showFullDescription ? 'Ver menos' : 'Leer más'}
+                        <ChevronRightIcon className={cn('size-4 transition-transform', showFullDescription && 'rotate-90')} />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* Warranty Section */}
-              {vehicle.garantia && (
-                <div className='rounded-xl border border-green-200 bg-green-50/50 p-4'>
-                  <div className='flex items-start gap-3'>
-                    <div className='shrink-0 p-2 bg-green-100 rounded-lg'>
-                      <ShieldCheckIcon className='size-5 text-green-600' />
-                    </div>
-                    <div className='space-y-1.5'>
-                      <h4 className='font-semibold text-green-800 text-sm'>Garantía Incluida</h4>
-                      <p className='text-green-700 text-sm'>{vehicle.garantia}</p>
-                      <div className='flex flex-wrap gap-2 pt-1'>
-                        <span className='inline-flex items-center gap-1 text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full'>
-                          <WrenchIcon className='size-3' />
-                          Motor y transmisión
-                        </span>
-                        <span className='inline-flex items-center gap-1 text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full'>
-                          <CalendarIcon className='size-3' />
-                          Cobertura limitada
-                        </span>
+              {/* Right Column - Tabs & Actions */}
+              <div className='space-y-4 sm:space-y-6'>
+                {/* Tabs Section */}
+                <div className='rounded-xl border-2 border-gray-200 bg-white overflow-hidden'>
+                  {/* Tab Headers */}
+                  <div className='flex border-b'>
+                    {TABS.map(tab => (
+                      <button
+                        key={tab.id}
+                        onClick={() => handleTabChange(tab.id)}
+                        className={cn(
+                          'flex-1 flex items-center justify-center gap-1.5 px-3 py-3 text-sm font-semibold transition-colors',
+                          activeTab === tab.id
+                            ? 'border-b-2 border-orange-500 text-orange-600 bg-orange-50'
+                            : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
+                        )}
+                      >
+                        <tab.icon className='size-4' />
+                        <span className='hidden sm:inline'>{tab.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Tab Content */}
+                  <div className='p-4'>
+                    {/* Ficha Técnica */}
+                    {activeTab === 'specs' && (
+                      <dl className='space-y-1'>
+                        {specifications.map(spec => (
+                          <div key={spec.label} className='flex justify-between py-2 border-b border-gray-100'>
+                            <dt className='text-sm text-gray-600'>{spec.label}</dt>
+                            <dd className='text-sm font-semibold text-gray-900'>{spec.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    )}
+
+                    {/* Calculadora */}
+                    {activeTab === 'calculator' && (
+                      <div className='space-y-5'>
+                        <div>
+                          <label htmlFor='downPayment' className='block text-sm font-medium text-gray-700 mb-2'>
+                            Enganche: <span className='font-bold text-orange-600'>{formatPrice(downPayment)}</span>
+                          </label>
+                          <input
+                            id='downPayment'
+                            type='range'
+                            min={financeData.minDownPayment}
+                            max={financeData.maxDownPayment}
+                            step='5000'
+                            value={downPayment}
+                            onChange={e => {
+                              setDownPayment(Number(e.target.value))
+                              handleCalculatorChange()
+                            }}
+                            className='w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500'
+                          />
+                          <div className='flex justify-between text-xs text-gray-500 mt-1'>
+                            <span>{formatPrice(financeData.minDownPayment)}</span>
+                            <span>{formatPrice(financeData.maxDownPayment)}</span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className='block text-sm font-medium text-gray-700 mb-2'>Plazo (meses):</label>
+                          <div className='grid grid-cols-4 gap-2'>
+                            {financeData.loanTerms.map((term: number) => (
+                              <button
+                                key={term}
+                                onClick={() => {
+                                  setLoanTerm(term)
+                                  handleCalculatorChange()
+                                }}
+                                className={cn(
+                                  'px-2 py-1.5 text-xs font-semibold rounded-md transition-colors',
+                                  loanTerm === term
+                                    ? 'bg-orange-500 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                )}
+                              >
+                                {term}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className='pt-4 border-t border-dashed'>
+                          <div className='flex justify-between items-baseline py-1'>
+                            <span className='text-sm font-semibold text-gray-800'>Mensualidad estimada</span>
+                            <span className='text-2xl font-bold text-orange-600'>{formatPrice(financeData.monthlyPayment)}</span>
+                          </div>
+                          <div className='flex justify-between items-baseline py-1'>
+                            <span className='text-sm text-gray-600'>Tasa de interés</span>
+                            <span className='text-sm font-semibold text-gray-800'>17%* puede variar</span>
+                          </div>
+                        </div>
+
+                        <p className='text-xs text-gray-500 text-center'>
+                          *Tasa de interés puede variar según el banco. Incluye seguro con valor del 5% del auto.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Inspección */}
+                    {activeTab === 'inspection' && (
+                      inspectionLoading ? (
+                        <p className='text-gray-500 text-sm'>Cargando reporte...</p>
+                      ) : inspectionData ? (
+                        <div className='space-y-3'>
+                          <div className='flex items-center gap-2'>
+                            <ShieldCheckIcon className='size-5 text-orange-500' />
+                            <h4 className='font-bold text-orange-600'>TREFA Certificado</h4>
+                          </div>
+                          <ul className='space-y-2 text-sm text-gray-700'>
+                            {inspectionPoints.slice(0, 4).map((point, i) => (
+                              <li key={i} className='flex items-start gap-2'>
+                                <CheckIcon className='size-4 text-green-500 flex-shrink-0 mt-0.5' />
+                                <span>{point}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          <button className='text-sm font-semibold text-orange-500 hover:underline'>
+                            Ver reporte de inspección completo →
+                          </button>
+                        </div>
+                      ) : (
+                        <div className='text-center p-4 bg-gray-50 rounded-lg'>
+                          <p className='text-sm font-semibold text-gray-700'>Reporte de Inspección no Disponible</p>
+                          <p className='text-xs text-gray-500 mt-1'>Este auto aún no tiene un reporte de inspección público.</p>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+
+                {/* Warranty Section */}
+                {vehicle.garantia && (
+                  <div className='rounded-xl border border-green-200 bg-green-50/50 p-4'>
+                    <div className='flex items-start gap-3'>
+                      <div className='shrink-0 p-2 bg-green-100 rounded-lg'>
+                        <ShieldCheckIcon className='size-5 text-green-600' />
+                      </div>
+                      <div className='space-y-1.5'>
+                        <h4 className='font-semibold text-green-800 text-sm'>Garantía Incluida</h4>
+                        <p className='text-green-700 text-sm'>{vehicle.garantia}</p>
+                        <div className='flex flex-wrap gap-2 pt-1'>
+                          <span className='inline-flex items-center gap-1 text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full'>
+                            <WrenchIcon className='size-3' />
+                            Motor y transmisión
+                          </span>
+                          <span className='inline-flex items-center gap-1 text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full'>
+                            <CalendarIcon className='size-3' />
+                            Cobertura limitada
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Action Buttons Card */}
-              <div className='rounded-xl border-2 border-gray-200 p-5 bg-white space-y-4'>
-                {/* Buttons */}
-                <div className='flex flex-col gap-3'>
-                  <Button
-                    className='w-full bg-orange-500 hover:bg-orange-600 text-white'
-                    size='lg'
-                    onClick={onFinancingClick}
-                  >
-                    <CreditCardIcon className='mr-2 size-5' />
-                    Comprar con Financiamiento
-                  </Button>
-                  <Button
-                    variant='outline'
-                    className='w-full bg-green-500 hover:bg-green-600 text-white border-green-500 hover:border-green-600'
-                    size='lg'
-                    onClick={onWhatsAppClick}
-                  >
-                    <MessageCircleIcon className='mr-2 size-5' />
-                    Contactar por WhatsApp
-                  </Button>
-                  <Button
-                    variant='outline'
-                    size='lg'
-                    className='w-full border-2'
-                    onClick={onFavoriteClick}
-                  >
-                    <HeartIcon className={cn('mr-2 size-5', isFavorite && 'fill-red-500 text-red-500')} />
-                    {isFavorite ? 'Guardado' : 'Guardar'} ({favoriteCount})
-                  </Button>
-                </div>
-
-                {/* Trust badges */}
-                <div className='flex items-center justify-center gap-4 pt-3 border-t'>
-                  <div className='flex items-center gap-1.5 text-xs text-muted-foreground'>
-                    <ShieldCheckIcon className='size-4 text-green-500' />
-                    Garantía incluida
+                {/* Action Buttons Card */}
+                <div className='rounded-xl border-2 border-gray-200 p-5 bg-white space-y-4'>
+                  <div className='flex flex-col gap-3'>
+                    <Button
+                      className='w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-base'
+                      size='lg'
+                      onClick={onFinancingClick}
+                      data-gtm-id="detail-page-finance"
+                    >
+                      <CreditCardIcon className='mr-2 size-5' />
+                      Comprar con Financiamiento
+                    </Button>
+                    <Button
+                      variant='outline'
+                      className='w-full bg-green-500 hover:bg-green-600 text-white border-green-500 hover:border-green-600 font-bold text-base'
+                      size='lg'
+                      onClick={onWhatsAppClick}
+                    >
+                      <MessageCircleIcon className='mr-2 size-5' />
+                      Contactar por WhatsApp
+                    </Button>
+                    <Button
+                      variant='outline'
+                      size='lg'
+                      className='w-full border-2 font-bold'
+                      onClick={onFavoriteClick}
+                      data-gtm-id="detail-page-favorite"
+                    >
+                      <HeartIcon className={cn('mr-2 size-5', isFavorite && 'fill-red-500 text-red-500')} />
+                      {isFavorite ? 'Guardado' : 'Guardar'} ({favoriteCount})
+                    </Button>
                   </div>
-                  <div className='flex items-center gap-1.5 text-xs text-muted-foreground'>
-                    <UsersIcon className='size-4 text-blue-500' />
-                    1 dueño anterior
+
+                  {/* Trust badges */}
+                  <div className='flex items-center justify-center gap-4 pt-3 border-t'>
+                    <div className='flex items-center gap-1.5 text-xs text-muted-foreground'>
+                      <ShieldCheckIcon className='size-4 text-green-500' />
+                      Garantía incluida
+                    </div>
+                    <div className='flex items-center gap-1.5 text-xs text-muted-foreground'>
+                      <UsersIcon className='size-4 text-blue-500' />
+                      {inspectionData?.past_owners || 1} dueño{(inspectionData?.past_owners || 1) > 1 ? 's' : ''} anterior{(inspectionData?.past_owners || 1) > 1 ? 'es' : ''}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Lightbox */}
+      {isLightboxOpen && (
+        <Lightbox
+          media={lightboxMedia}
+          currentIndex={currentImageIndex}
+          onClose={() => setIsLightboxOpen(false)}
+          onPrev={goToPrevImage}
+          onNext={goToNextImage}
+          setCurrentIndex={setCurrentImageIndex}
+        />
+      )}
+    </>
   )
 }
 
