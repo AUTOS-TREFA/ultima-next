@@ -1,12 +1,12 @@
 'use client'
 
-import { useId, useState, useMemo } from 'react'
+import { useId, useState, useMemo, useCallback } from 'react'
 
 import {
   HeartIcon,
   StarIcon,
   ChevronRightIcon,
-  CircleAlertIcon,
+  ChevronLeftIcon,
   MapPinIcon,
   GaugeIcon,
   FuelIcon,
@@ -23,11 +23,12 @@ import {
   DatabaseIcon,
   FileTextIcon,
   CalculatorIcon,
-  CheckIcon
+  CheckIcon,
+  CalendarIcon,
+  WrenchIcon
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 
 import { cn } from '@/lib/utils'
@@ -79,21 +80,53 @@ const VehicleProductOverview = ({
   const [activeTab, setActiveTab] = useState<TabId>('specs')
   const [downPayment, setDownPayment] = useState(0)
   const [loanTerm, setLoanTerm] = useState(48)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0)
 
-  // Get vehicle images - first exterior, then interior for side images
-  const images = useMemo(() => {
+  // Get all vehicle images for gallery
+  const allImages = useMemo(() => {
     const mainImage = getVehicleImage(vehicle)
     const exteriorGallery = vehicle.galeria_exterior || []
     const interiorGallery = vehicle.galeria_interior || []
 
-    const main = mainImage || exteriorGallery[0]
-    const interior = interiorGallery[0] || exteriorGallery[1] || main
-    const lastExterior = exteriorGallery.length > 1
-      ? exteriorGallery[exteriorGallery.length - 1]
-      : interiorGallery[1] || main
+    // Combine all images, starting with main, then exterior, then interior
+    const images: string[] = []
+    if (mainImage) images.push(mainImage)
+    exteriorGallery.forEach(img => {
+      if (img && !images.includes(img)) images.push(img)
+    })
+    interiorGallery.forEach(img => {
+      if (img && !images.includes(img)) images.push(img)
+    })
 
-    return { main, interior, exterior: lastExterior }
+    return images.length > 0 ? images : ['/placeholder-car.jpg']
   }, [vehicle])
+
+  // Navigation handlers for gallery
+  const goToPrevImage = useCallback(() => {
+    setCurrentImageIndex(prev => (prev === 0 ? allImages.length - 1 : prev - 1))
+  }, [allImages.length])
+
+  const goToNextImage = useCallback(() => {
+    setCurrentImageIndex(prev => (prev === allImages.length - 1 ? 0 : prev + 1))
+  }, [allImages.length])
+
+  const goToImage = useCallback((index: number) => {
+    setCurrentImageIndex(index)
+  }, [])
+
+  // Thumbnail navigation (show 5 at a time)
+  const visibleThumbnails = 5
+  const canScrollThumbnailsLeft = thumbnailStartIndex > 0
+  const canScrollThumbnailsRight = thumbnailStartIndex + visibleThumbnails < allImages.length
+
+  const scrollThumbnailsLeft = useCallback(() => {
+    setThumbnailStartIndex(prev => Math.max(0, prev - 1))
+  }, [])
+
+  const scrollThumbnailsRight = useCallback(() => {
+    setThumbnailStartIndex(prev => Math.min(allImages.length - visibleThumbnails, prev + 1))
+  }, [allImages.length])
 
   // Finance data
   const financeData = useMemo(() => {
@@ -215,32 +248,103 @@ const VehicleProductOverview = ({
     <section className='py-4 sm:py-6'>
       <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
         <div>
-          {/* Image Gallery */}
-          <div className='mb-4 grid grid-cols-1 gap-2 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-            <div className='overflow-hidden rounded-xl lg:col-span-2 bg-gray-100 aspect-[16/10]'>
+          {/* Image Gallery with Navigation */}
+          <div className='mb-4 space-y-3'>
+            {/* Main Image with Navigation Arrows */}
+            <div className='relative overflow-hidden rounded-xl bg-gray-100 aspect-[16/9]'>
               <img
-                src={images.main || '/placeholder-car.jpg'}
-                alt={vehicle.title}
-                className='w-full h-full object-cover'
+                src={allImages[currentImageIndex]}
+                alt={`${vehicle.title} - Imagen ${currentImageIndex + 1}`}
+                className='w-full h-full object-cover transition-opacity duration-300'
               />
-            </div>
-            {/* On mobile: inline row. On desktop: stacked column */}
-            <div className='flex flex-row sm:flex-col gap-2 sm:gap-4'>
-              <div className='overflow-hidden rounded-xl bg-gray-100 flex-1 aspect-[16/10]'>
-                <img
-                  src={images.interior || '/placeholder-car.jpg'}
-                  alt={`${vehicle.title} - Interior`}
-                  className='w-full h-full object-cover'
-                />
+
+              {/* Navigation Arrows */}
+              {allImages.length > 1 && (
+                <>
+                  <button
+                    onClick={goToPrevImage}
+                    className='absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 rounded-full p-2.5 shadow-lg transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-500'
+                    aria-label='Imagen anterior'
+                  >
+                    <ChevronLeftIcon className='size-5' />
+                  </button>
+                  <button
+                    onClick={goToNextImage}
+                    className='absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 rounded-full p-2.5 shadow-lg transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-500'
+                    aria-label='Siguiente imagen'
+                  >
+                    <ChevronRightIcon className='size-5' />
+                  </button>
+                </>
+              )}
+
+              {/* Image Counter */}
+              <div className='absolute bottom-3 right-3 bg-black/60 text-white text-xs font-medium px-2.5 py-1 rounded-full'>
+                {currentImageIndex + 1} / {allImages.length}
               </div>
-              <div className='overflow-hidden rounded-xl bg-gray-100 flex-1 aspect-[16/10]'>
-                <img
-                  src={images.exterior || '/placeholder-car.jpg'}
-                  alt={`${vehicle.title} - Exterior`}
-                  className='w-full h-full object-cover'
-                />
-              </div>
             </div>
+
+            {/* Thumbnail Slider */}
+            {allImages.length > 1 && (
+              <div className='relative flex items-center gap-2'>
+                {/* Left Arrow for Thumbnails */}
+                <button
+                  onClick={scrollThumbnailsLeft}
+                  disabled={!canScrollThumbnailsLeft}
+                  className={cn(
+                    'shrink-0 p-1.5 rounded-full border transition-all',
+                    canScrollThumbnailsLeft
+                      ? 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700'
+                      : 'bg-gray-100 border-gray-100 text-gray-300 cursor-not-allowed'
+                  )}
+                  aria-label='Ver miniaturas anteriores'
+                >
+                  <ChevronLeftIcon className='size-4' />
+                </button>
+
+                {/* Thumbnails Container */}
+                <div className='flex-1 overflow-hidden'>
+                  <div className='flex gap-2 transition-transform duration-300'>
+                    {allImages.slice(thumbnailStartIndex, thumbnailStartIndex + visibleThumbnails).map((img, idx) => {
+                      const actualIndex = thumbnailStartIndex + idx
+                      return (
+                        <button
+                          key={actualIndex}
+                          onClick={() => goToImage(actualIndex)}
+                          className={cn(
+                            'shrink-0 w-[calc(20%-6.4px)] aspect-[16/10] rounded-lg overflow-hidden border-2 transition-all',
+                            currentImageIndex === actualIndex
+                              ? 'border-orange-500 ring-2 ring-orange-200'
+                              : 'border-transparent hover:border-gray-300'
+                          )}
+                        >
+                          <img
+                            src={img}
+                            alt={`Miniatura ${actualIndex + 1}`}
+                            className='w-full h-full object-cover'
+                          />
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Right Arrow for Thumbnails */}
+                <button
+                  onClick={scrollThumbnailsRight}
+                  disabled={!canScrollThumbnailsRight}
+                  className={cn(
+                    'shrink-0 p-1.5 rounded-full border transition-all',
+                    canScrollThumbnailsRight
+                      ? 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700'
+                      : 'bg-gray-100 border-gray-100 text-gray-300 cursor-not-allowed'
+                  )}
+                  aria-label='Ver más miniaturas'
+                >
+                  <ChevronRightIcon className='size-4' />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Content Grid */}
@@ -263,12 +367,12 @@ const VehicleProductOverview = ({
                   {/* Price in header */}
                   <div className='text-right'>
                     {!hasPromotion ? (
-                      <h2 className='text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900'>
+                      <h2 className='text-xl sm:text-2xl lg:text-3xl font-extrabold text-orange-500'>
                         {formatPrice(vehicle.precio)}
                       </h2>
                     ) : (
                       <div className='space-y-0.5'>
-                        <h2 className='text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900'>{formatPrice(vehicle.precio_reduccion || vehicle.precio)}</h2>
+                        <h2 className='text-xl sm:text-2xl lg:text-3xl font-extrabold text-orange-500'>{formatPrice(vehicle.precio_reduccion || vehicle.precio)}</h2>
                         {vehicle.precio_reduccion && vehicle.precio_reduccion < vehicle.precio && (
                           <span className='text-sm sm:text-base text-muted-foreground line-through'>{formatPrice(vehicle.precio)}</span>
                         )}
@@ -488,18 +592,33 @@ const VehicleProductOverview = ({
                 </div>
               </div>
 
+              {/* Warranty Section */}
+              {vehicle.garantia && (
+                <div className='rounded-xl border border-green-200 bg-green-50/50 p-4'>
+                  <div className='flex items-start gap-3'>
+                    <div className='shrink-0 p-2 bg-green-100 rounded-lg'>
+                      <ShieldCheckIcon className='size-5 text-green-600' />
+                    </div>
+                    <div className='space-y-1.5'>
+                      <h4 className='font-semibold text-green-800 text-sm'>Garantía Incluida</h4>
+                      <p className='text-green-700 text-sm'>{vehicle.garantia}</p>
+                      <div className='flex flex-wrap gap-2 pt-1'>
+                        <span className='inline-flex items-center gap-1 text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full'>
+                          <WrenchIcon className='size-3' />
+                          Motor y transmisión
+                        </span>
+                        <span className='inline-flex items-center gap-1 text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full'>
+                          <CalendarIcon className='size-3' />
+                          Cobertura limitada
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Action Buttons Card */}
               <div className='rounded-xl border-2 border-gray-200 p-5 bg-white space-y-4'>
-                {/* Alert */}
-                <Alert className='border-orange-200 bg-orange-50 text-orange-700'>
-                  <CircleAlertIcon className='text-orange-500' />
-                  <AlertDescription className='text-orange-600 text-sm'>
-                    {vehicle.view_count && vehicle.view_count > 500
-                      ? 'Este auto ha recibido mucho interés. Contáctanos pronto.'
-                      : 'Financiamiento sujeto a aprobación. Tasa: 17% anual.'}
-                  </AlertDescription>
-                </Alert>
-
                 {/* Buttons */}
                 <div className='flex flex-col gap-3'>
                   <Button

@@ -75,6 +75,10 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+  .theme {
+    --animate-marquee-horizontal: marquee-horizontal var(--marquee-duration) infinite linear;
+    --animate-marquee-vertical: marquee-vertical var(--marquee-duration) infinite linear;
+  }
 }
 
 @layer base {
@@ -456,7 +460,6 @@ h1-be-vietnam-pro-black {
   }
 }
 
-
 @layer components {
   /* Masonry wall layout for testimonials */
   .masonry-wall {
@@ -492,7 +495,6 @@ h1-be-vietnam-pro-black {
     @apply rounded-full flex items-center justify-center shadow-lg transform transition-transform active:scale-90 bg-black/30 backdrop-blur-md border-2 border-white/30;
   }
 }
-
 
 @layer utilities {
   .prose-custom p {
@@ -613,7 +615,6 @@ h1-be-vietnam-pro-black {
   .animate-slide-up { animation: slide-up 0.3s ease-out forwards; }
   .animate-card-enter { animation: card-enter-professional 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
   .animate-promo-enter { animation: promo-enter-big 0.5s cubic-bezier(0.25, 1, 0.5, 1) backwards; }
-
 
 }
 
@@ -903,13 +904,30 @@ background: radial-gradient(circle, rgba(255, 120, 10, 1) 18%, rgba(255, 104, 1,
   background: transparent;
 }
 
-
-
 @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@theme inline {
+  @keyframes marquee-horizontal {
+  from {
+    transform: translateX(0);
+    }
+  to {
+    transform: translateX(calc(-100% - var(--marquee-gap)));
+    }
+  }
+  @keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+    }
+  to {
+    transform: translateY(calc(-100% - var(--marquee-gap)));
+    }
   }
 }

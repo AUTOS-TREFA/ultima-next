@@ -29,6 +29,7 @@ import { AppleCardsCarousel } from '../components/AppleCardsCarousel';
 import HeroTrefa from '../components/ui/hero-trefa';
 import AnimatedVehicleGrid from '../components/AnimatedVehicleGrid';
 import Portfolio from '../components/shadcn-studio/blocks/portfolio-04/portfolio-04';
+import HeroWithVehicles from '../components/HeroWithVehicles';
 import HomePageContentService, {
   HeroContent,
   InventoryHeroContent,
@@ -879,6 +880,8 @@ const CTACardsSection: React.FC<{ content: CTACardsContent | null }> = ({ conten
 
 /* ---------- Home Page ---------- */
 const HomePage: React.FC = () => {
+  const { vehicles: allVehicles, isLoading } = useVehicles();
+  const [heroVehicles, setHeroVehicles] = useState<Vehicle[]>([]);
   const [content, setContent] = useState<{
     hero: HeroContent | null;
     inventoryHero: InventoryHeroContent | null;
@@ -897,7 +900,19 @@ const HomePage: React.FC = () => {
     branches: null,
   });
 
-  const [isMobile, setIsMobile] = useState(false);
+  // Prepare vehicles for the hero section
+  useEffect(() => {
+    if (allVehicles && allVehicles.length > 0) {
+      const available = allVehicles.filter(v =>
+        !v.separado &&
+        !v.vendido &&
+        getVehicleImage(v) !== DEFAULT_PLACEHOLDER_IMAGE
+      );
+      // Shuffle and take 16 vehicles for the marquee
+      const shuffled = [...available].sort(() => 0.5 - Math.random()).slice(0, 16);
+      setHeroVehicles(shuffled);
+    }
+  }, [allVehicles]);
 
   useEffect(() => {
     const loadContent = async () => {
@@ -920,23 +935,14 @@ const HomePage: React.FC = () => {
     loadContent();
   }, []);
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
   // Optimized: Show critical above-the-fold content immediately
   // Database content loads in parallel without blocking initial render
   return (
     <main className="relative z-10 scroll-smooth">
-      {/* Immediately visible sections - no loading dependency */}
-      <HeroTrefa isMobile={isMobile} />
+      {/* New Hero with Vehicle Marquee */}
+      <HeroWithVehicles vehicles={heroVehicles} />
+
+      {/* Additional sections */}
       <Portfolio maxVehicles={12} />
       <WallOfLove />
       <WhyChooseTrefaSection />

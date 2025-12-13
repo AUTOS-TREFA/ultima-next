@@ -124,11 +124,29 @@ export default {
   				to: {
   					height: '0'
   				}
+  			},
+  			'marquee-horizontal': {
+  				from: {
+  					transform: 'translateX(0)'
+  				},
+  				to: {
+  					transform: 'translateX(calc(-100% - var(--marquee-gap)))'
+  				}
+  			},
+  			'marquee-vertical': {
+  				from: {
+  					transform: 'translateY(0)'
+  				},
+  				to: {
+  					transform: 'translateY(calc(-100% - var(--marquee-gap)))'
+  				}
   			}
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+  			'marquee-horizontal': 'marquee-horizontal var(--marquee-duration) linear infinite',
+  			'marquee-vertical': 'marquee-vertical var(--marquee-duration) linear infinite'
   		}
   	}
   },
