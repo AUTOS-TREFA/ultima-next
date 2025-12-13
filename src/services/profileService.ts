@@ -72,40 +72,48 @@ export const ProfileService = {
       console.log('Could not retrieve source tracking data:', e);
     }
 
-    // Usar función RPC SECURITY DEFINER para evitar problemas de RLS
-    // Add retry logic for auth timing issues (P0001 error when JWT hasn't propagated yet)
+    // Use direct upsert with retry logic for auth timing issues
     let updatedProfile = null;
-    let lastError = null;
     const maxRetries = 3;
     const retryDelayMs = 500;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      // Try direct upsert to profiles table
       const { data, error: upsertError } = await supabase
-        .rpc('safe_upsert_profile', {
-          profile_data: { id: user.id, ...finalProfileData }
-        });
+        .from('profiles')
+        .upsert(
+          { id: user.id, ...finalProfileData, updated_at: new Date().toISOString() },
+          { onConflict: 'id' }
+        )
+        .select()
+        .single();
 
       if (!upsertError) {
         updatedProfile = data;
+        console.log('[ProfileService] Profile upsert successful');
         break;
       }
 
-      // Check if this is an auth timing error (P0001 = "Usuario no autenticado")
-      if (upsertError.code === 'P0001' && attempt < maxRetries) {
-        console.warn(`[ProfileService] Auth not ready yet (attempt ${attempt}/${maxRetries}), retrying in ${retryDelayMs}ms...`);
-        await new Promise(resolve => setTimeout(resolve, retryDelayMs * attempt)); // Exponential backoff
-        lastError = upsertError;
+      // Check if this is an RLS/auth timing error - retry
+      const isAuthError = upsertError.code === '42501' || // RLS violation
+                          upsertError.code === 'P0001' ||  // Custom auth check failed
+                          upsertError.message?.includes('row-level security') ||
+                          upsertError.message?.includes('no autenticado');
+
+      if (isAuthError && attempt < maxRetries) {
+        console.warn(`[ProfileService] Auth/RLS issue (attempt ${attempt}/${maxRetries}), retrying in ${retryDelayMs * attempt}ms...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelayMs * attempt));
         continue;
       }
 
       // For other errors or final retry, throw
-      console.error('Error upserting public profile:', upsertError);
+      console.error('Error upserting profile:', upsertError);
       throw new Error(`Error al actualizar el perfil: ${upsertError.message}`);
     }
 
     if (!updatedProfile) {
       // If all retries failed, try to fetch existing profile as fallback
-      console.warn('[ProfileService] RPC failed after retries, attempting fallback fetch...');
+      console.warn('[ProfileService] Upsert failed after retries, attempting fallback fetch...');
       const { data: existingProfile } = await supabase
         .from('profiles')
         .select('*')
