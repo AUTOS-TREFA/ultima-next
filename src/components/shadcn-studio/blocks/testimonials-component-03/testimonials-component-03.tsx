@@ -60,7 +60,7 @@ const TestimonialsComponent = ({ heroSlides, testimonials }: TestimonialsCompone
                     <p className='text-muted-foreground text-start text-base font-medium sm:text-center sm:text-2xl'>
                       {slide.description}
                     </p>
-                    <img src={slide.logo} alt={slide.alt} className='h-8.5 w-auto' />
+                    <img src={slide.logo} alt={slide.alt} className='h-8 w-auto max-w-[120px] object-contain' />
                   </CarouselItem>
                 ))}
               </CarouselContent>

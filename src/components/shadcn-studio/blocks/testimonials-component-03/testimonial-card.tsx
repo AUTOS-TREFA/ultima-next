@@ -22,8 +22,8 @@ const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => {
           <Rating readOnly variant='yellow' size={24} value={testimonial.rating} precision={0.5} />
 
           {/* Platform Details */}
-          <div className='flex gap-1.5'>
-            <img src={testimonial.platformImage} alt={testimonial.platformName} className='size-5.5' />
+          <div className='flex items-center gap-1.5'>
+            <img src={testimonial.platformImage} alt={testimonial.platformName} className='w-5 h-5 object-contain' />
             <span className='text-sm'>{testimonial.platformName}</span>
           </div>
         </div>
@@ -36,8 +36,8 @@ const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => {
 
         {/* User Details */}
         <div className='flex items-center gap-3'>
-          <Avatar className='size-12'>
-            <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+          <Avatar className='w-12 h-12'>
+            <AvatarImage src={testimonial.avatar} alt={testimonial.name} className='w-12 h-12 object-cover' />
             <AvatarFallback className='text-sm'>
               {testimonial.name
                 .split(' ', 2)
