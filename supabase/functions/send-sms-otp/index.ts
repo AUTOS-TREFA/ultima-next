@@ -7,6 +7,7 @@ const TWILIO_VERIFY_SERVICE_SID = Deno.env.get("TWILIO_VERIFY_SERVICE_SID") || "
 
 interface RequestBody {
   phone: string;
+  email?: string; // Optional: if provided, check if email exists in auth.users before sending SMS
 }
 
 Deno.serve(async (req: Request) => {
@@ -38,7 +39,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Parse request body
-    const { phone }: RequestBody = await req.json();
+    const { phone, email }: RequestBody = await req.json();
 
     // Validar entrada
     if (!phone) {
@@ -51,6 +52,46 @@ Deno.serve(async (req: Request) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
+    }
+
+    // Create Supabase client early for email check
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+
+    // If email is provided, check if it exists in auth.users BEFORE sending SMS
+    if (email) {
+      console.log(`📧 Verificando si el email existe en auth.users: ${email}`);
+
+      const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers({
+        filter: {
+          email: email
+        }
+      });
+
+      if (listError) {
+        console.error("❌ Error verificando email:", listError);
+        // Don't block on error, continue with SMS
+      } else if (existingUsers?.users && existingUsers.users.length > 0) {
+        console.log(`⚠️ Email ya registrado en auth.users: ${email}`);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "email_exists",
+            message: "Este correo electrónico ya está registrado",
+          }),
+          {
+            status: 409, // Conflict
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+      console.log(`✅ Email disponible: ${email}`);
     }
 
     // Formatear número de teléfono (asegurar que tenga +52 para México)
@@ -97,12 +138,7 @@ Deno.serve(async (req: Request) => {
     const data = await response.json();
     console.log("✅ Código de verificación enviado:", data.sid);
 
-    // Registrar el envío en Supabase
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Guardar el envío en la base de datos
+    // Guardar el envío en la base de datos (using supabase client created earlier)
     const { error: dbError } = await supabase
       .from("sms_otp_codes")
       .insert({

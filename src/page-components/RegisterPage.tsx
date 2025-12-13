@@ -193,8 +193,9 @@ const RegisterPage: React.FC = () => {
       }
 
       // Llamar a la Edge Function de Twilio Verify
+      // Pasamos el email para verificar si ya existe en auth.users antes de enviar el SMS
       const { data, error: smsError } = await supabase.functions.invoke('send-sms-otp', {
-        body: { phone: formattedPhone }
+        body: { phone: formattedPhone, email: email }
       });
 
       if (smsError) {
@@ -208,6 +209,14 @@ const RegisterPage: React.FC = () => {
         } else {
           throw new Error(`Error: ${errorMsg}`);
         }
+      }
+
+      // Check if the edge function returned email_exists error
+      if (data?.error === 'email_exists') {
+        console.log('⚠️ Email ya existe en auth.users (detectado por edge function)');
+        setError('account_exists_email');
+        setLoading(false);
+        return;
       }
 
       if (!data?.success) {
@@ -462,17 +471,17 @@ const RegisterPage: React.FC = () => {
         <div className={`p-3 rounded-md ${error === 'account_exists_email' || error === 'account_exists_phone' ? 'bg-blue-50 border border-blue-200' : 'bg-red-50 border border-red-200'}`}>
           {error === 'account_exists_email' ? (
             <p className="text-blue-700 text-sm text-center">
-              Este correo ya está en uso, por favor{' '}
+              Este correo electrónico ya está registrado. Por favor,{' '}
               <Link href={`/acceder${urlParamsString ? `?${urlParamsString}` : ''}`} className="underline font-semibold hover:text-blue-900">
                 inicia sesión aquí
-              </Link>
+              </Link>.
             </p>
           ) : error === 'account_exists_phone' ? (
             <p className="text-blue-700 text-sm text-center">
-              Este número de celular ya está en uso, por favor{' '}
+              Este número de teléfono ya está registrado. Por favor,{' '}
               <Link href={`/acceder${urlParamsString ? `?${urlParamsString}` : ''}`} className="underline font-semibold hover:text-blue-900">
                 inicia sesión aquí
-              </Link>
+              </Link>.
             </p>
           ) : (
             <p className="text-red-600 text-sm text-center">{error}</p>

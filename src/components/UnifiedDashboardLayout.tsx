@@ -208,8 +208,17 @@ const AppSidebarContent: React.FC = () => {
     };
 
     const handleSignOut = async () => {
-        await signOut();
-        window.location.href = '/';
+        try {
+            // Clear all storage before signOut
+            sessionStorage.clear();
+            localStorage.clear();
+            await signOut();
+        } catch (error) {
+            console.error('Error during sign out:', error);
+        } finally {
+            // Force full page reload to clear all state and go to home
+            window.location.href = '/';
+        }
     };
 
     return (
@@ -524,9 +533,18 @@ const MobileSidebarContent: React.FC<{ onClose?: () => void }> = ({ onClose }) =
     };
 
     const handleSignOut = async () => {
-        await signOut();
-        onClose?.();
-        window.location.href = '/';
+        try {
+            // Clear all storage before signOut
+            sessionStorage.clear();
+            localStorage.clear();
+            await signOut();
+        } catch (error) {
+            console.error('Error during sign out:', error);
+        } finally {
+            onClose?.();
+            // Force full page reload to clear all state and go to home
+            window.location.href = '/';
+        }
     };
 
     const handleNavClick = () => {
@@ -763,8 +781,17 @@ const UnifiedDashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
     const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
     const handleSignOut = async () => {
-        await signOut();
-        window.location.href = '/';
+        try {
+            // Clear all storage before signOut
+            sessionStorage.clear();
+            localStorage.clear();
+            await signOut();
+        } catch (error) {
+            console.error('Error during sign out:', error);
+        } finally {
+            // Force full page reload to clear all state and go to home
+            window.location.href = '/';
+        }
     };
 
     // Generate breadcrumbs from current path

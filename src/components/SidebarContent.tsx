@@ -106,8 +106,17 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
     }, [user, isCollapsed]);
 
     const handleSignOut = async () => {
-        await signOut();
-        window.location.href = '/';
+        try {
+            // Clear all storage before signOut
+            sessionStorage.clear();
+            localStorage.clear();
+            await signOut();
+        } catch (error) {
+            console.error('Error during sign out:', error);
+        } finally {
+            // Force full page reload to clear all state and go to home
+            window.location.href = '/';
+        }
     };
 
     const navItems = [

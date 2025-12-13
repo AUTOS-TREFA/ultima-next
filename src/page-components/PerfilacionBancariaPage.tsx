@@ -167,6 +167,7 @@ const PerfilacionBancariaPage: React.FC = () => {
     const [recommendedBank, setRecommendedBank] = useState<string | null>(null);
     const [secondRecommendedBank, setSecondRecommendedBank] = useState<string | null>(null);
     const [isLowScore, setIsLowScore] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
 
     const { control, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<BankProfileFormData>({
         resolver: zodResolver(bankProfileSchema),
@@ -224,9 +225,10 @@ const PerfilacionBancariaPage: React.FC = () => {
 
     const onSubmit = async (data: BankProfileFormData) => {
         if (!user) return;
+        setSaveError(null);
         try {
             const { recommendedBank, secondOption, lowScore } = calculateBankScores(data);
-            await BankProfilingService.saveUserBankProfile(user.id, { 
+            await BankProfilingService.saveUserBankProfile(user.id, {
                 respuestas: data,
                 banco_recomendado: recommendedBank,
                 banco_segunda_opcion: secondOption,
@@ -239,7 +241,9 @@ const PerfilacionBancariaPage: React.FC = () => {
             }
             setStatus('success');
         } catch (error) {
-            console.error(error);
+            console.error('Error saving bank profile:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido al guardar el perfil';
+            setSaveError(errorMessage);
         }
     };
     
@@ -323,6 +327,13 @@ const PerfilacionBancariaPage: React.FC = () => {
                  <RadioField control={control} name="enganche" label="¿Qué porcentaje de enganche planeas dar?" options={["Menos del 15%", "Enganche mínimo (15%)", "Más del mínimo (20% a 30%)", "Enganche recomendado (35% o más)"]} error={errors.enganche?.message} />
                  <RadioField control={control} name="prioridad_financiamiento" label="¿Cuál es tu prioridad en el financiamiento?" options={["Tasa de interés más baja", "Pagos mensuales fijos", "Rapidez en la aprobación", "Proceso digital con pocos trámites"]} error={errors.prioridad_financiamiento?.message} />
                  <IncomeRadioField control={control} name="ingreso_mensual" label="Ingresos mensuales comprobables" options={["Menos de $15,000", "$15,000 - $25,000", "$25,001 - $40,000"]} error={errors.ingreso_mensual?.message} />
+
+                {saveError && (
+                    <div className="bg-red-50 border-l-4 border-red-400 text-red-800 p-4 rounded-r-lg">
+                        <p className="font-bold">Error al guardar</p>
+                        <p className="text-sm mt-1">{saveError}</p>
+                    </div>
+                )}
 
                 <div className="pt-4 flex justify-end">
                     <button type="submit" disabled={isSubmitting} className="inline-flex items-center justify-center py-2.5 px-6 border border-transparent shadow-sm text-sm font-bold rounded-lg text-white bg-gradient-to-r from-yellow-500 to-primary-500 hover:from-yellow-600 hover:to-primary-600 disabled:opacity-50">

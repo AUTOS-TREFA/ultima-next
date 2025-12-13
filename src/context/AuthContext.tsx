@@ -78,19 +78,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const signOut = async () => {
         try {
             console.log('[AuthContext] Signing out...');
-            const { error } = await supabase.auth.signOut();
 
-            if (error) {
-                console.error('[AuthContext] Error signing out:', error);
-                // Force local logout even if server signout fails
-            }
-
-            // Clear local state regardless of server response
+            // Clear local state FIRST to ensure immediate UI update
             setSession(null);
             setUser(null);
             setProfile(null);
-            sessionStorage.removeItem('userProfile');
-            localStorage.clear(); // Clear all localStorage items
+
+            // Clear all storage
+            sessionStorage.clear();
+            localStorage.clear();
+
+            // Clear any auth-related cookies
+            document.cookie.split(";").forEach((c) => {
+                document.cookie = c
+                    .replace(/^ +/, "")
+                    .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+            });
+
+            // Sign out from Supabase (global scope to sign out from all devices)
+            const { error } = await supabase.auth.signOut({ scope: 'global' });
+
+            if (error) {
+                console.error('[AuthContext] Error signing out from Supabase:', error);
+            }
+
             console.log('[AuthContext] Signed out successfully');
         } catch (error) {
             console.error('[AuthContext] Unexpected error during sign out:', error);
@@ -98,7 +109,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setSession(null);
             setUser(null);
             setProfile(null);
-            sessionStorage.removeItem('userProfile');
+            sessionStorage.clear();
             localStorage.clear();
         }
     };

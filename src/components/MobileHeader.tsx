@@ -33,10 +33,15 @@ const MobileHeader: React.FC = () => {
     const handleSignOut = async () => {
         setMobileMenuOpen(false);
         try {
+            // Clear all storage before signOut
+            sessionStorage.clear();
+            localStorage.clear();
             await signOut();
+        } catch (error) {
+            console.error('Error during sign out:', error);
         } finally {
-            // Force full page reload to clear all state
-            window.location.replace('/');
+            // Force full page reload to clear all state and go to home
+            window.location.href = '/';
         }
     };
 
