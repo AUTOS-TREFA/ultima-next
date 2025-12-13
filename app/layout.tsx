@@ -62,6 +62,9 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
+        {/* Preconnect to Google Fonts for faster font loading */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* Preconnect to external domains for faster loading */}
         <link rel="preconnect" href="https://pemgwyymodlwabaexxrb.supabase.co" />
         <link rel="preconnect" href="https://r2.trefa.mx" />
