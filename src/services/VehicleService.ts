@@ -291,10 +291,11 @@ class VehicleService {
         // Carroceria filter - case-insensitive, checks both carroceria and clasificacionid fields
         if (filters.carroceria && filters.carroceria.length > 0) {
             // Build OR conditions for each carroceria value to be case-insensitive
+            // clasificacionid is stored as comma-separated text, so use ilike with wildcards
             const carroceriaConditions = filters.carroceria.map(c => {
                 const lowerVal = c.toLowerCase();
-                // Match carroceria field (case-insensitive) OR clasificacionid array contains the value
-                return `carroceria.ilike.${lowerVal},clasificacionid.cs.["${c}"],clasificacionid.cs.["${lowerVal}"],clasificacionid.cs.["${c.toUpperCase()}"]`;
+                // Match carroceria field (case-insensitive) OR clasificacionid text contains the value
+                return `carroceria.ilike.%${lowerVal}%,clasificacionid.ilike.%${lowerVal}%`;
             }).join(',');
             query = query.or(carroceriaConditions);
         }
