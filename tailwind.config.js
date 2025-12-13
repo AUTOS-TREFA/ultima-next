@@ -15,9 +15,8 @@ export default {
   	},
   	extend: {
   		fontFamily: {
-  			sans: [
-  				'Be Vietnam Pro'
-  			]
+  			sans: ['Jost', 'Be Vietnam Pro', 'sans-serif'],
+  			display: ['Momo Trust Display', 'Jost', 'sans-serif'],
   		},
   		colors: {
   			neutral: {

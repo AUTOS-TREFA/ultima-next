@@ -18,7 +18,7 @@ const leftFeatures: FeatureItem[] = [
   },
   {
     icon: TrendingUp,
-    title: "Financiamiento 100% Digital",
+    title: "Financiamiento 100% digital",
     description: "Aplica desde tu celular y recibe respuesta en 24 horas. Trabajamos con los mejores bancos del país."
   },
   {
@@ -31,7 +31,7 @@ const leftFeatures: FeatureItem[] = [
 const rightFeatures: FeatureItem[] = [
   {
     icon: Lock,
-    title: "Kit de Seguridad TREFA",
+    title: "Kit de seguridad TREFA",
     description: "Garantía blindada de $100,000 MXN, programa de recompra garantizada, y certificado de procedencia segura incluidos."
   },
   {

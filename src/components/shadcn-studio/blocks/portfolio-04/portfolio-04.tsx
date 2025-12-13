@@ -203,7 +203,7 @@ const VehicleCard = ({
 
 const Portfolio = ({
   maxVehicles = 8,
-  title = "Nuestros Vehículos",
+  title = "Nuestros vehículos",
   subtitle = "Explora nuestro amplio inventario de autos seminuevos garantizados, elegidos e inspeccionados rigurosamente para ofrecerte una tranquilidad total al estrenar.",
   showButton = true
 }: PortfolioProps) => {

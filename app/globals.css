@@ -1,4 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700;800;900&family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+
+/* Momo Trust Display font - add your font files to public/fonts/ */
+@font-face {
+  font-family: 'Momo Trust Display';
+  src: url('/fonts/MomoTrustDisplay-Regular.woff2') format('woff2'),
+       url('/fonts/MomoTrustDisplay-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
@@ -86,12 +96,21 @@
     border-color: hsl(var(--border));
   }
   body {
+    font-family: 'Jost', sans-serif;
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
   }
 
-  /* Reducir espaciado de letras en headings para mejor legibilidad */
-  h1, h2, h3, h4, h5, h6 {
+  /* H1 and H2 use Momo Trust Display */
+  h1, h2 {
+    font-family: 'Momo Trust Display', 'Jost', sans-serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  /* H3, H4, H5, H6 use Jost */
+  h3, h4, h5, h6 {
+    font-family: 'Jost', sans-serif;
     letter-spacing: -0.02em;
   }
 
