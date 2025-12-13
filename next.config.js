@@ -36,6 +36,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'r2.trefa.mx',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.trefa.mx',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
     // Optimize image loading

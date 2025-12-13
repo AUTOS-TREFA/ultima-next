@@ -30,6 +30,7 @@ import HeroTrefa from '../components/ui/hero-trefa';
 import AnimatedVehicleGrid from '../components/AnimatedVehicleGrid';
 import Portfolio from '../components/shadcn-studio/blocks/portfolio-04/portfolio-04';
 import HeroWithVehicles from '../components/HeroWithVehicles';
+import ValuePropositionStatement from '../components/ValuePropositionStatement';
 import HomePageContentService, {
   HeroContent,
   InventoryHeroContent,
@@ -941,6 +942,9 @@ const HomePage: React.FC = () => {
     <main className="relative z-10 scroll-smooth">
       {/* New Hero with Vehicle Marquee */}
       <HeroWithVehicles vehicles={heroVehicles} />
+
+      {/* Value Proposition Statement */}
+      <ValuePropositionStatement />
 
       {/* Additional sections */}
       <Portfolio maxVehicles={12} title="Autos TREFA" />

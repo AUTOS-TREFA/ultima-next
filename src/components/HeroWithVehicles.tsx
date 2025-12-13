@@ -7,7 +7,7 @@ import { MotionPreset } from '@/components/ui/motion-preset';
 import { Rating } from '@/components/ui/rating';
 import { Shield, LockKeyhole, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import type { Vehicle } from '@/types/types';
 import { getVehicleImage } from '@/utils/getVehicleImage';
 
@@ -20,8 +20,8 @@ const rotatingPhrases = [
   'con seguridad y confianza',
 ];
 
-// Compact vehicle card for the marquee - hover overlay
-const VehicleMarqueeCard = ({ vehicle }: { vehicle: Vehicle }) => {
+// Compact vehicle card for the marquee - hover overlay (memoized for performance)
+const VehicleMarqueeCard = memo(({ vehicle }: { vehicle: Vehicle }) => {
   const imageUrl = getVehicleImage(vehicle);
   const formattedPrice = new Intl.NumberFormat('es-MX', {
     style: 'currency',
@@ -37,24 +37,24 @@ const VehicleMarqueeCard = ({ vehicle }: { vehicle: Vehicle }) => {
       <div className="relative h-44 overflow-hidden">
         <img
           src={imageUrl}
-          alt={vehicle.titulo || vehicle.title}
+          alt={vehicle.titulo || vehicle.title || 'Vehículo'}
           className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           loading="lazy"
         />
         {/* Badges - always visible */}
         {vehicle.garantia && (
-          <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full flex items-center gap-1">
+          <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full flex items-center gap-1 z-10">
             <Shield className="w-3 h-3" />
             Garantía
           </div>
         )}
         {vehicle.promociones && vehicle.promociones.length > 0 && (
-          <div className="absolute top-2 right-2 bg-orange-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+          <div className="absolute top-2 right-2 bg-orange-500 text-white text-xs font-semibold px-2 py-1 rounded-full z-10">
             Promoción
           </div>
         )}
         {/* Hover overlay with info */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 z-10">
           <h3 className="font-semibold text-sm text-white line-clamp-1">
             {vehicle.titulo || vehicle.title}
           </h3>
@@ -68,7 +68,8 @@ const VehicleMarqueeCard = ({ vehicle }: { vehicle: Vehicle }) => {
       </div>
     </Link>
   );
-};
+});
+VehicleMarqueeCard.displayName = 'VehicleMarqueeCard';
 
 interface HeroWithVehiclesProps {
   vehicles: Vehicle[];
