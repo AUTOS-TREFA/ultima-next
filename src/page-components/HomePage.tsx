@@ -14,7 +14,7 @@ import {
 } from '../components/icons';
 import { ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
-import WallOfLove from '../components/WallOfLove';
+import TrefaTestimonials from '../components/shadcn-studio/blocks/testimonials-component-03/trefa-testimonials';
 import { formatPrice } from '../utils/formatters';
 import { getVehicleImage } from '../utils/getVehicleImage';
 import WhyChooseTrefaSection from '../components/WhyChooseTrefaSection';
@@ -948,7 +948,7 @@ const HomePage: React.FC = () => {
 
       {/* Additional sections */}
       <Portfolio maxVehicles={12} title="Autos TREFA" />
-      <WallOfLove />
+      <TrefaTestimonials />
       <WhyChooseTrefaSection />
 
       {/* Sections that use database content - shown with graceful loading */}

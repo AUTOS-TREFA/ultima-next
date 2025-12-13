@@ -30,14 +30,15 @@ function Marquee(props: MarqueeProps) {
 
   return (
     <div
-      style={{
-        '--marquee-duration': `${duration}s`,
-        '--marquee-delay': `${delay}s`,
-        '--marquee-gap': `${gap}rem`,
-        gap: `${gap}rem`
-      } as React.CSSProperties}
+      style={
+        {
+          '--marquee-duration': `${duration}s`,
+          '--marquee-delay': `${delay}s`,
+          '--marquee-gap': `${gap}rem`
+        } as React.CSSProperties
+      }
       className={cn(
-        'group flex overflow-hidden p-3',
+        'group flex gap-(--marquee-gap) overflow-hidden p-3',
         {
           'flex-row': !vertical,
           'flex-col': vertical
@@ -51,8 +52,7 @@ function Marquee(props: MarqueeProps) {
         .map((_, i) => (
           <div
             key={i}
-            style={{ gap: `${gap}rem`, animationDelay: `${delay}s` }}
-            className={cn('flex shrink-0 justify-around', {
+            className={cn('flex shrink-0 justify-around gap-(--marquee-gap) [animation-delay:var(--marquee-delay)]', {
               'animate-marquee-horizontal flex-row': !vertical,
               'animate-marquee-vertical flex-col': vertical,
               'group-hover:[animation-play-state:paused]': pauseOnHover,
