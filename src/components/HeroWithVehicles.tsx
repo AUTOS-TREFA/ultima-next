@@ -5,12 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Marquee } from '@/components/ui/marquee';
 import { MotionPreset } from '@/components/ui/motion-preset';
 import { Rating } from '@/components/ui/rating';
-import { Shield, Star, Zap } from 'lucide-react';
+import { Shield, LockKeyhole, Zap } from 'lucide-react';
 import Link from 'next/link';
 import type { Vehicle } from '@/types/types';
 import { getVehicleImage } from '@/utils/getVehicleImage';
 
-// Compact vehicle card for the marquee
+// Compact vehicle card for the marquee - optimized with hover reveal
 const VehicleMarqueeCard = ({ vehicle }: { vehicle: Vehicle }) => {
   const imageUrl = getVehicleImage(vehicle);
   const formattedPrice = new Intl.NumberFormat('es-MX', {
@@ -22,13 +22,13 @@ const VehicleMarqueeCard = ({ vehicle }: { vehicle: Vehicle }) => {
   return (
     <Link
       href={`/autos/${vehicle.slug}`}
-      className="block bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden w-[280px] border border-gray-100 hover:-translate-y-1"
+      className="group block bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 ease-out overflow-hidden w-[280px] border border-gray-100 hover:-translate-y-1"
     >
-      <div className="relative h-40 overflow-hidden">
+      <div className="relative h-44 overflow-hidden">
         <img
           src={imageUrl}
           alt={vehicle.titulo || vehicle.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           loading="lazy"
         />
         {vehicle.garantia && (
@@ -43,7 +43,8 @@ const VehicleMarqueeCard = ({ vehicle }: { vehicle: Vehicle }) => {
           </div>
         )}
       </div>
-      <div className="p-4">
+      {/* Info section - visible on hover */}
+      <div className="p-4 transition-all duration-300 ease-out opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-32 overflow-hidden">
         <h3 className="font-semibold text-sm text-gray-900 line-clamp-1">
           {vehicle.titulo || vehicle.title}
         </h3>
@@ -52,9 +53,9 @@ const VehicleMarqueeCard = ({ vehicle }: { vehicle: Vehicle }) => {
           <span>•</span>
           <span>{vehicle.kilometraje?.toLocaleString()} km</span>
         </div>
-        <div className="mt-3 flex items-end justify-between">
+        <div className="mt-2 flex items-end justify-between">
           <div>
-            <p className="text-lg font-bold text-primary">{formattedPrice}</p>
+            <p className="text-lg font-bold text-[#FF6801]">{formattedPrice}</p>
             {vehicle.mensualidad_recomendada && (
               <p className="text-xs text-gray-500">
                 Desde ${vehicle.mensualidad_recomendada.toLocaleString()}/mes
@@ -80,8 +81,8 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
   return (
     <section className="from-primary/10 via-orange-50/50 to-background flex min-h-screen flex-1 flex-col bg-gradient-to-bl to-60% overflow-hidden">
       <div className="mx-auto grid w-full max-w-7xl flex-1 gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-        {/* Left Content */}
-        <div className="flex max-w-2xl flex-col justify-center gap-8 pt-24 pb-12 lg:pt-28">
+        {/* Left Content - removed top padding */}
+        <div className="flex max-w-2xl flex-col justify-center gap-8 pt-16 pb-12 lg:pt-20">
           <div className="flex flex-col items-start gap-6">
             <MotionPreset
               fade
@@ -129,7 +130,7 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
               transition={{ duration: 0.5, ease: 'easeOut' }}
               className="flex flex-wrap items-center gap-4"
             >
-              <Button size="lg" asChild className="bg-primary hover:bg-primary/90 shadow-lg h-14 px-8">
+              <Button size="lg" asChild className="bg-[#FF6801] hover:bg-[#E55E01] shadow-lg h-14 px-8">
                 <Link href="/autos">
                   <Zap className="w-5 h-5 mr-2" />
                   Ver Inventario
@@ -139,9 +140,9 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
                 size="lg"
                 variant="outline"
                 asChild
-                className="border-primary/30 hover:bg-primary/5 text-primary h-14 px-8"
+                className="border-[#FF6801] border-2 hover:bg-[#FF6801]/5 text-[#FF6801] h-14 px-8"
               >
-                <Link href="/financiamientos">Solicitar Financiamiento</Link>
+                <Link href="/financiamientos">Contactar a un Asesor</Link>
               </Button>
             </MotionPreset>
           </div>
@@ -174,7 +175,7 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
                   <Rating readOnly variant="yellow" size={20} value={5} precision={0.5} />
                   <span className="font-semibold text-sm ml-1">4.9</span>
                 </div>
-                <p className="text-xs text-gray-500">+2,000 reseñas en Google</p>
+                <p className="text-xs text-gray-500">La mejor calificada del país</p>
               </div>
             </div>
           </MotionPreset>
@@ -192,8 +193,8 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
               Garantía Incluida
             </div>
             <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-xs font-medium">
-              <Star className="w-4 h-4" />
-              Sin Siniestros
+              <LockKeyhole className="w-4 h-4" />
+              Kit de Seguridad
             </div>
             <div className="flex items-center gap-2 bg-orange-50 text-orange-700 px-3 py-1.5 rounded-full text-xs font-medium">
               <Zap className="w-4 h-4" />
@@ -202,19 +203,19 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
           </MotionPreset>
         </div>
 
-        {/* Right Content - Vehicle Marquees */}
+        {/* Right Content - Vehicle Marquees with more spacing */}
         <MotionPreset
           fade
           blur
           transition={{ duration: 0.7, ease: 'easeOut' }}
-          className="grid grid-cols-2 gap-4 max-lg:hidden py-8"
+          className="grid grid-cols-2 gap-6 max-lg:hidden py-4"
         >
           {leftVehicles.length > 0 && (
             <Marquee
               vertical
               pauseOnHover
-              duration={25}
-              gap={1}
+              duration={40}
+              gap={4}
               className="h-screen min-h-[700px] overflow-hidden"
             >
               {leftVehicles.map((vehicle) => (
@@ -227,8 +228,8 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
             <Marquee
               vertical
               pauseOnHover
-              duration={30}
-              gap={1}
+              duration={45}
+              gap={4}
               reverse
               className="h-screen min-h-[700px] overflow-hidden"
             >
