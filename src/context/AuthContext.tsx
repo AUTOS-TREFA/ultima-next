@@ -36,14 +36,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         sessionStorage.removeItem('userProfile'); // Clear cache before fetching
 
         try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', currentUserId)
-                .single();
+            // Use RPC function with SECURITY DEFINER to bypass RLS
+            const { data, error } = await supabase.rpc('get_my_profile', {
+                user_id: currentUserId
+            });
 
-            if (error && error.code !== 'PGRST116') {
-                console.error('[AuthContext] Error reloading profile:', error.message);
+            if (error) {
+                console.error('[AuthContext] Error reloading profile via RPC:', error.message);
                 setProfile(null);
                 return null;
             }
@@ -136,18 +135,78 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             sessionStorage.removeItem('userProfile'); // Clear corrupted cache
         }
 
-        // If not in cache, fetch from Supabase
-        try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .single();
+        // Use the authUser passed from the session event, or try to get it as fallback
+        let userForProfile = authUser;
+        if (!userForProfile) {
+            console.log('[AuthContext] No authUser provided, attempting getUser() as fallback...');
+            const { data: { user: fetchedUser } } = await supabase.auth.getUser();
+            userForProfile = fetchedUser;
+        }
 
-            if (error && error.code !== 'PGRST116') {
-                console.error('[AuthContext] Error fetching profile:', error.message);
+        // Retrieve tracking data from sessionStorage
+        const leadSourceDataStr = sessionStorage.getItem('leadSourceData');
+        const leadSourceData = leadSourceDataStr ? JSON.parse(leadSourceDataStr) : {};
+
+        // Merge user metadata with tracking data
+        const combinedMetadata = {
+            ...(userForProfile?.user_metadata || {}),
+            ...leadSourceData,
+            captured_at: new Date().toISOString(),
+        };
+
+        try {
+            // Use get_or_create_profile RPC with SECURITY DEFINER to bypass RLS
+            // This function will return existing profile or create a new one
+            console.log('[AuthContext] Fetching/creating profile via RPC for user:', userId);
+            const { data, error } = await supabase.rpc('get_or_create_profile', {
+                p_user_id: userId,
+                p_email: userForProfile?.email || null,
+                p_first_name: userForProfile?.user_metadata?.first_name || userForProfile?.user_metadata?.full_name?.split(' ')[0] || null,
+                p_last_name: userForProfile?.user_metadata?.last_name || userForProfile?.user_metadata?.full_name?.split(' ').slice(1).join(' ') || null,
+                p_phone: userForProfile?.phone || null,
+                p_metadata: combinedMetadata
+            });
+
+            if (error) {
+                console.error('[AuthContext] Error fetching/creating profile via RPC:', error.message);
+
+                // Fallback: try safe_upsert_profile as backup
+                console.log('[AuthContext] Trying safe_upsert_profile as fallback...');
+                const newProfile = {
+                    id: userId,
+                    email: userForProfile?.email,
+                    first_name: userForProfile?.user_metadata?.first_name || userForProfile?.user_metadata?.full_name?.split(' ')[0] || null,
+                    last_name: userForProfile?.user_metadata?.last_name || userForProfile?.user_metadata?.full_name?.split(' ').slice(1).join(' ') || null,
+                    phone: userForProfile?.phone || null,
+                    metadata: combinedMetadata,
+                    utm_source: leadSourceData.utm_source || null,
+                    utm_medium: leadSourceData.utm_medium || null,
+                    utm_campaign: leadSourceData.utm_campaign || null,
+                    rfdm: leadSourceData.rfdm || null,
+                    referrer: leadSourceData.referrer || null,
+                    fbclid: leadSourceData.fbclid || null,
+                    landing_page: leadSourceData.landing_page || null,
+                };
+
+                const { data: fallbackData, error: fallbackError } = await supabase.rpc('safe_upsert_profile', {
+                    profile_data: newProfile
+                });
+
+                if (fallbackError) {
+                    console.error('[AuthContext] Fallback RPC also failed:', fallbackError.message);
+                    setProfile(null);
+                    sessionStorage.removeItem('userProfile');
+                    return null;
+                }
+
+                if (fallbackData) {
+                    console.log('[AuthContext] Profile fetched via fallback RPC with role:', fallbackData.role);
+                    setProfile(fallbackData as Profile);
+                    sessionStorage.setItem('userProfile', JSON.stringify(fallbackData));
+                    return fallbackData as Profile;
+                }
+
                 setProfile(null);
-                sessionStorage.removeItem('userProfile');
                 return null;
             }
 
@@ -166,112 +225,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 }
             }
 
-            // Profile doesn't exist (PGRST116 error), create it
-            console.log('[AuthContext] Profile not found, creating new profile...');
-
-            // Use the authUser passed from the session event, or try to get it as fallback
-            let userForProfile = authUser;
-            if (!userForProfile) {
-                console.log('[AuthContext] No authUser provided, attempting getUser() as fallback...');
-                const { data: { user: fetchedUser } } = await supabase.auth.getUser();
-                userForProfile = fetchedUser;
-            }
-
-            if (!userForProfile) {
-                console.error('[AuthContext] Cannot create profile: user not found');
-                return null;
-            }
-
-            console.log('[AuthContext] Creating profile for user:', userForProfile.email);
-
-            // Determine role based on email
-            const adminEmails = [
-                'marianomorales@outlook.com',
-                'mariano.morales@autostrefa.mx',
-                'genauservices@gmail.com',
-                'alejandro.trevino@autostrefa.mx',
-                'evelia.castillo@autostrefa.mx',
-                'fernando.trevino@autostrefa.mx'
-            ];
-            const role = adminEmails.includes(userForProfile.email || '') ? 'admin' : 'user';
-            console.log('[AuthContext] Determined role for', userForProfile.email, ':', role);
-
-            // Retrieve tracking data from sessionStorage
-            const leadSourceDataStr = sessionStorage.getItem('leadSourceData');
-            const leadSourceData = leadSourceDataStr ? JSON.parse(leadSourceDataStr) : {};
-
-            // Merge user metadata with tracking data
-            const combinedMetadata = {
-                ...userForProfile.user_metadata,
-                ...leadSourceData,
-                captured_at: new Date().toISOString(),
-            };
-
-            // Determine primary source (priority: fbclid > utm_source > rfdm > source > ordencompra)
-            let primarySource = null;
-            if (leadSourceData.fbclid) {
-                primarySource = `facebook_${leadSourceData.fbclid.substring(0, 10)}`;
-            } else if (leadSourceData.utm_source) {
-                primarySource = leadSourceData.utm_source;
-            } else if (leadSourceData.rfdm) {
-                primarySource = `rfdm_${leadSourceData.rfdm}`;
-            } else if (leadSourceData.source) {
-                primarySource = leadSourceData.source;
-            } else if (leadSourceData.ordencompra) {
-                primarySource = `ordencompra_${leadSourceData.ordencompra}`;
-            }
-
-            const newProfile = {
-                id: userId,
-                email: userForProfile.email,
-                first_name: userForProfile.user_metadata?.first_name || userForProfile.user_metadata?.full_name?.split(' ')[0] || null,
-                last_name: userForProfile.user_metadata?.last_name || userForProfile.user_metadata?.full_name?.split(' ').slice(1).join(' ') || null,
-                phone: userForProfile.phone || null,
-                role: role,
-                metadata: combinedMetadata,
-                source: primarySource,
-                // Save all tracking fields to dedicated columns
-                utm_source: leadSourceData.utm_source || null,
-                utm_medium: leadSourceData.utm_medium || null,
-                utm_campaign: leadSourceData.utm_campaign || null,
-                utm_term: leadSourceData.utm_term || null,
-                utm_content: leadSourceData.utm_content || null,
-                rfdm: leadSourceData.rfdm || null,
-                referrer: leadSourceData.referrer || null,
-                fbclid: leadSourceData.fbclid || null,
-                landing_page: leadSourceData.landing_page || null,
-            };
-
-            // Use RPC function to bypass RLS issues
-            const { data: rpcResult, error: rpcError } = await supabase.rpc('safe_upsert_profile', {
-                profile_data: newProfile
-            });
-
-            let createdProfile = rpcResult;
-            let createError = rpcError;
-
-            // Fallback to direct insert if RPC fails
-            if (rpcError) {
-                console.warn('[AuthContext] RPC failed, trying direct insert:', rpcError.message);
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .insert(newProfile)
-                    .select()
-                    .single();
-                createdProfile = data;
-                createError = error;
-            }
-
-            if (createError) {
-                console.error('[AuthContext] Error creating profile:', createError.message);
-                setProfile(null);
-                return null;
-            }
-
-            console.log(`[AuthContext] Profile created successfully with role: ${role}`);
-            setProfile(createdProfile as Profile);
-            sessionStorage.setItem('userProfile', JSON.stringify(createdProfile));
-            return createdProfile as Profile;
+            // No profile returned - this shouldn't happen with get_or_create_profile
+            console.warn('[AuthContext] No profile returned from RPC');
+            setProfile(null);
+            return null;
 
         } catch (e: unknown) {
             const errorMessage = e instanceof Error ? e.message : 'Unknown error';

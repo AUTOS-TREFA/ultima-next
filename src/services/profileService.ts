@@ -158,20 +158,33 @@ export const ProfileService = {
     return updatedProfile;
   },
 
-  /** Obtiene el perfil público de un usuario por ID */
+  /** Obtiene el perfil público de un usuario por ID usando RPC para evitar problemas de RLS */
   async getProfile(userId: string) {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    // Use RPC function with SECURITY DEFINER to bypass RLS
+    const { data: profile, error } = await supabase.rpc('get_my_profile', {
+      user_id: userId
+    });
 
-    if (error && error.code !== 'PGRST116') {
-      console.error('Error fetching profile:', error.message, {
+    if (error) {
+      console.error('Error fetching profile via RPC:', error.message, {
         code: error.code,
         details: error.details,
       });
-      throw new Error(`Could not fetch profile: ${error.message}`);
+
+      // Fallback to direct query if RPC fails
+      console.log('[ProfileService] Attempting direct query as fallback...');
+      const { data: directProfile, error: directError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (directError && directError.code !== 'PGRST116') {
+        console.error('Error fetching profile directly:', directError.message);
+        throw new Error(`Could not fetch profile: ${directError.message}`);
+      }
+
+      return directProfile;
     }
 
     return profile;
