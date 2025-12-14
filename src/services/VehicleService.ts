@@ -76,8 +76,8 @@ class VehicleService {
                                 galeriaExterior[0] ||
                                 '';
 
-            // Use existing title from database, only fall back to 'Auto sin título' if missing
-            const title = item.title || item.title || 'Auto sin título';
+            // Use existing title from database (titulo field), only fall back to 'Auto sin título' if missing
+            const title = item.titulo || item.title || `${item.marca || ''} ${item.modelo || ''} ${item.autoano || ''}`.trim() || 'Auto sin título';
 
             // Helper to get first element from array or return as string
             const getFirstOrString = (field: any): string => {
@@ -103,6 +103,7 @@ class VehicleService {
                 ordencompra: item.ordencompra || '',
                 record_id: item.record_id || null,
 
+                titulo: title,
                 title: title,
                 descripcion: item.descripcion || '',
                 metadescripcion: item.metadescripcion || '',
@@ -592,8 +593,8 @@ private static normalizeVehicleData(rawData: any[]): Vehicle[] {
     };
 
     const normalizedVehicles = rawData.filter(Boolean).map((item) => {
-        // Use existing title/slug from Airtable, only construct if absolutely necessary
-        const title = item.title || item.title || 'Auto sin título';
+        // Use existing title/slug from Airtable (titulo field), only construct if absolutely necessary
+        const title = item.titulo || item.title || `${item.marca || ''} ${item.modelo || ''} ${item.autoano || ''}`.trim() || 'Auto sin título';
         const slug = item.slug || generateSlug(title);
         
         let clasificacionid: string[] = [];
@@ -671,6 +672,7 @@ private static normalizeVehicleData(rawData: any[]): Vehicle[] {
             ordencompra: item.ordencompra || '',
             record_id: item.record_id || null,
 
+            titulo: title,
             title: title,
             descripcion: item.descripcion || '',
             metadescripcion: item.metadescripcion || '',
