@@ -68,30 +68,36 @@ Deno.serve(async (req: Request) => {
     if (email) {
       console.log(`📧 Verificando si el email existe en auth.users: ${email}`);
 
-      const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers({
-        filter: {
-          email: email
-        }
-      });
+      try {
+        // Use getUserByEmail to check if user exists (more reliable than listUsers filter)
+        const { data: existingUser, error: getUserError } = await supabase
+          .from('profiles')
+          .select('id, email')
+          .eq('email', email.toLowerCase())
+          .maybeSingle();
 
-      if (listError) {
-        console.error("❌ Error verificando email:", listError);
+        if (getUserError) {
+          console.error("❌ Error verificando email en profiles:", getUserError);
+          // Don't block on error, continue with SMS
+        } else if (existingUser) {
+          console.log(`⚠️ Email ya registrado en profiles: ${email}`);
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: "email_exists",
+              message: "Este correo electrónico ya está registrado",
+            }),
+            {
+              status: 409, // Conflict
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            }
+          );
+        }
+        console.log(`✅ Email disponible: ${email}`);
+      } catch (emailCheckError) {
+        console.error("❌ Error al verificar email:", emailCheckError);
         // Don't block on error, continue with SMS
-      } else if (existingUsers?.users && existingUsers.users.length > 0) {
-        console.log(`⚠️ Email ya registrado en auth.users: ${email}`);
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: "email_exists",
-            message: "Este correo electrónico ya está registrado",
-          }),
-          {
-            status: 409, // Conflict
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
       }
-      console.log(`✅ Email disponible: ${email}`);
     }
 
     // Formatear número de teléfono (asegurar que tenga +52 para México)

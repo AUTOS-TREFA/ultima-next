@@ -194,24 +194,19 @@ const RegisterPage: React.FC = () => {
 
       // Llamar a la Edge Function de Twilio Verify
       // Pasamos el email para verificar si ya existe en auth.users antes de enviar el SMS
-      const { data, error: smsError } = await supabase.functions.invoke('send-sms-otp', {
-        body: { phone: formattedPhone, email: email }
-      });
-
-      if (smsError) {
-        console.error('Error enviando SMS:', smsError);
-        const errorMsg = (smsError as any).message || 'Error al enviar código';
-
-        if (errorMsg.includes('phone number')) {
-          throw new Error('El número de teléfono ingresado no es válido. Verifica que sea un número de 10 dígitos.');
-        } else if (errorMsg.includes('Twilio')) {
-          throw new Error('Error al enviar el mensaje SMS. Por favor intenta de nuevo en unos momentos.');
-        } else {
-          throw new Error(`Error: ${errorMsg}`);
-        }
+      let data, smsError;
+      try {
+        const response = await supabase.functions.invoke('send-sms-otp', {
+          body: { phone: formattedPhone, email: email }
+        });
+        data = response.data;
+        smsError = response.error;
+      } catch (invokeError: unknown) {
+        console.error('Error invocando edge function:', invokeError);
+        throw new Error('No se pudo conectar con el servicio de SMS. Por favor intenta de nuevo más tarde.');
       }
 
-      // Check if the edge function returned email_exists error
+      // Check if the edge function returned email_exists error (can be in data even with error)
       if (data?.error === 'email_exists') {
         console.log('⚠️ Email ya existe en auth.users (detectado por edge function)');
         setError('account_exists_email');
@@ -219,7 +214,32 @@ const RegisterPage: React.FC = () => {
         return;
       }
 
+      if (smsError) {
+        console.error('Error enviando SMS:', smsError);
+
+        // Try to extract error message from response data first
+        const dataErrorMsg = data?.error || data?.message || data?.details;
+        const errorMsg = dataErrorMsg || (smsError as Error).message || 'Error al enviar código';
+
+        console.log('Error details:', { dataErrorMsg, errorMsg, data });
+
+        if (errorMsg.includes('phone number') || errorMsg.includes('Invalid parameter')) {
+          throw new Error('El número de teléfono ingresado no es válido. Verifica que sea un número de 10 dígitos.');
+        } else if (errorMsg.includes('Twilio') || errorMsg.includes('Configuración de SMS')) {
+          throw new Error('El servicio de SMS no está disponible temporalmente. Por favor intenta de nuevo más tarde.');
+        } else if (errorMsg.includes('rate limit') || errorMsg.includes('Max send attempts')) {
+          throw new Error('Has solicitado demasiados códigos. Por favor espera unos minutos antes de intentar de nuevo.');
+        } else if (errorMsg.includes('non-2xx')) {
+          // Generic edge function error - show user-friendly message
+          throw new Error('Hubo un problema al enviar el código SMS. Por favor intenta de nuevo.');
+        } else {
+          throw new Error('No se pudo enviar el código de verificación. Por favor intenta de nuevo.');
+        }
+      }
+
       if (!data?.success) {
+        const errorMsg = data?.message || data?.error || 'Error desconocido';
+        console.error('Edge function returned failure:', data);
         throw new Error('No se pudo enviar el código de verificación. Por favor intenta de nuevo.');
       }
 
