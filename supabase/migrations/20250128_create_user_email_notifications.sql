@@ -16,9 +16,9 @@ CREATE TABLE IF NOT EXISTS public.user_email_notifications (
 );
 
 -- Create indexes for performance
-CREATE INDEX idx_user_email_notifications_user_id ON public.user_email_notifications(user_id);
-CREATE INDEX idx_user_email_notifications_email_type ON public.user_email_notifications(email_type);
-CREATE INDEX idx_user_email_notifications_sent_at ON public.user_email_notifications(sent_at DESC);
+CREATE INDEX IF NOT EXISTS idx_user_email_notifications_user_id ON public.user_email_notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_email_notifications_email_type ON public.user_email_notifications(email_type);
+CREATE INDEX IF NOT EXISTS idx_user_email_notifications_sent_at ON public.user_email_notifications(sent_at DESC);
 
 -- Enable RLS
 ALTER TABLE public.user_email_notifications ENABLE ROW LEVEL SECURITY;
@@ -36,7 +36,7 @@ CREATE POLICY "Allow users to view own notifications"
   FOR SELECT
   TO authenticated
   USING (user_id = auth.uid() OR EXISTS (
-    SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'sales_agent')
+    SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'sales')
   ));
 
 -- Create policy to allow admins and sales agents to view all notifications
@@ -45,7 +45,7 @@ CREATE POLICY "Allow admins to view all notifications"
   FOR SELECT
   TO authenticated
   USING (EXISTS (
-    SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'sales_agent')
+    SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'sales')
   ));
 
 -- Add helpful comment

@@ -171,10 +171,39 @@ function buildPublicUrl(bucket, path) {
 /* ================================
    🚗 PROCESSOR
 ================================== */ function transformVehicle(row) {
-  const recordId = row.record_id ?? null;
-  const featureRaw = row.feature_image ?? null;
-  const fotosExteriorRaw = row.fotos_exterior_url ?? null;
-  const fotosInteriorRaw = row.fotos_interior_url ?? null;
+  // Extract data from nested 'data' JSON column if individual columns are null
+  // This handles cases where Airtable sync stores raw data but doesn't map to columns
+  const airtableData = row.data || {};
+
+  // Helper to get value from row or fallback to airtableData
+  const getValue = (key: string, airtableKey?: string): any => {
+    const val = row[key];
+    if (val !== null && val !== undefined && val !== '') return val;
+    if (airtableKey && airtableData[airtableKey] !== undefined) return airtableData[airtableKey];
+    if (airtableData[key] !== undefined) return airtableData[key];
+    return null;
+  };
+
+  // Helper to get first element from array or return as string
+  const getFirstOrString = (field: any): string => {
+    if (Array.isArray(field)) return field[0] || '';
+    if (typeof field === 'string') {
+      try {
+        const parsed = JSON.parse(field);
+        if (Array.isArray(parsed)) return parsed[0] || '';
+      } catch {
+        return field;
+      }
+    }
+    return field || '';
+  };
+
+  const recordId = row.record_id ?? airtableData.record_id ?? null;
+
+  // Get image fields from row or airtableData
+  const featureRaw = getValue('feature_image') || airtableData.image_link || null;
+  const fotosExteriorRaw = getValue('fotos_exterior_url') || airtableData.galeriaExterior || airtableData['Foto Catalogo'] || null;
+  const fotosInteriorRaw = getValue('fotos_interior_url') || airtableData.galeriaInterior || null;
 
   const fotosExterior = normalizePathsField(fotosExteriorRaw);
   const fotosInterior = normalizePathsField(fotosInteriorRaw);
@@ -190,15 +219,72 @@ function buildPublicUrl(bucket, path) {
   }
 
   // If still no image, use placeholder based on carroceria/clasificacionid
+  const clasificacionid = getValue('clasificacionid', 'ClasificacionID');
+  const carroceria = getValue('carroceria');
   if (!feature_public) {
-    feature_public = getPlaceholderImage(row.clasificacionid || row.ClasificacionID, row.carroceria);
+    feature_public = getPlaceholderImage(clasificacionid, carroceria);
   }
 
-  const { id: _originalId, ...rest } = row;
+  // Extract all fields with fallback to airtableData
+  const title = getValue('title') || airtableData.Auto || airtableData.title ||
+    `${getValue('marca', 'Marca') || ''} ${getValue('modelo', 'Modelo') || ''} ${getValue('autoano', 'AutoAno') || ''}`.trim() || 'Auto sin título';
+  const marca = getValue('marca', 'Marca') || '';
+  const modelo = getValue('modelo', 'Modelo') || '';
+  const autoano = getValue('autoano', 'AutoAno');
+  const precio = getValue('precio', 'Precio');
+  const kilometraje = getFirstOrString(getValue('kilometraje', 'Kilometraje'));
+  const transmision = getFirstOrString(getValue('transmision', 'Transmision'));
+  const combustible = getFirstOrString(getValue('combustible', 'Combustible'));
+  const garantia = getValue('garantia', 'Garantia') || '';
+  const descripcion = getValue('descripcion', 'Descripcion') || '';
+  const enganchemin = getValue('enganchemin', 'EngancheMin');
+  const enganche_recomendado = getValue('enganche_recomendado', 'EngancheRecomendado');
+  const mensualidad_minima = getValue('mensualidad_minima', 'MensualidadMinima');
+  const mensualidad_recomendada = getValue('mensualidad_recomendada', 'MensualidadRecomendada');
+  const plazomax = getValue('plazomax', 'PlazoMax');
+
+  // Handle promociones from row or airtableData
+  let promociones: string[] = [];
+  const rawPromociones = getValue('promociones', 'Promociones');
+  if (Array.isArray(rawPromociones)) {
+    promociones = rawPromociones.map(String).filter(Boolean);
+  } else if (typeof rawPromociones === 'string') {
+    try {
+      const parsed = JSON.parse(rawPromociones);
+      if (Array.isArray(parsed)) {
+        promociones = parsed.map(String).filter(Boolean);
+      }
+    } catch {
+      promociones = rawPromociones.split(',').map((p: string) => p.trim()).filter(Boolean);
+    }
+  }
+
+  const { id: _originalId, data: _dataColumn, ...rest } = row;
   return {
     id: recordId,
     record_id: recordId,
     ...rest,
+    // Override with extracted values
+    title: title,
+    titulo: title,
+    marca: marca,
+    modelo: modelo,
+    autoano: autoano,
+    precio: precio,
+    kilometraje: kilometraje,
+    transmision: transmision,
+    combustible: combustible,
+    carroceria: carroceria,
+    clasificacionid: clasificacionid,
+    garantia: garantia,
+    descripcion: descripcion,
+    enganchemin: enganchemin,
+    enganche_recomendado: enganche_recomendado,
+    mensualidad_minima: mensualidad_minima,
+    mensualidad_recomendada: mensualidad_recomendada,
+    plazomax: plazomax,
+    promociones: promociones,
+    // Image fields
     raw_feature_image: featureRaw,
     raw_fotos_exterior: fotosExteriorRaw,
     raw_fotos_interior: fotosInteriorRaw,

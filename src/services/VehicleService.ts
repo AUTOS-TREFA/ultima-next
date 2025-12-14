@@ -593,57 +593,80 @@ private static normalizeVehicleData(rawData: any[]): Vehicle[] {
     };
 
     const normalizedVehicles = rawData.filter(Boolean).map((item) => {
-        // Use existing title/slug from Airtable (titulo field), only construct if absolutely necessary
-        const title = item.titulo || item.title || `${item.marca || ''} ${item.modelo || ''} ${item.autoano || ''}`.trim() || 'Auto sin título';
+        // Extract data from nested 'data' JSON column if individual columns are null
+        // This handles cases where Airtable sync stores raw data but doesn't map to columns
+        const airtableData = item.data || {};
+
+        // Helper to get value from item or fallback to airtableData
+        const getValue = (key: string, airtableKey?: string): any => {
+            const val = item[key];
+            if (val !== null && val !== undefined && val !== '') return val;
+            if (airtableKey && airtableData[airtableKey] !== undefined) return airtableData[airtableKey];
+            if (airtableData[key] !== undefined) return airtableData[key];
+            return null;
+        };
+
+        // Use existing title/slug from Airtable, fallback to data.Auto or data.title
+        const title = getValue('title') || airtableData.Auto || airtableData.title ||
+            `${getValue('marca', 'Marca') || ''} ${getValue('modelo') || ''} ${getValue('autoano', 'AutoAno') || ''}`.trim() || 'Auto sin título';
         const slug = item.slug || generateSlug(title);
         
+        // Handle clasificacionid from item or airtableData
         let clasificacionid: string[] = [];
-        if (Array.isArray(item.clasificacionid)) {
-            clasificacionid = item.clasificacionid.map(String);
-        } else if (typeof item.clasificacionid === 'string') {
-            // Try to parse as JSON first (clasificacionid comes as JSON string like '["SUV"]')
+        const rawClasificacion = getValue('clasificacionid', 'ClasificacionID') || getValue('carroceria');
+        if (Array.isArray(rawClasificacion)) {
+            clasificacionid = rawClasificacion.map(String);
+        } else if (typeof rawClasificacion === 'string') {
             try {
-                const parsed = JSON.parse(item.clasificacionid);
+                const parsed = JSON.parse(rawClasificacion);
                 if (Array.isArray(parsed)) {
                     clasificacionid = parsed.map(String);
                 } else {
-                    clasificacionid = item.clasificacionid.split(',').map((c: string) => c.trim()).filter(Boolean);
+                    clasificacionid = rawClasificacion.split(',').map((c: string) => c.trim()).filter(Boolean);
                 }
             } catch {
-                // If JSON parse fails, treat as comma-separated
-                clasificacionid = item.clasificacionid.split(',').map((c: string) => c.trim()).filter(Boolean);
+                clasificacionid = rawClasificacion.split(',').map((c: string) => c.trim()).filter(Boolean);
             }
         }
 
-        const sucursalMapping: Record<string, string> = { 'MTY': 'Monterrey', 'GPE': 'Guadalupe', 'TMPS': 'Reynosa', 'COAH': 'Saltillo' };
+        // Handle ubicacion from item or airtableData.Ubicacion
+        const sucursalMapping: Record<string, string> = { 'MTY': 'Monterrey', 'GPE': 'Guadalupe', 'TMPS': 'Reynosa', 'COAH': 'Saltillo', 'Monterrey': 'Monterrey', 'Guadalupe': 'Guadalupe', 'Reynosa': 'Reynosa', 'Saltillo': 'Saltillo' };
         let normalizedSucursales: string[] = [];
-        if (Array.isArray(item.ubicacion)) {
-            normalizedSucursales = item.ubicacion.map((s: string) => sucursalMapping[s.trim().toUpperCase()] || s.trim()).filter(Boolean);
-        } else if (typeof item.ubicacion === 'string') {
-            // Try to parse as JSON first (ubicacion comes as JSON string like '["Reynosa"]')
+        const rawUbicacion = getValue('ubicacion', 'Ubicacion');
+        if (Array.isArray(rawUbicacion)) {
+            normalizedSucursales = rawUbicacion.map((s: string) => sucursalMapping[s.trim()] || s.trim()).filter(Boolean);
+        } else if (typeof rawUbicacion === 'string') {
             try {
-                const parsed = JSON.parse(item.ubicacion);
+                const parsed = JSON.parse(rawUbicacion);
                 if (Array.isArray(parsed)) {
-                    normalizedSucursales = parsed.map((s: string) => sucursalMapping[s.trim().toUpperCase()] || s.trim()).filter(Boolean);
+                    normalizedSucursales = parsed.map((s: string) => sucursalMapping[s.trim()] || s.trim()).filter(Boolean);
                 } else {
-                    normalizedSucursales = item.ubicacion.split(',').map((s: string) => sucursalMapping[s.trim().toUpperCase()] || s.trim()).filter(Boolean);
+                    normalizedSucursales = [sucursalMapping[rawUbicacion.trim()] || rawUbicacion.trim()].filter(Boolean);
                 }
             } catch {
-                // If JSON parse fails, treat as comma-separated
-                normalizedSucursales = item.ubicacion.split(',').map((s: string) => sucursalMapping[s.trim().toUpperCase()] || s.trim()).filter(Boolean);
+                normalizedSucursales = [sucursalMapping[rawUbicacion.trim()] || rawUbicacion.trim()].filter(Boolean);
             }
         }
 
-        const featureImage = getVehicleImage(item);
+        // Handle images - check airtableData for galeriaExterior/galeriaInterior/image_link
+        const airtableExterior = airtableData.galeriaExterior || airtableData['Foto Catalogo'] || [];
+        const airtableInterior = airtableData.galeriaInterior || [];
+        const airtableFeatureImage = airtableData.image_link || (Array.isArray(airtableExterior) && airtableExterior[0]) || null;
 
+        // Get feature image from item or airtable data
+        const featureImage = getVehicleImage(item) || airtableFeatureImage || DEFAULT_PLACEHOLDER_IMAGE;
+
+        // Combine galleries from both sources
         const exteriorGallery = [
             ...parseGalleryField(item.fotos_exterior_url),
-            ...parseGalleryField(item.galeria_exterior)
+            ...parseGalleryField(item.galeria_exterior),
+            ...parseGalleryField(airtableExterior)
         ];
-        
+
         const interiorGallery = [
             ...parseGalleryField(item.fotos_interior_url),
-            ...parseGalleryField(item.galeria_interior)
+            ...parseGalleryField(item.galeria_interior),
+            ...parseGalleryField(airtableInterior)
         ];
 
         const viewCount = safeParseInt(item.view_count || item.viewcount);
@@ -666,59 +689,99 @@ private static normalizeVehicleData(rawData: any[]): Vehicle[] {
             return field || '';
         };
 
+        // Get all values with fallback to airtableData
+        const marca = getValue('marca', 'Marca') || '';
+        const modelo = getValue('modelo', 'Modelo') || '';
+        const autoano = safeParseInt(getValue('autoano', 'AutoAno'));
+        const precio = safeParseFloat(getValue('precio', 'Precio'));
+        const kilometraje = safeParseInt(getFirstOrString(getValue('kilometraje', 'Kilometraje')));
+        const transmision = getFirstOrString(getValue('transmision', 'Transmision'));
+        const combustible = getFirstOrString(getValue('combustible', 'Combustible'));
+        const carroceria = getFirstOrString(getValue('carroceria') || getValue('clasificacionid', 'ClasificacionID'));
+        const cilindros = safeParseInt(getValue('cilindros', 'Cilindros'));
+        const garantia = getValue('garantia', 'Garantia') || '';
+        const descripcion = getValue('descripcion', 'Descripcion') || '';
+        const metadescripcion = getValue('metadescripcion', 'MetaDescripcion') || '';
+        const enganchemin = safeParseFloat(getValue('enganchemin', 'EngancheMin'));
+        const enganche_recomendado = safeParseFloat(getValue('enganche_recomendado', 'EngancheRecomendado'));
+        const mensualidad_minima = safeParseFloat(getValue('mensualidad_minima', 'MensualidadMinima'));
+        const mensualidad_recomendada = safeParseFloat(getValue('mensualidad_recomendada', 'MensualidadRecomendada'));
+        const plazomax = safeParseInt(getValue('plazomax', 'PlazoMax'));
+
+        // Handle promociones from item or airtableData
+        let promociones: string[] = [];
+        const rawPromociones = getValue('promociones', 'Promociones');
+        if (Array.isArray(rawPromociones)) {
+            promociones = rawPromociones.map(String).filter(Boolean);
+        } else if (typeof rawPromociones === 'string') {
+            try {
+                const parsed = JSON.parse(rawPromociones);
+                if (Array.isArray(parsed)) {
+                    promociones = parsed.map(String).filter(Boolean);
+                } else {
+                    promociones = rawPromociones.split(',').map((p: string) => p.trim()).filter(Boolean);
+                }
+            } catch {
+                promociones = rawPromociones.split(',').map((p: string) => p.trim()).filter(Boolean);
+            }
+        }
+
         const normalizedVehicle = {
             id: item.id || 0,
             slug: slug,
-            ordencompra: item.ordencompra || '',
-            record_id: item.record_id || null,
+            ordencompra: item.ordencompra || airtableData.ordenCompra || '',
+            record_id: item.record_id || airtableData.record_id || null,
 
             titulo: title,
             title: title,
-            descripcion: item.descripcion || '',
-            metadescripcion: item.metadescripcion || '',
+            descripcion: descripcion,
+            metadescripcion: metadescripcion,
 
-            marca: item.marca || '',
-            modelo: item.modelo || '',
+            marca: marca,
+            modelo: modelo,
 
-            autoano: safeParseInt(item.autoano),
-            precio: safeParseFloat(item.precio),
-            kilometraje: safeParseInt(getFirstOrString(item.kilometraje)),
-            transmision: getFirstOrString(item.transmision),
-            combustible: getFirstOrString(item.combustible),
-            carroceria: getFirstOrString(item.carroceria || item.clasificacionid),
-            cilindros: safeParseInt(item.cilindros),
-            
-            enganchemin: safeParseFloat(item.enganchemin),
-            enganche_recomendado: safeParseFloat(item.enganche_recomendado),
-            mensualidad_minima: safeParseFloat(item.mensualidad_minima),
-            mensualidad_recomendada: safeParseFloat(item.mensualidad_recomendada),
-            plazomax: safeParseInt(item.plazomax),
-            
+            autoano: autoano,
+            precio: precio,
+            kilometraje: kilometraje,
+            transmision: transmision,
+            combustible: combustible,
+            carroceria: carroceria,
+            cilindros: cilindros,
+            AutoMotor: getValue('AutoMotor') || '',
+
+            enganchemin: enganchemin,
+            enganche_recomendado: enganche_recomendado,
+            mensualidad_minima: mensualidad_minima,
+            mensualidad_recomendada: mensualidad_recomendada,
+            plazomax: plazomax,
+
             feature_image: [featureImage],
             galeria_exterior: [...new Set(exteriorGallery)],
             fotos_exterior_url: [...new Set(exteriorGallery)],
             galeria_interior: [...new Set(interiorGallery)],
-            
+
             ubicacion: normalizedSucursales,
             sucursal: normalizedSucursales,
-            
-            garantia: item.garantia || '',
-            
+
+            garantia: garantia,
+
             vendido: !!item.vendido,
             separado: !!item.separado,
-            ordenstatus: item.ordenstatus || '',
-            
+            ordenstatus: item.ordenstatus || airtableData.OrdenStatus || '',
+
             clasificacionid: clasificacionid,
-            
-            promociones: Array.isArray(item.promociones) ? item.promociones : [],
+
+            promociones: promociones,
 
             view_count: viewCount,
 
+            ingreso_inventario: getValue('ingreso_inventario', 'IngresoInventario') || null,
+            rezago: !!getValue('rezago', 'Rezago'),
+
             // --- Compatibility Aliases ---
-            title: title,
-            price: safeParseFloat(item.precio),
-            year: safeParseInt(item.autoano),
-            kms: safeParseInt(item.kilometraje),
+            price: precio,
+            year: autoano,
+            kms: kilometraje,
         } as Vehicle;
         
         return normalizedVehicle;
