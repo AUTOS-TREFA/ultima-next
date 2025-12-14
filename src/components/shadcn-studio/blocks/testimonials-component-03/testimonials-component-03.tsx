@@ -43,7 +43,7 @@ const TestimonialsComponent = ({ heroSlides, testimonials }: TestimonialsCompone
             fade
             slide={{ direction: 'down' }}
             transition={{ duration: 0.5 }}
-            className='text-primary z-1 inline-block text-3xl font-bold sm:text-4xl lg:text-5xl'
+            className='text-primary z-1 inline-block text-2xl font-bold md:text-3xl lg:text-4xl'
           >
             Nuestros clientes nos respaldan ⭐
           </MotionPreset>
@@ -56,11 +56,11 @@ const TestimonialsComponent = ({ heroSlides, testimonials }: TestimonialsCompone
               />
               <CarouselContent>
                 {heroSlides.map((slide, index) => (
-                  <CarouselItem key={index} className='flex flex-col items-center gap-6'>
-                    <p className='text-muted-foreground text-start text-base font-medium sm:text-center sm:text-2xl'>
+                  <CarouselItem key={index} className='flex flex-col items-center gap-4'>
+                    <p className='text-muted-foreground text-start text-sm font-medium sm:text-center sm:text-base lg:text-lg max-w-2xl'>
                       {slide.description}
                     </p>
-                    <img src={slide.logo} alt={slide.alt} className='h-8 w-auto max-w-[120px] object-contain' />
+                    <img src={slide.logo} alt={slide.alt} className='h-6 w-auto max-w-[100px] object-contain opacity-70' />
                   </CarouselItem>
                 ))}
               </CarouselContent>
@@ -78,25 +78,30 @@ const TestimonialsComponent = ({ heroSlides, testimonials }: TestimonialsCompone
           slide={{ direction: 'down' }}
           delay={0.6}
           transition={{ duration: 0.5 }}
-          className='relative grid sm:grid-cols-2 lg:grid-cols-3'
+          className='relative grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
         >
-          {/* Top fade overlay - clean fade to transparent */}
-          <div className='absolute top-0 z-10 h-32 w-full bg-gradient-to-b from-muted via-muted/70 to-transparent pointer-events-none' />
-          {/* Bottom fade overlay - clean fade to transparent */}
-          <div className='absolute bottom-0 z-10 h-32 w-full bg-gradient-to-t from-muted via-muted/70 to-transparent pointer-events-none' />
+          {/* Top fade overlay - smooth fade to transparent */}
+          <div className='absolute top-0 z-10 h-40 w-full bg-gradient-to-b from-muted via-muted/50 to-transparent pointer-events-none' />
+          {/* Bottom fade overlay - smooth fade to transparent */}
+          <div className='absolute bottom-0 z-10 h-40 w-full bg-gradient-to-t from-muted via-muted/50 to-transparent pointer-events-none' />
 
-          <Marquee vertical pauseOnHover delay={0.9} duration={22} gap={3} className='h-[44rem]'>
+          <Marquee vertical pauseOnHover delay={0.9} duration={22} gap={4} className='h-[44rem]'>
             {testimonials.slice(0, 3).map((testimonial, index) => (
               <TestimonialCard key={index} testimonial={testimonial} />
             ))}
           </Marquee>
-          <Marquee vertical pauseOnHover delay={0.9} duration={25} gap={3} reverse className='h-[44rem] max-sm:hidden'>
+          <Marquee vertical pauseOnHover delay={0.9} duration={25} gap={4} reverse className='h-[44rem] max-sm:hidden'>
             {testimonials.slice(3, 6).map((testimonial, index) => (
               <TestimonialCard key={index} testimonial={testimonial} />
             ))}
           </Marquee>
-          <Marquee vertical pauseOnHover delay={0.9} duration={28} gap={3} className='h-[44rem] max-lg:hidden'>
+          <Marquee vertical pauseOnHover delay={0.9} duration={28} gap={4} className='h-[44rem] max-lg:hidden'>
             {testimonials.slice(6, 9).map((testimonial, index) => (
+              <TestimonialCard key={index} testimonial={testimonial} />
+            ))}
+          </Marquee>
+          <Marquee vertical pauseOnHover delay={0.9} duration={24} gap={4} reverse className='h-[44rem] max-xl:hidden'>
+            {testimonials.slice(9, 12).map((testimonial, index) => (
               <TestimonialCard key={index} testimonial={testimonial} />
             ))}
           </Marquee>

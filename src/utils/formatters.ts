@@ -242,7 +242,20 @@ export function generateSlug(text: string): string {
     .replace(/[^\w\s-]/g, '') // Remueve caracteres especiales
     .replace(/\s+/g, '-') // Espacios a guiones
     .replace(/-+/g, '-') // Múltiples guiones a uno
+    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
     .trim();
+}
+
+/**
+ * Genera slug base para vehículo: marca-modelo-año
+ * Ejemplo: mazda-3i-2024, chevrolet-captiva-2024
+ */
+export function generateVehicleSlugBase(marca: string, modelo: string, año: string | number): string {
+  const parts = [marca, modelo, año?.toString()]
+    .filter(Boolean)
+    .map(part => generateSlug(part || ''));
+
+  return parts.join('-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
 }
 
 /**

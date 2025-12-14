@@ -102,7 +102,7 @@ const MobileHeader: React.FC = () => {
     return (
         <>
             {/* Main Mobile Header - Fixed with compact design */}
-            <header className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-white shadow-sm border-b border-gray-200">
+            <header className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-white shadow-sm border-b border-gray-100/60">
                 <div className="flex items-center justify-between h-16 px-3">
                     {/* Logo */}
                     <Link href="/" className="flex-shrink-0">
@@ -140,7 +140,7 @@ const MobileHeader: React.FC = () => {
             {searchOpen && (
                 <div className="lg:hidden fixed inset-0 z-50 bg-white">
                     {/* Search Header */}
-                    <div className="flex items-center gap-3 p-3 border-b border-gray-200">
+                    <div className="flex items-center gap-3 p-3 border-b border-gray-100/60">
                         <button
                             onClick={() => {
                                 setSearchOpen(false);

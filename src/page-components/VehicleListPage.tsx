@@ -406,7 +406,7 @@ const VehicleListPage: React.FC = () => {
   return (
     <>
       {/* Mobile Fixed Filter Bar - Below MobileHeader */}
-      <div className="lg:hidden fixed top-16 left-0 right-0 z-20 bg-white border-b border-gray-200 shadow-sm">
+      <div className="lg:hidden fixed top-16 left-0 right-0 z-20 bg-white border-b border-gray-100/80 shadow-sm">
         <div className="flex items-center justify-between px-3 py-2">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <h1 className="text-sm font-semibold truncate">

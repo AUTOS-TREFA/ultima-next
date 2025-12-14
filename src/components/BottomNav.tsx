@@ -139,7 +139,7 @@ const BottomNav: React.FC = () => {
 
     return (
         <>
-            <nav className={`fixed bottom-0 left-0 right-0 z-[80] bg-white border-t border-gray-200 lg:hidden transition-transform duration-300 ${isKeyboardVisible ? 'translate-y-full' : 'translate-y-0'}`}>
+            <nav className={`fixed bottom-0 left-0 right-0 z-[80] bg-white border-t border-gray-100/60 lg:hidden transition-transform duration-300 ${isKeyboardVisible ? 'translate-y-full' : 'translate-y-0'}`}>
                 <div className="max-w-md mx-auto grid grid-cols-5 justify-around items-center h-16">
                     <NavItem to="/" icon={HomeIcon} label="Inicio" end={true} />
                     <NavItem to="/vender-mi-auto" icon={SellCarIcon} label="Vender" />

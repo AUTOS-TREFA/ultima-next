@@ -349,7 +349,7 @@ const NewHeroSection: React.FC<{ content: InventoryHeroContent | null }> = ({ co
         "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-10 lg:mb-16 transition-all duration-700",
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
       )}>
-        <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight">
+        <h2 className="text-2xl font-bold md:text-3xl lg:text-4xl tracking-tight text-foreground leading-tight">
           {inventoryContent.title}
         </h2>
         <p className="mt-4 text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -418,7 +418,7 @@ const AnimatedHeader: React.FC<{ title: React.ReactNode; subtitle: string; class
         className
       )}
     >
-      <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-tight">
+      <h2 className="text-2xl font-bold md:text-3xl lg:text-4xl tracking-tight text-foreground leading-tight">
         {title}
       </h2>
       <p className="mt-4 text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">{subtitle}</p>
@@ -547,8 +547,8 @@ const AnimatedHeading: React.FC<{ children: React.ReactNode, as?: 'h2' | 'h3', c
     const [ref, isVisible] = useIntersectionObserver({ threshold: 0.1 });
 
     const defaultClasses = Component === 'h2'
-      ? 'text-4xl lg:text-5xl font-bold'
-      : 'text-2xl lg:text-3xl font-bold';
+      ? 'text-2xl font-bold md:text-3xl lg:text-4xl'
+      : 'text-xl font-bold md:text-2xl lg:text-3xl';
 
     return (
         <Component
@@ -682,7 +682,7 @@ const CarroceriaCarouselSection: React.FC<{ content: CarroceriaCarouselContent |
         )}
       >
         <div className="text-center mb-12 lg:mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-tight mb-4">
+          <h2 className="text-2xl font-bold md:text-3xl lg:text-4xl tracking-tight text-foreground leading-tight mb-4">
             {carouselContent.title}
           </h2>
           <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto">

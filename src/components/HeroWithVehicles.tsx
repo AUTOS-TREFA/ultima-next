@@ -15,7 +15,7 @@ const rotatingPhrases = [
   'con tranquilidad absoluta',
   'con garantías extendidas',
   'con programas de recompra',
-  'con financiamiento a tu medida',
+  'con financiamiento en línea',
   'con asesoría personalizada',
   'con seguridad y confianza',
 ];
@@ -163,19 +163,22 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
               transition={{ duration: 0.5, ease: 'easeOut' }}
               className="flex flex-wrap items-center gap-4"
             >
-              <Button size="lg" asChild className="bg-[#FF6801] hover:bg-[#E55E01] shadow-lg h-14 px-8 text-lg font-bold">
+              <Button
+                size="lg"
+                asChild
+                className="bg-[#FF6801] hover:bg-[#E55E01] shadow-lg h-14 px-8 text-lg font-bold transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+              >
                 <Link href="/autos">
-                  <Zap className="w-5 h-5 mr-2" />
-                  Ver Inventario
+                  Comprar un auto
                 </Link>
               </Button>
               <Button
                 size="lg"
                 variant="outline"
                 asChild
-                className="border-[#FF6801] border-2 hover:bg-[#FF6801]/5 text-[#FF6801] h-14 px-8 text-lg font-bold"
+                className="border-[#FF6801] border-2 hover:bg-[#FF6801] hover:text-white text-[#FF6801] h-14 px-8 text-lg font-bold transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
               >
-                <Link href="/financiamientos">Contactar a un Asesor</Link>
+                <Link href="/vender-mi-auto">Vender mi auto</Link>
               </Button>
             </MotionPreset>
           </div>

@@ -449,7 +449,7 @@ const Portfolio = ({
             fade
             slide={{ direction: 'down', offset: 50 }}
             transition={{ duration: 0.4 }}
-            className='inline-block text-2xl font-semibold sm:text-3xl lg:text-4xl'
+            className='inline-block text-2xl font-bold md:text-3xl lg:text-4xl'
           >
             {title}
           </MotionPreset>

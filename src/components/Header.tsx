@@ -3,9 +3,10 @@
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogOutIcon, ChevronDownIcon } from './icons';
+import { LogOutIcon, ChevronDownIcon, BuyCarIcon, SellCarIcon, UserIcon } from './icons';
 import { useAuth } from '../context/AuthContext';
-import MegaMenu from './MegaMenu';
+import ComprarMegaMenu from './ComprarMegaMenu';
+import VenderMegaMenu from './VenderMegaMenu';
 import HeaderSearchBar from './HeaderSearchBar';
 import MobileHeader from './MobileHeader';
 import { Button } from './ui/button';
@@ -14,12 +15,24 @@ import { Button } from './ui/button';
 const LOGO_URL = 'https://trefa.mx/images/trefalogo.png';
 
 const Header: React.FC = () => {
-    const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+    const [comprarMenuOpen, setComprarMenuOpen] = useState(false);
+    const [venderMenuOpen, setVenderMenuOpen] = useState(false);
     const { session, profile, signOut } = useAuth();
-    const menuButtonRef = useRef<HTMLButtonElement>(null);
+    const comprarButtonRef = useRef<HTMLButtonElement>(null);
+    const venderButtonRef = useRef<HTMLButtonElement>(null);
     const pathname = usePathname();
     const isListPage = pathname === '/autos';
     const isSalesUser = profile?.role === 'sales';
+
+    const handleComprarClick = () => {
+        setComprarMenuOpen(o => !o);
+        setVenderMenuOpen(false);
+    };
+
+    const handleVenderClick = () => {
+        setVenderMenuOpen(o => !o);
+        setComprarMenuOpen(false);
+    };
 
     const handleSignOut = async () => {
         try {
@@ -41,7 +54,7 @@ const Header: React.FC = () => {
         <MobileHeader />
 
         {/* Desktop Header - Hidden on mobile */}
-        <header className="hidden lg:block fixed top-0 left-0 right-0 z-30 bg-white shadow-sm border-b border-gray-200/80">
+        <header className="hidden lg:block fixed top-0 left-0 right-0 z-30 bg-white shadow-sm border-b border-gray-100/60">
           <div className="relative max-w-7xl mx-auto px-4 lg:px-8">
             <div className="flex items-center h-[74px] gap-x-4">
               {/* Logo */}
@@ -62,59 +75,72 @@ const Header: React.FC = () => {
 
               {/* Right Section - Desktop Menu and Auth */}
               <div className={`flex items-center space-x-4 flex-shrink-0 ${isListPage ? 'ml-auto' : ''}`}>
-                <Button
-                    ref={menuButtonRef}
-                    onClick={() => setMegaMenuOpen(o => !o)}
-                    variant="ghost"
-                    size="sm"
-                    className="text-sm font-semibold text-primary-600 hover:text-primary-700 hover:bg-gray-100"
+                {/* Comprar Button - Dark Blue */}
+                <button
+                    ref={comprarButtonRef}
+                    onClick={handleComprarClick}
+                    className="inline-flex items-center text-sm font-semibold text-blue-800 hover:text-blue-900 transition-colors"
                 >
-                    <span>Menú</span>
-                    <ChevronDownIcon className={`w-4 h-4 ml-1 transition-transform ${megaMenuOpen ? 'rotate-180' : ''}`} fill="currentColor"/>
-                </Button>
+                    <BuyCarIcon className="w-4 h-4 mr-1.5" />
+                    <span>Comprar</span>
+                    <ChevronDownIcon className={`w-4 h-4 ml-1 transition-transform ${comprarMenuOpen ? 'rotate-180' : ''}`} fill="currentColor"/>
+                </button>
+
+                {/* Vender Button - Orange */}
+                <button
+                    ref={venderButtonRef}
+                    onClick={handleVenderClick}
+                    className="inline-flex items-center text-sm font-semibold text-[#FF6801] hover:text-[#E55E01] transition-colors"
+                >
+                    <SellCarIcon className="w-4 h-4 mr-1.5" />
+                    <span>Vender</span>
+                    <ChevronDownIcon className={`w-4 h-4 ml-1 transition-transform ${venderMenuOpen ? 'rotate-180' : ''}`} fill="currentColor"/>
+                </button>
 
                 {session ? (
                    <>
-                      {/* Dashboard Button */}
-                      <Button asChild size="sm" className="!text-white">
-                          <Link href={isSalesUser ? "/escritorio/ventas/crm" : "/escritorio"} className="!text-white">
-                              Dashboard
-                          </Link>
-                      </Button>
-
-                      {/* Sign Out Button */}
-                      <Button
-                          onClick={handleSignOut}
-                          variant="destructive"
-                          size="sm"
-                          className="items-center gap-1.5"
+                      {/* Dashboard Link */}
+                      <Link
+                          href={isSalesUser ? "/escritorio/ventas/crm" : "/escritorio"}
+                          className="inline-flex items-center text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors"
                       >
-                          <LogOutIcon className="w-3.5 h-3.5" />
-                          Cerrar Sesión
-                      </Button>
+                          <UserIcon className="w-4 h-4 mr-1.5" />
+                          <span>Dashboard</span>
+                      </Link>
+
+                      {/* Sign Out Link */}
+                      <button
+                          onClick={handleSignOut}
+                          className="inline-flex items-center text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors"
+                      >
+                          <LogOutIcon className="w-4 h-4 mr-1.5" />
+                          <span>Salir</span>
+                      </button>
                    </>
                 ) : (
-                  <>
                     <Link
-                        href="/registro"
-                        data-gtm-id="header-register-button"
-                        className="inline-flex items-center justify-center h-9 px-3 rounded-md text-sm font-medium border-2 border-primary-600 bg-white text-primary-600 hover:bg-primary-600 hover:text-white transition-colors"
+                        href="/acceder"
+                        data-gtm-id="header-login-button"
+                        className="inline-flex items-center text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors"
                     >
-                        Registro
+                        <UserIcon className="w-4 h-4 mr-1.5" />
+                        <span>Ingresar</span>
                     </Link>
-                    <Button asChild size="sm" variant="ghost" className="bg-[#FF6801] hover:bg-[#E55E01] font-medium">
-                        <Link href="/acceder" data-gtm-id="header-login-button" style={{ color: 'white !important' }}>
-                            Iniciar Sesión
-                        </Link>
-                    </Button>
-                  </>
                   )}
               </div>
             </div>
-            <MegaMenu
-              isOpen={megaMenuOpen}
-              onClose={() => setMegaMenuOpen(false)}
-              triggerRef={menuButtonRef as any}
+            {/* Comprar Mega Menu */}
+            <ComprarMegaMenu
+              isOpen={comprarMenuOpen}
+              onClose={() => setComprarMenuOpen(false)}
+              triggerRef={comprarButtonRef as React.RefObject<HTMLButtonElement>}
+            />
+
+            {/* Vender Mega Menu */}
+            <VenderMegaMenu
+              isOpen={venderMenuOpen}
+              onClose={() => setVenderMenuOpen(false)}
+              triggerRef={venderButtonRef as React.RefObject<HTMLButtonElement>}
             />
           </div>
         </header>

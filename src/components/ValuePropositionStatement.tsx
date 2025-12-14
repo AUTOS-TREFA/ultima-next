@@ -123,8 +123,8 @@ export default function ValuePropositionStatement() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Main Statement */}
         <div className="text-center">
-          <p className="text-2xl sm:text-3xl lg:text-4xl font-medium text-neutral-800" style={{ lineHeight: '2.0' }}>
-            Somos la agencia de autos seminuevos 🚗 de servicio personalizado{' '}
+          <p className="text-2xl sm:text-3xl lg:text-4xl font-medium text-neutral-800" style={{ lineHeight: '1.6' }}>
+            Somos la agencia de autos seminuevos 🚗{' '}
             <TooltipProvider delayDuration={100}>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -182,7 +182,7 @@ export default function ValuePropositionStatement() {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>{' '}
-            del país por nuestras{' '}
+            del país por la atención personalizada y la satisfacción total que ofrecemos con nuestras{' '}
             <TooltipProvider delayDuration={100}>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -191,7 +191,7 @@ export default function ValuePropositionStatement() {
                     delay={0.4}
                   >
                     <Shield className="w-7 h-7 text-emerald-600" />
-                    <span className="font-bold text-emerald-700 text-2xl sm:text-3xl lg:text-4xl">garantías únicas en su clase</span>
+                    <span className="font-bold text-emerald-700 text-2xl sm:text-3xl lg:text-4xl">garantías</span>
                   </ShiningButton>
                 </TooltipTrigger>
                 <TooltipContent
@@ -227,7 +227,7 @@ export default function ValuePropositionStatement() {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            , ahora con 📍{' '}
+            . Ahora con 📍{' '}
             <TooltipProvider delayDuration={100}>
               <Tooltip>
                 <TooltipTrigger asChild>

@@ -129,7 +129,8 @@ import {
     RefreshCwOff,
     // HeartMinus,
     Database,
-    Search
+    Search,
+    UserPlus
 
 } from 'lucide-react';
 
@@ -258,6 +259,7 @@ export const BookOpenIcon: React.FC<IconProps> = (props) => <BookOpen {...props}
 
 // ==================== USER & PROFILE ====================
 export const UserIcon: React.FC<IconProps> = (props) => <User {...props} />;
+export const UserPlusIcon: React.FC<IconProps> = (props) => <UserPlus {...props} />;
 export const UserCircleIcon: React.FC<IconProps> = (props) => <UserCircle2 {...props} />;
 export const UsersIcon: React.FC<IconProps> = (props) => <Users {...props} />;
 export const UserRoundPenIcon: React.FC<IconProps> = (props) => <User {...props} />; // Fallback

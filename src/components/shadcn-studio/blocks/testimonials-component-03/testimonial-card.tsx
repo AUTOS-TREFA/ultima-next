@@ -15,11 +15,11 @@ type Testimonial = {
 
 const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => {
   return (
-    <Card className='break-inside-avoid-column border-none shadow-none'>
-      <CardContent className='flex flex-col gap-6'>
+    <Card className='break-inside-avoid-column bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100/50'>
+      <CardContent className='flex flex-col gap-5 p-6'>
         <div className='flex flex-wrap items-center justify-between gap-3'>
           {/* Ratings */}
-          <Rating readOnly variant='yellow' size={16} value={testimonial.rating} precision={0.5} />
+          <Rating readOnly variant='yellow' size={18} value={testimonial.rating} precision={0.5} />
 
           {/* Platform Details */}
           <div className='flex items-center gap-1.5'>

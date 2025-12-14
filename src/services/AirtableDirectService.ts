@@ -6,6 +6,7 @@
  */
 
 import { config } from '@/config';
+import { generateVehicleSlugBase } from '@/utils/formatters';
 
 const AIRTABLE_API_BASE = 'https://api.airtable.com/v0';
 const AIRTABLE_BASE_ID = config.airtable.valuation.baseId;
@@ -161,8 +162,12 @@ export default class AirtableDirectService {
                 numericId = 1000000 + index; // Fallback
             }
 
-            // Use Airtable's slug field first, then ligawp, then generate from other fields
+            // Use Airtable's slug field first, then ligawp, then generate from marca-modelo-año
+            const marca = fields.Marca || '';
+            const modelo = fields.modelo || fields.Modelo || '';
+            const autoAno = fields.AutoAno || '';
             const slugBase = fields.slug || fields.ligawp ||
+                generateVehicleSlugBase(marca, modelo, autoAno) ||
                 (fields.OrdenCompra || title || recordId).toLowerCase().replace(/\s+/g, '-');
 
             // Process images

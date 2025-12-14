@@ -1,4 +1,5 @@
 import { Metadata, Viewport } from 'next';
+import { GeistMono } from 'geist/font/mono';
 import RootClientLayout from './RootClientLayout';
 import './globals.css';
 
@@ -60,7 +61,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning className={GeistMono.variable}>
       <head>
         {/* Preconnect to Google Fonts for faster font loading */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />

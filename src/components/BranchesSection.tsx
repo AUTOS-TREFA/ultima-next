@@ -130,7 +130,7 @@ const BranchesSection: React.FC<BranchesSectionProps> = ({ content }) => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12 lg:mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold md:text-3xl lg:text-4xl tracking-tight text-gray-900 mb-4">
             {branchesContent.title}
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">

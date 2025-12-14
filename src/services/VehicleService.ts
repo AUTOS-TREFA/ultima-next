@@ -1,6 +1,6 @@
 import type { Vehicle, VehicleFilters } from '../types/types';
 import { supabase } from '../../supabaseClient';
-import { generateSlug } from '../utils/formatters';
+import { generateSlug, generateVehicleSlugBase } from '../utils/formatters';
 import { getVehicleImage } from '../utils/getVehicleImage';
 import { DEFAULT_PLACEHOLDER_IMAGE } from '../utils/constants';
 
@@ -527,6 +527,69 @@ class VehicleService {
         }
     }
 
+    /**
+     * Genera un slug único para un vehículo basado en marca-modelo-año
+     * Si hay conflictos, agrega sufijo numérico: mazda-3i-2024, mazda-3i-2024-2, etc.
+     * @param marca - Marca del vehículo
+     * @param modelo - Modelo del vehículo
+     * @param año - Año del vehículo
+     * @param excludeOrdencompra - ID del vehículo actual para excluir de la búsqueda de duplicados
+     */
+    public static async generateUniqueVehicleSlug(
+        marca: string,
+        modelo: string,
+        año: string | number,
+        excludeOrdencompra?: string
+    ): Promise<string> {
+        const baseSlug = generateVehicleSlugBase(marca, modelo, año);
+
+        if (!baseSlug) {
+            // Fallback to a random slug if no valid data
+            return `vehiculo-${Date.now()}`;
+        }
+
+        try {
+            // Check for existing slugs that match the pattern
+            let query = supabase
+                .from('inventario_cache')
+                .select('slug')
+                .or(`slug.eq.${baseSlug},slug.like.${baseSlug}-%`);
+
+            if (excludeOrdencompra) {
+                query = query.neq('ordencompra', excludeOrdencompra);
+            }
+
+            const { data: existingSlugs, error } = await query;
+
+            if (error) {
+                console.error('Error checking existing slugs:', error);
+                return baseSlug;
+            }
+
+            if (!existingSlugs || existingSlugs.length === 0) {
+                return baseSlug;
+            }
+
+            // Find the highest suffix number
+            const slugSet = new Set(existingSlugs.map(s => s.slug));
+
+            if (!slugSet.has(baseSlug)) {
+                return baseSlug;
+            }
+
+            // Find the next available number
+            let suffix = 2;
+            while (slugSet.has(`${baseSlug}-${suffix}`)) {
+                suffix++;
+            }
+
+            return `${baseSlug}-${suffix}`;
+        } catch (error) {
+            console.error('Error generating unique slug:', error);
+            return baseSlug;
+        }
+    }
+
     private static recordVehicleView(vehicle: Vehicle): Vehicle {
         // Increment view count in database (fire-and-forget)
         if (vehicle.ordencompra) {
@@ -609,7 +672,14 @@ private static normalizeVehicleData(rawData: any[]): Vehicle[] {
         // Use existing title/slug from Airtable, fallback to data.Auto or data.title
         const title = getValue('title') || airtableData.Auto || airtableData.title ||
             `${getValue('marca', 'Marca') || ''} ${getValue('modelo') || ''} ${getValue('autoano', 'AutoAno') || ''}`.trim() || 'Auto sin título';
-        const slug = item.slug || generateSlug(title);
+
+        // Generate slug: marca-modelo-año format (e.g., mazda-3i-2024)
+        // If item already has a slug, use it; otherwise generate from marca-modelo-año
+        const slug = item.slug || generateVehicleSlugBase(
+            getValue('marca', 'Marca') || '',
+            getValue('modelo') || '',
+            getValue('autoano', 'AutoAno') || ''
+        ) || generateSlug(title);
         
         // Handle clasificacionid from item or airtableData
         let clasificacionid: string[] = [];

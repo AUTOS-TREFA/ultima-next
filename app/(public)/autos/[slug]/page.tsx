@@ -119,11 +119,14 @@ export async function generateStaticParams() {
   try {
     const slugs = await VehicleService.getAllVehicleSlugs();
 
-    // Retornar los primeros 100 slugs para pre-renderizar
-    // El resto se generarán bajo demanda (ISR)
-    return slugs.slice(0, 100).map((vehicle) => ({
-      slug: vehicle.slug,
-    }));
+    // Filter out any null/undefined/non-string slugs and return the first 100
+    // The rest will be generated on-demand (ISR)
+    return slugs
+      .filter((vehicle) => vehicle.slug && typeof vehicle.slug === 'string')
+      .slice(0, 100)
+      .map((vehicle) => ({
+        slug: String(vehicle.slug),
+      }));
   } catch (error) {
     console.error('Error generating static params for vehicles:', error);
     return [];

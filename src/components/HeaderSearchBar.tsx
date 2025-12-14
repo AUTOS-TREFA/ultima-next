@@ -92,7 +92,7 @@ const HeaderSearchBar: React.FC = () => {
     <div className="relative w-full max-w-2xl mx-auto" ref={searchRef}>
       <form onSubmit={handleSubmit} className="relative">
         <div className="header-search-container">
-          <div className="relative flex items-center w-full bg-white rounded-full">
+          <div className="relative flex items-center w-full bg-white rounded-full border border-gray-200">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 sm:pl-4">
               {isSearching ? <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 animate-spin" /> : <SearchIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" aria-hidden="true" />}
             </div>
