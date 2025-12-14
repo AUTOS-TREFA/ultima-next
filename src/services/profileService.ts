@@ -72,13 +72,28 @@ export const ProfileService = {
       console.log('Could not retrieve source tracking data:', e);
     }
 
-    // Use direct upsert with retry logic for auth timing issues
+    // Use RPC function with SECURITY DEFINER to bypass RLS issues
     let updatedProfile = null;
     const maxRetries = 3;
     const retryDelayMs = 500;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      // Try direct upsert to profiles table
+      // First try the RPC function (SECURITY DEFINER bypasses RLS)
+      const { data: rpcData, error: rpcError } = await supabase.rpc('safe_upsert_profile', {
+        profile_data: { id: user.id, ...finalProfileData }
+      });
+
+      if (!rpcError && rpcData) {
+        updatedProfile = rpcData;
+        console.log('[ProfileService] Profile upsert via RPC successful');
+        break;
+      }
+
+      // If RPC fails, try direct upsert as fallback
+      if (rpcError) {
+        console.warn('[ProfileService] RPC failed, trying direct upsert:', rpcError.message);
+      }
+
       const { data, error: upsertError } = await supabase
         .from('profiles')
         .upsert(
@@ -90,7 +105,7 @@ export const ProfileService = {
 
       if (!upsertError) {
         updatedProfile = data;
-        console.log('[ProfileService] Profile upsert successful');
+        console.log('[ProfileService] Profile upsert via direct query successful');
         break;
       }
 

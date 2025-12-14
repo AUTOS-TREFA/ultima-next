@@ -242,11 +242,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 landing_page: leadSourceData.landing_page || null,
             };
 
-            const { data: createdProfile, error: createError } = await supabase
-                .from('profiles')
-                .insert(newProfile)
-                .select()
-                .single();
+            // Use RPC function to bypass RLS issues
+            const { data: rpcResult, error: rpcError } = await supabase.rpc('safe_upsert_profile', {
+                profile_data: newProfile
+            });
+
+            let createdProfile = rpcResult;
+            let createError = rpcError;
+
+            // Fallback to direct insert if RPC fails
+            if (rpcError) {
+                console.warn('[AuthContext] RPC failed, trying direct insert:', rpcError.message);
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .insert(newProfile)
+                    .select()
+                    .single();
+                createdProfile = data;
+                createError = error;
+            }
 
             if (createError) {
                 console.error('[AuthContext] Error creating profile:', createError.message);
