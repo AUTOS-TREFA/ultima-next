@@ -326,7 +326,8 @@ gcloud run deploy $SERVICE_NAME \
   --min-instances=0 \
   --max-instances=10 \
   --timeout=300 \
-  --set-env-vars="$ENV_VARS"
+  --set-env-vars="$ENV_VARS" \
+  --tag=latest
 
 if [ $? -eq 0 ]; then
     echo ""
@@ -335,9 +336,20 @@ if [ $? -eq 0 ]; then
     echo -e "${GREEN}╔═══════════════════════════════════════════════╗${NC}"
     echo ""
 
-    # Get service URL
+    # Get service URL and latest revision
     SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region=$REGION --format='value(status.url)')
+    LATEST_REVISION=$(gcloud run services describe $SERVICE_NAME --region=$REGION --format='value(status.latestReadyRevisionName)')
     echo -e "Service URL: ${GREEN}$SERVICE_URL${NC}"
+    echo -e "Latest Revision: ${GREEN}$LATEST_REVISION${NC}"
+    echo ""
+
+    # Ensure 100% traffic goes to the latest revision
+    echo -e "${YELLOW}Routing 100% traffic to latest revision...${NC}"
+    gcloud run services update-traffic $SERVICE_NAME \
+        --region=$REGION \
+        --to-latest \
+        --quiet 2>/dev/null || true
+    echo -e "${GREEN}✓ Traffic routed to latest revision${NC}"
     echo ""
 
     # Update FRONTEND_URL for staging if needed
