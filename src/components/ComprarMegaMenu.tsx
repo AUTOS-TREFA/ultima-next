@@ -83,7 +83,7 @@ const ComprarMegaMenu: React.FC<ComprarMegaMenuProps> = ({ isOpen, onClose, trig
       .slice(0, 8)
       .map(v => ({
         id: v.id,
-        title: `${v.marca} ${v.modelo} ${v.autoano}`.trim(),
+        title: `${v.marca} ${v.modelo}`.trim(), // Remove year for cleaner tag cloud
         slug: v.slug
       }));
   }, [allVehicles]);
@@ -157,48 +157,48 @@ const ComprarMegaMenu: React.FC<ComprarMegaMenuProps> = ({ isOpen, onClose, trig
             </Link>
           </div>
 
-          <div className="grid grid-cols-12 gap-8">
-            {/* Left Column - 4 Bold Actions */}
-            <div className="col-span-4">
+          <div className="grid grid-cols-4 gap-6">
+            {/* Column 1 - Buy Options */}
+            <div>
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">¿Cómo quieres comprar?</h3>
               <div className="space-y-2">
                 {/* Explorar Inventario */}
                 <button
                   onClick={() => handleLinkClick('/autos')}
-                  className="w-full flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-primary-50 border border-gray-100 hover:border-primary-200 transition-all group"
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-primary-50 border border-gray-100 hover:border-primary-200 transition-all group"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center group-hover:bg-primary-200 transition-colors">
-                    <CarIcon className="w-6 h-6 text-primary-600" />
+                  <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center group-hover:bg-primary-200 transition-colors flex-shrink-0">
+                    <CarIcon className="w-5 h-5 text-primary-600" />
                   </div>
                   <div className="text-left">
-                    <p className="font-bold text-gray-900 group-hover:text-primary-700">Explorar Inventario</p>
-                    <p className="text-sm text-gray-500">Más de 100 autos disponibles</p>
+                    <p className="font-bold text-sm text-gray-900 group-hover:text-primary-700">Explorar Inventario</p>
+                    <p className="text-xs text-gray-500">+100 autos disponibles</p>
                   </div>
                 </button>
 
                 {/* Comprar en Sucursal */}
                 <button
                   onClick={() => setShowCalendar(!showCalendar)}
-                  className="w-full flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-blue-50 border border-gray-100 hover:border-blue-200 transition-all group"
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-blue-50 border border-gray-100 hover:border-blue-200 transition-all group"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                    <Store className="w-6 h-6 text-blue-600" />
+                  <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors flex-shrink-0">
+                    <Store className="w-5 h-5 text-blue-600" />
                   </div>
                   <div className="text-left">
-                    <p className="font-bold text-gray-900 group-hover:text-blue-700">Comprar en Sucursal</p>
-                    <p className="text-sm text-gray-500">Agenda tu visita presencial</p>
+                    <p className="font-bold text-sm text-gray-900 group-hover:text-blue-700">Comprar en Sucursal</p>
+                    <p className="text-xs text-gray-500">Agenda tu visita</p>
                   </div>
                 </button>
 
                 {showCalendar && (
-                  <div className="ml-16 p-4 bg-blue-50 rounded-xl border border-blue-100">
-                    <p className="text-sm text-blue-800 mb-3">Selecciona una sucursal:</p>
-                    <div className="grid grid-cols-2 gap-2">
+                  <div className="ml-12 p-3 bg-blue-50 rounded-xl border border-blue-100">
+                    <p className="text-xs text-blue-800 mb-2">Selecciona sucursal:</p>
+                    <div className="grid grid-cols-2 gap-1.5">
                       {['Monterrey', 'Guadalupe', 'Saltillo', 'Reynosa'].map(city => (
                         <button
                           key={city}
                           onClick={() => handleLinkClick(`/visitas?sucursal=${city.toLowerCase()}`)}
-                          className="px-3 py-2 text-sm font-medium bg-white rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors text-blue-700"
+                          className="px-2 py-1.5 text-xs font-medium bg-white rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors text-blue-700"
                         >
                           {city}
                         </button>
@@ -210,50 +210,49 @@ const ComprarMegaMenu: React.FC<ComprarMegaMenuProps> = ({ isOpen, onClose, trig
                 {/* Comprar en Línea */}
                 <button
                   onClick={() => handleLinkClick('/escritorio/aplicacion')}
-                  className="w-full flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-green-50 border border-gray-100 hover:border-green-200 transition-all group"
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-green-50 border border-gray-100 hover:border-green-200 transition-all group"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                    <Monitor className="w-6 h-6 text-green-600" />
+                  <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors flex-shrink-0">
+                    <Monitor className="w-5 h-5 text-green-600" />
                   </div>
                   <div className="text-left">
-                    <p className="font-bold text-gray-900 group-hover:text-green-700">Comprar en Línea</p>
-                    <p className="text-sm text-gray-500">Solicita financiamiento digital</p>
+                    <p className="font-bold text-sm text-gray-900 group-hover:text-green-700">Comprar en Línea</p>
+                    <p className="text-xs text-gray-500">Financiamiento digital</p>
                   </div>
                 </button>
 
                 {/* Asesoría Gratuita */}
                 <button
                   onClick={handleWhatsAppClick}
-                  className="w-full flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-emerald-50 border border-gray-100 hover:border-emerald-200 transition-all group"
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-emerald-50 border border-gray-100 hover:border-emerald-200 transition-all group"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
-                    <MessageCircle className="w-6 h-6 text-emerald-600" />
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center group-hover:bg-emerald-200 transition-colors flex-shrink-0">
+                    <MessageCircle className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div className="text-left">
-                    <p className="font-bold text-gray-900 group-hover:text-emerald-700">Asesoría de Compra Gratuita</p>
-                    <p className="text-sm text-gray-500">Habla con un experto por WhatsApp</p>
+                    <p className="font-bold text-sm text-gray-900 group-hover:text-emerald-700">Asesoría Gratuita</p>
+                    <p className="text-xs text-gray-500">Habla con un experto</p>
                   </div>
                 </button>
               </div>
             </div>
 
-            {/* Center Column - Carrocería (Stacked vertically) */}
-            <div className="col-span-4">
+            {/* Column 2 - Carrocería */}
+            <div>
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Tipo de Carrocería</h3>
               <div className="space-y-2">
                 {classifications.map(c => {
-                  // Sum counts for all matching keys
                   const count = c.keys.reduce((sum, key) => sum + (vehicleCountByClassification[key] || 0), 0);
                   return (
                     <button
                       key={c.name}
                       onClick={() => handleFilterClick('classification', c.slug)}
-                      className="w-full flex items-center gap-4 p-3 rounded-xl bg-gray-50 hover:bg-primary-50 border border-gray-100 hover:border-primary-200 transition-all group"
+                      className="w-full flex items-center gap-3 p-2.5 rounded-xl bg-gray-50 hover:bg-primary-50 border border-gray-100 hover:border-primary-200 transition-all group"
                     >
-                      <img src={c.imageUrl} alt={c.name} className="w-20 h-14 object-contain group-hover:scale-105 transition-transform" />
+                      <img src={c.imageUrl} alt={c.name} className="w-16 h-12 object-contain group-hover:scale-105 transition-transform" />
                       <div className="text-left">
-                        <p className="font-bold text-gray-900 group-hover:text-primary-700">{c.name}</p>
-                        <p className="text-sm text-gray-500">{count} autos disponibles</p>
+                        <p className="font-bold text-sm text-gray-900 group-hover:text-primary-700">{c.name}</p>
+                        <p className="text-xs text-gray-500">{count} disponibles</p>
                       </div>
                     </button>
                   );
@@ -261,28 +260,10 @@ const ComprarMegaMenu: React.FC<ComprarMegaMenuProps> = ({ isOpen, onClose, trig
               </div>
             </div>
 
-            {/* Right Column - Popular Vehicles & Brands */}
-            <div className="col-span-4">
-              {/* Popular Vehicles Tag Cloud */}
-              {popularVehicles.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Autos Populares</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {popularVehicles.map(vehicle => (
-                      <button
-                        key={vehicle.id}
-                        onClick={() => handleLinkClick(`/autos/${vehicle.slug}`)}
-                        className="px-3 py-1.5 text-xs font-medium bg-gray-100 hover:bg-primary-100 text-gray-700 hover:text-primary-700 rounded-full transition-colors"
-                      >
-                        {vehicle.title}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
+            {/* Column 3 - Marcas (2x4 grid) */}
+            <div>
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Marcas Populares</h3>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {marcas.map(marca => (
                   <button
                     key={marca.id}
@@ -294,14 +275,14 @@ const ComprarMegaMenu: React.FC<ComprarMegaMenuProps> = ({ isOpen, onClose, trig
                       <img
                         src={marca.logoUrl}
                         alt={marca.name}
-                        className="w-12 h-12 object-contain group-hover:scale-110 transition-transform"
+                        className="w-10 h-10 object-contain group-hover:scale-110 transition-transform"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                           e.currentTarget.nextElementSibling?.classList.remove('hidden');
                         }}
                       />
                     ) : null}
-                    <span className={`text-xs font-semibold text-gray-600 group-hover:text-primary-700 text-center ${marca.logoUrl && marca.logoUrl !== '/images/trefalogo.png' ? 'hidden' : ''}`}>
+                    <span className={`text-xs font-semibold text-gray-600 group-hover:text-primary-700 text-center mt-1 ${marca.logoUrl && marca.logoUrl !== '/images/trefalogo.png' ? 'hidden' : ''}`}>
                       {marca.name}
                     </span>
                   </button>
@@ -309,11 +290,40 @@ const ComprarMegaMenu: React.FC<ComprarMegaMenuProps> = ({ isOpen, onClose, trig
               </div>
               <button
                 onClick={() => handleLinkClick('/autos')}
-                className="w-full mt-4 p-3 text-sm font-semibold text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full mt-3 p-2 text-xs font-semibold text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors flex items-center justify-center gap-1"
               >
                 Ver todas las marcas
-                <ArrowRightIcon className="w-4 h-4" />
+                <ArrowRightIcon className="w-3 h-3" />
               </button>
+            </div>
+
+            {/* Column 4 - Popular Vehicles Tag Cloud */}
+            <div>
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Autos Populares</h3>
+              {popularVehicles.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {popularVehicles.map(vehicle => (
+                    <button
+                      key={vehicle.id}
+                      onClick={() => handleLinkClick(`/autos/${vehicle.slug}`)}
+                      className="px-3 py-1.5 text-xs font-medium bg-gray-100 hover:bg-primary-100 text-gray-700 hover:text-primary-700 rounded-full transition-colors"
+                    >
+                      {vehicle.title}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="mt-6 p-4 bg-gradient-to-br from-primary-50 to-orange-50 rounded-xl border border-primary-100">
+                <p className="text-sm font-semibold text-gray-900 mb-1">¿No encuentras lo que buscas?</p>
+                <p className="text-xs text-gray-600 mb-3">Cuéntanos qué auto quieres y te ayudamos a encontrarlo.</p>
+                <button
+                  onClick={handleWhatsAppClick}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-semibold rounded-lg transition-colors"
+                >
+                  <WhatsAppIcon className="w-4 h-4" />
+                  Solicitar Auto
+                </button>
+              </div>
             </div>
           </div>
         </div>

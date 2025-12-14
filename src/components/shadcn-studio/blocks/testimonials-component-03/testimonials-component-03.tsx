@@ -34,7 +34,7 @@ type TestimonialsComponentProps = {
 
 const TestimonialsComponent = ({ heroSlides, testimonials }: TestimonialsComponentProps) => {
   return (
-    <section className='bg-muted py-12 sm:py-20 lg:py-28'>
+    <section className='bg-white py-12 sm:py-20 lg:py-28'>
       <div className='mx-auto max-w-7xl space-y-12 px-4 sm:space-y-16 sm:px-6 lg:space-y-20 lg:px-8'>
         {/* Hero Slides */}
         <div className='space-y-6 text-center sm:space-y-7.5 lg:space-y-9'>
@@ -80,10 +80,16 @@ const TestimonialsComponent = ({ heroSlides, testimonials }: TestimonialsCompone
           transition={{ duration: 0.5 }}
           className='relative grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
         >
-          {/* Top fade overlay - smooth fade to transparent */}
-          <div className='absolute top-0 z-10 h-40 w-full bg-gradient-to-b from-muted via-muted/50 to-transparent pointer-events-none' />
-          {/* Bottom fade overlay - smooth fade to transparent */}
-          <div className='absolute bottom-0 z-10 h-40 w-full bg-gradient-to-t from-muted via-muted/50 to-transparent pointer-events-none' />
+          {/* Top fade overlay - fade from white to transparent */}
+          <div
+            className='absolute top-0 z-10 h-56 w-full pointer-events-none'
+            style={{ background: 'linear-gradient(to bottom, white 0%, rgba(255,255,255,0.8) 40%, transparent 100%)' }}
+          />
+          {/* Bottom fade overlay - fade from white to transparent */}
+          <div
+            className='absolute bottom-0 z-10 h-56 w-full pointer-events-none'
+            style={{ background: 'linear-gradient(to top, white 0%, rgba(255,255,255,0.8) 40%, transparent 100%)' }}
+          />
 
           <Marquee vertical pauseOnHover delay={0.9} duration={22} gap={4} className='h-[44rem]'>
             {testimonials.slice(0, 3).map((testimonial, index) => (

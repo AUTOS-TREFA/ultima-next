@@ -483,7 +483,7 @@ const VehicleListPage: React.FC = () => {
                         size="icon"
                         onClick={() => setView('list')}
                         aria-label="Vista de lista"
-                        className="h-9 w-9 transition-all"
+                        className={`h-9 w-9 transition-all ${view === 'list' ? 'bg-[#FF6801] hover:bg-[#E55E01] text-white border-[#FF6801]' : ''}`}
                       >
                         <ListIcon className="w-4 h-4" />
                       </Button>
@@ -496,7 +496,7 @@ const VehicleListPage: React.FC = () => {
                             setShowGridTooltip(false);
                           }}
                           aria-label="Vista de cuadricula"
-                          className="h-9 w-9 transition-all"
+                          className={`h-9 w-9 transition-all ${view === 'grid' ? 'bg-[#FF6801] hover:bg-[#E55E01] text-white border-[#FF6801]' : ''}`}
                         >
                           <LayoutGridIcon className="w-4 h-4" />
                         </Button>
@@ -521,19 +521,19 @@ const VehicleListPage: React.FC = () => {
                       variant={filters.hideSeparado ? "default" : "outline"}
                       size="sm"
                       onClick={() => handleFiltersChange({ hideSeparado: !filters.hideSeparado })}
-                      className="h-8"
+                      className={`h-8 ${filters.hideSeparado ? 'bg-[#FF6801] hover:bg-[#E55E01] text-white border-[#FF6801]' : ''}`}
                     >
                       <span>Ocultar Separados</span>
-                      {filters.hideSeparado && <span className="ml-2">OK</span>}
+                      {filters.hideSeparado && <span className="ml-2">✓</span>}
                     </Button>
                     <Button
                       variant={(filters.orderby === 'relevance') ? "default" : "outline"}
                       size="sm"
                       onClick={() => handleFiltersChange({ orderby: filters.orderby === 'relevance' ? undefined : 'relevance' })}
-                      className="h-8"
+                      className={`h-8 ${filters.orderby === 'relevance' ? 'bg-[#FF6801] hover:bg-[#E55E01] text-white border-[#FF6801]' : ''}`}
                     >
                       <span>Populares</span>
-                      {filters.orderby === 'relevance' && <span className="ml-2">OK</span>}
+                      {filters.orderby === 'relevance' && <span className="ml-2">✓</span>}
                     </Button>
                   </div>
                   {/* Live browsing counter with avatars */}
