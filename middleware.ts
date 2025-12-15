@@ -2,6 +2,27 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// Lista de correos de administradores (debe coincidir con src/constants/adminEmails.ts)
+const ADMIN_EMAILS = [
+    'mariano.morales@autostrefa.mx',
+    'marianomorales@outlook.com',
+    'marianomorales_@outlook.com',
+    'alejandro.trevino@autostrefa.mx',
+    'evelia.castillo@autostrefa.mx',
+    'alejandro.gallardo@autostrefa.mx',
+    'emmanuel.carranza@autostrefa.mx',
+    'fernando.trevino@autostrefa.mx',
+    'lizeth.juarez@autostrefa.mx',
+];
+
+const ADMIN_DOMAIN = 'autostrefa.mx';
+
+const isAdminEmail = (email: string | undefined | null): boolean => {
+    if (!email) return false;
+    const normalizedEmail = email.toLowerCase().trim();
+    return ADMIN_EMAILS.includes(normalizedEmail) || normalizedEmail.endsWith(`@${ADMIN_DOMAIN}`);
+};
+
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
 
@@ -69,9 +90,30 @@ export async function middleware(req: NextRequest) {
     // Check for redirect parameter in URL
     const redirectParam = req.nextUrl.searchParams.get('redirect');
 
+    // Determine default redirect based on user email/role
+    let defaultRedirect = '/escritorio';
+
+    // Check if user is admin by email
+    if (isAdminEmail(session.user.email)) {
+      defaultRedirect = '/escritorio/admin/dashboard';
+    } else {
+      // Check profile role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (profile?.role === 'admin') {
+        defaultRedirect = '/escritorio/admin/dashboard';
+      } else if (profile?.role === 'sales') {
+        defaultRedirect = '/escritorio/dashboard';
+      }
+    }
+
     // Redirect to dashboard if already logged in
     const url = req.nextUrl.clone();
-    url.pathname = redirectParam || '/escritorio';
+    url.pathname = redirectParam || defaultRedirect;
     url.searchParams.delete('redirect'); // Remove redirect param to avoid loops
     return NextResponse.redirect(url);
   }
@@ -86,24 +128,31 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Get user profile for role checking
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', session.user.id)
-      .maybeSingle();
+    // Check if user is admin by email first (bypass profile check)
+    const userIsAdminByEmail = isAdminEmail(session.user.email);
 
-    // If profile doesn't exist, default to 'user' role
-    // Profile will be created by a database trigger or the AuthContext
-    if (profileError) {
-      console.error('Error fetching user profile:', profileError);
+    // Get user profile for role checking (only if not admin by email)
+    let userRole = userIsAdminByEmail ? 'admin' : 'user';
+
+    if (!userIsAdminByEmail) {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      // If profile doesn't exist, default to 'user' role
+      // Profile will be created by a database trigger or the AuthContext
+      if (profileError) {
+        console.error('Error fetching user profile:', profileError);
+      }
+
+      userRole = profile?.role || 'user';
     }
-
-    const userRole = profile?.role || 'user';
 
     // Admin-only routes
     if (pathname.startsWith('/escritorio/admin')) {
-      if (userRole !== 'admin') {
+      if (userRole !== 'admin' && !userIsAdminByEmail) {
         const url = req.nextUrl.clone();
         url.pathname = '/escritorio';
         url.searchParams.set('error', 'unauthorized');
@@ -113,7 +162,7 @@ export async function middleware(req: NextRequest) {
 
     // Sales routes (admin and sales roles)
     if (pathname.startsWith('/escritorio/ventas') || pathname === '/escritorio/dashboard') {
-      if (!['admin', 'sales'].includes(userRole)) {
+      if (!['admin', 'sales'].includes(userRole) && !userIsAdminByEmail) {
         const url = req.nextUrl.clone();
         url.pathname = '/escritorio';
         url.searchParams.set('error', 'unauthorized');

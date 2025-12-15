@@ -14,22 +14,7 @@ import { getEmailRedirectUrl } from '@/config';
 import { proxyImage } from '@/utils/proxyImage';
 import { conversionTracking } from '@/services/ConversionTrackingService';
 import { checkBasicProfileCompleteness } from '@/components/AuthHandler';
-
-// Admin email addresses that should be redirected to admin dashboard
-const ADMIN_EMAILS = [
-    'marianomorales@outlook.com',
-    'mariano.morales@autostrefa.mx',
-    'alejandro.trevino@autostrefa.mx',
-    'evelia.castillo@autostrefa.mx',
-    'fernando.trevino@autostrefa.mx',
-    'genauservices@gmail.com'
-];
-
-// Check if an email is an admin email
-const isAdminEmail = (email: string | undefined): boolean => {
-    if (!email) return false;
-    return ADMIN_EMAILS.includes(email.toLowerCase().trim());
-};
+import { checkIsAdmin } from '@/constants/adminEmails';
 
 const VehicleFinanceCard: React.FC<{ vehicle: WordPressVehicle }> = ({ vehicle }) => (
   <div className="mb-6 bg-gray-100 p-4 rounded-lg border border-gray-200">
@@ -136,8 +121,8 @@ const AuthPage: React.FC = () => {
             // If no redirect is set, determine default based on email or role
             if (!redirectPath) {
                 // Check if user email is an admin email (takes priority)
-                if (isAdminEmail(session.user?.email)) {
-                    redirectPath = '/escritorio/dashboard';
+                if (checkIsAdmin(session.user?.email)) {
+                    redirectPath = '/escritorio/admin/dashboard';
                 } else if (profile?.role === 'admin' || profile?.role === 'sales') {
                     redirectPath = '/escritorio/dashboard';
                 } else {
@@ -171,7 +156,7 @@ const AuthPage: React.FC = () => {
         if (session && !profile && !authLoading) {
             console.log('[AuthPage] Session exists but no profile loaded - redirecting to dashboard');
             // Session exists but profile didn't load - still redirect (profile will be created by AuthContext)
-            const redirectPath = isAdminEmail(session.user?.email) ? '/escritorio/dashboard' : '/escritorio';
+            const redirectPath = checkIsAdmin(session.user?.email) ? '/escritorio/admin/dashboard' : '/escritorio';
             router.replace(redirectPath);
         }
     }, [session, profile, authLoading, router]);
@@ -335,8 +320,8 @@ const AuthPage: React.FC = () => {
             let redirectPath = localStorage.getItem('loginRedirect');
             if (!redirectPath) {
                 // Check if this is an admin email (takes priority)
-                if (isAdminEmail(data.user?.email)) {
-                    redirectPath = '/escritorio/dashboard';
+                if (checkIsAdmin(data.user?.email)) {
+                    redirectPath = '/escritorio/admin/dashboard';
                 } else {
                     // Note: profile might not be loaded yet, so the useEffect will handle the redirect
                     redirectPath = '/escritorio';

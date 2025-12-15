@@ -4,6 +4,7 @@ import React, { createContext, useState, useEffect, useContext, ReactNode, useCa
 import { supabase } from '../../supabaseClient';
 import type { Session, User } from '@supabase/supabase-js';
 import type { Profile } from '../types/types';
+import { checkIsAdmin } from '../constants/adminEmails';
 
 interface AuthContextType {
     session: Session | null;
@@ -390,7 +391,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         assignAgent();
     }, [profile?.id, profile?.role, profile?.asesor_asignado_id]); // Only depend on specific primitive values
 
-    const isAdmin = profile?.role === 'admin';
+    // Check admin status by both role and email
+    const isAdmin = profile?.role === 'admin' || checkIsAdmin(user?.email);
     const isSales = profile?.role === 'sales';
     const isMarketing = profile?.role === 'marketing';
 

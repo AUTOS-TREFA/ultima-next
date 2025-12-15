@@ -5,22 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import type { Profile } from '../types/types';
 import { conversionTracking } from '../services/ConversionTrackingService';
-
-// Admin email addresses that should be redirected to admin dashboard
-const ADMIN_EMAILS = [
-    'marianomorales@outlook.com',
-    'mariano.morales@autostrefa.mx',
-    'alejandro.trevino@autostrefa.mx',
-    'evelia.castillo@autostrefa.mx',
-    'fernando.trevino@autostrefa.mx',
-    'genauservices@gmail.com'
-];
-
-// Check if an email is an admin email
-const isAdminEmail = (email: string | undefined): boolean => {
-    if (!email) return false;
-    return ADMIN_EMAILS.includes(email.toLowerCase().trim());
-};
+import { checkIsAdmin } from '../constants/adminEmails';
 
 export const checkApplicationProfileCompleteness = (p: Profile | null): boolean => {
     if (!p) return false;
@@ -63,8 +48,8 @@ const AuthHandler: React.FC = () => {
       // If no redirect path is set, determine default based on email or role
       if (!redirectPath) {
         // Check if user email is an admin email (takes priority)
-        if (isAdminEmail(session.user?.email)) {
-          redirectPath = '/escritorio/dashboard';
+        if (checkIsAdmin(session.user?.email)) {
+          redirectPath = '/escritorio/admin/dashboard';
         } else if (profile.role === 'admin' || profile.role === 'sales') {
           redirectPath = '/escritorio/dashboard';
         } else {
