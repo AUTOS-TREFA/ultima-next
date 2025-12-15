@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react'
 
-import { ChevronRightIcon, CircleIcon } from 'lucide-react'
+import { ChevronRightIcon, CircleSmallIcon } from 'lucide-react'
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
@@ -69,7 +69,7 @@ const MenuDropdown = ({ trigger, navigationData, align = 'start' }: Props) => {
                   {navItem.items?.map(item => (
                     <DropdownMenuItem key={item.title} asChild>
                       <a href={item.href}>
-                        <CircleIcon className="w-2 h-2" />
+                        <CircleSmallIcon />
                         <span>{item.title}</span>
                       </a>
                     </DropdownMenuItem>

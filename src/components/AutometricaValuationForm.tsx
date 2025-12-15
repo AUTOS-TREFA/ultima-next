@@ -3,17 +3,19 @@
 /**
  * AutometricaValuationForm
  *
- * Formulario de valuación de vehículos usando la API de Autométrica.
- * Requisitos:
- * - Usuario debe estar logueado
- * - Usuario debe tener teléfono verificado
- * - Selección en cascada: marca → modelo → año → versión (según guía Autométrica)
- * - Una consulta a la vez (rate limiting)
+ * Formulario PÚBLICO de valuación de vehículos usando la API de Autométrica.
+ * Flujo:
+ * 1. Usuario selecciona vehículo (público, sin login)
+ * 2. Se calcula la valuación
+ * 3. Se muestra oferta con valor oculto/difuminado
+ * 4. Usuario verifica teléfono/email para ver oferta completa (crea cuenta)
+ * 5. Redirige al dashboard de compras
  */
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '../../supabaseClient';
 
 // Icons
 import {
@@ -25,14 +27,13 @@ import {
   Copy,
   Check,
   AlertTriangle,
-  Lock,
-  Phone,
-  LogIn,
   ChevronDown,
-  DollarSign,
-  Shield,
-  Clock,
   Gauge,
+  Phone,
+  Mail,
+  Eye,
+  Lock,
+  Sparkles,
 } from 'lucide-react';
 import { WhatsAppIcon } from './icons';
 
@@ -47,7 +48,6 @@ import type { UserVehicleForSale } from '@/types/types';
 // Custom components
 import Confetti from '@/Valuation/components/Confetti';
 import AnimatedNumber from '@/Valuation/components/AnimatedNumber';
-import { PhoneVerification } from '@/components/PhoneVerification';
 
 // ============================================================================
 // PROPS
@@ -57,6 +57,7 @@ interface AutometricaValuationFormProps {
   initialSearchQuery?: string | null;
   onComplete?: () => void;
   compact?: boolean;
+  embedded?: boolean; // New: for seamless page integration
 }
 
 // ============================================================================
@@ -66,12 +67,13 @@ interface AutometricaValuationFormProps {
 export function AutometricaValuationForm({
   onComplete,
   compact = false,
+  embedded = false,
 }: AutometricaValuationFormProps) {
   const router = useRouter();
-  const { user, profile, loading: authLoading, reloadProfile } = useAuth();
+  const { user, profile, reloadProfile } = useAuth();
 
-  // State
-  const [step, setStep] = useState<'auth' | 'phone' | 'vehicle' | 'valuating' | 'success'>('vehicle');
+  // State - PUBLIC FORM, no auth check on mount
+  const [step, setStep] = useState<'vehicle' | 'valuating' | 'verify_to_reveal' | 'verifying' | 'success'>('vehicle');
   const [error, setError] = useState<string | null>(null);
   const [isQueryInProgress, setIsQueryInProgress] = useState(false);
 
@@ -95,9 +97,16 @@ export function AutometricaValuationForm({
   // Valuation state
   const [valuation, setValuation] = useState<AutometricaValuation | null>(null);
 
+  // Verification state (for reveal step)
+  const [phoneInput, setPhoneInput] = useState('');
+  const [emailInput, setEmailInput] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [verificationLoading, setVerificationLoading] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+
   // UI state
   const [copied, setCopied] = useState(false);
-  const [phoneForVerification, setPhoneForVerification] = useState(profile?.phone || '');
 
   // Currency formatter
   const currencyFormatter = new Intl.NumberFormat('es-MX', {
@@ -110,21 +119,7 @@ export function AutometricaValuationForm({
   // EFFECTS
   // ============================================================================
 
-  // Check authentication and phone verification status
-  useEffect(() => {
-    if (authLoading) return;
-
-    if (!user) {
-      setStep('auth');
-    } else if (!profile?.phone_verified) {
-      setStep('phone');
-      setPhoneForVerification(profile?.phone || '');
-    } else {
-      setStep('vehicle');
-    }
-  }, [user, profile, authLoading]);
-
-  // Load catalog on mount
+  // Load catalog on mount (PUBLIC - no auth required)
   useEffect(() => {
     const loadCatalog = async () => {
       setCatalogLoading(true);
@@ -143,10 +138,15 @@ export function AutometricaValuationForm({
       }
     };
 
-    if (user && profile?.phone_verified) {
-      loadCatalog();
+    loadCatalog();
+  }, []);
+
+  // If user is already logged in and verified, skip verification step
+  useEffect(() => {
+    if (step === 'verify_to_reveal' && user && profile?.phone_verified) {
+      setStep('success');
     }
-  }, [user, profile?.phone_verified]);
+  }, [step, user, profile]);
 
   // Update subbrands when brand changes
   useEffect(() => {
@@ -184,7 +184,7 @@ export function AutometricaValuationForm({
           .filter((v) => v.brand === selectedBrand && v.subbrand === selectedSubbrand)
           .map((v) => v.year)
       ),
-    ].sort((a, b) => b - a); // Most recent first
+    ].sort((a, b) => b - a);
 
     setYears(filteredYears);
     setSelectedYear('');
@@ -212,7 +212,7 @@ export function AutometricaValuationForm({
     setVersions(filteredVersions);
     setSelectedVersion('');
 
-    // Pre-fill estimated mileage based on vehicle age
+    // Pre-fill estimated mileage
     const currentYear = new Date().getFullYear();
     const carAge = Math.max(0, currentYear - parseInt(selectedYear));
     const estimatedMileage = Math.min(carAge * 15000, 150000);
@@ -227,7 +227,6 @@ export function AutometricaValuationForm({
   // ============================================================================
 
   const handleGetValuation = async () => {
-    // Validate all fields
     if (!selectedBrand || !selectedSubbrand || !selectedYear || !selectedVersion) {
       setError('Por favor, completa todos los campos del vehículo');
       return;
@@ -239,17 +238,13 @@ export function AutometricaValuationForm({
       return;
     }
 
-    // Prevent multiple simultaneous queries
-    if (isQueryInProgress) {
-      return;
-    }
+    if (isQueryInProgress) return;
 
     setIsQueryInProgress(true);
     setStep('valuating');
     setError(null);
 
     try {
-      // Get valuation from Autométrica
       const valuationResult = await AutometricaService.getValuation(
         {
           year: parseInt(selectedYear),
@@ -262,54 +257,14 @@ export function AutometricaValuationForm({
 
       setValuation(valuationResult);
 
-      // Save to Supabase
-      if (user) {
-        try {
-          const listingData: Partial<UserVehicleForSale> = {
-            user_id: user.id,
-            status: 'draft',
-            valuation_data: {
-              source: 'autometrica',
-              vehicle: {
-                year: parseInt(selectedYear),
-                brand: selectedBrand,
-                subbrand: selectedSubbrand,
-                version: selectedVersion,
-              },
-              kilometraje: kmValue,
-              purchasePrice: valuationResult.purchasePrice,
-              salePrice: valuationResult.salePrice,
-              kmAdjustment: valuationResult.kmAdjustment,
-              clientName: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim(),
-              clientEmail: profile?.email,
-              clientPhone: profile?.phone,
-              createdAt: new Date().toISOString(),
-            },
-          };
-
-          await SellCarService.createOrUpdateSellListing(listingData);
-        } catch (saveError) {
-          console.error('Error saving listing:', saveError);
-        }
+      // If user is already logged in and verified, go directly to success
+      if (user && profile?.phone_verified) {
+        await saveValuationData(valuationResult, kmValue);
+        setStep('success');
+      } else {
+        // Show verification step to reveal offer
+        setStep('verify_to_reveal');
       }
-
-      // Send email notification
-      try {
-        await BrevoEmailService.notifyAdminsNewValuation(
-          `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'Usuario',
-          profile?.email || '',
-          profile?.phone || '',
-          `${selectedBrand} ${selectedSubbrand} ${selectedVersion} ${selectedYear}`,
-          kmValue,
-          valuationResult.purchasePrice,
-          valuationResult.salePrice,
-          valuationResult.salePrice
-        );
-      } catch (emailError) {
-        console.error('Error sending notification email:', emailError);
-      }
-
-      setStep('success');
 
       if (onComplete) {
         setTimeout(onComplete, 2000);
@@ -323,6 +278,155 @@ export function AutometricaValuationForm({
     }
   };
 
+  const saveValuationData = async (valuationResult: AutometricaValuation, kmValue: number) => {
+    if (!user) return;
+
+    try {
+      const listingData: Partial<UserVehicleForSale> = {
+        user_id: user.id,
+        status: 'draft',
+        valuation_data: {
+          source: 'autometrica',
+          vehicle: {
+            year: parseInt(selectedYear),
+            brand: selectedBrand,
+            subbrand: selectedSubbrand,
+            version: selectedVersion,
+          },
+          kilometraje: kmValue,
+          purchasePrice: valuationResult.purchasePrice,
+          salePrice: valuationResult.salePrice,
+          kmAdjustment: valuationResult.kmAdjustment,
+          clientName: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim(),
+          clientEmail: profile?.email,
+          clientPhone: profile?.phone,
+          createdAt: new Date().toISOString(),
+        },
+      };
+
+      await SellCarService.createOrUpdateSellListing(listingData);
+    } catch (saveError) {
+      console.error('Error saving listing:', saveError);
+    }
+
+    // Send email notification
+    try {
+      await BrevoEmailService.notifyAdminsNewValuation(
+        `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'Usuario',
+        profile?.email || '',
+        profile?.phone || '',
+        `${selectedBrand} ${selectedSubbrand} ${selectedVersion} ${selectedYear}`,
+        kmValue,
+        valuationResult.purchasePrice,
+        valuationResult.salePrice,
+        valuationResult.salePrice
+      );
+    } catch (emailError) {
+      console.error('Error sending notification email:', emailError);
+    }
+  };
+
+  const handleSendOtp = async () => {
+    if (!phoneInput || phoneInput.length < 10) {
+      setVerificationError('Ingresa un número de celular válido');
+      return;
+    }
+
+    if (!emailInput || !emailInput.includes('@')) {
+      setVerificationError('Ingresa un correo electrónico válido');
+      return;
+    }
+
+    setVerificationLoading(true);
+    setVerificationError(null);
+
+    try {
+      // Format phone for Mexico
+      const formattedPhone = phoneInput.startsWith('+52')
+        ? phoneInput
+        : `+52${phoneInput.replace(/\D/g, '').slice(-10)}`;
+
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: formattedPhone,
+      });
+
+      if (error) throw error;
+
+      setOtpSent(true);
+    } catch (err: any) {
+      console.error('OTP error:', err);
+      setVerificationError(err.message || 'Error al enviar el código');
+    } finally {
+      setVerificationLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpCode || otpCode.length < 6) {
+      setVerificationError('Ingresa el código de 6 dígitos');
+      return;
+    }
+
+    setVerificationLoading(true);
+    setVerificationError(null);
+    setStep('verifying');
+
+    try {
+      const formattedPhone = phoneInput.startsWith('+52')
+        ? phoneInput
+        : `+52${phoneInput.replace(/\D/g, '').slice(-10)}`;
+
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone: formattedPhone,
+        token: otpCode,
+        type: 'sms',
+      });
+
+      if (error) throw error;
+
+      // Update profile with email and phone_verified
+      if (data.user) {
+        // Use RPC to create/update profile
+        await supabase.rpc('create_profile_for_user', {
+          p_user_id: data.user.id,
+          p_phone: formattedPhone,
+          p_email: emailInput,
+        });
+
+        // Update email if different
+        if (emailInput && data.user.email !== emailInput) {
+          await supabase.auth.updateUser({ email: emailInput });
+        }
+
+        // Mark phone as verified
+        await supabase
+          .from('profiles')
+          .update({
+            phone: formattedPhone,
+            phone_verified: true,
+            email: emailInput,
+          })
+          .eq('id', data.user.id);
+      }
+
+      // Reload profile and save valuation
+      await reloadProfile();
+
+      const kmValue = parseInt(kilometraje.replace(/[^0-9]/g, ''), 10);
+      if (valuation) {
+        await saveValuationData(valuation, kmValue);
+      }
+
+      setStep('success');
+    } catch (err: any) {
+      console.error('Verification error:', err);
+      setVerificationError(err.message || 'Código incorrecto');
+      setStep('verify_to_reveal');
+    } finally {
+      setVerificationLoading(false);
+    }
+  };
+
   const handleReset = () => {
     setStep('vehicle');
     setError(null);
@@ -332,6 +436,10 @@ export function AutometricaValuationForm({
     setSelectedVersion('');
     setKilometraje('');
     setValuation(null);
+    setOtpSent(false);
+    setOtpCode('');
+    setPhoneInput('');
+    setEmailInput('');
   };
 
   const handleCopy = () => {
@@ -343,29 +451,8 @@ export function AutometricaValuationForm({
     });
   };
 
-  const handleContinueToSellForm = () => {
-    const valuationData = {
-      vehicle: {
-        year: parseInt(selectedYear),
-        brand: selectedBrand,
-        subbrand: selectedSubbrand,
-        version: selectedVersion,
-      },
-      valuation,
-    };
-
-    localStorage.setItem('pendingValuationData', JSON.stringify(valuationData));
-    router.push('/escritorio/vende-tu-auto');
-  };
-
-  const handlePhoneVerified = async () => {
-    await reloadProfile();
-    setStep('vehicle');
-  };
-
-  const handleLogin = () => {
-    localStorage.setItem('redirectAfterLogin', '/vender-mi-auto');
-    router.push('/auth');
+  const handleGoToDashboard = () => {
+    router.push('/escritorio/admin/compras');
   };
 
   // WhatsApp URL
@@ -373,17 +460,36 @@ export function AutometricaValuationForm({
   const whatsappText = `Me interesa vender mi ${selectedBrand} ${selectedSubbrand} ${selectedYear} por la cantidad de ${currencyFormatter.format(offer)}, y quisiera concretar una cita de inspección.`;
   const whatsappUrl = `https://wa.me/528187049079?text=${encodeURIComponent(whatsappText)}`;
 
+  // Styles for embedded vs standalone
+  const containerClass = embedded
+    ? 'w-full'
+    : `w-full ${compact ? 'max-w-md' : 'max-w-2xl'} mx-auto`;
+
+  const cardClass = embedded
+    ? ''
+    : 'bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden';
+
   // ============================================================================
-  // RENDER - LOADING
+  // RENDER - VALUATING
   // ============================================================================
 
-  if (authLoading) {
+  if (step === 'valuating' || step === 'verifying') {
     return (
-      <div className={`w-full ${compact ? 'max-w-md' : 'max-w-2xl'} mx-auto`}>
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-          <div className="py-12 text-center">
-            <Loader2 className="w-12 h-12 mx-auto animate-spin text-primary-600 mb-4" />
-            <p className="text-gray-500">Cargando...</p>
+      <div className={containerClass}>
+        <div className={embedded ? 'py-12 text-center' : `${cardClass} p-8`}>
+          <div className="py-8 text-center">
+            <div className="relative mx-auto w-20 h-20 mb-6">
+              <div className="absolute inset-0 rounded-full bg-primary-100 animate-ping opacity-25"></div>
+              <div className="relative w-20 h-20 rounded-full bg-primary-100 flex items-center justify-center">
+                <Loader2 className="w-10 h-10 animate-spin text-primary-600" />
+              </div>
+            </div>
+            <p className="font-bold text-xl text-gray-900">
+              {step === 'verifying' ? 'Verificando...' : 'Calculando tu oferta...'}
+            </p>
+            <p className="text-gray-500 mt-2">
+              {step === 'verifying' ? 'Creando tu cuenta' : 'Consultando datos del mercado mexicano'}
+            </p>
           </div>
         </div>
       </div>
@@ -391,90 +497,153 @@ export function AutometricaValuationForm({
   }
 
   // ============================================================================
-  // RENDER - AUTH REQUIRED
+  // RENDER - VERIFY TO REVEAL
   // ============================================================================
 
-  if (step === 'auth') {
+  if (step === 'verify_to_reveal' && valuation) {
     return (
-      <div className={`w-full ${compact ? 'max-w-md' : 'max-w-lg'} mx-auto`}>
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-br from-primary-600 to-primary-700 px-6 py-8 text-center">
-            <div className="mx-auto w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-4">
-              <Lock className="w-8 h-8 text-white" />
+      <div className={containerClass}>
+        <div className={embedded ? '' : cardClass}>
+          {/* Blurred Offer Preview */}
+          <div className="relative bg-gradient-to-br from-primary-600 to-primary-700 px-6 py-8 text-center overflow-hidden">
+            <Sparkles className="absolute top-4 right-4 w-6 h-6 text-white/30" />
+            <Sparkles className="absolute bottom-4 left-4 w-5 h-5 text-white/20" />
+
+            <div className="mx-auto w-14 h-14 rounded-full bg-white/20 flex items-center justify-center mb-4">
+              <Eye className="w-7 h-7 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-white">Inicia sesión para continuar</h2>
-            <p className="text-primary-100 mt-2">
-              Para cotizar tu vehículo necesitas tener una cuenta en TREFA
+            <h2 className="text-2xl font-bold text-white">¡Tu oferta está lista!</h2>
+            <p className="text-primary-100 mt-2 mb-4">
+              Verifica tu número para ver el monto
+            </p>
+
+            {/* Blurred price */}
+            <div className="inline-block bg-white/10 backdrop-blur-sm rounded-xl px-8 py-4">
+              <p className="text-sm text-white/70 mb-1">Oferta estimada</p>
+              <p className="text-4xl font-bold text-white blur-md select-none">
+                {currencyFormatter.format(valuation.purchasePrice)}
+              </p>
+            </div>
+
+            <p className="text-xs text-white/60 mt-4">
+              {selectedBrand} {selectedSubbrand} {selectedYear}
             </p>
           </div>
 
-          {/* Content */}
+          {/* Verification Form */}
           <div className="p-6 space-y-5">
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-              <h4 className="font-semibold text-gray-900 mb-3">¿Por qué necesito una cuenta?</h4>
-              <ul className="space-y-2">
-                <li className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-primary-600" />
-                  </div>
-                  <span className="text-sm text-gray-600">Guardamos tu cotización para seguimiento</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-primary-600" />
-                  </div>
-                  <span className="text-sm text-gray-600">Te contactamos con la mejor oferta</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-primary-600" />
-                  </div>
-                  <span className="text-sm text-gray-600">Proceso de venta más rápido y seguro</span>
-                </li>
-              </ul>
+            <div className="text-center">
+              <Lock className="w-8 h-8 text-primary-600 mx-auto mb-2" />
+              <h3 className="font-bold text-lg text-gray-900">Desbloquea tu oferta</h3>
+              <p className="text-sm text-gray-500">Ingresa tus datos para ver el monto exacto</p>
             </div>
 
-            <button
-              onClick={handleLogin}
-              className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-4 px-6 rounded-xl hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary-600/25"
-            >
-              <LogIn className="w-5 h-5" />
-              Iniciar sesión o registrarse
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+            {verificationError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                <p className="text-sm text-red-700">{verificationError}</p>
+              </div>
+            )}
 
-  // ============================================================================
-  // RENDER - PHONE VERIFICATION REQUIRED
-  // ============================================================================
+            {!otpSent ? (
+              <div className="space-y-4">
+                {/* Email */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Correo electrónico
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="email"
+                      placeholder="tu@email.com"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pl-12 text-gray-900 font-medium placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+                    />
+                  </div>
+                </div>
 
-  if (step === 'phone') {
-    return (
-      <div className={`w-full ${compact ? 'max-w-md' : 'max-w-lg'} mx-auto`}>
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-br from-primary-600 to-primary-700 px-6 py-8 text-center">
-            <div className="mx-auto w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-4">
-              <Phone className="w-8 h-8 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-white">Verifica tu teléfono</h2>
-            <p className="text-primary-100 mt-2">
-              Para cotizar tu vehículo necesitas verificar tu número de celular
+                {/* Phone */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Número de celular
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="tel"
+                      placeholder="10 dígitos"
+                      value={phoneInput}
+                      onChange={(e) => setPhoneInput(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pl-12 text-gray-900 font-medium placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">Te enviaremos un código de verificación por SMS</p>
+                </div>
+
+                <button
+                  onClick={handleSendOtp}
+                  disabled={verificationLoading || !phoneInput || !emailInput}
+                  className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-bold py-4 px-6 rounded-xl hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary-600/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  {verificationLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      Ver mi oferta
+                      <ArrowRight className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* OTP Input */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Código de verificación
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="123456"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl py-4 px-6 text-center text-2xl font-bold tracking-[0.5em] text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+                    maxLength={6}
+                  />
+                  <p className="text-xs text-gray-500 text-center">
+                    Enviamos un código de 6 dígitos a {phoneInput}
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleVerifyOtp}
+                  disabled={verificationLoading || otpCode.length < 6}
+                  className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-bold py-4 px-6 rounded-xl hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary-600/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  {verificationLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      Verificar y ver oferta
+                      <CheckCircle2 className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => setOtpSent(false)}
+                  className="w-full text-sm text-gray-500 hover:text-gray-700"
+                >
+                  Cambiar número
+                </button>
+              </div>
+            )}
+
+            <p className="text-center text-xs text-gray-400">
+              Al continuar, aceptas nuestros términos y condiciones
             </p>
-          </div>
-
-          {/* Content */}
-          <div className="p-6">
-            <PhoneVerification
-              phone={phoneForVerification}
-              onPhoneChange={setPhoneForVerification}
-              onVerified={handlePhoneVerified}
-              userId={user?.id || ''}
-            />
           </div>
         </div>
       </div>
@@ -487,9 +656,9 @@ export function AutometricaValuationForm({
 
   if (step === 'success' && valuation) {
     return (
-      <div className={`w-full ${compact ? 'max-w-md' : 'max-w-lg'} mx-auto animate-in fade-in-50 duration-300`}>
+      <div className={containerClass}>
         <Confetti />
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className={embedded ? '' : cardClass}>
           {/* Header */}
           <div className="bg-gradient-to-br from-green-500 to-green-600 px-6 py-8 text-center">
             <CheckCircle2 className="w-16 h-16 text-white mx-auto mb-4" />
@@ -501,7 +670,7 @@ export function AutometricaValuationForm({
           <div className="p-6 space-y-6">
             {/* Offer Display */}
             <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6 text-center border border-primary-200">
-              <p className="text-sm text-primary-700 font-medium mb-1">Oferta de Compra Estimada</p>
+              <p className="text-sm text-primary-700 font-medium mb-1">Oferta de Compra</p>
               <p className="text-4xl font-bold text-primary-600">
                 <AnimatedNumber value={offer} />
               </p>
@@ -529,10 +698,10 @@ export function AutometricaValuationForm({
             {/* Actions */}
             <div className="space-y-3">
               <button
-                onClick={handleContinueToSellForm}
+                onClick={handleGoToDashboard}
                 className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-4 px-6 rounded-xl hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary-600/25"
               >
-                Continuar con la venta en línea
+                Continuar con la venta
                 <ArrowRight className="w-5 h-5" />
               </button>
               <a
@@ -542,7 +711,7 @@ export function AutometricaValuationForm({
                 className="w-full flex items-center justify-center gap-2 bg-green-600 text-white font-semibold py-4 px-6 rounded-xl hover:bg-green-700 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-green-600/25"
               >
                 <WhatsAppIcon className="w-5 h-5" />
-                Continuar por WhatsApp
+                Agendar por WhatsApp
               </a>
             </div>
 
@@ -559,7 +728,7 @@ export function AutometricaValuationForm({
                 className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
               >
                 {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                {copied ? 'Copiado' : 'Copiar'}
+                {copied ? 'Copiado' : 'Compartir'}
               </button>
             </div>
 
@@ -578,68 +747,16 @@ export function AutometricaValuationForm({
   }
 
   // ============================================================================
-  // RENDER - VALUATING
-  // ============================================================================
-
-  if (step === 'valuating') {
-    return (
-      <div className={`w-full ${compact ? 'max-w-md' : 'max-w-lg'} mx-auto`}>
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-          <div className="py-12 text-center">
-            <div className="relative mx-auto w-20 h-20 mb-6">
-              <div className="absolute inset-0 rounded-full bg-primary-100 animate-ping opacity-25"></div>
-              <div className="relative w-20 h-20 rounded-full bg-primary-100 flex items-center justify-center">
-                <Loader2 className="w-10 h-10 animate-spin text-primary-600" />
-              </div>
-            </div>
-            <p className="font-bold text-xl text-gray-900">Calculando tu oferta...</p>
-            <p className="text-gray-500 mt-2">
-              Consultando datos del mercado mexicano
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ============================================================================
-  // RENDER - VEHICLE SELECTION FORM
+  // RENDER - VEHICLE SELECTION FORM (PUBLIC)
   // ============================================================================
 
   const isFormComplete = selectedBrand && selectedSubbrand && selectedYear && selectedVersion && kilometraje;
 
   return (
-    <div className={`w-full ${compact ? 'max-w-md' : 'max-w-2xl'} mx-auto`}>
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-br from-primary-600 to-primary-700 px-6 py-8 text-center">
-          <div className="mx-auto w-14 h-14 rounded-full bg-white/20 flex items-center justify-center mb-4">
-            <Car className="w-7 h-7 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-white">Cotiza el valor de tu auto</h2>
-          <p className="text-primary-100 mt-2">
-            Selecciona los datos de tu vehículo para recibir una oferta de compra
-          </p>
-        </div>
-
+    <div className={containerClass}>
+      <div className={embedded ? '' : cardClass}>
         {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Benefits */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="flex flex-col items-center text-center p-3 rounded-xl bg-gray-50 border border-gray-100">
-              <DollarSign className="w-5 h-5 text-green-600 mb-1" />
-              <span className="text-xs font-medium text-gray-700">Mejor Precio</span>
-            </div>
-            <div className="flex flex-col items-center text-center p-3 rounded-xl bg-gray-50 border border-gray-100">
-              <Clock className="w-5 h-5 text-blue-600 mb-1" />
-              <span className="text-xs font-medium text-gray-700">Pago Rápido</span>
-            </div>
-            <div className="flex flex-col items-center text-center p-3 rounded-xl bg-gray-50 border border-gray-100">
-              <Shield className="w-5 h-5 text-purple-600 mb-1" />
-              <span className="text-xs font-medium text-gray-700">100% Seguro</span>
-            </div>
-          </div>
-
+        <div className={embedded ? 'space-y-4' : 'p-6 space-y-4'}>
           {/* Error Alert */}
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
@@ -658,19 +775,18 @@ export function AutometricaValuationForm({
               {/* Brand Select */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
-                  1. Marca
+                  Marca
                 </label>
                 <div className="relative">
+                  <Car className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <select
                     value={selectedBrand}
                     onChange={(e) => setSelectedBrand(e.target.value)}
-                    className="w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pr-10 text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300"
+                    className="w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pl-12 pr-10 text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300"
                   >
                     <option value="">Selecciona la marca</option>
                     {brands.map((brand) => (
-                      <option key={brand} value={brand}>
-                        {brand}
-                      </option>
+                      <option key={brand} value={brand}>{brand}</option>
                     ))}
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
@@ -680,76 +796,67 @@ export function AutometricaValuationForm({
               {/* Subbrand/Model Select */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
-                  2. Modelo
+                  Modelo
                 </label>
                 <div className="relative">
                   <select
                     value={selectedSubbrand}
                     onChange={(e) => setSelectedSubbrand(e.target.value)}
                     disabled={!selectedBrand}
-                    className="w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pr-10 text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:border-gray-200"
+                    className="w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pr-10 text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                   >
                     <option value="">{selectedBrand ? 'Selecciona el modelo' : 'Primero selecciona la marca'}</option>
                     {subbrands.map((subbrand) => (
-                      <option key={subbrand} value={subbrand}>
-                        {subbrand}
-                      </option>
+                      <option key={subbrand} value={subbrand}>{subbrand}</option>
                     ))}
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                 </div>
               </div>
 
-              {/* Year Select */}
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  3. Año
-                </label>
-                <div className="relative">
-                  <select
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(e.target.value)}
-                    disabled={!selectedSubbrand}
-                    className="w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pr-10 text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:border-gray-200"
-                  >
-                    <option value="">{selectedSubbrand ? 'Selecciona el año' : 'Primero selecciona el modelo'}</option>
-                    {years.map((year) => (
-                      <option key={year} value={year.toString()}>
-                        {year}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+              {/* Year and Version in a row */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">Año</label>
+                  <div className="relative">
+                    <select
+                      value={selectedYear}
+                      onChange={(e) => setSelectedYear(e.target.value)}
+                      disabled={!selectedSubbrand}
+                      className="w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pr-10 text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                    >
+                      <option value="">{selectedSubbrand ? 'Año' : '—'}</option>
+                      {years.map((year) => (
+                        <option key={year} value={year.toString()}>{year}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  </div>
                 </div>
-              </div>
 
-              {/* Version Select */}
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  4. Versión
-                </label>
-                <div className="relative">
-                  <select
-                    value={selectedVersion}
-                    onChange={(e) => setSelectedVersion(e.target.value)}
-                    disabled={!selectedYear}
-                    className="w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pr-10 text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:border-gray-200"
-                  >
-                    <option value="">{selectedYear ? 'Selecciona la versión' : 'Primero selecciona el año'}</option>
-                    {versions.map((version) => (
-                      <option key={version} value={version}>
-                        {version}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">Versión</label>
+                  <div className="relative">
+                    <select
+                      value={selectedVersion}
+                      onChange={(e) => setSelectedVersion(e.target.value)}
+                      disabled={!selectedYear}
+                      className="w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pr-10 text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                    >
+                      <option value="">{selectedYear ? 'Versión' : '—'}</option>
+                      {versions.map((version) => (
+                        <option key={version} value={version}>{version}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  </div>
                 </div>
               </div>
 
               {/* Kilometraje Input */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
-                  5. Kilometraje
+                  Kilometraje
                 </label>
                 <div className="relative">
                   <Gauge className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -770,16 +877,13 @@ export function AutometricaValuationForm({
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">km</span>
                 </div>
-                <p className="text-xs text-gray-500">
-                  Ingresa el kilometraje actual de tu vehículo
-                </p>
               </div>
 
               {/* Submit Button */}
               <button
                 onClick={handleGetValuation}
                 disabled={!isFormComplete || isQueryInProgress}
-                className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-bold py-4 px-6 rounded-xl hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary-600/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none mt-6"
+                className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-bold py-4 px-6 rounded-xl hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary-600/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none"
               >
                 {isQueryInProgress ? (
                   <>
@@ -797,9 +901,11 @@ export function AutometricaValuationForm({
           )}
 
           {/* Footer */}
-          <p className="text-center text-xs text-gray-400 pt-2">
-            Sin costo • Sin compromiso • Datos de Guía Autométrica
-          </p>
+          {!embedded && (
+            <p className="text-center text-xs text-gray-400 pt-2">
+              Sin costo • Sin compromiso • Datos de Guía Autométrica
+            </p>
+          )}
         </div>
       </div>
     </div>
