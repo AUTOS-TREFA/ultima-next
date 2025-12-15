@@ -724,13 +724,15 @@ export function AutometricaValuationForm({
                   </div>
                 </div>
 
-                {/* Unlock CTA button - compact, right aligned */}
-                <div className="mt-2 flex justify-end">
+                {/* Unlock CTA - checkbox style like reCAPTCHA */}
+                <div className="mt-3 flex justify-end">
                   <button
                     onClick={() => setShowVerificationModal(true)}
-                    className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-1.5 px-3 rounded-md transition-all text-xs border border-slate-200"
+                    className="group inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-3 rounded border-2 border-gray-300 hover:border-primary-400 transition-all text-sm shadow-sm hover:shadow"
                   >
-                    <CheckCircle2 className="w-3 h-3" />
+                    <span className="w-5 h-5 rounded border-2 border-gray-400 group-hover:border-primary-500 flex items-center justify-center transition-colors">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-gray-400 group-hover:text-primary-500 transition-colors" />
+                    </span>
                     No soy un robot
                   </button>
                 </div>
