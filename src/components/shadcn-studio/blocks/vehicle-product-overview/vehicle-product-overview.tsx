@@ -552,7 +552,7 @@ const VehicleProductOverview = ({
 
               {/* Key Highlights Grid */}
               <div className="bg-white rounded-2xl p-5 shadow-sm">
-                <h2 className="text-lg font-bold text-gray-900 mb-4">Datos Clave</h2>
+                <h2 className="text-base font-semibold text-gray-900 mb-4">Datos Clave</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 divide-y sm:divide-y-0">
                   {vehicle.kilometraje && (
                     <KeyHighlight
@@ -601,7 +601,7 @@ const VehicleProductOverview = ({
 
               {/* Purchase Options Cards */}
               <div className="bg-white rounded-2xl p-5 shadow-sm">
-                <h2 className="text-lg font-bold text-gray-900 mb-4">Opciones de Compra</h2>
+                <h2 className="text-base font-semibold text-gray-900 mb-4">Opciones de Compra</h2>
                 <div className="grid gap-3 sm:grid-cols-3">
                   {/* Cash */}
                   <button
@@ -613,7 +613,7 @@ const VehicleProductOverview = ({
                         <BanknoteIcon className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900">Contado</h3>
+                        <h3 className="font-semibold text-sm text-gray-900">Contado</h3>
                         <p className="text-xs text-muted-foreground">Asesoría profesional</p>
                       </div>
                     </div>
@@ -632,7 +632,7 @@ const VehicleProductOverview = ({
                         <CreditCardIcon className="w-5 h-5 text-orange-600" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900">Crédito</h3>
+                        <h3 className="font-semibold text-sm text-gray-900">Crédito</h3>
                         <p className="text-xs text-muted-foreground">100% en línea</p>
                       </div>
                     </div>
@@ -651,7 +651,7 @@ const VehicleProductOverview = ({
                         <BuildingIcon className="w-5 h-5 text-blue-600" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900">Sucursal</h3>
+                        <h3 className="font-semibold text-sm text-gray-900">Sucursal</h3>
                         <p className="text-xs text-muted-foreground">{sucursal}</p>
                       </div>
                     </div>
@@ -859,8 +859,8 @@ const VehicleProductOverview = ({
                                   <ShieldCheckIcon className="w-5 h-5 text-green-600" />
                                 </div>
                                 <div>
-                                  <h4 className="font-bold text-green-800">Garantía TREFA Incluida</h4>
-                                  <p className="text-sm text-green-700 mt-1">{vehicle.garantia}</p>
+                                  <h4 className="font-semibold text-sm text-green-800">Garantía TREFA Incluida</h4>
+                                  <p className="text-xs text-green-700 mt-1">{vehicle.garantia}</p>
                                   <div className="flex flex-wrap gap-2 mt-3">
                                     <Badge variant="secondary" className="bg-green-100 text-green-700 border-none">
                                       <WrenchIcon className="w-3 h-3 mr-1" />
@@ -879,7 +879,7 @@ const VehicleProductOverview = ({
                           {/* Inspection Points */}
                           {inspectionPoints.length > 0 ? (
                             <div className="space-y-3">
-                              <h4 className="font-bold text-gray-900">Puntos de Inspección</h4>
+                              <h4 className="font-semibold text-sm text-gray-900">Puntos de Inspección</h4>
                               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {inspectionPoints.slice(0, 8).map((point, i) => (
                                   <li key={i} className="flex items-start gap-2 text-sm">
@@ -914,9 +914,9 @@ const VehicleProductOverview = ({
               {/* Description */}
               {description && (
                 <div className="bg-white rounded-2xl p-5 shadow-sm">
-                  <h2 className="text-lg font-bold text-gray-900 mb-4">Descripción</h2>
+                  <h2 className="text-base font-semibold text-gray-900 mb-3">Descripción</h2>
                   <div
-                    className="prose prose-sm max-w-none text-gray-600 prose-headings:text-gray-900 prose-strong:text-gray-900 prose-p:leading-relaxed"
+                    className="prose prose-xs max-w-none text-gray-600 text-sm prose-headings:text-sm prose-headings:font-semibold prose-headings:text-gray-900 prose-strong:text-gray-900 prose-p:leading-relaxed prose-p:text-sm"
                     dangerouslySetInnerHTML={{ __html: description }}
                   />
                 </div>
@@ -1015,8 +1015,8 @@ const VehicleProductOverview = ({
 
                 {/* Trust Badges Card */}
                 <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-5 border border-orange-100">
-                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <ShieldCheckIcon className="w-5 h-5 text-orange-500" />
+                  <h3 className="font-semibold text-sm text-gray-900 mb-3 flex items-center gap-2">
+                    <ShieldCheckIcon className="w-4 h-4 text-orange-500" />
                     ¿Por qué TREFA?
                   </h3>
                   <ul className="space-y-3">
@@ -1052,7 +1052,7 @@ const VehicleProductOverview = ({
                       <BuildingIcon className="w-5 h-5 text-blue-600" />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-bold text-gray-900">Sucursal {sucursal}</h4>
+                      <h4 className="font-semibold text-sm text-gray-900">Sucursal {sucursal}</h4>
                       <p className="text-sm text-muted-foreground mt-1">
                         Agenda una cita para ver este auto en persona
                       </p>

@@ -7,7 +7,6 @@ import { LogOutIcon, UserIcon } from './icons';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ComprarMegaMenu from './ComprarMegaMenu';
-import VenderMegaMenu from './VenderMegaMenu';
 import HeaderSearchBar from './HeaderSearchBar';
 import MobileHeader from './MobileHeader';
 
@@ -16,22 +15,14 @@ const LOGO_URL = 'https://trefa.mx/images/trefalogo.png';
 
 const Header: React.FC = () => {
     const [comprarMenuOpen, setComprarMenuOpen] = useState(false);
-    const [venderMenuOpen, setVenderMenuOpen] = useState(false);
     const { session, profile, signOut } = useAuth();
     const comprarButtonRef = useRef<HTMLButtonElement>(null);
-    const venderButtonRef = useRef<HTMLButtonElement>(null);
     const pathname = usePathname();
     const isListPage = pathname === '/autos';
     const isSalesUser = profile?.role === 'sales';
 
     const handleComprarClick = () => {
         setComprarMenuOpen(o => !o);
-        setVenderMenuOpen(false);
-    };
-
-    const handleVenderClick = () => {
-        setVenderMenuOpen(o => !o);
-        setComprarMenuOpen(false);
     };
 
     const handleSignOut = async () => {
@@ -87,15 +78,14 @@ const Header: React.FC = () => {
                     Comprar
                   </button>
 
-                  {/* Vender Button - Orange gradient */}
-                  <button
-                    ref={venderButtonRef}
-                    onClick={handleVenderClick}
+                  {/* Vender Button - Orange gradient, direct link */}
+                  <Link
+                    href="/vender-mi-auto"
                     className="flex items-center gap-1.5 px-4 py-2 rounded-md text-white font-bold text-sm bg-gradient-to-b from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 shadow-sm hover:shadow transition-all"
                   >
                     <ArrowUp className="w-4 h-4 stroke-[2.5]" />
-                    Vender
-                  </button>
+                    Vender mi auto
+                  </Link>
                 </div>
 
                 {/* Separator */}
@@ -135,13 +125,6 @@ const Header: React.FC = () => {
               isOpen={comprarMenuOpen}
               onClose={() => setComprarMenuOpen(false)}
               triggerRef={comprarButtonRef as React.RefObject<HTMLButtonElement>}
-            />
-
-            {/* Vender Mega Menu */}
-            <VenderMegaMenu
-              isOpen={venderMenuOpen}
-              onClose={() => setVenderMenuOpen(false)}
-              triggerRef={venderButtonRef as React.RefObject<HTMLButtonElement>}
             />
           </div>
         </header>
