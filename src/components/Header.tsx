@@ -3,14 +3,13 @@
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogOutIcon, ChevronDownIcon, UserIcon } from './icons';
-import { TrendingDown, TrendingUp } from 'lucide-react';
+import { LogOutIcon, UserIcon } from './icons';
+import { ArrowDown, ArrowUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ComprarMegaMenu from './ComprarMegaMenu';
 import VenderMegaMenu from './VenderMegaMenu';
 import HeaderSearchBar from './HeaderSearchBar';
 import MobileHeader from './MobileHeader';
-import { Button } from './ui/button';
 
 // Use absolute URL to ensure logo loads correctly across all domains
 const LOGO_URL = 'https://trefa.mx/images/trefalogo.png';
@@ -77,32 +76,26 @@ const Header: React.FC = () => {
               {/* Right Section - Desktop Menu and Auth */}
               <div className={`flex items-center flex-shrink-0 ${isListPage ? 'ml-auto' : ''}`}>
                 {/* Action Buttons */}
-                <div className="flex items-center gap-2">
-                  {/* Comprar Button */}
-                  <Button
+                <div className="flex items-center gap-2.5">
+                  {/* Comprar Button - Dark blue gradient */}
+                  <button
                     ref={comprarButtonRef}
                     onClick={handleComprarClick}
-                    variant="outline"
-                    size="sm"
-                    className="text-blue-700 border-blue-200 hover:bg-blue-50 hover:border-blue-300 font-semibold"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-md text-white font-bold text-sm bg-gradient-to-b from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 shadow-sm hover:shadow transition-all"
                   >
-                    <TrendingDown className="w-4 h-4 mr-1.5" />
+                    <ArrowDown className="w-4 h-4 stroke-[2.5]" />
                     Comprar
-                    <ChevronDownIcon className={`w-3.5 h-3.5 ml-1 transition-transform ${comprarMenuOpen ? 'rotate-180' : ''}`} fill="currentColor"/>
-                  </Button>
+                  </button>
 
-                  {/* Vender Button */}
-                  <Button
+                  {/* Vender Button - Orange gradient */}
+                  <button
                     ref={venderButtonRef}
                     onClick={handleVenderClick}
-                    variant="outline"
-                    size="sm"
-                    className="text-primary-600 border-primary-200 hover:bg-primary-50 hover:border-primary-300 font-semibold"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-md text-white font-bold text-sm bg-gradient-to-b from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 shadow-sm hover:shadow transition-all"
                   >
-                    <TrendingUp className="w-4 h-4 mr-1.5" />
+                    <ArrowUp className="w-4 h-4 stroke-[2.5]" />
                     Vender
-                    <ChevronDownIcon className={`w-3.5 h-3.5 ml-1 transition-transform ${venderMenuOpen ? 'rotate-180' : ''}`} fill="currentColor"/>
-                  </Button>
+                  </button>
                 </div>
 
                 {/* Separator */}

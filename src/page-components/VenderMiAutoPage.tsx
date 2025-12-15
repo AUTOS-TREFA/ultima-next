@@ -8,7 +8,7 @@
  * Formulario integrado sin bounding boxes.
  */
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { MotionPreset } from '@/components/ui/motion-preset';
@@ -21,18 +21,93 @@ import {
   Zap,
   Car
 } from 'lucide-react';
+
+// Brands we work with (displayed in carousel)
+const BRAND_NAMES = [
+  'Audi', 'BMW', 'Chevrolet', 'Dodge', 'Ford', 'GMC', 'Honda',
+  'Hyundai', 'Jeep', 'Kia', 'Mazda', 'Mercedes-Benz', 'Mitsubishi',
+  'Nissan', 'Peugeot', 'RAM', 'Renault', 'SEAT', 'Suzuki', 'Tesla',
+  'Toyota', 'Volkswagen', 'Volvo',
+];
 // Note: Some icons used in Benefits section below
+
+// Brand Carousel Component with infinite scroll and fade effects
+const BrandCarousel: React.FC = () => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Duplicate brands for seamless infinite scroll
+  const allBrands = [...BRAND_NAMES, ...BRAND_NAMES, ...BRAND_NAMES];
+
+  useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer) return;
+
+    let animationId: number;
+    let scrollPos = 0;
+    const speed = 0.4; // pixels per frame
+
+    const animate = () => {
+      scrollPos += speed;
+      // Reset when reaching the middle set of brands
+      if (scrollPos >= scrollContainer.scrollWidth / 3) {
+        scrollPos = 0;
+      }
+      scrollContainer.scrollLeft = scrollPos;
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animationId = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationId);
+  }, []);
+
+  return (
+    <div className="relative w-full overflow-hidden py-4">
+      {/* Left fade */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-20 sm:w-32 lg:w-48 z-10 pointer-events-none"
+        style={{
+          background: 'linear-gradient(to right, white 0%, transparent 100%)',
+        }}
+      />
+      {/* Right fade */}
+      <div
+        className="absolute right-0 top-0 bottom-0 w-20 sm:w-32 lg:w-48 z-10 pointer-events-none"
+        style={{
+          background: 'linear-gradient(to left, white 0%, transparent 100%)',
+        }}
+      />
+      {/* Scrolling container */}
+      <div
+        ref={scrollRef}
+        className="flex gap-6 sm:gap-10 overflow-x-hidden px-4"
+        style={{ scrollBehavior: 'auto' }}
+      >
+        {allBrands.map((brand, idx) => (
+          <div
+            key={`${brand}-${idx}`}
+            className="flex-shrink-0 flex items-center justify-center px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50/50"
+          >
+            <span className="text-xs sm:text-sm font-medium text-gray-500 whitespace-nowrap">
+              {brand}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const VenderMiAutoPage: React.FC = () => {
   return (
     <main className="flex-1 overflow-hidden bg-white">
-      {/* Hero Section - Balanced two-column layout */}
-      <section className="relative overflow-hidden min-h-[calc(100vh-80px)] flex items-center">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-12 w-full">
-          <div className="grid lg:grid-cols-[1.3fr_1fr] gap-6 lg:gap-8 items-center">
+      {/* Hero Section - Compact layout pushed up */}
+      <section className="relative overflow-hidden pt-4 sm:pt-6 lg:pt-8">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 w-full">
+          <div className="grid lg:grid-cols-[1.3fr_1fr] gap-4 lg:gap-8 items-start">
 
             {/* Left Column - Content & Form */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               <MotionPreset
                 fade
                 slide={{ direction: 'left', offset: 40 }}
@@ -66,12 +141,12 @@ const VenderMiAutoPage: React.FC = () => {
                 transition={{ duration: 0.5, ease: 'easeOut' }}
                 delay={0.15}
               >
-                <p className="text-base text-slate-500 max-w-lg">
+                <p className="text-sm sm:text-base text-slate-500 max-w-lg">
                   Completa el formulario y obtén una cotización basada en datos reales del mercado mexicano.
                 </p>
               </MotionPreset>
 
-              {/* Inline Form */}
+              {/* Inline Form - fixed min-height to prevent content shift */}
               <MotionPreset
                 fade
                 slide={{ direction: 'left', offset: 40 }}
@@ -79,7 +154,9 @@ const VenderMiAutoPage: React.FC = () => {
                 transition={{ duration: 0.6, ease: 'easeOut' }}
                 delay={0.2}
               >
-                <AutometricaValuationForm embedded compact />
+                <div className="min-h-[200px]">
+                  <AutometricaValuationForm embedded compact />
+                </div>
               </MotionPreset>
             </div>
 
@@ -90,14 +167,14 @@ const VenderMiAutoPage: React.FC = () => {
               blur
               transition={{ duration: 0.7, ease: 'easeOut' }}
               delay={0.3}
-              className="hidden lg:flex items-end justify-center relative"
+              className="hidden lg:flex items-start justify-center relative"
             >
-              <div className="relative w-full max-w-[550px]">
+              <div className="relative w-full max-w-[500px] -mt-4">
                 <Image
                   src="/images/trefa-vender-derecha.png"
                   alt="Vende tu auto con TREFA"
-                  width={550}
-                  height={500}
+                  width={500}
+                  height={450}
                   className="w-full h-auto object-contain"
                   style={{
                     maskImage: 'linear-gradient(to bottom, black 70%, transparent 100%)',
@@ -109,6 +186,14 @@ const VenderMiAutoPage: React.FC = () => {
             </MotionPreset>
 
           </div>
+        </div>
+      </section>
+
+      {/* Brand Carousel - With horizontal fade effects */}
+      <section className="py-4 sm:py-6 border-t border-gray-100">
+        <div className="mx-auto max-w-7xl">
+          <p className="text-center text-xs text-gray-400 mb-2">Compramos autos de las mejores marcas</p>
+          <BrandCarousel />
         </div>
       </section>
 

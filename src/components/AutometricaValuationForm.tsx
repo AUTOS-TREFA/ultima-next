@@ -288,7 +288,7 @@ export function AutometricaValuationForm({
         setCatalog(filteredData);
 
         // Auto-focus on brand select after catalog loads
-        setTimeout(() => brandRef.current?.focus(), 100);
+        setTimeout(() => brandRef.current?.focus({ preventScroll: true }), 100);
       } catch (err) {
         console.error('Error loading catalog:', err);
         setError('Error al cargar el catálogo de vehículos');
@@ -313,7 +313,7 @@ export function AutometricaValuationForm({
       setSelectedSubbrand('');
       setSelectedYear('');
       setSelectedVersion('');
-      setTimeout(() => modelRef.current?.focus(), 50);
+      setTimeout(() => modelRef.current?.focus({ preventScroll: true }), 50);
     }
   }, [selectedBrand]);
 
@@ -322,7 +322,7 @@ export function AutometricaValuationForm({
     if (selectedSubbrand) {
       setSelectedYear('');
       setSelectedVersion('');
-      setTimeout(() => yearRef.current?.focus(), 50);
+      setTimeout(() => yearRef.current?.focus({ preventScroll: true }), 50);
     }
   }, [selectedSubbrand]);
 
@@ -330,7 +330,7 @@ export function AutometricaValuationForm({
   useEffect(() => {
     if (selectedYear) {
       setSelectedVersion('');
-      setTimeout(() => versionRef.current?.focus(), 50);
+      setTimeout(() => versionRef.current?.focus({ preventScroll: true }), 50);
 
       // Pre-fill estimated mileage (capped at MAX_KILOMETRAJE)
       const currentYear = new Date().getFullYear();
@@ -347,7 +347,7 @@ export function AutometricaValuationForm({
   // Auto-focus on km field when version is selected
   useEffect(() => {
     if (selectedVersion) {
-      setTimeout(() => kmRef.current?.focus(), 50);
+      setTimeout(() => kmRef.current?.focus({ preventScroll: true }), 50);
     }
   }, [selectedVersion]);
 
@@ -470,17 +470,58 @@ export function AutometricaValuationForm({
     setVerificationError(null);
 
     try {
-      // Format phone for Mexico
-      const formattedPhone = phoneInput.startsWith('+52')
-        ? phoneInput
-        : `+52${phoneInput.replace(/\D/g, '').slice(-10)}`;
+      // Clean phone number
+      const cleanPhone = phoneInput.replace(/\D/g, '').slice(-10);
 
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: formattedPhone,
+      // Check if email already exists
+      const { data: existingEmail } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', emailInput)
+        .single();
+
+      if (existingEmail) {
+        setVerificationError('Este correo ya está registrado. Inicia sesión en lugar de registrarte.');
+        setVerificationLoading(false);
+        return;
+      }
+
+      // Check if phone already exists
+      const { data: existingPhone } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone', cleanPhone)
+        .single();
+
+      if (existingPhone) {
+        setVerificationError('Este teléfono ya está registrado. Inicia sesión en lugar de registrarte.');
+        setVerificationLoading(false);
+        return;
+      }
+
+      // Format phone for Mexico
+      const formattedPhone = `+52${cleanPhone}`;
+
+      // Call Twilio Verify edge function (same as RegisterPage)
+      const { data, error } = await supabase.functions.invoke('send-sms-otp', {
+        body: { phone: formattedPhone, email: emailInput }
       });
 
-      if (error) throw error;
+      if (data?.error === 'email_exists') {
+        setVerificationError('Este correo ya está registrado. Inicia sesión en lugar de registrarte.');
+        setVerificationLoading(false);
+        return;
+      }
 
+      if (error || !data?.success) {
+        const errorMsg = data?.error || error?.message || 'Error al enviar código';
+        if (errorMsg.includes('rate limit') || errorMsg.includes('Max send attempts')) {
+          throw new Error('Has solicitado demasiados códigos. Espera unos minutos.');
+        }
+        throw new Error('No se pudo enviar el código. Intenta de nuevo.');
+      }
+
+      console.log('SMS enviado exitosamente via Twilio');
       setOtpSent(true);
     } catch (err: any) {
       console.error('OTP error:', err);
@@ -501,42 +542,63 @@ export function AutometricaValuationForm({
     setStep('verifying');
 
     try {
-      const formattedPhone = phoneInput.startsWith('+52')
-        ? phoneInput
-        : `+52${phoneInput.replace(/\D/g, '').slice(-10)}`;
+      const cleanPhone = phoneInput.replace(/\D/g, '').slice(-10);
+      const formattedPhone = `+52${cleanPhone}`;
 
-      const { data, error } = await supabase.auth.verifyOtp({
-        phone: formattedPhone,
-        token: otpCode,
-        type: 'sms',
+      // Verify OTP via Twilio edge function (same as RegisterPage)
+      const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-sms-otp', {
+        body: { phone: formattedPhone, code: otpCode }
       });
 
-      if (error) throw error;
-
-      // Update profile with email and phone_verified
-      if (data.user) {
-        // Use RPC to create/update profile
-        await supabase.rpc('create_profile_for_user', {
-          p_user_id: data.user.id,
-          p_phone: formattedPhone,
-          p_email: emailInput,
-        });
-
-        // Update email if different
-        if (emailInput && data.user.email !== emailInput) {
-          await supabase.auth.updateUser({ email: emailInput });
+      if (verifyError || !verifyData?.success) {
+        const errorMsg = verifyData?.error || verifyError?.message || '';
+        if (errorMsg.includes('expired') || errorMsg.includes('expirado')) {
+          throw new Error('El código ha expirado. Solicita uno nuevo.');
         }
-
-        // Mark phone as verified
-        await supabase
-          .from('profiles')
-          .update({
-            phone: formattedPhone,
-            phone_verified: true,
-            email: emailInput,
-          })
-          .eq('id', data.user.id);
+        throw new Error('El código es incorrecto. Verifica e intenta de nuevo.');
       }
+
+      console.log('✅ Código SMS verificado via Twilio');
+
+      // Create user account (same pattern as RegisterPage)
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: emailInput,
+        password: Math.random().toString(36).slice(-16), // Random temporary password
+        options: {
+          data: {
+            phone: cleanPhone,
+            source: 'vender-mi-auto'
+          },
+          emailRedirectTo: `${window.location.origin}/auth`,
+        }
+      });
+
+      if (signUpError) {
+        if (signUpError.message.includes('already registered')) {
+          throw new Error('Este correo ya está registrado. Inicia sesión.');
+        }
+        throw signUpError;
+      }
+
+      if (!authData.user) {
+        throw new Error('No se pudo crear la cuenta');
+      }
+
+      console.log('✅ Usuario creado:', authData.user.id);
+
+      // Wait for session
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Update profile with phone_verified and valuation source
+      await supabase
+        .from('profiles')
+        .update({
+          phone: cleanPhone,
+          phone_verified: true,
+          email: emailInput,
+          lead_source: 'vender-mi-auto',
+        })
+        .eq('id', authData.user.id);
 
       // Reload profile and save valuation
       await reloadProfile();
@@ -637,40 +699,51 @@ export function AutometricaValuationForm({
     return (
       <div className={containerClass}>
         <div className={embedded ? '' : cardClass}>
-          <div className={embedded ? 'space-y-4' : 'p-6 space-y-4'}>
-            {/* Compact offer preview */}
-            <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                <Eye className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-sm">¡Tu oferta está lista!</p>
-                <p className="text-primary-100 text-xs">{selectedBrand} {selectedSubbrand} {selectedYear}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-white/70 text-xs">Oferta</p>
-                <p className="text-xl font-bold text-white blur-sm select-none">
-                  {currencyFormatter.format(valuation.purchasePrice)}
-                </p>
+          <div className={embedded ? '' : 'p-6'}>
+            {/* Offer card with pulsating animation */}
+            <div className="relative">
+              {/* Pulsating glow effect */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary-400 via-primary-500 to-primary-400 rounded-xl opacity-30 blur-md animate-pulse" />
+
+              {/* Main card - white bg, dark text */}
+              <div className="relative bg-white rounded-xl p-4 flex items-center gap-4 shadow-sm">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-5 h-5 text-green-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-slate-800 font-semibold text-sm">¡Tu oferta está lista!</p>
+                  <p className="text-slate-500 text-xs">{selectedBrand} {selectedSubbrand} {selectedYear}</p>
+                </div>
+
+                {/* Blurred offer with inline unlock */}
+                <div className="flex items-center gap-2">
+                  <div className="text-right">
+                    <p className="text-slate-400 text-[10px] uppercase tracking-wide">Oferta</p>
+                    <p className="text-lg font-bold text-slate-800 blur-sm select-none">
+                      {currencyFormatter.format(valuation.purchasePrice)}
+                    </p>
+                  </div>
+
+                  {/* Inline unlock arrow */}
+                  <button
+                    onClick={() => setShowVerificationModal(true)}
+                    className="w-8 h-8 rounded-full bg-primary-100 hover:bg-primary-200 flex items-center justify-center transition-all hover:scale-110 group"
+                    title="Desbloquear oferta"
+                  >
+                    <ArrowRight className="w-4 h-4 text-primary-600 group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Action buttons */}
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowVerificationModal(true)}
-                className="flex-1 flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-primary-700 transition-all text-sm"
-              >
-                <Lock className="w-4 h-4" />
-                Verificar mi cuenta
-              </button>
-              <button
-                onClick={handleReset}
-                className="flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 py-3 px-4 rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-sm"
-              >
-                <RefreshCw className="w-4 h-4" />
-              </button>
-            </div>
+            {/* Subtle reset link */}
+            <button
+              onClick={handleReset}
+              className="mt-2 text-xs text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1 mx-auto"
+            >
+              <RefreshCw className="w-3 h-3" />
+              Cotizar otro vehículo
+            </button>
           </div>
         </div>
 
