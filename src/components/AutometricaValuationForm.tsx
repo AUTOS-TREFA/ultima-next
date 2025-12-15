@@ -700,39 +700,46 @@ export function AutometricaValuationForm({
       <div className={containerClass}>
         <div className={embedded ? '' : cardClass}>
           <div className={embedded ? '' : 'p-6'}>
-            {/* Offer card with pulsating animation */}
+            {/* Offer card with subtle pulsating animation */}
             <div className="relative">
-              {/* Pulsating glow effect */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary-400 via-primary-500 to-primary-400 rounded-xl opacity-30 blur-md animate-pulse" />
+              {/* Subtle pulsating glow effect */}
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary-300 via-primary-400 to-primary-300 rounded-xl opacity-20 blur-sm animate-pulse" />
 
-              {/* Main card - white bg, dark text */}
-              <div className="relative bg-white rounded-xl p-4 flex items-center gap-4 shadow-sm">
-                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-5 h-5 text-green-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-slate-800 font-semibold text-sm">¡Tu oferta está lista!</p>
-                  <p className="text-slate-500 text-xs">{selectedBrand} {selectedSubbrand} {selectedYear}</p>
-                </div>
-
-                {/* Blurred offer with inline unlock */}
-                <div className="flex items-center gap-2">
-                  <div className="text-right">
-                    <p className="text-slate-400 text-[10px] uppercase tracking-wide">Oferta</p>
-                    <p className="text-lg font-bold text-slate-800 blur-sm select-none">
-                      {currencyFormatter.format(valuation.purchasePrice)}
-                    </p>
+              {/* Main card - white bg, dark text, minimal shadow */}
+              <div className="relative bg-white rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-4 h-4 text-green-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-slate-800 font-semibold text-sm">¡Tu oferta está lista!</p>
+                    <p className="text-slate-500 text-xs">{selectedBrand} {selectedSubbrand} {selectedYear}</p>
                   </div>
 
-                  {/* Inline unlock arrow */}
-                  <button
-                    onClick={() => setShowVerificationModal(true)}
-                    className="w-8 h-8 rounded-full bg-primary-100 hover:bg-primary-200 flex items-center justify-center transition-all hover:scale-110 group"
-                    title="Desbloquear oferta"
-                  >
-                    <ArrowRight className="w-4 h-4 text-primary-600 group-hover:translate-x-0.5 transition-transform" />
-                  </button>
+                  {/* Blurred offer with inline unlock */}
+                  <div className="flex items-center gap-2">
+                    <div className="text-right">
+                      <p className="text-slate-400 text-[10px] uppercase tracking-wide">Oferta</p>
+                      <p className="text-lg font-bold text-slate-800 blur-sm select-none">
+                        {currencyFormatter.format(valuation.purchasePrice)}
+                      </p>
+                    </div>
+
+                    {/* Inline unlock arrow */}
+                    <button
+                      onClick={() => setShowVerificationModal(true)}
+                      className="w-8 h-8 rounded-full bg-primary-100 hover:bg-primary-200 flex items-center justify-center transition-all hover:scale-110 group"
+                      title="Desbloquear oferta"
+                    >
+                      <ArrowRight className="w-4 h-4 text-primary-600 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                  </div>
                 </div>
+
+                {/* Verification prompt */}
+                <p className="text-xs text-slate-500 mt-3 text-center">
+                  Por favor verifica tu teléfono para ver tu oferta
+                </p>
               </div>
             </div>
 
@@ -749,9 +756,9 @@ export function AutometricaValuationForm({
 
         {/* Verification Modal */}
         <Dialog open={showVerificationModal} onOpenChange={setShowVerificationModal}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md bg-white">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
+              <DialogTitle className="flex items-center gap-2 text-slate-900">
                 <Lock className="w-5 h-5 text-primary-600" />
                 Desbloquea tu oferta
               </DialogTitle>
@@ -776,7 +783,7 @@ export function AutometricaValuationForm({
                         placeholder="tu@email.com"
                         value={emailInput}
                         onChange={(e) => setEmailInput(e.target.value)}
-                        className="w-full border border-gray-200 rounded-lg py-2.5 px-3 pl-10 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-3 pl-10 text-sm text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       />
                     </div>
                   </div>
@@ -790,7 +797,7 @@ export function AutometricaValuationForm({
                         placeholder="10 dígitos"
                         value={phoneInput}
                         onChange={(e) => setPhoneInput(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                        className="w-full border border-gray-200 rounded-lg py-2.5 px-3 pl-10 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-3 pl-10 text-sm text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       />
                     </div>
                     <p className="text-xs text-gray-500">Te enviaremos un código por SMS</p>
@@ -813,7 +820,7 @@ export function AutometricaValuationForm({
                       placeholder="123456"
                       value={otpCode}
                       onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      className="w-full border border-gray-200 rounded-lg py-3 px-4 text-center text-xl font-bold tracking-[0.3em] focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full bg-white border border-gray-200 rounded-lg py-3 px-4 text-center text-xl font-bold text-gray-900 tracking-[0.3em] focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       maxLength={6}
                     />
                     <p className="text-xs text-gray-500 text-center">Código enviado a {phoneInput}</p>
