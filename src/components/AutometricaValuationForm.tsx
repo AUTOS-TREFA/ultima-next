@@ -15,19 +15,6 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
-// shadcn/ui components
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-
 // Icons
 import {
   Car,
@@ -41,7 +28,13 @@ import {
   Lock,
   Phone,
   LogIn,
+  ChevronDown,
+  DollarSign,
+  Shield,
+  Clock,
+  Gauge,
 } from 'lucide-react';
+import { WhatsAppIcon } from './icons';
 
 // Services
 import { AutometricaService, AutometricaCatalogVehicle, AutometricaValuation } from '@/services/AutometricaService';
@@ -381,47 +374,77 @@ export function AutometricaValuationForm({
   const whatsappUrl = `https://wa.me/528187049079?text=${encodeURIComponent(whatsappText)}`;
 
   // ============================================================================
-  // RENDER - AUTH REQUIRED
+  // RENDER - LOADING
   // ============================================================================
 
   if (authLoading) {
     return (
-      <Card className={`w-full ${compact ? 'max-w-md' : 'max-w-2xl'} mx-auto`}>
-        <CardContent className="py-12 text-center">
-          <Loader2 className="w-12 h-12 mx-auto animate-spin text-primary mb-4" />
-          <p className="text-muted-foreground">Cargando...</p>
-        </CardContent>
-      </Card>
+      <div className={`w-full ${compact ? 'max-w-md' : 'max-w-2xl'} mx-auto`}>
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+          <div className="py-12 text-center">
+            <Loader2 className="w-12 h-12 mx-auto animate-spin text-primary-600 mb-4" />
+            <p className="text-gray-500">Cargando...</p>
+          </div>
+        </div>
+      </div>
     );
   }
 
+  // ============================================================================
+  // RENDER - AUTH REQUIRED
+  // ============================================================================
+
   if (step === 'auth') {
     return (
-      <Card className={`w-full ${compact ? 'max-w-md' : 'max-w-lg'} mx-auto`}>
-        <CardHeader className="text-center">
-          <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <Lock className="w-8 h-8 text-primary" />
+      <div className={`w-full ${compact ? 'max-w-md' : 'max-w-lg'} mx-auto`}>
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-br from-primary-600 to-primary-700 px-6 py-8 text-center">
+            <div className="mx-auto w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-4">
+              <Lock className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-white">Inicia sesión para continuar</h2>
+            <p className="text-primary-100 mt-2">
+              Para cotizar tu vehículo necesitas tener una cuenta en TREFA
+            </p>
           </div>
-          <CardTitle className="text-2xl">Inicia sesión para continuar</CardTitle>
-          <CardDescription>
-            Para cotizar tu vehículo necesitas tener una cuenta en TREFA
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="p-4 bg-muted rounded-lg">
-            <h4 className="font-semibold mb-2">¿Por qué necesito una cuenta?</h4>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Guardamos tu cotización para seguimiento</li>
-              <li>• Te contactamos con la mejor oferta</li>
-              <li>• Proceso de venta más rápido y seguro</li>
-            </ul>
+
+          {/* Content */}
+          <div className="p-6 space-y-5">
+            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <h4 className="font-semibold text-gray-900 mb-3">¿Por qué necesito una cuenta?</h4>
+              <ul className="space-y-2">
+                <li className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-primary-600" />
+                  </div>
+                  <span className="text-sm text-gray-600">Guardamos tu cotización para seguimiento</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-primary-600" />
+                  </div>
+                  <span className="text-sm text-gray-600">Te contactamos con la mejor oferta</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-primary-600" />
+                  </div>
+                  <span className="text-sm text-gray-600">Proceso de venta más rápido y seguro</span>
+                </li>
+              </ul>
+            </div>
+
+            <button
+              onClick={handleLogin}
+              className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-4 px-6 rounded-xl hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary-600/25"
+            >
+              <LogIn className="w-5 h-5" />
+              Iniciar sesión o registrarse
+            </button>
           </div>
-          <Button onClick={handleLogin} className="w-full" size="lg">
-            <LogIn className="mr-2 h-4 w-4" />
-            Iniciar sesión o registrarse
-          </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
@@ -431,25 +454,30 @@ export function AutometricaValuationForm({
 
   if (step === 'phone') {
     return (
-      <Card className={`w-full ${compact ? 'max-w-md' : 'max-w-lg'} mx-auto`}>
-        <CardHeader className="text-center">
-          <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <Phone className="w-8 h-8 text-primary" />
+      <div className={`w-full ${compact ? 'max-w-md' : 'max-w-lg'} mx-auto`}>
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-br from-primary-600 to-primary-700 px-6 py-8 text-center">
+            <div className="mx-auto w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-4">
+              <Phone className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-white">Verifica tu teléfono</h2>
+            <p className="text-primary-100 mt-2">
+              Para cotizar tu vehículo necesitas verificar tu número de celular
+            </p>
           </div>
-          <CardTitle className="text-2xl">Verifica tu teléfono</CardTitle>
-          <CardDescription>
-            Para cotizar tu vehículo necesitas verificar tu número de celular
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <PhoneVerification
-            phone={phoneForVerification}
-            onPhoneChange={setPhoneForVerification}
-            onVerified={handlePhoneVerified}
-            userId={user?.id || ''}
-          />
-        </CardContent>
-      </Card>
+
+          {/* Content */}
+          <div className="p-6">
+            <PhoneVerification
+              phone={phoneForVerification}
+              onPhoneChange={setPhoneForVerification}
+              onVerified={handlePhoneVerified}
+              userId={user?.id || ''}
+            />
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -459,85 +487,93 @@ export function AutometricaValuationForm({
 
   if (step === 'success' && valuation) {
     return (
-      <Card className={`w-full ${compact ? 'max-w-md' : 'max-w-lg'} mx-auto animate-in fade-in-50 duration-300`}>
+      <div className={`w-full ${compact ? 'max-w-md' : 'max-w-lg'} mx-auto animate-in fade-in-50 duration-300`}>
         <Confetti />
-        <CardHeader className="text-center pb-2">
-          <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
-          <CardTitle className="text-2xl">¡Tenemos una oferta para ti!</CardTitle>
-          <CardDescription>Basada en datos reales del mercado mexicano</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Offer Display */}
-          <div className="p-6 bg-muted rounded-lg text-center">
-            <p className="text-sm text-muted-foreground mb-1">Oferta de Compra Estimada</p>
-            <p className="text-4xl font-bold text-primary">
-              <AnimatedNumber value={offer} />
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              para tu {selectedBrand} {selectedSubbrand} {selectedYear}
-            </p>
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-br from-green-500 to-green-600 px-6 py-8 text-center">
+            <CheckCircle2 className="w-16 h-16 text-white mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-white">¡Tenemos una oferta para ti!</h2>
+            <p className="text-green-100 mt-2">Basada en datos reales del mercado mexicano</p>
           </div>
 
-          {/* Market Value Info */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg text-center">
-              <p className="text-muted-foreground">Valor de Mercado</p>
-              <p className="font-semibold text-blue-600">
-                {currencyFormatter.format(valuation.salePrice)}
+          {/* Content */}
+          <div className="p-6 space-y-6">
+            {/* Offer Display */}
+            <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6 text-center border border-primary-200">
+              <p className="text-sm text-primary-700 font-medium mb-1">Oferta de Compra Estimada</p>
+              <p className="text-4xl font-bold text-primary-600">
+                <AnimatedNumber value={offer} />
+              </p>
+              <p className="text-sm text-primary-600/70 mt-2">
+                para tu {selectedBrand} {selectedSubbrand} {selectedYear}
               </p>
             </div>
-            <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg text-center">
-              <p className="text-muted-foreground">Tu Oferta</p>
-              <p className="font-semibold text-green-600">
-                {currencyFormatter.format(valuation.purchasePrice)}
-              </p>
-            </div>
-          </div>
 
-          {/* Actions */}
-          <div className="space-y-3">
-            <Button
-              onClick={handleContinueToSellForm}
-              className="w-full"
-              size="lg"
-            >
-              Continuar con la venta en línea
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full bg-green-600 hover:bg-green-700 text-white border-green-600"
-              size="lg"
-              asChild
-            >
-              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+            {/* Market Value Info */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-blue-50 rounded-xl text-center border border-blue-100">
+                <p className="text-xs text-blue-600 font-medium mb-1">Valor de Mercado</p>
+                <p className="font-bold text-blue-700 text-lg">
+                  {currencyFormatter.format(valuation.salePrice)}
+                </p>
+              </div>
+              <div className="p-4 bg-green-50 rounded-xl text-center border border-green-100">
+                <p className="text-xs text-green-600 font-medium mb-1">Tu Oferta</p>
+                <p className="font-bold text-green-700 text-lg">
+                  {currencyFormatter.format(valuation.purchasePrice)}
+                </p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="space-y-3">
+              <button
+                onClick={handleContinueToSellForm}
+                className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-4 px-6 rounded-xl hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary-600/25"
+              >
+                Continuar con la venta en línea
+                <ArrowRight className="w-5 h-5" />
+              </button>
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 bg-green-600 text-white font-semibold py-4 px-6 rounded-xl hover:bg-green-700 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-green-600/25"
+              >
+                <WhatsAppIcon className="w-5 h-5" />
                 Continuar por WhatsApp
               </a>
-            </Button>
-          </div>
+            </div>
 
-          {/* Secondary Actions */}
-          <div className="flex items-center justify-center gap-6 pt-4 border-t">
-            <Button variant="ghost" size="sm" onClick={() => window.print()}>
-              Imprimir
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleCopy}>
-              {copied ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
-              {copied ? 'Copiado' : 'Copiar'}
-            </Button>
-          </div>
+            {/* Secondary Actions */}
+            <div className="flex items-center justify-center gap-6 pt-4 border-t border-gray-100">
+              <button
+                onClick={() => window.print()}
+                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                Imprimir
+              </button>
+              <button
+                onClick={handleCopy}
+                className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                {copied ? 'Copiado' : 'Copiar'}
+              </button>
+            </div>
 
-          {/* Reset */}
-          <Button
-            variant="link"
-            className="w-full text-muted-foreground"
-            onClick={handleReset}
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Cotizar otro auto
-          </Button>
-        </CardContent>
-      </Card>
+            {/* Reset */}
+            <button
+              onClick={handleReset}
+              className="w-full flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 py-2 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Cotizar otro auto
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -547,15 +583,22 @@ export function AutometricaValuationForm({
 
   if (step === 'valuating') {
     return (
-      <Card className={`w-full ${compact ? 'max-w-md' : 'max-w-lg'} mx-auto`}>
-        <CardContent className="py-12 text-center">
-          <Loader2 className="w-12 h-12 mx-auto animate-spin text-primary mb-4" />
-          <p className="font-semibold text-lg">Calculando tu oferta...</p>
-          <p className="text-sm text-muted-foreground mt-2">
-            Consultando datos del mercado mexicano
-          </p>
-        </CardContent>
-      </Card>
+      <div className={`w-full ${compact ? 'max-w-md' : 'max-w-lg'} mx-auto`}>
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+          <div className="py-12 text-center">
+            <div className="relative mx-auto w-20 h-20 mb-6">
+              <div className="absolute inset-0 rounded-full bg-primary-100 animate-ping opacity-25"></div>
+              <div className="relative w-20 h-20 rounded-full bg-primary-100 flex items-center justify-center">
+                <Loader2 className="w-10 h-10 animate-spin text-primary-600" />
+              </div>
+            </div>
+            <p className="font-bold text-xl text-gray-900">Calculando tu oferta...</p>
+            <p className="text-gray-500 mt-2">
+              Consultando datos del mercado mexicano
+            </p>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -563,172 +606,203 @@ export function AutometricaValuationForm({
   // RENDER - VEHICLE SELECTION FORM
   // ============================================================================
 
+  const isFormComplete = selectedBrand && selectedSubbrand && selectedYear && selectedVersion && kilometraje;
+
   return (
-    <Card className={`w-full ${compact ? 'max-w-md' : 'max-w-2xl'} mx-auto`}>
-      <CardHeader className="text-center">
-        <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-          <Car className="w-6 h-6 text-primary" />
+    <div className={`w-full ${compact ? 'max-w-md' : 'max-w-2xl'} mx-auto`}>
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-br from-primary-600 to-primary-700 px-6 py-8 text-center">
+          <div className="mx-auto w-14 h-14 rounded-full bg-white/20 flex items-center justify-center mb-4">
+            <Car className="w-7 h-7 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-white">Cotiza el valor de tu auto</h2>
+          <p className="text-primary-100 mt-2">
+            Selecciona los datos de tu vehículo para recibir una oferta de compra
+          </p>
         </div>
-        <CardTitle className="text-2xl">Cotiza el valor de tu auto</CardTitle>
-        <CardDescription>
-          Selecciona los datos de tu vehículo para recibir una oferta de compra
-        </CardDescription>
-      </CardHeader>
 
-      <CardContent className="space-y-6">
-        {/* Error Alert */}
-        {error && (
-          <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-destructive">{error}</p>
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Benefits */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="flex flex-col items-center text-center p-3 rounded-xl bg-gray-50 border border-gray-100">
+              <DollarSign className="w-5 h-5 text-green-600 mb-1" />
+              <span className="text-xs font-medium text-gray-700">Mejor Precio</span>
+            </div>
+            <div className="flex flex-col items-center text-center p-3 rounded-xl bg-gray-50 border border-gray-100">
+              <Clock className="w-5 h-5 text-blue-600 mb-1" />
+              <span className="text-xs font-medium text-gray-700">Pago Rápido</span>
+            </div>
+            <div className="flex flex-col items-center text-center p-3 rounded-xl bg-gray-50 border border-gray-100">
+              <Shield className="w-5 h-5 text-purple-600 mb-1" />
+              <span className="text-xs font-medium text-gray-700">100% Seguro</span>
+            </div>
           </div>
-        )}
 
-        {catalogLoading ? (
-          <div className="py-8 text-center">
-            <Loader2 className="w-8 h-8 mx-auto animate-spin text-primary mb-2" />
-            <p className="text-sm text-muted-foreground">Cargando catálogo de vehículos...</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {/* Brand Select */}
-            <div className="space-y-2">
-              <Label htmlFor="brand">1. Marca</Label>
-              <Select value={selectedBrand} onValueChange={setSelectedBrand}>
-                <SelectTrigger id="brand">
-                  <SelectValue placeholder="Selecciona la marca" />
-                </SelectTrigger>
-                <SelectContent>
-                  {brands.map((brand) => (
-                    <SelectItem key={brand} value={brand}>
-                      {brand}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {/* Error Alert */}
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-700">{error}</p>
             </div>
+          )}
 
-            {/* Subbrand/Model Select */}
-            <div className="space-y-2">
-              <Label htmlFor="subbrand">2. Modelo</Label>
-              <Select
-                value={selectedSubbrand}
-                onValueChange={setSelectedSubbrand}
-                disabled={!selectedBrand}
+          {catalogLoading ? (
+            <div className="py-12 text-center">
+              <Loader2 className="w-10 h-10 mx-auto animate-spin text-primary-600 mb-3" />
+              <p className="text-gray-500">Cargando catálogo de vehículos...</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Brand Select */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  1. Marca
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedBrand}
+                    onChange={(e) => setSelectedBrand(e.target.value)}
+                    className="w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pr-10 text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300"
+                  >
+                    <option value="">Selecciona la marca</option>
+                    {brands.map((brand) => (
+                      <option key={brand} value={brand}>
+                        {brand}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Subbrand/Model Select */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  2. Modelo
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedSubbrand}
+                    onChange={(e) => setSelectedSubbrand(e.target.value)}
+                    disabled={!selectedBrand}
+                    className="w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pr-10 text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:border-gray-200"
+                  >
+                    <option value="">{selectedBrand ? 'Selecciona el modelo' : 'Primero selecciona la marca'}</option>
+                    {subbrands.map((subbrand) => (
+                      <option key={subbrand} value={subbrand}>
+                        {subbrand}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Year Select */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  3. Año
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                    disabled={!selectedSubbrand}
+                    className="w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pr-10 text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:border-gray-200"
+                  >
+                    <option value="">{selectedSubbrand ? 'Selecciona el año' : 'Primero selecciona el modelo'}</option>
+                    {years.map((year) => (
+                      <option key={year} value={year.toString()}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Version Select */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  4. Versión
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedVersion}
+                    onChange={(e) => setSelectedVersion(e.target.value)}
+                    disabled={!selectedYear}
+                    className="w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pr-10 text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:border-gray-200"
+                  >
+                    <option value="">{selectedYear ? 'Selecciona la versión' : 'Primero selecciona el año'}</option>
+                    {versions.map((version) => (
+                      <option key={version} value={version}>
+                        {version}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Kilometraje Input */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  5. Kilometraje
+                </label>
+                <div className="relative">
+                  <Gauge className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Ej: 45,000"
+                    value={kilometraje}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      if (value) {
+                        setKilometraje(parseInt(value).toLocaleString('es-MX'));
+                      } else {
+                        setKilometraje('');
+                      }
+                    }}
+                    className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pl-12 text-gray-900 font-medium placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all hover:border-gray-300"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">km</span>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Ingresa el kilometraje actual de tu vehículo
+                </p>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                onClick={handleGetValuation}
+                disabled={!isFormComplete || isQueryInProgress}
+                className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-bold py-4 px-6 rounded-xl hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary-600/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none mt-6"
               >
-                <SelectTrigger id="subbrand">
-                  <SelectValue placeholder={selectedBrand ? 'Selecciona el modelo' : 'Primero selecciona la marca'} />
-                </SelectTrigger>
-                <SelectContent>
-                  {subbrands.map((subbrand) => (
-                    <SelectItem key={subbrand} value={subbrand}>
-                      {subbrand}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {isQueryInProgress ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Calculando...
+                  </>
+                ) : (
+                  <>
+                    Obtener Cotización Gratis
+                    <ArrowRight className="w-5 h-5" />
+                  </>
+                )}
+              </button>
             </div>
+          )}
 
-            {/* Year Select */}
-            <div className="space-y-2">
-              <Label htmlFor="year">3. Año</Label>
-              <Select
-                value={selectedYear}
-                onValueChange={setSelectedYear}
-                disabled={!selectedSubbrand}
-              >
-                <SelectTrigger id="year">
-                  <SelectValue placeholder={selectedSubbrand ? 'Selecciona el año' : 'Primero selecciona el modelo'} />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Version Select */}
-            <div className="space-y-2">
-              <Label htmlFor="version">4. Versión</Label>
-              <Select
-                value={selectedVersion}
-                onValueChange={setSelectedVersion}
-                disabled={!selectedYear}
-              >
-                <SelectTrigger id="version">
-                  <SelectValue placeholder={selectedYear ? 'Selecciona la versión' : 'Primero selecciona el año'} />
-                </SelectTrigger>
-                <SelectContent>
-                  {versions.map((version) => (
-                    <SelectItem key={version} value={version}>
-                      {version}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Kilometraje Input */}
-            <div className="space-y-2">
-              <Label htmlFor="kilometraje">5. Kilometraje</Label>
-              <Input
-                id="kilometraje"
-                type="text"
-                inputMode="numeric"
-                placeholder="Ej: 45,000"
-                value={kilometraje}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9]/g, '');
-                  if (value) {
-                    setKilometraje(parseInt(value).toLocaleString('es-MX'));
-                  } else {
-                    setKilometraje('');
-                  }
-                }}
-              />
-              <p className="text-xs text-muted-foreground">
-                Ingresa el kilometraje actual de tu vehículo
-              </p>
-            </div>
-
-            {/* Submit Button */}
-            <Button
-              onClick={handleGetValuation}
-              className="w-full"
-              size="lg"
-              disabled={
-                !selectedBrand ||
-                !selectedSubbrand ||
-                !selectedYear ||
-                !selectedVersion ||
-                !kilometraje ||
-                isQueryInProgress
-              }
-            >
-              {isQueryInProgress ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Calculando...
-                </>
-              ) : (
-                <>
-                  Obtener Cotización
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </div>
-        )}
-
-        {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground">
-          Sin costo • Sin compromiso • Datos de Guía Autométrica
-        </p>
-      </CardContent>
-    </Card>
+          {/* Footer */}
+          <p className="text-center text-xs text-gray-400 pt-2">
+            Sin costo • Sin compromiso • Datos de Guía Autométrica
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
