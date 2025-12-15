@@ -12,7 +12,7 @@
  * 5. Redirige al dashboard de compras
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '../../supabaseClient';
@@ -138,7 +138,7 @@ export function AutometricaValuationForm({
   const [isQueryInProgress, setIsQueryInProgress] = useState(false);
   const [showPulse, setShowPulse] = useState(true); // Animation for first field
 
-  // Catalog state
+  // Catalog state - pre-filtered and indexed for speed
   const [catalog, setCatalog] = useState<AutometricaCatalogVehicle[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(true);
 
@@ -149,11 +149,69 @@ export function AutometricaValuationForm({
   const [selectedVersion, setSelectedVersion] = useState<string>('');
   const [kilometraje, setKilometraje] = useState<string>('');
 
-  // Derived options for cascading selects
-  const [brands, setBrands] = useState<string[]>([]);
-  const [subbrands, setSubbrands] = useState<string[]>([]);
-  const [years, setYears] = useState<number[]>([]);
-  const [versions, setVersions] = useState<string[]>([]);
+  // ============================================================================
+  // INDEXED LOOKUPS - O(1) access instead of filtering arrays
+  // ============================================================================
+  const catalogIndex = useMemo(() => {
+    if (catalog.length === 0) return null;
+
+    const brandToSubbrands = new Map<string, Set<string>>();
+    const brandSubbrandToYears = new Map<string, Set<number>>();
+    const brandSubbrandYearToVersions = new Map<string, string[]>();
+    const brands = new Set<string>();
+
+    for (const v of catalog) {
+      brands.add(v.brand);
+
+      // Brand -> Subbrands
+      if (!brandToSubbrands.has(v.brand)) {
+        brandToSubbrands.set(v.brand, new Set());
+      }
+      brandToSubbrands.get(v.brand)!.add(v.subbrand);
+
+      // Brand+Subbrand -> Years
+      const bsKey = `${v.brand}|${v.subbrand}`;
+      if (!brandSubbrandToYears.has(bsKey)) {
+        brandSubbrandToYears.set(bsKey, new Set());
+      }
+      brandSubbrandToYears.get(bsKey)!.add(v.year);
+
+      // Brand+Subbrand+Year -> Versions
+      const bsyKey = `${v.brand}|${v.subbrand}|${v.year}`;
+      if (!brandSubbrandYearToVersions.has(bsyKey)) {
+        brandSubbrandYearToVersions.set(bsyKey, []);
+      }
+      brandSubbrandYearToVersions.get(bsyKey)!.push(v.version);
+    }
+
+    return { brands, brandToSubbrands, brandSubbrandToYears, brandSubbrandYearToVersions };
+  }, [catalog]);
+
+  // Derived options using indexed lookups (instant, no filtering)
+  const brands = useMemo(() => {
+    if (!catalogIndex) return [];
+    return [...catalogIndex.brands].sort();
+  }, [catalogIndex]);
+
+  const subbrands = useMemo(() => {
+    if (!catalogIndex || !selectedBrand) return [];
+    const subs = catalogIndex.brandToSubbrands.get(selectedBrand);
+    return subs ? [...subs].sort() : [];
+  }, [catalogIndex, selectedBrand]);
+
+  const years = useMemo(() => {
+    if (!catalogIndex || !selectedBrand || !selectedSubbrand) return [];
+    const key = `${selectedBrand}|${selectedSubbrand}`;
+    const yrs = catalogIndex.brandSubbrandToYears.get(key);
+    return yrs ? [...yrs].filter(y => y >= MIN_YEAR).sort((a, b) => b - a) : [];
+  }, [catalogIndex, selectedBrand, selectedSubbrand]);
+
+  const versions = useMemo(() => {
+    if (!catalogIndex || !selectedBrand || !selectedSubbrand || !selectedYear) return [];
+    const key = `${selectedBrand}|${selectedSubbrand}|${selectedYear}`;
+    const vers = catalogIndex.brandSubbrandYearToVersions.get(key);
+    return vers ? [...vers].sort() : [];
+  }, [catalogIndex, selectedBrand, selectedSubbrand, selectedYear]);
 
   // Valuation state
   const [valuation, setValuation] = useState<AutometricaValuation | null>(null);
@@ -192,34 +250,33 @@ export function AutometricaValuationForm({
     }
   }, [searchParams]);
 
-  // Load catalog on mount (PUBLIC - no auth required)
+  // Load catalog on mount - PRE-FILTER for speed (PUBLIC - no auth required)
   useEffect(() => {
     const loadCatalog = async () => {
       setCatalogLoading(true);
       try {
-        const data = await AutometricaService.getCatalog();
-        setCatalog(data);
+        const rawData = await AutometricaService.getCatalog();
 
-        // Extract unique brands and apply filters
-        let uniqueBrands = [...new Set(data.map((v) => v.brand))].sort();
+        // PRE-FILTER: Remove excluded brands and old years ONCE at load time
+        // This reduces the dataset size significantly and speeds up all subsequent operations
+        const filteredData = rawData.filter((v) => {
+          // Filter by year
+          if (v.year < MIN_YEAR) return false;
 
-        // If INCLUDED_BRANDS has items, only show those
-        if (INCLUDED_BRANDS.length > 0) {
-          uniqueBrands = uniqueBrands.filter(brand =>
-            INCLUDED_BRANDS.some(included =>
-              brand.toLowerCase() === included.toLowerCase()
-            )
-          );
-        } else if (EXCLUDED_BRANDS.length > 0) {
-          // Otherwise, exclude brands in EXCLUDED_BRANDS
-          uniqueBrands = uniqueBrands.filter(brand =>
-            !EXCLUDED_BRANDS.some(excluded =>
-              brand.toLowerCase() === excluded.toLowerCase()
-            )
-          );
-        }
+          // Filter by brand
+          if (INCLUDED_BRANDS.length > 0) {
+            return INCLUDED_BRANDS.some(
+              (included) => v.brand.toLowerCase() === included.toLowerCase()
+            );
+          } else if (EXCLUDED_BRANDS.length > 0) {
+            return !EXCLUDED_BRANDS.some(
+              (excluded) => v.brand.toLowerCase() === excluded.toLowerCase()
+            );
+          }
+          return true;
+        });
 
-        setBrands(uniqueBrands);
+        setCatalog(filteredData);
 
         // Auto-focus on brand select after catalog loads
         setTimeout(() => brandRef.current?.focus(), 100);
@@ -241,87 +298,48 @@ export function AutometricaValuationForm({
     }
   }, [step, user, profile]);
 
-  // Update subbrands when brand changes and auto-focus
+  // Reset downstream selections when brand changes
   useEffect(() => {
-    if (!selectedBrand || catalog.length === 0) {
-      setSubbrands([]);
+    if (selectedBrand) {
       setSelectedSubbrand('');
-      return;
-    }
-
-    const filteredSubbrands = [
-      ...new Set(
-        catalog
-          .filter((v) => v.brand === selectedBrand)
-          .map((v) => v.subbrand)
-      ),
-    ].sort();
-
-    setSubbrands(filteredSubbrands);
-    setSelectedSubbrand('');
-    setSelectedYear('');
-    setSelectedVersion('');
-
-    // Auto-focus on model select
-    setTimeout(() => modelRef.current?.focus(), 50);
-  }, [selectedBrand, catalog]);
-
-  // Update years when subbrand changes and auto-focus
-  useEffect(() => {
-    if (!selectedBrand || !selectedSubbrand || catalog.length === 0) {
-      setYears([]);
       setSelectedYear('');
-      return;
-    }
-
-    const filteredYears = [
-      ...new Set(
-        catalog
-          .filter((v) => v.brand === selectedBrand && v.subbrand === selectedSubbrand)
-          .map((v) => v.year)
-      ),
-    ]
-      .filter((year) => year >= MIN_YEAR) // Only show years from MIN_YEAR and up
-      .sort((a, b) => b - a);
-
-    setYears(filteredYears);
-    setSelectedYear('');
-    setSelectedVersion('');
-
-    // Auto-focus on year select
-    setTimeout(() => yearRef.current?.focus(), 50);
-  }, [selectedBrand, selectedSubbrand, catalog]);
-
-  // Update versions when year changes
-  useEffect(() => {
-    if (!selectedBrand || !selectedSubbrand || !selectedYear || catalog.length === 0) {
-      setVersions([]);
       setSelectedVersion('');
-      return;
+      setTimeout(() => modelRef.current?.focus(), 50);
     }
+  }, [selectedBrand]);
 
-    const filteredVersions = catalog
-      .filter(
-        (v) =>
-          v.brand === selectedBrand &&
-          v.subbrand === selectedSubbrand &&
-          v.year === parseInt(selectedYear)
-      )
-      .map((v) => v.version)
-      .sort();
-
-    setVersions(filteredVersions);
-    setSelectedVersion('');
-
-    // Pre-fill estimated mileage (capped at MAX_KILOMETRAJE)
-    const currentYear = new Date().getFullYear();
-    const carAge = Math.max(0, currentYear - parseInt(selectedYear));
-    const estimatedMileage = Math.min(carAge * 15000, MAX_KILOMETRAJE);
-    const roundedMileage = Math.round(estimatedMileage / 1000) * 1000;
-    if (roundedMileage > 0 && !kilometraje) {
-      setKilometraje(roundedMileage.toLocaleString('es-MX'));
+  // Reset downstream selections when subbrand changes
+  useEffect(() => {
+    if (selectedSubbrand) {
+      setSelectedYear('');
+      setSelectedVersion('');
+      setTimeout(() => yearRef.current?.focus(), 50);
     }
-  }, [selectedBrand, selectedSubbrand, selectedYear, catalog, kilometraje]);
+  }, [selectedSubbrand]);
+
+  // Reset version and pre-fill mileage when year changes
+  useEffect(() => {
+    if (selectedYear) {
+      setSelectedVersion('');
+      setTimeout(() => versionRef.current?.focus(), 50);
+
+      // Pre-fill estimated mileage (capped at MAX_KILOMETRAJE)
+      const currentYear = new Date().getFullYear();
+      const carAge = Math.max(0, currentYear - parseInt(selectedYear));
+      const estimatedMileage = Math.min(carAge * 15000, MAX_KILOMETRAJE);
+      const roundedMileage = Math.round(estimatedMileage / 1000) * 1000;
+      if (roundedMileage > 0 && !kilometraje) {
+        setKilometraje(roundedMileage.toLocaleString('es-MX'));
+      }
+    }
+  }, [selectedYear, kilometraje]);
+
+  // Auto-focus on km field when version is selected
+  useEffect(() => {
+    if (selectedVersion) {
+      setTimeout(() => kmRef.current?.focus(), 50);
+    }
+  }, [selectedVersion]);
 
   // ============================================================================
   // HANDLERS
