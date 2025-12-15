@@ -154,7 +154,7 @@ const VenderMiAutoPage: React.FC = () => {
                 transition={{ duration: 0.6, ease: 'easeOut' }}
                 delay={0.2}
               >
-                <div className="min-h-[200px]">
+                <div className="min-h-[200px] pt-2">
                   <AutometricaValuationForm embedded compact />
                 </div>
               </MotionPreset>
