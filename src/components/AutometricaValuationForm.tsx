@@ -337,11 +337,12 @@ export function AutometricaValuationForm({
       const carAge = Math.max(0, currentYear - parseInt(selectedYear));
       const estimatedMileage = Math.min(carAge * 15000, MAX_KILOMETRAJE);
       const roundedMileage = Math.round(estimatedMileage / 1000) * 1000;
-      if (roundedMileage > 0 && !kilometraje) {
+      if (roundedMileage > 0) {
         setKilometraje(roundedMileage.toLocaleString('es-MX'));
       }
     }
-  }, [selectedYear, kilometraje]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedYear]);
 
   // Auto-focus on km field when version is selected
   useEffect(() => {
