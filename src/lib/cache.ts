@@ -103,11 +103,11 @@ export const CACHE_HEADERS = {
 /**
  * Genera una llave de cache para lista de vehículos basada en filtros
  */
-export function getVehicleListCacheKey(filters: Record<string, unknown>, page: number): string {
+export function getVehicleListCacheKey(filters: object, page: number): string {
   const sortedFilters = Object.keys(filters)
     .sort()
     .reduce((acc, key) => {
-      const value = filters[key];
+      const value = (filters as Record<string, unknown>)[key];
       // Solo incluir filtros con valores
       if (value !== undefined && value !== null && value !== '') {
         acc[key] = value;

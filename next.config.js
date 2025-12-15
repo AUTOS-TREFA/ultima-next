@@ -50,13 +50,46 @@ const nextConfig = {
   // Headers para CORS and caching
   async headers() {
     return [
+      // CORS for API routes
       {
         source: '/api/:path*',
         headers: [
           { key: 'Access-Control-Allow-Credentials', value: 'true' },
           { key: 'Access-Control-Allow-Origin', value: '*' },
           { key: 'Access-Control-Allow-Methods', value: 'GET,DELETE,PATCH,POST,PUT,OPTIONS' },
-          { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, X-Api-Key, X-Api-Secret, Authorization' },
+          { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, X-Api-Key, X-Api-Secret, Authorization, If-None-Match' },
+        ],
+      },
+      // Cache API - vehicles list (15 min + stale-while-revalidate)
+      {
+        source: '/api/vehicles',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=900, s-maxage=900, stale-while-revalidate=3600' },
+          { key: 'Vary', value: 'Accept-Encoding' },
+        ],
+      },
+      // Cache API - vehicle detail (1 hour + stale-while-revalidate)
+      {
+        source: '/api/vehicles/:slug',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400' },
+          { key: 'Vary', value: 'Accept-Encoding' },
+        ],
+      },
+      // Cache API - filter options (24 hours - rarely changes)
+      {
+        source: '/api/vehicles/filters',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800' },
+          { key: 'Vary', value: 'Accept-Encoding' },
+        ],
+      },
+      // Cache API - slugs (12 hours)
+      {
+        source: '/api/vehicles/slugs',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=43200, s-maxage=43200, stale-while-revalidate=172800' },
+          { key: 'Vary', value: 'Accept-Encoding' },
         ],
       },
       // Cache static assets
@@ -69,6 +102,21 @@ const nextConfig = {
       // Cache fonts
       {
         source: '/:all*(woff|woff2|ttf|otf|eot)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      // Cache Next.js static files
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      // Cache JavaScript chunks
+      {
+        source: '/:path*.js',
+        has: [{ type: 'query', key: 'v' }],
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
