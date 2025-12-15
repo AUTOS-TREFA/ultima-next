@@ -121,9 +121,8 @@ export const config = {
  * La redireccion final a admin dashboard se maneja en AuthContext/middleware
  */
 export const getEmailRedirectUrl = (): string => {
-  // Redirect to /escritorio - the AuthContext and middleware will handle
-  // redirecting admins to /escritorio/admin/dashboard
-  return `${window.location.origin}/escritorio`;
+  // Use auth callback route which handles code exchange and redirect
+  return `${window.location.origin}/auth/callback?redirect=/escritorio`;
 };
 
 /**
@@ -131,5 +130,5 @@ export const getEmailRedirectUrl = (): string => {
  * Esta URL debe estar configurada en la consola de Google Cloud y Supabase
  */
 export const getGoogleOAuthCallbackUrl = (): string => {
-  return `${window.location.origin}/escritorio`;
+  return `${window.location.origin}/auth/callback?redirect=/escritorio`;
 };

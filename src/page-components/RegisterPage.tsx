@@ -331,7 +331,7 @@ const RegisterPage: React.FC = () => {
             phone: cleanPhone,
             source: 'registro-directo'
           },
-          emailRedirectTo: `${window.location.origin}/auth`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=/escritorio`,
         }
       });
 
