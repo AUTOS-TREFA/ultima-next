@@ -455,6 +455,17 @@ class VehicleService {
         }
     }
 
+    /**
+     * Check if vehicle data is complete (has essential fields)
+     */
+    private static isVehicleDataComplete(vehicle: Vehicle | null): boolean {
+        if (!vehicle) return false;
+        const hasTitle = vehicle.title && vehicle.title !== 'Auto sin título' && vehicle.title.trim() !== '';
+        const hasPrice = vehicle.precio && vehicle.precio > 0;
+        const hasImage = getVehicleImage(vehicle) && !getVehicleImage(vehicle).includes('placeholder');
+        return hasTitle && hasPrice && hasImage;
+    }
+
     public static async getVehicleByOrdenCompra(ordencompra: string): Promise<Vehicle | null> {
         if (!ordencompra) return null;
         try {
@@ -465,12 +476,41 @@ class VehicleService {
                 .single();
 
             if (error) {
-                if (error.code === 'PGRST116') return null; // No single row found
+                if (error.code === 'PGRST116') {
+                    // No record found in Supabase, try Airtable fallback
+                    console.log(`[VehicleService] Vehicle ${ordencompra} not in cache, trying Airtable...`);
+                    try {
+                        const AirtableDirectService = (await import('./AirtableDirectService')).default;
+                        const airtableVehicle = await AirtableDirectService.getVehicleByOrdenCompra(ordencompra);
+                        if (airtableVehicle) {
+                            return airtableVehicle as Vehicle;
+                        }
+                    } catch (airtableError) {
+                        console.error('[VehicleService] Airtable fallback failed:', airtableError);
+                    }
+                    return null;
+                }
                 throw error;
             }
             if (data) {
                 const normalized = this.normalizeVehicleData([data]);
-                return this.recordVehicleView(normalized[0]);
+                const vehicle = normalized[0];
+
+                // If vehicle data is incomplete, try to supplement from Airtable
+                if (!this.isVehicleDataComplete(vehicle) && data.record_id) {
+                    console.log(`[VehicleService] Vehicle ${ordencompra} has incomplete data, trying Airtable fallback...`);
+                    try {
+                        const AirtableDirectService = (await import('./AirtableDirectService')).default;
+                        const airtableVehicle = await AirtableDirectService.getVehicleByRecordId(data.record_id);
+                        if (airtableVehicle && this.isVehicleDataComplete(airtableVehicle as Vehicle)) {
+                            return airtableVehicle as Vehicle;
+                        }
+                    } catch (airtableError) {
+                        console.error('[VehicleService] Airtable fallback failed:', airtableError);
+                    }
+                }
+
+                return this.recordVehicleView(vehicle);
             }
             return null;
         } catch (error) {
@@ -502,7 +542,24 @@ class VehicleService {
             }
             if (data) {
                 const normalized = this.normalizeVehicleData([data]);
-                return normalized[0];
+                const vehicle = normalized[0];
+
+                // If vehicle data is incomplete and we have ordencompra, try Airtable fallback
+                if (!this.isVehicleDataComplete(vehicle) && data.ordencompra) {
+                    console.log(`[VehicleService] Vehicle ${slug} has incomplete data, trying Airtable fallback...`);
+                    try {
+                        const AirtableDirectService = (await import('./AirtableDirectService')).default;
+                        const airtableVehicle = await AirtableDirectService.getVehicleByOrdenCompra(data.ordencompra);
+                        if (airtableVehicle && this.isVehicleDataComplete(airtableVehicle as Vehicle)) {
+                            // Preserve the slug from the cache
+                            return { ...airtableVehicle, slug: data.slug } as Vehicle;
+                        }
+                    } catch (airtableError) {
+                        console.error('[VehicleService] Airtable fallback failed:', airtableError);
+                    }
+                }
+
+                return vehicle;
             }
             return null;
         } catch (error) {

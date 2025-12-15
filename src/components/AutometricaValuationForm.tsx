@@ -231,6 +231,8 @@ export function AutometricaValuationForm({
   const [otpCode, setOtpCode] = useState('');
   const [verificationLoading, setVerificationLoading] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [isLoginMode, setIsLoginMode] = useState(false); // Toggle between login and register
+  const [loginPassword, setLoginPassword] = useState('');
 
   // UI state
   const [copied, setCopied] = useState(false);
@@ -618,6 +620,41 @@ export function AutometricaValuationForm({
     }
   };
 
+  // Handle login for existing users
+  const handleLogin = async () => {
+    if (!emailInput || !emailInput.includes('@')) {
+      setVerificationError('Ingresa un correo electrónico válido');
+      return;
+    }
+
+    setVerificationLoading(true);
+    setVerificationError(null);
+
+    try {
+      // Sign in with email magic link (passwordless)
+      const { error: signInError } = await supabase.auth.signInWithOtp({
+        email: emailInput,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth?redirect=/vender-mi-auto`,
+        }
+      });
+
+      if (signInError) {
+        throw signInError;
+      }
+
+      setVerificationError(null);
+      // Show success message
+      alert('Te enviamos un enlace de acceso a tu correo. Revisa tu bandeja de entrada.');
+      setShowVerificationModal(false);
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setVerificationError(err.message || 'Error al iniciar sesión');
+    } finally {
+      setVerificationLoading(false);
+    }
+  };
+
   const handleReset = () => {
     setStep('vehicle');
     setError(null);
@@ -631,6 +668,8 @@ export function AutometricaValuationForm({
     setOtpCode('');
     setPhoneInput('');
     setEmailInput('');
+    setIsLoginMode(false);
+    setLoginPassword('');
   };
 
   const handleCopy = () => {
@@ -751,7 +790,14 @@ export function AutometricaValuationForm({
         </div>
 
         {/* Verification Modal */}
-        <Dialog open={showVerificationModal} onOpenChange={setShowVerificationModal}>
+        <Dialog open={showVerificationModal} onOpenChange={(open) => {
+          setShowVerificationModal(open);
+          if (!open) {
+            setIsLoginMode(false);
+            setOtpSent(false);
+            setVerificationError(null);
+          }
+        }}>
           <DialogContent className="sm:max-w-md bg-white">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-slate-900">
@@ -760,9 +806,21 @@ export function AutometricaValuationForm({
               </DialogTitle>
             </DialogHeader>
 
-            <p className="text-sm text-slate-600 -mt-2">
-              Por favor valida tu cuenta verificando tu número celular para ver el monto de tu oferta.
-            </p>
+            {/* Tab toggle */}
+            <div className="flex border-b border-gray-200 -mt-2 mb-2">
+              <button
+                onClick={() => { setIsLoginMode(false); setVerificationError(null); }}
+                className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${!isLoginMode ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+              >
+                Nuevo usuario
+              </button>
+              <button
+                onClick={() => { setIsLoginMode(true); setVerificationError(null); }}
+                className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${isLoginMode ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+              >
+                Ya tengo cuenta
+              </button>
+            </div>
 
             <div className="space-y-4 py-2">
               {verificationError && (
@@ -772,8 +830,42 @@ export function AutometricaValuationForm({
                 </div>
               )}
 
-              {!otpSent ? (
+              {isLoginMode ? (
+                /* LOGIN MODE - Existing users */
                 <>
+                  <p className="text-sm text-slate-600">
+                    Ingresa tu correo y te enviaremos un enlace de acceso.
+                  </p>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-medium text-gray-700">Correo electrónico</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="email"
+                        placeholder="tu@email.com"
+                        value={emailInput}
+                        onChange={(e) => setEmailInput(e.target.value)}
+                        className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-3 pl-10 text-sm text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleLogin}
+                    disabled={verificationLoading || !emailInput}
+                    className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-primary-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {verificationLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Enviar enlace de acceso <Mail className="w-4 h-4" /></>}
+                  </button>
+                </>
+              ) : !otpSent ? (
+                /* REGISTER MODE - New users */
+                <>
+                  <p className="text-sm text-slate-600">
+                    Valida tu cuenta verificando tu número celular para ver tu oferta.
+                  </p>
+
                   <div className="space-y-1.5">
                     <label className="block text-sm font-medium text-gray-700">Correo electrónico</label>
                     <div className="relative">
@@ -812,6 +904,7 @@ export function AutometricaValuationForm({
                   </button>
                 </>
               ) : (
+                /* OTP VERIFICATION */
                 <>
                   <div className="space-y-1.5">
                     <label className="block text-sm font-medium text-gray-700">Código de verificación</label>

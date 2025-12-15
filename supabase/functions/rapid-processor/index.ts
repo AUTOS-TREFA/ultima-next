@@ -120,18 +120,55 @@ function looksLikePath(s) {
   if (t.includes("/") || /\.[a-zA-Z0-9]{2,5}$/.test(t)) return true;
   return false;
 }
+// Extract URL from Airtable attachment object
+function extractUrlFromAttachment(att: any): string | null {
+  if (!att) return null;
+  if (typeof att === 'string') return att;
+  if (typeof att === 'object') {
+    // Airtable attachment format: { url: "...", thumbnails: { large: { url: "..." } } }
+    return att.url || att.thumbnails?.large?.url || att.thumbnails?.full?.url || null;
+  }
+  return null;
+}
+
 function normalizePathsField(field) {
   if (!field) return [];
-  if (Array.isArray(field)) return field.map(String).map((s)=>s.trim()).filter(looksLikePath);
+
+  // Handle array of Airtable attachment objects or URLs
+  if (Array.isArray(field)) {
+    return field
+      .map((item) => {
+        // Check if it's an Airtable attachment object
+        if (typeof item === 'object' && item !== null) {
+          return extractUrlFromAttachment(item);
+        }
+        return String(item).trim();
+      })
+      .filter((s) => s && looksLikePath(s));
+  }
+
   if (typeof field === "string") {
     const trimmed = field.trim();
     try {
       const parsed = JSON.parse(trimmed);
-      if (Array.isArray(parsed)) return parsed.map(String).map((s)=>s.trim()).filter(looksLikePath);
+      if (Array.isArray(parsed)) {
+        return parsed
+          .map((item) => {
+            if (typeof item === 'object' && item !== null) {
+              return extractUrlFromAttachment(item);
+            }
+            return String(item).trim();
+          })
+          .filter((s) => s && looksLikePath(s));
+      }
       if (typeof parsed === "string") return looksLikePath(parsed) ? [
         parsed.trim()
       ] : [];
       if (typeof parsed === "object" && parsed !== null) {
+        // Check if it's a single Airtable attachment
+        const url = extractUrlFromAttachment(parsed);
+        if (url && looksLikePath(url)) return [url];
+        // Otherwise extract values
         return Object.values(parsed).map(String).map((s)=>s.trim()).filter(looksLikePath);
       }
     } catch  {
@@ -144,6 +181,9 @@ function normalizePathsField(field) {
     }
   }
   if (typeof field === "object") {
+    // Check if it's a single Airtable attachment object
+    const url = extractUrlFromAttachment(field);
+    if (url && looksLikePath(url)) return [url];
     try {
       return Object.values(field).map(String).map((s)=>s.trim()).filter(looksLikePath);
     } catch  {
@@ -202,15 +242,67 @@ function buildPublicUrl(bucket, path) {
 
   // Get image fields from row or airtableData
   // Check multiple possible field names for feature image with priority order
-  const featureRaw = getValue('feature_image') || getValue('feature_image_url') || airtableData.image_link || airtableData.featured_image_url || null;
-  const fotosExteriorRaw = getValue('fotos_exterior_url') || getValue('galeria_exterior') || airtableData.galeriaExterior || airtableData['Foto Catalogo'] || null;
-  const fotosInteriorRaw = getValue('fotos_interior_url') || getValue('galeria_interior') || airtableData.galeriaInterior || null;
+  // Airtable field names may vary: fotos_exterior, Fotos Exterior, fotos_exterior_archivos, etc.
+  const featureRaw = getValue('feature_image') ||
+    getValue('feature_image_url') ||
+    airtableData.feature_image ||
+    airtableData.image_link ||
+    airtableData.featured_image_url ||
+    airtableData.Foto ||
+    airtableData['Foto Catalogo'] ||
+    null;
+
+  // Try multiple Airtable field names for exterior photos
+  const fotosExteriorRaw = getValue('fotos_exterior_url') ||
+    getValue('galeria_exterior') ||
+    airtableData.fotos_exterior_url ||
+    airtableData.fotos_exterior ||
+    airtableData['fotos_exterior_archivos'] ||
+    airtableData['Fotos Exterior'] ||
+    airtableData.galeriaExterior ||
+    airtableData['Foto Catalogo'] ||
+    null;
+
+  // Try multiple Airtable field names for interior photos
+  const fotosInteriorRaw = getValue('fotos_interior_url') ||
+    getValue('galeria_interior') ||
+    airtableData.fotos_interior_url ||
+    airtableData.fotos_interior ||
+    airtableData['fotos_interior_archivos'] ||
+    airtableData['Fotos Interior'] ||
+    airtableData.galeriaInterior ||
+    null;
 
   const fotosExterior = normalizePathsField(fotosExteriorRaw);
   const fotosInterior = normalizePathsField(fotosInteriorRaw);
 
+  // Helper to extract feature image URL from various formats
+  const extractFeatureImage = (raw: any): string | null => {
+    if (!raw) return null;
+    // If it's an array of Airtable attachments, get the first one
+    if (Array.isArray(raw)) {
+      const first = raw[0];
+      if (first) {
+        const url = extractUrlFromAttachment(first);
+        if (url && looksLikePath(url)) return url;
+      }
+      return null;
+    }
+    // If it's an Airtable attachment object
+    if (typeof raw === 'object') {
+      const url = extractUrlFromAttachment(raw);
+      if (url && looksLikePath(url)) return url;
+    }
+    // If it's a string
+    if (typeof raw === 'string' && looksLikePath(raw.trim())) {
+      return raw.trim();
+    }
+    return null;
+  };
+
   // Build public URLs for all images and convert to CDN URLs
-  let feature_public = looksLikePath(featureRaw) ? convertToCdnUrl(buildPublicUrl(BUCKET, String(featureRaw).trim())) : null;
+  const featureImagePath = extractFeatureImage(featureRaw);
+  let feature_public = featureImagePath ? convertToCdnUrl(buildPublicUrl(BUCKET, featureImagePath)) : null;
   const galeriaExterior = fotosExterior.map((p)=>convertToCdnUrl(buildPublicUrl(BUCKET, p))).filter(Boolean);
   const galeriaInterior = fotosInterior.map((p)=>convertToCdnUrl(buildPublicUrl(BUCKET, p))).filter(Boolean);
 

@@ -477,4 +477,88 @@ export default class AirtableDirectService {
 
         return { success: true };
     }
+
+    /**
+     * Fetch a single vehicle by OrdenCompra from Airtable
+     * Used as fallback when Supabase cache is missing data
+     */
+    public static async getVehicleByOrdenCompra(ordenCompra: string): Promise<any | null> {
+        console.log(`🔍 [Airtable] Fetching vehicle by OrdenCompra: ${ordenCompra}`);
+
+        if (!AIRTABLE_API_KEY) {
+            console.error('❌ [Airtable] API key not configured');
+            return null;
+        }
+
+        try {
+            const url = new URL(`${AIRTABLE_API_BASE}/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}`);
+            url.searchParams.append('filterByFormula', `{OrdenCompra} = "${ordenCompra}"`);
+            url.searchParams.append('maxRecords', '1');
+
+            const response = await fetch(url.toString(), {
+                headers: {
+                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                console.error(`❌ [Airtable] API error: ${response.status}`);
+                return null;
+            }
+
+            const data = await response.json();
+
+            if (!data.records || data.records.length === 0) {
+                console.log(`⚠️ [Airtable] No vehicle found with OrdenCompra: ${ordenCompra}`);
+                return null;
+            }
+
+            const normalized = this.normalizeAirtableRecords(data.records);
+            console.log(`✅ [Airtable] Found vehicle: ${normalized[0]?.title}`);
+            return normalized[0] || null;
+
+        } catch (error) {
+            console.error('❌ [Airtable] Error fetching vehicle:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Fetch a single vehicle by record_id (Airtable internal ID)
+     * Used as fallback when Supabase cache is missing data
+     */
+    public static async getVehicleByRecordId(recordId: string): Promise<any | null> {
+        console.log(`🔍 [Airtable] Fetching vehicle by record_id: ${recordId}`);
+
+        if (!AIRTABLE_API_KEY) {
+            console.error('❌ [Airtable] API key not configured');
+            return null;
+        }
+
+        try {
+            const url = `${AIRTABLE_API_BASE}/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}/${recordId}`;
+
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                console.error(`❌ [Airtable] API error: ${response.status}`);
+                return null;
+            }
+
+            const record = await response.json();
+            const normalized = this.normalizeAirtableRecords([record]);
+            console.log(`✅ [Airtable] Found vehicle: ${normalized[0]?.title}`);
+            return normalized[0] || null;
+
+        } catch (error) {
+            console.error('❌ [Airtable] Error fetching vehicle:', error);
+            return null;
+        }
+    }
 }
