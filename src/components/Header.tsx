@@ -55,7 +55,7 @@ const Header: React.FC = () => {
         <MobileHeader />
 
         {/* Desktop Header - Hidden on mobile */}
-        <header className="hidden lg:block fixed top-0 left-0 right-0 z-30 bg-white shadow-sm border-b border-gray-100/60">
+        <header className="hidden lg:block fixed top-0 left-0 right-0 z-30 bg-white shadow-sm">
           <div className="relative max-w-7xl mx-auto px-4 lg:px-8">
             <div className="flex items-center h-[74px] gap-x-4">
               {/* Logo */}
