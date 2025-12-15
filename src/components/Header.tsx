@@ -3,7 +3,8 @@
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogOutIcon, ChevronDownIcon, BuyCarIcon, SellCarIcon, UserIcon } from './icons';
+import { LogOutIcon, ChevronDownIcon, UserIcon } from './icons';
+import { TrendingDown, TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ComprarMegaMenu from './ComprarMegaMenu';
 import VenderMegaMenu from './VenderMegaMenu';
@@ -74,59 +75,66 @@ const Header: React.FC = () => {
               </div>
 
               {/* Right Section - Desktop Menu and Auth */}
-              <div className={`flex items-center space-x-4 flex-shrink-0 ${isListPage ? 'ml-auto' : ''}`}>
-                {/* Comprar Button - Dark Blue */}
-                <button
+              <div className={`flex items-center flex-shrink-0 ${isListPage ? 'ml-auto' : ''}`}>
+                {/* Action Buttons */}
+                <div className="flex items-center gap-2">
+                  {/* Comprar Button */}
+                  <Button
                     ref={comprarButtonRef}
                     onClick={handleComprarClick}
-                    className="inline-flex items-center text-sm font-semibold text-blue-800 hover:text-blue-900 transition-colors"
-                >
-                    <BuyCarIcon className="w-4 h-4 mr-1.5" />
-                    <span>Comprar</span>
-                    <ChevronDownIcon className={`w-4 h-4 ml-1 transition-transform ${comprarMenuOpen ? 'rotate-180' : ''}`} fill="currentColor"/>
-                </button>
+                    variant="outline"
+                    size="sm"
+                    className="text-blue-700 border-blue-200 hover:bg-blue-50 hover:border-blue-300 font-semibold"
+                  >
+                    <TrendingDown className="w-4 h-4 mr-1.5" />
+                    Comprar
+                    <ChevronDownIcon className={`w-3.5 h-3.5 ml-1 transition-transform ${comprarMenuOpen ? 'rotate-180' : ''}`} fill="currentColor"/>
+                  </Button>
 
-                {/* Vender Button - Orange */}
-                <button
+                  {/* Vender Button */}
+                  <Button
                     ref={venderButtonRef}
                     onClick={handleVenderClick}
-                    className="inline-flex items-center text-sm font-semibold text-[#FF6801] hover:text-[#E55E01] transition-colors"
-                >
-                    <SellCarIcon className="w-4 h-4 mr-1.5" />
-                    <span>Vender</span>
-                    <ChevronDownIcon className={`w-4 h-4 ml-1 transition-transform ${venderMenuOpen ? 'rotate-180' : ''}`} fill="currentColor"/>
-                </button>
+                    variant="outline"
+                    size="sm"
+                    className="text-primary-600 border-primary-200 hover:bg-primary-50 hover:border-primary-300 font-semibold"
+                  >
+                    <TrendingUp className="w-4 h-4 mr-1.5" />
+                    Vender
+                    <ChevronDownIcon className={`w-3.5 h-3.5 ml-1 transition-transform ${venderMenuOpen ? 'rotate-180' : ''}`} fill="currentColor"/>
+                  </Button>
+                </div>
 
-                {session ? (
-                   <>
-                      {/* Dashboard Link */}
+                {/* Separator */}
+                <div className="h-6 w-px bg-gray-200 mx-4" />
+
+                {/* Auth Section */}
+                <div className="flex items-center gap-3">
+                  {session ? (
+                    <>
                       <Link
-                          href={isSalesUser ? "/escritorio/ventas/crm" : "/escritorio"}
-                          className="inline-flex items-center text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors"
+                        href={isSalesUser ? "/escritorio/ventas/crm" : "/escritorio"}
+                        className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
                       >
-                          <UserIcon className="w-4 h-4 mr-1.5" />
-                          <span>Dashboard</span>
+                        Dashboard
                       </Link>
-
-                      {/* Sign Out Link */}
                       <button
-                          onClick={handleSignOut}
-                          className="inline-flex items-center text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors"
+                        onClick={handleSignOut}
+                        className="text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
                       >
-                          <LogOutIcon className="w-4 h-4 mr-1.5" />
-                          <span>Salir</span>
+                        Salir
                       </button>
-                   </>
-                ) : (
+                    </>
+                  ) : (
                     <Link
-                        href="/acceder"
-                        data-gtm-id="header-login-button"
-                        className="inline-flex items-center text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors"
+                      href="/acceder"
+                      data-gtm-id="header-login-button"
+                      className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
                     >
-                        <UserIcon className="w-4 h-4 mr-1.5" />
-                        <span>Ingresar</span>
+                      Iniciar sesión
                     </Link>
                   )}
+                </div>
               </div>
             </div>
             {/* Comprar Mega Menu */}
