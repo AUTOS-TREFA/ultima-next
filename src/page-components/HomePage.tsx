@@ -208,7 +208,7 @@ const LandingPageHero: React.FC<{ content: HeroContent | null }> = ({ content })
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-base md:text-lg lg:text-2xl text-muted-foreground max-w-3xl leading-relaxed"
+            className="text-base md:text-lg lg:text-2xl text-slate-600 max-w-3xl leading-relaxed"
           >
             {heroContent.description}
           </motion.p>
@@ -253,7 +253,7 @@ const LandingPageHero: React.FC<{ content: HeroContent | null }> = ({ content })
             transition={{ duration: 0.5, delay: 0.5 }}
             className="flex flex-col items-center space-y-3 lg:space-y-4 mt-6 lg:mt-10"
           >
-            <p className="text-xs lg:text-sm text-muted-foreground">
+            <p className="text-xs lg:text-sm text-slate-600">
               {heroContent.statsText}
             </p>
             <div className="flex items-center space-x-4 lg:space-x-6 opacity-60 flex-wrap justify-center gap-y-3 gap-x-3 lg:gap-y-4 lg:gap-x-4">
@@ -282,7 +282,7 @@ const LandingPageHero: React.FC<{ content: HeroContent | null }> = ({ content })
                 <span className="text-sm lg:text-base font-semibold hidden sm:inline">Kia</span>
               </div>
             </div>
-            <p className="text-xs lg:text-sm text-muted-foreground">
+            <p className="text-xs lg:text-sm text-slate-600">
               {heroContent.brandsText}
             </p>
           </motion.div>
@@ -349,10 +349,10 @@ const NewHeroSection: React.FC<{ content: InventoryHeroContent | null }> = ({ co
         "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-10 lg:mb-16 transition-all duration-700",
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
       )}>
-        <h2 className="text-2xl font-bold md:text-3xl lg:text-4xl tracking-tight text-foreground leading-tight">
+        <h2 className="text-2xl font-bold md:text-3xl lg:text-4xl tracking-tight text-slate-800 leading-tight">
           {inventoryContent.title}
         </h2>
-        <p className="mt-4 text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto">
+        <p className="mt-4 text-lg lg:text-xl text-slate-600 max-w-2xl mx-auto">
           {inventoryContent.subtitle}
         </p>
       </div>
@@ -418,10 +418,10 @@ const AnimatedHeader: React.FC<{ title: React.ReactNode; subtitle: string; class
         className
       )}
     >
-      <h2 className="text-2xl font-bold md:text-3xl lg:text-4xl tracking-tight text-foreground leading-tight">
+      <h2 className="text-2xl font-bold md:text-3xl lg:text-4xl tracking-tight text-slate-800 leading-tight">
         {title}
       </h2>
-      <p className="mt-4 text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">{subtitle}</p>
+      <p className="mt-4 text-lg lg:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">{subtitle}</p>
     </div>
   );
 };
@@ -682,10 +682,10 @@ const CarroceriaCarouselSection: React.FC<{ content: CarroceriaCarouselContent |
         )}
       >
         <div className="text-center mb-12 lg:mb-16">
-          <h2 className="text-2xl font-bold md:text-3xl lg:text-4xl tracking-tight text-foreground leading-tight mb-4">
+          <h2 className="text-2xl font-bold md:text-3xl lg:text-4xl tracking-tight text-slate-800 leading-tight mb-4">
             {carouselContent.title}
           </h2>
-          <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-lg lg:text-xl text-slate-600 max-w-3xl mx-auto">
             {carouselContent.subtitle}
           </p>
         </div>

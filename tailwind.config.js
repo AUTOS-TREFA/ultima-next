@@ -16,7 +16,8 @@ export default {
   	extend: {
   		fontFamily: {
   			sans: ['Inter', 'sans-serif'],
-  			display: ['Lexend Deca', 'Inter', 'sans-serif'],
+  			display: ['DM Sans', 'Inter', 'sans-serif'],
+  			heading: ['DM Sans', 'Inter', 'sans-serif'],
   			mono: ['Geist Mono', 'monospace'],
   		},
   		colors: {

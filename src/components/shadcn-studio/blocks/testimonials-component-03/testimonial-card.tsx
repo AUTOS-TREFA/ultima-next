@@ -24,14 +24,14 @@ const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => {
           {/* Platform Details */}
           <div className='flex items-center gap-1.5'>
             <img src={testimonial.platformImage} alt={testimonial.platformName} className='w-5 h-5 object-contain' />
-            <span className='text-sm'>{testimonial.platformName}</span>
+            <span className='text-sm text-slate-500'>{testimonial.platformName}</span>
           </div>
         </div>
 
         {/* Testimonial Content */}
         <div className='space-y-2'>
-          <h3 className='text-lg font-semibold'>{testimonial.title}</h3>
-          <p className='text-muted-foreground'>{testimonial.content}</p>
+          <h3 className='text-lg font-semibold text-slate-800'>{testimonial.title}</h3>
+          <p className='text-slate-600'>{testimonial.content}</p>
         </div>
 
         {/* User Details */}
@@ -46,8 +46,8 @@ const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => {
             </AvatarFallback>
           </Avatar>
           <div className='space-y-0.5'>
-            <h4 className='font-medium'>{testimonial.name}</h4>
-            <p className='text-muted-foreground text-sm'>{testimonial.handle}</p>
+            <h4 className='font-medium text-slate-800'>{testimonial.name}</h4>
+            <p className='text-slate-500 text-sm'>{testimonial.handle}</p>
           </div>
         </div>
       </CardContent>

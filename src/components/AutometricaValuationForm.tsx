@@ -12,8 +12,8 @@
  * 5. Redirige al dashboard de compras
  */
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '../../supabaseClient';
 
@@ -50,6 +50,58 @@ import Confetti from '@/Valuation/components/Confetti';
 import AnimatedNumber from '@/Valuation/components/AnimatedNumber';
 
 // ============================================================================
+// BRAND FILTER CONFIGURATION
+// ============================================================================
+// Add brands to exclude from the form (we don't buy these)
+// The API will still work - this just filters what users can select
+const EXCLUDED_BRANDS: string[] = [
+  // Uncomment or add brands you don't want to show:
+  // 'BAIC',
+  // 'JAC',
+  // 'Zotye',
+  // 'Landwind',
+  // 'Lifan',
+  // 'Brilliance',
+  // 'Foton',
+  // 'Great Wall',
+  // 'Haval',
+  // 'Haima',
+];
+
+// Alternatively, use INCLUDED_BRANDS to only show specific brands (leave empty to show all minus excluded)
+const INCLUDED_BRANDS: string[] = [
+  'Audi',
+  'BMW',
+  'Chevrolet',
+  'Dodge',
+  'Ford',
+  'GMC',
+  'Honda',
+  'Hyundai',
+  'Jeep',
+  'Kia',
+  'Mazda',
+  'Mercedes Benz',
+  'Mercedes-Benz',
+  'Mitsubishi',
+  'Nissan',
+  'Peugeot',
+  'RAM',
+  'Renault',
+  'Seat',
+  'SEAT',
+  'Suzuki',
+  'Tesla',
+  'Toyota',
+  'Volkswagen',
+  'Volvo',
+];
+
+// Year and mileage limits
+const MIN_YEAR = 2016;
+const MAX_KILOMETRAJE = 120000;
+
+// ============================================================================
 // PROPS
 // ============================================================================
 
@@ -70,12 +122,21 @@ export function AutometricaValuationForm({
   embedded = false,
 }: AutometricaValuationFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, profile, reloadProfile } = useAuth();
+
+  // Refs for auto-focus
+  const brandRef = useRef<HTMLSelectElement>(null);
+  const modelRef = useRef<HTMLSelectElement>(null);
+  const yearRef = useRef<HTMLSelectElement>(null);
+  const versionRef = useRef<HTMLSelectElement>(null);
+  const kmRef = useRef<HTMLInputElement>(null);
 
   // State - PUBLIC FORM, no auth check on mount
   const [step, setStep] = useState<'vehicle' | 'valuating' | 'verify_to_reveal' | 'verifying' | 'success'>('vehicle');
   const [error, setError] = useState<string | null>(null);
   const [isQueryInProgress, setIsQueryInProgress] = useState(false);
+  const [showPulse, setShowPulse] = useState(true); // Animation for first field
 
   // Catalog state
   const [catalog, setCatalog] = useState<AutometricaCatalogVehicle[]>([]);
@@ -119,6 +180,18 @@ export function AutometricaValuationForm({
   // EFFECTS
   // ============================================================================
 
+  // Store URL parameters for redirect after verification
+  useEffect(() => {
+    const redirect = searchParams?.get('redirect');
+    const ordencompra = searchParams?.get('ordencompra');
+    if (redirect) {
+      localStorage.setItem('valuationRedirect', redirect);
+    }
+    if (ordencompra) {
+      localStorage.setItem('ordencompra', ordencompra);
+    }
+  }, [searchParams]);
+
   // Load catalog on mount (PUBLIC - no auth required)
   useEffect(() => {
     const loadCatalog = async () => {
@@ -127,9 +200,29 @@ export function AutometricaValuationForm({
         const data = await AutometricaService.getCatalog();
         setCatalog(data);
 
-        // Extract unique brands
-        const uniqueBrands = [...new Set(data.map((v) => v.brand))].sort();
+        // Extract unique brands and apply filters
+        let uniqueBrands = [...new Set(data.map((v) => v.brand))].sort();
+
+        // If INCLUDED_BRANDS has items, only show those
+        if (INCLUDED_BRANDS.length > 0) {
+          uniqueBrands = uniqueBrands.filter(brand =>
+            INCLUDED_BRANDS.some(included =>
+              brand.toLowerCase() === included.toLowerCase()
+            )
+          );
+        } else if (EXCLUDED_BRANDS.length > 0) {
+          // Otherwise, exclude brands in EXCLUDED_BRANDS
+          uniqueBrands = uniqueBrands.filter(brand =>
+            !EXCLUDED_BRANDS.some(excluded =>
+              brand.toLowerCase() === excluded.toLowerCase()
+            )
+          );
+        }
+
         setBrands(uniqueBrands);
+
+        // Auto-focus on brand select after catalog loads
+        setTimeout(() => brandRef.current?.focus(), 100);
       } catch (err) {
         console.error('Error loading catalog:', err);
         setError('Error al cargar el catálogo de vehículos');
@@ -148,7 +241,7 @@ export function AutometricaValuationForm({
     }
   }, [step, user, profile]);
 
-  // Update subbrands when brand changes
+  // Update subbrands when brand changes and auto-focus
   useEffect(() => {
     if (!selectedBrand || catalog.length === 0) {
       setSubbrands([]);
@@ -168,9 +261,12 @@ export function AutometricaValuationForm({
     setSelectedSubbrand('');
     setSelectedYear('');
     setSelectedVersion('');
+
+    // Auto-focus on model select
+    setTimeout(() => modelRef.current?.focus(), 50);
   }, [selectedBrand, catalog]);
 
-  // Update years when subbrand changes
+  // Update years when subbrand changes and auto-focus
   useEffect(() => {
     if (!selectedBrand || !selectedSubbrand || catalog.length === 0) {
       setYears([]);
@@ -184,11 +280,16 @@ export function AutometricaValuationForm({
           .filter((v) => v.brand === selectedBrand && v.subbrand === selectedSubbrand)
           .map((v) => v.year)
       ),
-    ].sort((a, b) => b - a);
+    ]
+      .filter((year) => year >= MIN_YEAR) // Only show years from MIN_YEAR and up
+      .sort((a, b) => b - a);
 
     setYears(filteredYears);
     setSelectedYear('');
     setSelectedVersion('');
+
+    // Auto-focus on year select
+    setTimeout(() => yearRef.current?.focus(), 50);
   }, [selectedBrand, selectedSubbrand, catalog]);
 
   // Update versions when year changes
@@ -212,10 +313,10 @@ export function AutometricaValuationForm({
     setVersions(filteredVersions);
     setSelectedVersion('');
 
-    // Pre-fill estimated mileage
+    // Pre-fill estimated mileage (capped at MAX_KILOMETRAJE)
     const currentYear = new Date().getFullYear();
     const carAge = Math.max(0, currentYear - parseInt(selectedYear));
-    const estimatedMileage = Math.min(carAge * 15000, 150000);
+    const estimatedMileage = Math.min(carAge * 15000, MAX_KILOMETRAJE);
     const roundedMileage = Math.round(estimatedMileage / 1000) * 1000;
     if (roundedMileage > 0 && !kilometraje) {
       setKilometraje(roundedMileage.toLocaleString('es-MX'));
@@ -752,151 +853,169 @@ export function AutometricaValuationForm({
 
   const isFormComplete = selectedBrand && selectedSubbrand && selectedYear && selectedVersion && kilometraje;
 
+  // Compact styles
+  const inputPy = compact ? 'py-2.5' : 'py-3.5';
+  const inputText = compact ? 'text-sm' : 'text-base';
+  const labelText = compact ? 'text-[11px] font-medium text-slate-500 uppercase tracking-wide' : 'text-xs font-medium text-gray-500 uppercase tracking-wide';
+  const iconSize = compact ? 'w-4 h-4' : 'w-5 h-5';
+  const spaceY = compact ? 'space-y-3' : 'space-y-4';
+  const gap = compact ? 'gap-3' : 'gap-4';
+
   return (
     <div className={containerClass}>
       <div className={embedded ? '' : cardClass}>
         {/* Content */}
-        <div className={embedded ? 'space-y-4' : 'p-6 space-y-4'}>
+        <div className={embedded ? spaceY : `p-6 ${spaceY}`}>
           {/* Error Alert */}
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700">{error}</p>
+            <div className={`${compact ? 'p-3' : 'p-4'} bg-red-50 border border-red-200 rounded-xl flex items-start gap-2`}>
+              <AlertTriangle className={`${iconSize} text-red-500 flex-shrink-0 mt-0.5`} />
+              <p className={`${labelText} text-red-700`}>{error}</p>
             </div>
           )}
 
           {catalogLoading ? (
-            <div className="py-12 text-center">
-              <Loader2 className="w-10 h-10 mx-auto animate-spin text-primary-600 mb-3" />
-              <p className="text-gray-500">Cargando catálogo de vehículos...</p>
+            <div className={`${compact ? 'py-8' : 'py-12'} text-center`}>
+              <Loader2 className={`${compact ? 'w-8 h-8' : 'w-10 h-10'} mx-auto animate-spin text-primary-600 mb-3`} />
+              <p className="text-gray-500 text-sm">Cargando catálogo...</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {/* Brand Select */}
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  Marca
-                </label>
-                <div className="relative">
-                  <Car className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <select
-                    value={selectedBrand}
-                    onChange={(e) => setSelectedBrand(e.target.value)}
-                    className="w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pl-12 pr-10 text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300"
-                  >
-                    <option value="">Selecciona la marca</option>
-                    {brands.map((brand) => (
-                      <option key={brand} value={brand}>{brand}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+            <div className={spaceY}>
+              {/* Row 1: Brand, Model, Year */}
+              <div className={`grid grid-cols-3 ${gap}`}>
+                <div className="space-y-1.5">
+                  <label className={`block ${labelText}`}>Marca</label>
+                  <div className={`relative ${showPulse && !selectedBrand ? 'animate-pulse-border' : ''}`}>
+                    <select
+                      ref={brandRef}
+                      value={selectedBrand}
+                      onChange={(e) => {
+                        setSelectedBrand(e.target.value);
+                        setShowPulse(false);
+                      }}
+                      className={`w-full appearance-none bg-white border-2 rounded-lg ${inputPy} px-3 pr-8 ${inputText} text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300 ${showPulse && !selectedBrand ? 'border-primary-400 ring-2 ring-primary-200 ring-opacity-50' : 'border-gray-200'}`}
+                    >
+                      <option value="">Seleccionar</option>
+                      {brands.map((brand) => (
+                        <option key={brand} value={brand}>{brand}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className={`absolute right-2 top-1/2 -translate-y-1/2 ${iconSize} ${showPulse && !selectedBrand ? 'text-primary-500' : 'text-gray-400'} pointer-events-none`} />
+                    {showPulse && !selectedBrand && (
+                      <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-primary-500"></span>
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* Subbrand/Model Select */}
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  Modelo
-                </label>
-                <div className="relative">
-                  <select
-                    value={selectedSubbrand}
-                    onChange={(e) => setSelectedSubbrand(e.target.value)}
-                    disabled={!selectedBrand}
-                    className="w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pr-10 text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-                  >
-                    <option value="">{selectedBrand ? 'Selecciona el modelo' : 'Primero selecciona la marca'}</option>
-                    {subbrands.map((subbrand) => (
-                      <option key={subbrand} value={subbrand}>{subbrand}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Year and Version in a row */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700">Año</label>
+                <div className="space-y-1.5">
+                  <label className={`block ${labelText} ${!selectedBrand ? 'opacity-40' : ''}`}>Modelo</label>
                   <div className="relative">
                     <select
+                      ref={modelRef}
+                      value={selectedSubbrand}
+                      onChange={(e) => setSelectedSubbrand(e.target.value)}
+                      disabled={!selectedBrand}
+                      className={`w-full appearance-none border rounded-lg ${inputPy} px-3 pr-8 ${inputText} font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all ${!selectedBrand ? 'bg-gray-100 border-gray-100 text-gray-300 cursor-not-allowed' : 'bg-white border-gray-200 text-gray-900 cursor-pointer hover:border-gray-300'}`}
+                    >
+                      <option value="">{selectedBrand ? 'Seleccionar' : '—'}</option>
+                      {subbrands.map((subbrand) => (
+                        <option key={subbrand} value={subbrand}>{subbrand}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className={`absolute right-2 top-1/2 -translate-y-1/2 ${iconSize} ${!selectedBrand ? 'text-gray-300' : 'text-gray-400'} pointer-events-none`} />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className={`block ${labelText} ${!selectedSubbrand ? 'opacity-40' : ''}`}>Año</label>
+                  <div className="relative">
+                    <select
+                      ref={yearRef}
                       value={selectedYear}
                       onChange={(e) => setSelectedYear(e.target.value)}
                       disabled={!selectedSubbrand}
-                      className="w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pr-10 text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                      className={`w-full appearance-none border rounded-lg ${inputPy} px-3 pr-7 ${inputText} font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all ${!selectedSubbrand ? 'bg-gray-100 border-gray-100 text-gray-300 cursor-not-allowed' : 'bg-white border-gray-200 text-gray-900 cursor-pointer hover:border-gray-300'}`}
                     >
-                      <option value="">{selectedSubbrand ? 'Año' : '—'}</option>
+                      <option value="">{selectedSubbrand ? 'Seleccionar' : '—'}</option>
                       {years.map((year) => (
                         <option key={year} value={year.toString()}>{year}</option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                    <ChevronDown className={`absolute right-2 top-1/2 -translate-y-1/2 ${iconSize} ${!selectedSubbrand ? 'text-gray-300' : 'text-gray-400'} pointer-events-none`} />
                   </div>
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700">Versión</label>
+              {/* Row 2: Version, Kilometraje, Button */}
+              <div className={`grid grid-cols-3 ${gap} items-end`}>
+                <div className="space-y-1.5">
+                  <label className={`block ${labelText} ${!selectedYear ? 'opacity-40' : ''}`}>Versión</label>
                   <div className="relative">
                     <select
+                      ref={versionRef}
                       value={selectedVersion}
                       onChange={(e) => setSelectedVersion(e.target.value)}
                       disabled={!selectedYear}
-                      className="w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pr-10 text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                      className={`w-full appearance-none border rounded-lg ${inputPy} px-3 pr-7 ${inputText} font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all ${!selectedYear ? 'bg-gray-100 border-gray-100 text-gray-300 cursor-not-allowed' : 'bg-white border-gray-200 text-gray-900 cursor-pointer hover:border-gray-300'}`}
                     >
-                      <option value="">{selectedYear ? 'Versión' : '—'}</option>
+                      <option value="">{selectedYear ? 'Seleccionar' : '—'}</option>
                       {versions.map((version) => (
                         <option key={version} value={version}>{version}</option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                    <ChevronDown className={`absolute right-2 top-1/2 -translate-y-1/2 ${iconSize} ${!selectedYear ? 'text-gray-300' : 'text-gray-400'} pointer-events-none`} />
                   </div>
                 </div>
-              </div>
 
-              {/* Kilometraje Input */}
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  Kilometraje
-                </label>
-                <div className="relative">
-                  <Gauge className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="Ej: 45,000"
-                    value={kilometraje}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9]/g, '');
-                      if (value) {
-                        setKilometraje(parseInt(value).toLocaleString('es-MX'));
-                      } else {
-                        setKilometraje('');
-                      }
-                    }}
-                    className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pl-12 text-gray-900 font-medium placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all hover:border-gray-300"
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">km</span>
+                <div className="space-y-1.5">
+                  <label className={`block ${labelText} ${!selectedVersion ? 'opacity-40' : ''}`}>Kilometraje</label>
+                  <div className="relative">
+                    <input
+                      ref={kmRef}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="45,000"
+                      disabled={!selectedVersion}
+                      value={kilometraje}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9]/g, '');
+                        if (value) {
+                          const numValue = parseInt(value);
+                          // Cap at MAX_KILOMETRAJE
+                          const cappedValue = Math.min(numValue, MAX_KILOMETRAJE);
+                          setKilometraje(cappedValue.toLocaleString('es-MX'));
+                        } else {
+                          setKilometraje('');
+                        }
+                      }}
+                      className={`w-full border rounded-lg ${inputPy} px-3 pr-8 ${inputText} font-medium placeholder-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all ${!selectedVersion ? 'bg-gray-100 border-gray-100 text-gray-300 cursor-not-allowed' : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'}`}
+                    />
+                    <span className={`absolute right-2 top-1/2 -translate-y-1/2 text-xs ${!selectedVersion ? 'text-gray-300' : 'text-gray-400'}`}>km</span>
+                  </div>
+                </div>
+
+                {/* Inline Button */}
+                <div className="space-y-1.5">
+                  <label className={`block ${labelText} opacity-0`}>Acción</label>
+                  <button
+                    onClick={handleGetValuation}
+                    disabled={!isFormComplete || isQueryInProgress}
+                    className={`w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold ${inputPy} px-4 rounded-lg hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm`}
+                  >
+                    {isQueryInProgress ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        Cotizar
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
-
-              {/* Submit Button */}
-              <button
-                onClick={handleGetValuation}
-                disabled={!isFormComplete || isQueryInProgress}
-                className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-bold py-4 px-6 rounded-xl hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary-600/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none"
-              >
-                {isQueryInProgress ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Calculando...
-                  </>
-                ) : (
-                  <>
-                    Obtener Cotización Gratis
-                    <ArrowRight className="w-5 h-5" />
-                  </>
-                )}
-              </button>
             </div>
           )}
 
