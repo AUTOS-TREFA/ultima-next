@@ -724,14 +724,14 @@ export function AutometricaValuationForm({
                   </div>
                 </div>
 
-                {/* Unlock CTA button */}
+                {/* Unlock CTA button - compact */}
                 <button
                   onClick={() => setShowVerificationModal(true)}
-                  className="mt-3 w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-all text-sm"
+                  className="mt-2 w-full flex items-center justify-center gap-1.5 bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-3 rounded-md transition-all text-xs"
                 >
-                  <Lock className="w-4 h-4" />
-                  Verificar y desbloquear oferta
-                  <ArrowRight className="w-4 h-4" />
+                  <Lock className="w-3 h-3" />
+                  Verificar y desbloquear
+                  <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
             </div>
