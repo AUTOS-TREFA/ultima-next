@@ -634,17 +634,17 @@ const VehicleListPage: React.FC = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {vehicles.slice(0, 3).map(vehicle => <VehicleGridCard key={vehicle.id} vehicle={vehicle} />)}
+                    {vehicles.slice(0, 3).map(vehicle => <VehicleGridCard key={`grid-${vehicle.id}`} vehicle={vehicle} />)}
                     {/* Mobile injection at position 4 (index 3) */}
-                    <div className="block lg:hidden">
+                    <div key="injection-mobile" className="block lg:hidden">
                       <InjectionCard />
                     </div>
-                    {vehicles.slice(3, 5).map(vehicle => <VehicleGridCard key={vehicle.id} vehicle={vehicle} />)}
+                    {vehicles.slice(3, 5).map(vehicle => <VehicleGridCard key={`grid-${vehicle.id}`} vehicle={vehicle} />)}
                     {/* Desktop injection at position 6 (index 5) - second row, last column */}
-                    <div className="hidden lg:block">
+                    <div key="injection-desktop" className="hidden lg:block">
                       <InjectionCard />
                     </div>
-                    {vehicles.slice(5).map(vehicle => <VehicleGridCard key={vehicle.id} vehicle={vehicle} />)}
+                    {vehicles.slice(5).map(vehicle => <VehicleGridCard key={`grid-${vehicle.id}`} vehicle={vehicle} />)}
                   </div>
                 )}
 

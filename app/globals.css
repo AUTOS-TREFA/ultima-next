@@ -980,18 +980,27 @@ background: radial-gradient(circle, rgba(255, 120, 10, 1) 18%, rgba(255, 104, 1,
 }
 
 /* Global subtle borders - 0.5px width with very light gray */
-.border {
-  border-width: 0.5px !important;
-  border-color: rgba(156, 163, 175, 0.25) !important; /* gray-400 at 25% opacity */
+/* Only apply to elements that explicitly have the border class AND don't have border-0 */
+.border:not(.border-0):not(.border-none):not([class*="border-transparent"]) {
+  border-width: 0.5px;
+  border-color: rgba(156, 163, 175, 0.25); /* gray-400 at 25% opacity */
 }
-.border-t, .border-b, .border-l, .border-r {
-  border-width: 0.5px !important;
-  border-color: rgba(156, 163, 175, 0.25) !important;
+.border-t:not(.border-0):not(.border-none),
+.border-b:not(.border-0):not(.border-none),
+.border-l:not(.border-0):not(.border-none),
+.border-r:not(.border-0):not(.border-none) {
+  border-width: 0.5px;
+  border-color: rgba(156, 163, 175, 0.25);
 }
 /* Preserve specific color borders */
-.border-gray-100, .border-gray-200, .border-gray-300 {
-  border-width: 0.5px !important;
-  border-color: rgba(156, 163, 175, 0.2) !important;
+.border-gray-100:not(.border-0), .border-gray-200:not(.border-0), .border-gray-300:not(.border-0) {
+  border-width: 0.5px;
+  border-color: rgba(156, 163, 175, 0.2);
+}
+/* Explicitly remove borders when needed */
+.border-0, .border-none, .border-transparent {
+  border-width: 0 !important;
+  border-color: transparent !important;
 }
 /* Keep intentional colored borders */
 .border-primary, .border-primary-100, .border-primary-200, .border-primary-500, .border-primary-600 {
