@@ -28,21 +28,21 @@ const VenderMiAutoPage: React.FC = () => {
     <main className="flex-1 overflow-hidden bg-white">
       {/* Hero Section - Full viewport height */}
       <section className="relative overflow-hidden min-h-[calc(100vh-80px)]">
-        {/* Left Column - Image absolutely positioned at bottom left */}
+        {/* Right Column - Image absolutely positioned at bottom right */}
         <MotionPreset
           fade
-          slide={{ direction: 'left', offset: 50 }}
+          slide={{ direction: 'right', offset: 50 }}
           blur
           transition={{ duration: 0.5 }}
           delay={0.1}
-          className="hidden lg:block absolute bottom-0 left-0 w-[30%] max-w-[350px] pointer-events-none"
+          className="hidden lg:block absolute bottom-0 right-0 w-[35%] max-w-[450px] pointer-events-none"
         >
-          <div className="relative pl-8">
+          <div className="relative pr-8">
             <Image
-              src="/images/landing-asset-0.png"
+              src="/images/trefa-vender-derecha.png"
               alt="Vende tu auto con TREFA"
-              width={350}
-              height={280}
+              width={450}
+              height={400}
               className="w-full h-auto object-contain"
               priority
             />
@@ -52,8 +52,8 @@ const VenderMiAutoPage: React.FC = () => {
         </MotionPreset>
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 h-full">
-          <div className="lg:ml-[32%] lg:max-w-2xl">
-            {/* Content & Form */}
+          <div className="lg:mr-[38%] lg:max-w-2xl">
+            {/* Content & Form (now on left) */}
             <div className="flex flex-col gap-4 justify-center">
               <MotionPreset fade slide={{ offset: 30 }} blur transition={{ duration: 0.4 }} delay={0.1}>
                 <Badge variant="outline" className="w-fit px-2.5 py-0.5 bg-primary-50 text-primary-700 border-primary-200 text-xs">
