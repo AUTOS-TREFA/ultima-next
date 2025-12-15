@@ -98,11 +98,13 @@ const VenderMiAutoPage: React.FC = () => {
                   alt="Vende tu auto con TREFA"
                   width={550}
                   height={500}
-                  className="w-full h-auto object-contain drop-shadow-2xl"
+                  className="w-full h-auto object-contain"
+                  style={{
+                    maskImage: 'linear-gradient(to bottom, black 70%, transparent 100%)',
+                    WebkitMaskImage: 'linear-gradient(to bottom, black 70%, transparent 100%)',
+                  }}
                   priority
                 />
-                {/* Subtle gradient fade at bottom */}
-                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white via-white/50 to-transparent pointer-events-none" />
               </div>
             </MotionPreset>
 
