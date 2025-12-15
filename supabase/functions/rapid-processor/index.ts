@@ -201,9 +201,10 @@ function buildPublicUrl(bucket, path) {
   const recordId = row.record_id ?? airtableData.record_id ?? null;
 
   // Get image fields from row or airtableData
-  const featureRaw = getValue('feature_image') || airtableData.image_link || null;
-  const fotosExteriorRaw = getValue('fotos_exterior_url') || airtableData.galeriaExterior || airtableData['Foto Catalogo'] || null;
-  const fotosInteriorRaw = getValue('fotos_interior_url') || airtableData.galeriaInterior || null;
+  // Check multiple possible field names for feature image with priority order
+  const featureRaw = getValue('feature_image') || getValue('feature_image_url') || airtableData.image_link || airtableData.featured_image_url || null;
+  const fotosExteriorRaw = getValue('fotos_exterior_url') || getValue('galeria_exterior') || airtableData.galeriaExterior || airtableData['Foto Catalogo'] || null;
+  const fotosInteriorRaw = getValue('fotos_interior_url') || getValue('galeria_interior') || airtableData.galeriaInterior || null;
 
   const fotosExterior = normalizePathsField(fotosExteriorRaw);
   const fotosInterior = normalizePathsField(fotosInteriorRaw);

@@ -232,10 +232,16 @@ serve(async (req: Request) => {
 
     const exteriorImages = getImageUrls(fields.fotos_exterior_url).join(', ') || '';
     const interiorImages = getImageUrls(fields.fotos_interior_url).join(', ') || '';
-    const featureImageArray = getImageUrls(fields.feature_image);
 
-    // Use feature_image if available, otherwise use first exterior image as fallback
-    let featureImage = featureImageArray.length > 0 ? featureImageArray[0] : null;
+    // Check multiple possible field names for feature image (Airtable attachment or URL string)
+    const featureImageArray = getImageUrls(fields.feature_image) || [];
+    const featuredImageUrlArray = getImageUrls(fields.featured_image_url) || [];
+    const featureImageUrlArray = getImageUrls(fields.feature_image_url) || [];
+
+    // Use feature_image if available, then featured_image_url, then feature_image_url, then first exterior image
+    let featureImage = featureImageArray.length > 0 ? featureImageArray[0] :
+                       featuredImageUrlArray.length > 0 ? featuredImageUrlArray[0] :
+                       featureImageUrlArray.length > 0 ? featureImageUrlArray[0] : null;
 
     if (!featureImage && exteriorImages) {
       const exteriorArray = exteriorImages.split(',').map(url => url.trim()).filter(Boolean);
@@ -327,6 +333,7 @@ serve(async (req: Request) => {
       autoano: getNumberField(fields.AutoAno, fields.autoano),
       cilindros: getNumberField(fields.AutoCilindros, fields.cilindros),
       feature_image: featureImage,
+      feature_image_url: featureImage, // Store in both columns for compatibility
       fotos_exterior_url: exteriorImages,
       fotos_interior_url: interiorImages,
       ordencompra: fields.OrdenCompra || '',
