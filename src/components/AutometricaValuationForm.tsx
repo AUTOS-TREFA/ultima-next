@@ -716,30 +716,23 @@ export function AutometricaValuationForm({
                     <p className="text-slate-500 text-xs">{selectedBrand} {selectedSubbrand} {selectedYear}</p>
                   </div>
 
-                  {/* Blurred offer with inline unlock */}
-                  <div className="flex items-center gap-2">
-                    <div className="text-right">
-                      <p className="text-slate-400 text-[10px] uppercase tracking-wide">Oferta</p>
-                      <p className="text-lg font-bold text-slate-800 blur-sm select-none">
-                        {currencyFormatter.format(valuation.purchasePrice)}
-                      </p>
-                    </div>
-
-                    {/* Inline unlock arrow */}
-                    <button
-                      onClick={() => setShowVerificationModal(true)}
-                      className="w-8 h-8 rounded-full bg-primary-100 hover:bg-primary-200 flex items-center justify-center transition-all hover:scale-110 group"
-                      title="Desbloquear oferta"
-                    >
-                      <ArrowRight className="w-4 h-4 text-primary-600 group-hover:translate-x-0.5 transition-transform" />
-                    </button>
+                  {/* Blurred offer */}
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-slate-800 blur-sm select-none">
+                      {currencyFormatter.format(valuation.purchasePrice)}
+                    </p>
                   </div>
                 </div>
 
-                {/* Verification prompt */}
-                <p className="text-xs text-slate-500 mt-3 text-center">
-                  Por favor verifica tu teléfono para ver tu oferta
-                </p>
+                {/* Unlock CTA button */}
+                <button
+                  onClick={() => setShowVerificationModal(true)}
+                  className="mt-3 w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-all text-sm"
+                >
+                  <Lock className="w-4 h-4" />
+                  Verificar y desbloquear oferta
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
 

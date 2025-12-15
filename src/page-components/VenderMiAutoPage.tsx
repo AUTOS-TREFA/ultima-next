@@ -101,8 +101,8 @@ const BrandCarousel: React.FC = () => {
 const VenderMiAutoPage: React.FC = () => {
   return (
     <main className="flex-1 overflow-hidden bg-white">
-      {/* Hero Section - Compact layout pushed up */}
-      <section className="relative overflow-hidden pt-4 sm:pt-6 lg:pt-8">
+      {/* Hero Section - With top padding for breathing room */}
+      <section className="relative overflow-hidden pt-6 sm:pt-8 lg:pt-12">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 w-full">
           <div className="grid lg:grid-cols-[1.3fr_1fr] gap-4 lg:gap-8 items-start">
 
