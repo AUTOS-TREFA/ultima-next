@@ -45,6 +45,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Supabase URL and Anon Key must be defined.');
 }
 
-// Create the Supabase client without a custom fetch wrapper.
-// The Supabase client will use the default fetch implementation.
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Create the Supabase client with explicit session persistence settings.
+// This ensures sessions persist across page reloads and browser restarts.
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: 'pkce',
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+        storageKey: 'supabase.auth.token',
+    }
+});

@@ -94,8 +94,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
             });
 
-            // Sign out from Supabase (global scope to sign out from all devices)
-            const { error } = await supabase.auth.signOut({ scope: 'global' });
+            // Sign out from Supabase (local scope to only sign out current browser)
+            const { error } = await supabase.auth.signOut({ scope: 'local' });
 
             if (error) {
                 console.error('[AuthContext] Error signing out from Supabase:', error);
