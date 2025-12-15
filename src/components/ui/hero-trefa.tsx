@@ -214,7 +214,7 @@ function HeroTrefa({ isMobile = false }: HeroTrefaProps) {
             <span className="bg-[#FF6801] border-[#E65D00] border [box-shadow:inset_0px_-2px_6px_2px_#ff8533,inset_0px_4px_6px_2px_#ffa366] p-1 inline-block rounded-full px-2.5 text-white">
               Nuevo
             </span>
-            <p>Portal de Financiamiento Automotriz, <span className="bg-[#FF6801] text-white px-2 py-0.5 rounded-full font-semibold">100% Digital</span></p>
+            <p>Portal de Financiamiento Automotriz, <span style={{ backgroundColor: '#FF6801', color: 'white' }} className="px-2 py-0.5 rounded-full font-semibold">100% Digital</span></p>
             <ChevronRight />
           </Link>
 

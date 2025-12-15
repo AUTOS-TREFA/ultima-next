@@ -118,9 +118,10 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
               fade
               slide
               transition={{ duration: 0.5, ease: 'easeOut' }}
-              className="bg-white/80 backdrop-blur-sm flex items-center gap-2.5 rounded-full border border-orange-200 px-3 py-2 shadow-sm"
+              className="bg-white/80 backdrop-blur-sm flex items-center gap-2.5 rounded-full px-3 py-2 shadow-sm"
+              style={{ border: '1px solid rgba(255, 104, 1, 0.2)' }}
             >
-              <Badge className="bg-primary hover:bg-primary text-white">
+              <Badge style={{ backgroundColor: '#FF6801', color: 'white' }} className="hover:bg-[#E55E01]">
                 <Zap className="w-3 h-3 mr-1" />
                 100% Digital
               </Badge>

@@ -171,14 +171,16 @@ const FilterSidebar: React.FC<FilterSidebarProps> = (props) => {
 
             <AccordionItem title="Carrocería" startOpen>
                 <div className="grid grid-cols-4 gap-2">
-                    {(filterOptions?.carroceria || []).map(c => {
+                    {(filterOptions?.carroceria || [])
+                        .filter(c => !['motos', 'motocicleta', 'motocicletas', 'moto'].includes(String(c.name).toLowerCase()))
+                        .map(c => {
                         const isSelected = (currentFilters.carroceria || []).includes(c.name as string);
                         return (
                             <button
                                 key={c.name}
                                 type="button"
                                 onClick={() => handleCheckboxChange('carroceria', c.name as string)}
-                                className={`relative overflow-hidden rounded-lg border-2 transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 group ${isSelected ? 'border-primary-500' : 'border-gray-200 hover:border-gray-300'}`}
+                                className={`relative overflow-hidden rounded-lg transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 group ${isSelected ? 'border-2 border-primary-500' : 'border-0 hover:shadow-md'}`}
                                 aria-pressed={isSelected}
                             >
                                 <img src={getCategoryImage('carroceria', c.name as string)} alt={c.name as string} className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105" />
@@ -201,7 +203,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = (props) => {
                                     console.log('Marca button clicked:', m.name);
                                     handleCheckboxChange('marca', m.name as string);
                                 }}
-                                className={`relative overflow-hidden rounded-lg border-2 p-2 bg-white transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 group ${isSelected ? 'border-primary-500' : 'border-gray-200 hover:border-gray-300'}`}
+                                className={`relative overflow-hidden rounded-lg p-2 bg-white transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 group ${isSelected ? 'border-2 border-primary-500' : 'border-0 hover:shadow-md'}`}
                                 aria-pressed={isSelected}
                             >
                                 <img src={BRAND_LOGOS[m.name as string] || getCategoryImage('marca', m.name as string)} alt={m.name as string} className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105" style={{ aspectRatio: '1/1' }} />
@@ -294,7 +296,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = (props) => {
 
     return (
         <div className="w-full lg:w-96">
-            <Card className="w-full overflow-visible">
+            <Card className="w-full overflow-visible shadow-sm" style={{ border: '1px solid rgba(0,0,0,0.06)' }}>
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-xl">Filtrar por</CardTitle>

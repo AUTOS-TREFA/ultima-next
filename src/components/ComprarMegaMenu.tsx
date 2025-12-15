@@ -66,7 +66,7 @@ const ComprarMegaMenu: React.FC<ComprarMegaMenuProps> = ({ isOpen, onClose, trig
       return matchingKey ? BRAND_LOGOS[matchingKey] : '/images/trefalogo.png';
     };
 
-    return uniqueMarcas.slice(0, 8).map(marcaName => ({
+    return uniqueMarcas.slice(0, 10).map(marcaName => ({
       id: marcaName,
       name: marcaName,
       slug: marcaName.toLowerCase().replace(/\s+/g, '-'),
@@ -260,29 +260,29 @@ const ComprarMegaMenu: React.FC<ComprarMegaMenuProps> = ({ isOpen, onClose, trig
               </div>
             </div>
 
-            {/* Column 3 - Marcas (2x4 grid) */}
+            {/* Column 3 - Marcas (2x4 grid) - Compact */}
             <div>
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Marcas Populares</h3>
-              <div className="grid grid-cols-2 gap-2">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Marcas Populares</h3>
+              <div className="grid grid-cols-2 gap-1.5">
                 {marcas.map(marca => (
                   <button
                     key={marca.id}
                     onClick={() => handleFilterClick('automarca', marca.slug)}
-                    className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 hover:bg-primary-50 border border-gray-100 hover:border-primary-200 transition-all group aspect-square"
+                    className="flex items-center justify-center p-2 rounded-lg bg-gray-50 hover:bg-primary-50 border border-gray-100 hover:border-primary-200 transition-all group h-12"
                     title={marca.name}
                   >
                     {marca.logoUrl && marca.logoUrl !== '/images/trefalogo.png' ? (
                       <img
                         src={marca.logoUrl}
                         alt={marca.name}
-                        className="w-10 h-10 object-contain group-hover:scale-110 transition-transform"
+                        className="w-8 h-8 object-contain group-hover:scale-110 transition-transform"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                           e.currentTarget.nextElementSibling?.classList.remove('hidden');
                         }}
                       />
                     ) : null}
-                    <span className={`text-xs font-semibold text-gray-600 group-hover:text-primary-700 text-center mt-1 ${marca.logoUrl && marca.logoUrl !== '/images/trefalogo.png' ? 'hidden' : ''}`}>
+                    <span className={`text-[10px] font-semibold text-gray-600 group-hover:text-primary-700 text-center ${marca.logoUrl && marca.logoUrl !== '/images/trefalogo.png' ? 'hidden' : ''}`}>
                       {marca.name}
                     </span>
                   </button>
@@ -290,7 +290,7 @@ const ComprarMegaMenu: React.FC<ComprarMegaMenuProps> = ({ isOpen, onClose, trig
               </div>
               <button
                 onClick={() => handleLinkClick('/autos')}
-                className="w-full mt-3 p-2 text-xs font-semibold text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors flex items-center justify-center gap-1"
+                className="w-full mt-2 p-1.5 text-xs font-semibold text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors flex items-center justify-center gap-1"
               >
                 Ver todas las marcas
                 <ArrowRightIcon className="w-3 h-3" />
@@ -313,7 +313,7 @@ const ComprarMegaMenu: React.FC<ComprarMegaMenuProps> = ({ isOpen, onClose, trig
                   ))}
                 </div>
               )}
-              <div className="mt-6 p-4 bg-gradient-to-br from-primary-50 to-orange-50 rounded-xl border border-primary-100">
+              <div className="mt-6 p-4 bg-gradient-to-br from-primary-50 to-orange-50 rounded-xl" style={{ border: '1px solid rgba(255, 104, 1, 0.15)' }}>
                 <p className="text-sm font-semibold text-gray-900 mb-1">¿No encuentras lo que buscas?</p>
                 <p className="text-xs text-gray-600 mb-3">Cuéntanos qué auto quieres y te ayudamos a encontrarlo.</p>
                 <button
