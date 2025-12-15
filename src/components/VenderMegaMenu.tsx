@@ -3,9 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRightIcon, WhatsAppIcon } from './icons';
-import { searchVehiclesWithAI } from '../Valuation/services/valuationService';
-import { config } from '@/config';
-import type { Vehicle } from '../types/types';
+import { AutometricaService, AutometricaVehicleOption } from '@/services/AutometricaService';
 import { Search, Loader2, Car, DollarSign, Clock, Shield, CheckCircle2 } from 'lucide-react';
 
 interface VenderMegaMenuProps {
@@ -16,10 +14,10 @@ interface VenderMegaMenuProps {
 
 const VenderMegaMenu: React.FC<VenderMegaMenuProps> = ({ isOpen, onClose, triggerRef }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [vehicleOptions, setVehicleOptions] = useState<Vehicle[]>([]);
+  const [vehicleOptions, setVehicleOptions] = useState<AutometricaVehicleOption[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<AutometricaVehicleOption | null>(null);
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -28,13 +26,7 @@ const VenderMegaMenu: React.FC<VenderMegaMenuProps> = ({ isOpen, onClose, trigge
     if (searchQuery.length > 2) {
       setIsSearching(true);
       const handler = setTimeout(() => {
-        searchVehiclesWithAI(
-          searchQuery,
-          config.airtable.valuation.apiKey,
-          config.airtable.valuation.baseId,
-          config.airtable.valuation.tableId,
-          config.airtable.valuation.view
-        )
+        AutometricaService.searchVehicles(searchQuery)
           .then(res => { setVehicleOptions(res); setIsDropdownOpen(res.length > 0); })
           .catch(err => console.error("Error searching vehicles:", err))
           .finally(() => setIsSearching(false));
@@ -68,7 +60,7 @@ const VenderMegaMenu: React.FC<VenderMegaMenuProps> = ({ isOpen, onClose, trigge
     };
   }, [isOpen, onClose, triggerRef]);
 
-  const handleSelectVehicle = (vehicle: Vehicle) => {
+  const handleSelectVehicle = (vehicle: AutometricaVehicleOption) => {
     setSelectedVehicle(vehicle);
     setSearchQuery(vehicle.label);
     setIsDropdownOpen(false);
@@ -77,9 +69,7 @@ const VenderMegaMenu: React.FC<VenderMegaMenuProps> = ({ isOpen, onClose, trigge
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onClose();
-    if (selectedVehicle?.ordencompra) {
-      router.push(`/vender-mi-auto?vehicle=${encodeURIComponent(selectedVehicle.ordencompra)}`);
-    } else if (searchQuery.trim()) {
+    if (searchQuery.trim()) {
       router.push(`/vender-mi-auto?search=${encodeURIComponent(searchQuery.trim())}`);
     } else {
       router.push('/vender-mi-auto');
