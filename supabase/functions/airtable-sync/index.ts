@@ -372,7 +372,7 @@ serve(async (req: Request) => {
     const { error } = await supabase
       .from('inventario_cache')
       .upsert(supabaseData, {
-        onConflict: 'record_id',
+        onConflict: 'ordencompra',
         ignoreDuplicates: false,
       });
 
