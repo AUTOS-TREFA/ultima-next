@@ -28,11 +28,11 @@ const VenderMiAutoPage: React.FC = () => {
     <main className="flex-1 overflow-hidden bg-white">
       {/* Hero Section - Balanced two-column layout */}
       <section className="relative overflow-hidden min-h-[calc(100vh-80px)] flex items-center">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 w-full">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-12 w-full">
           <div className="grid lg:grid-cols-[1.3fr_1fr] gap-6 lg:gap-8 items-center">
 
             {/* Left Column - Content & Form */}
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-4">
               <MotionPreset
                 fade
                 slide={{ direction: 'left', offset: 40 }}
