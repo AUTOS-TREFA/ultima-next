@@ -26,60 +26,86 @@ import {
 const VenderMiAutoPage: React.FC = () => {
   return (
     <main className="flex-1 overflow-hidden bg-white">
-      {/* Hero Section - Full viewport height */}
-      <section className="relative overflow-hidden min-h-[calc(100vh-80px)]">
-        {/* Right Column - Image absolutely positioned at bottom right */}
-        <MotionPreset
-          fade
-          slide={{ direction: 'right', offset: 50 }}
-          blur
-          transition={{ duration: 0.5 }}
-          delay={0.1}
-          className="hidden lg:block absolute bottom-0 right-0 w-[35%] max-w-[450px] pointer-events-none"
-        >
-          <div className="relative pr-8">
-            <Image
-              src="/images/trefa-vender-derecha.png"
-              alt="Vende tu auto con TREFA"
-              width={450}
-              height={400}
-              className="w-full h-auto object-contain"
-              priority
-            />
-            {/* Fade to white at bottom */}
-            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent" />
-          </div>
-        </MotionPreset>
+      {/* Hero Section - Balanced two-column layout */}
+      <section className="relative overflow-hidden min-h-[calc(100vh-80px)] flex items-center">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 w-full">
+          <div className="grid lg:grid-cols-[1fr_1fr] gap-8 lg:gap-12 items-center">
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 h-full">
-          <div className="lg:mr-[38%] lg:max-w-2xl">
-            {/* Content & Form (now on left) */}
-            <div className="flex flex-col gap-4 justify-center">
-              <MotionPreset fade slide={{ offset: 30 }} blur transition={{ duration: 0.4 }} delay={0.1}>
+            {/* Left Column - Content & Form */}
+            <div className="flex flex-col gap-5 lg:pr-8">
+              <MotionPreset
+                fade
+                slide={{ direction: 'left', offset: 40 }}
+                blur
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                delay={0}
+              >
                 <Badge variant="outline" className="w-fit px-2.5 py-0.5 bg-primary-50 text-primary-700 border-primary-200 text-xs">
                   <Zap className="w-3 h-3 mr-1" />
                   Instantáneo
                 </Badge>
               </MotionPreset>
 
-              <MotionPreset fade slide={{ offset: 30 }} blur transition={{ duration: 0.4 }} delay={0.15}>
+              <MotionPreset
+                fade
+                slide={{ direction: 'left', offset: 40 }}
+                blur
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                delay={0.1}
+              >
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-800 leading-tight">
                   Recibe una oferta por tu auto.
                   <span className="block text-primary-600 font-medium text-lg sm:text-xl lg:text-2xl mt-1">Es fácil, rápido y sin costo.</span>
                 </h1>
               </MotionPreset>
 
-              <MotionPreset fade slide={{ offset: 30 }} blur transition={{ duration: 0.4 }} delay={0.2}>
-                <p className="text-base text-slate-500 max-w-md">
+              <MotionPreset
+                fade
+                slide={{ direction: 'left', offset: 40 }}
+                blur
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                delay={0.15}
+              >
+                <p className="text-base text-slate-500 max-w-lg">
                   Completa el formulario y obtén una cotización basada en datos reales del mercado mexicano.
                 </p>
               </MotionPreset>
 
               {/* Inline Form */}
-              <MotionPreset fade slide={{ offset: 30 }} blur transition={{ duration: 0.4 }} delay={0.25}>
+              <MotionPreset
+                fade
+                slide={{ direction: 'left', offset: 40 }}
+                blur
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                delay={0.2}
+              >
                 <AutometricaValuationForm embedded compact />
               </MotionPreset>
             </div>
+
+            {/* Right Column - Hero Image */}
+            <MotionPreset
+              fade
+              slide={{ direction: 'right', offset: 60 }}
+              blur
+              transition={{ duration: 0.7, ease: 'easeOut' }}
+              delay={0.3}
+              className="hidden lg:flex items-end justify-center relative"
+            >
+              <div className="relative w-full max-w-[550px]">
+                <Image
+                  src="/images/trefa-vender-derecha.png"
+                  alt="Vende tu auto con TREFA"
+                  width={550}
+                  height={500}
+                  className="w-full h-auto object-contain drop-shadow-2xl"
+                  priority
+                />
+                {/* Subtle gradient fade at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white via-white/50 to-transparent pointer-events-none" />
+              </div>
+            </MotionPreset>
+
           </div>
         </div>
       </section>
