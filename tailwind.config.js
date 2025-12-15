@@ -1,3 +1,6 @@
+import containerQueries from '@tailwindcss/container-queries';
+import tailwindcssAnimate from 'tailwindcss-animate';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ["class"],
@@ -152,7 +155,7 @@ export default {
   	}
   },
   plugins: [
-    require('@tailwindcss/container-queries'),
-    require("tailwindcss-animate"),
+    containerQueries,
+    tailwindcssAnimate,
   ],
 };
