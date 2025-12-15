@@ -881,7 +881,7 @@ export function AutometricaValuationForm({
           ) : (
             <div className={spaceY}>
               {/* Row 1: Brand, Model, Year */}
-              <div className={`grid grid-cols-3 ${gap}`}>
+              <div className={`grid grid-cols-1 sm:grid-cols-3 ${gap}`}>
                 <div className="space-y-1.5">
                   <label className={`block ${labelText}`}>Marca</label>
                   <div className={`relative ${showPulse && !selectedBrand ? 'animate-pulse-border' : ''}`}>
@@ -949,7 +949,7 @@ export function AutometricaValuationForm({
               </div>
 
               {/* Row 2: Version, Kilometraje, Button */}
-              <div className={`grid grid-cols-3 ${gap} items-end`}>
+              <div className={`grid grid-cols-1 sm:grid-cols-3 ${gap} items-end`}>
                 <div className="space-y-1.5">
                   <label className={`block ${labelText} ${!selectedYear ? 'opacity-40' : ''}`}>Versión</label>
                   <div className="relative">
