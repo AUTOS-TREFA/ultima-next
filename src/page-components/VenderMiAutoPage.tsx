@@ -28,34 +28,33 @@ const VenderMiAutoPage: React.FC = () => {
     <main className="flex-1 overflow-hidden bg-white">
       {/* Hero Section - Full viewport height */}
       <section className="relative overflow-hidden min-h-[calc(100vh-80px)]">
+        {/* Left Column - Image absolutely positioned at bottom left */}
+        <MotionPreset
+          fade
+          slide={{ direction: 'left', offset: 50 }}
+          blur
+          transition={{ duration: 0.5 }}
+          delay={0.1}
+          className="hidden lg:block absolute bottom-0 left-0 w-[30%] max-w-[350px] pointer-events-none"
+        >
+          <div className="relative pl-8">
+            <Image
+              src="/images/landing-asset-0.png"
+              alt="Vende tu auto con TREFA"
+              width={350}
+              height={280}
+              className="w-full h-auto object-contain"
+              priority
+            />
+            {/* Fade to white at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent" />
+          </div>
+        </MotionPreset>
+
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 h-full">
-          <div className="grid gap-5 lg:grid-cols-[1fr_2fr] lg:gap-5 min-h-[500px]">
-
-            {/* Left Column - Image snapped to bottom, centered, 70% size */}
-            <MotionPreset
-              fade
-              slide={{ direction: 'left', offset: 50 }}
-              blur
-              transition={{ duration: 0.5 }}
-              delay={0.1}
-              className="relative hidden lg:flex order-1 lg:order-1 items-end justify-center self-end"
-            >
-              <div className="relative w-[75%]">
-                <Image
-                  src="/images/landing-asset-0.png"
-                  alt="Vende tu auto con TREFA"
-                  width={350}
-                  height={280}
-                  className="w-full h-auto object-contain"
-                  priority
-                />
-                {/* Fade to white at bottom */}
-                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent pointer-events-none" />
-              </div>
-            </MotionPreset>
-
-            {/* Right Column - Content & Form (vertically centered) */}
-            <div className="flex flex-col gap-4 order-2 lg:order-2 justify-center self-center">
+          <div className="lg:ml-[32%] lg:max-w-2xl">
+            {/* Content & Form */}
+            <div className="flex flex-col gap-4 justify-center">
               <MotionPreset fade slide={{ offset: 30 }} blur transition={{ duration: 0.4 }} delay={0.1}>
                 <Badge variant="outline" className="w-fit px-2.5 py-0.5 bg-primary-50 text-primary-700 border-primary-200 text-xs">
                   <Zap className="w-3 h-3 mr-1" />

@@ -49,6 +49,14 @@ import type { UserVehicleForSale } from '@/types/types';
 import Confetti from '@/Valuation/components/Confetti';
 import AnimatedNumber from '@/Valuation/components/AnimatedNumber';
 
+// UI components
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+
 // ============================================================================
 // BRAND FILTER CONFIGURATION
 // ============================================================================
@@ -226,6 +234,7 @@ export function AutometricaValuationForm({
 
   // UI state
   const [copied, setCopied] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   // Currency formatter
   const currencyFormatter = new Intl.NumberFormat('es-MX', {
@@ -589,26 +598,30 @@ export function AutometricaValuationForm({
     : 'bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden';
 
   // ============================================================================
-  // RENDER - VALUATING
+  // RENDER - VALUATING (compact inline loader)
   // ============================================================================
 
   if (step === 'valuating' || step === 'verifying') {
     return (
       <div className={containerClass}>
-        <div className={embedded ? 'py-12 text-center' : `${cardClass} p-8`}>
-          <div className="py-8 text-center">
-            <div className="relative mx-auto w-20 h-20 mb-6">
-              <div className="absolute inset-0 rounded-full bg-primary-100 animate-ping opacity-25"></div>
-              <div className="relative w-20 h-20 rounded-full bg-primary-100 flex items-center justify-center">
-                <Loader2 className="w-10 h-10 animate-spin text-primary-600" />
+        <div className={embedded ? '' : cardClass}>
+          <div className={embedded ? 'py-6' : 'p-6'}>
+            <div className="flex items-center gap-4 justify-center">
+              <div className="relative w-10 h-10">
+                <div className="absolute inset-0 rounded-full bg-primary-100 animate-ping opacity-25"></div>
+                <div className="relative w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
+                  <Loader2 className="w-5 h-5 animate-spin text-primary-600" />
+                </div>
+              </div>
+              <div>
+                <p className="font-semibold text-sm text-gray-900">
+                  {step === 'verifying' ? 'Verificando...' : 'Calculando tu oferta...'}
+                </p>
+                <p className="text-gray-500 text-xs">
+                  {step === 'verifying' ? 'Creando tu cuenta' : 'Consultando datos del mercado'}
+                </p>
               </div>
             </div>
-            <p className="font-bold text-xl text-gray-900">
-              {step === 'verifying' ? 'Verificando...' : 'Calculando tu oferta...'}
-            </p>
-            <p className="text-gray-500 mt-2">
-              {step === 'verifying' ? 'Creando tu cuenta' : 'Consultando datos del mercado mexicano'}
-            </p>
           </div>
         </div>
       </div>
@@ -616,161 +629,148 @@ export function AutometricaValuationForm({
   }
 
   // ============================================================================
-  // RENDER - VERIFY TO REVEAL
+  // RENDER - VERIFY TO REVEAL (compact inline + modal)
   // ============================================================================
 
   if (step === 'verify_to_reveal' && valuation) {
     return (
       <div className={containerClass}>
         <div className={embedded ? '' : cardClass}>
-          {/* Blurred Offer Preview */}
-          <div className="relative bg-gradient-to-br from-primary-600 to-primary-700 px-6 py-8 text-center overflow-hidden">
-            <Sparkles className="absolute top-4 right-4 w-6 h-6 text-white/30" />
-            <Sparkles className="absolute bottom-4 left-4 w-5 h-5 text-white/20" />
-
-            <div className="mx-auto w-14 h-14 rounded-full bg-white/20 flex items-center justify-center mb-4">
-              <Eye className="w-7 h-7 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-white">¡Tu oferta está lista!</h2>
-            <p className="text-primary-100 mt-2 mb-4">
-              Verifica tu número para ver el monto
-            </p>
-
-            {/* Blurred price */}
-            <div className="inline-block bg-white/10 backdrop-blur-sm rounded-xl px-8 py-4">
-              <p className="text-sm text-white/70 mb-1">Oferta estimada</p>
-              <p className="text-4xl font-bold text-white blur-md select-none">
-                {currencyFormatter.format(valuation.purchasePrice)}
-              </p>
+          <div className={embedded ? 'space-y-4' : 'p-6 space-y-4'}>
+            {/* Compact offer preview */}
+            <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <Eye className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-semibold text-sm">¡Tu oferta está lista!</p>
+                <p className="text-primary-100 text-xs">{selectedBrand} {selectedSubbrand} {selectedYear}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-white/70 text-xs">Oferta</p>
+                <p className="text-xl font-bold text-white blur-sm select-none">
+                  {currencyFormatter.format(valuation.purchasePrice)}
+                </p>
+              </div>
             </div>
 
-            <p className="text-xs text-white/60 mt-4">
-              {selectedBrand} {selectedSubbrand} {selectedYear}
-            </p>
-          </div>
-
-          {/* Verification Form */}
-          <div className="p-6 space-y-5">
-            <div className="text-center">
-              <Lock className="w-8 h-8 text-primary-600 mx-auto mb-2" />
-              <h3 className="font-bold text-lg text-gray-900">Desbloquea tu oferta</h3>
-              <p className="text-sm text-gray-500">Ingresa tus datos para ver el monto exacto</p>
+            {/* Action buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowVerificationModal(true)}
+                className="flex-1 flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-primary-700 transition-all text-sm"
+              >
+                <Lock className="w-4 h-4" />
+                Verificar mi cuenta
+              </button>
+              <button
+                onClick={handleReset}
+                className="flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 py-3 px-4 rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-sm"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
             </div>
-
-            {verificationError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                <p className="text-sm text-red-700">{verificationError}</p>
-              </div>
-            )}
-
-            {!otpSent ? (
-              <div className="space-y-4">
-                {/* Email */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700">
-                    Correo electrónico
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="email"
-                      placeholder="tu@email.com"
-                      value={emailInput}
-                      onChange={(e) => setEmailInput(e.target.value)}
-                      className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pl-12 text-gray-900 font-medium placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Phone */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700">
-                    Número de celular
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="tel"
-                      placeholder="10 dígitos"
-                      value={phoneInput}
-                      onChange={(e) => setPhoneInput(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                      className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl py-3.5 px-4 pl-12 text-gray-900 font-medium placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500">Te enviaremos un código de verificación por SMS</p>
-                </div>
-
-                <button
-                  onClick={handleSendOtp}
-                  disabled={verificationLoading || !phoneInput || !emailInput}
-                  className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-bold py-4 px-6 rounded-xl hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary-600/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                >
-                  {verificationLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>
-                      Ver mi oferta
-                      <ArrowRight className="w-5 h-5" />
-                    </>
-                  )}
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {/* OTP Input */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700">
-                    Código de verificación
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="123456"
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl py-4 px-6 text-center text-2xl font-bold tracking-[0.5em] text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
-                    maxLength={6}
-                  />
-                  <p className="text-xs text-gray-500 text-center">
-                    Enviamos un código de 6 dígitos a {phoneInput}
-                  </p>
-                </div>
-
-                <button
-                  onClick={handleVerifyOtp}
-                  disabled={verificationLoading || otpCode.length < 6}
-                  className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-bold py-4 px-6 rounded-xl hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary-600/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                >
-                  {verificationLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>
-                      Verificar y ver oferta
-                      <CheckCircle2 className="w-5 h-5" />
-                    </>
-                  )}
-                </button>
-
-                <button
-                  onClick={() => setOtpSent(false)}
-                  className="w-full text-sm text-gray-500 hover:text-gray-700"
-                >
-                  Cambiar número
-                </button>
-              </div>
-            )}
-
-            <p className="text-center text-xs text-gray-400">
-              Al continuar, aceptas nuestros términos y condiciones
-            </p>
           </div>
         </div>
+
+        {/* Verification Modal */}
+        <Dialog open={showVerificationModal} onOpenChange={setShowVerificationModal}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Lock className="w-5 h-5 text-primary-600" />
+                Desbloquea tu oferta
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 py-2">
+              {verificationError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-700">{verificationError}</p>
+                </div>
+              )}
+
+              {!otpSent ? (
+                <>
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-medium text-gray-700">Correo electrónico</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="email"
+                        placeholder="tu@email.com"
+                        value={emailInput}
+                        onChange={(e) => setEmailInput(e.target.value)}
+                        className="w-full border border-gray-200 rounded-lg py-2.5 px-3 pl-10 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-medium text-gray-700">Número de celular</label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="tel"
+                        placeholder="10 dígitos"
+                        value={phoneInput}
+                        onChange={(e) => setPhoneInput(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                        className="w-full border border-gray-200 rounded-lg py-2.5 px-3 pl-10 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500">Te enviaremos un código por SMS</p>
+                  </div>
+
+                  <button
+                    onClick={handleSendOtp}
+                    disabled={verificationLoading || !phoneInput || !emailInput}
+                    className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-primary-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {verificationLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Ver mi oferta <ArrowRight className="w-4 h-4" /></>}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-medium text-gray-700">Código de verificación</label>
+                    <input
+                      type="text"
+                      placeholder="123456"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      className="w-full border border-gray-200 rounded-lg py-3 px-4 text-center text-xl font-bold tracking-[0.3em] focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      maxLength={6}
+                    />
+                    <p className="text-xs text-gray-500 text-center">Código enviado a {phoneInput}</p>
+                  </div>
+
+                  <button
+                    onClick={handleVerifyOtp}
+                    disabled={verificationLoading || otpCode.length < 6}
+                    className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-primary-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {verificationLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Verificar <CheckCircle2 className="w-4 h-4" /></>}
+                  </button>
+
+                  <button onClick={() => setOtpSent(false)} className="w-full text-sm text-gray-500 hover:text-gray-700">
+                    Cambiar número
+                  </button>
+                </>
+              )}
+
+              <p className="text-center text-xs text-gray-400">
+                Al continuar, aceptas nuestros términos y condiciones
+              </p>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
 
   // ============================================================================
-  // RENDER - SUCCESS
+  // RENDER - SUCCESS (compact inline)
   // ============================================================================
 
   if (step === 'success' && valuation) {
@@ -778,87 +778,68 @@ export function AutometricaValuationForm({
       <div className={containerClass}>
         <Confetti />
         <div className={embedded ? '' : cardClass}>
-          {/* Header */}
-          <div className="bg-gradient-to-br from-green-500 to-green-600 px-6 py-8 text-center">
-            <CheckCircle2 className="w-16 h-16 text-white mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-white">¡Tenemos una oferta para ti!</h2>
-            <p className="text-green-100 mt-2">Basada en datos reales del mercado mexicano</p>
-          </div>
-
-          {/* Content */}
-          <div className="p-6 space-y-6">
-            {/* Offer Display */}
-            <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6 text-center border border-primary-200">
-              <p className="text-sm text-primary-700 font-medium mb-1">Oferta de Compra</p>
-              <p className="text-4xl font-bold text-primary-600">
-                <AnimatedNumber value={offer} />
-              </p>
-              <p className="text-sm text-primary-600/70 mt-2">
-                para tu {selectedBrand} {selectedSubbrand} {selectedYear}
-              </p>
-            </div>
-
-            {/* Market Value Info */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-blue-50 rounded-xl text-center border border-blue-100">
-                <p className="text-xs text-blue-600 font-medium mb-1">Valor de Mercado</p>
-                <p className="font-bold text-blue-700 text-lg">
-                  {currencyFormatter.format(valuation.salePrice)}
-                </p>
-              </div>
-              <div className="p-4 bg-green-50 rounded-xl text-center border border-green-100">
-                <p className="text-xs text-green-600 font-medium mb-1">Tu Oferta</p>
-                <p className="font-bold text-green-700 text-lg">
-                  {currencyFormatter.format(valuation.purchasePrice)}
-                </p>
+          <div className={embedded ? 'space-y-4' : 'p-6 space-y-4'}>
+            {/* Compact success header + offer */}
+            <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-sm">¡Tenemos una oferta!</p>
+                  <p className="text-green-100 text-xs">{selectedBrand} {selectedSubbrand} {selectedYear}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-white/70 text-xs">Oferta</p>
+                  <p className="text-xl font-bold text-white">
+                    <AnimatedNumber value={offer} />
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="space-y-3">
+            {/* Compact market values */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 bg-blue-50 rounded-lg text-center border border-blue-100">
+                <p className="text-[10px] text-blue-600 font-medium">Valor Mercado</p>
+                <p className="font-bold text-blue-700 text-sm">{currencyFormatter.format(valuation.salePrice)}</p>
+              </div>
+              <div className="p-3 bg-green-50 rounded-lg text-center border border-green-100">
+                <p className="text-[10px] text-green-600 font-medium">Tu Oferta</p>
+                <p className="font-bold text-green-700 text-sm">{currencyFormatter.format(valuation.purchasePrice)}</p>
+              </div>
+            </div>
+
+            {/* Compact actions */}
+            <div className="flex gap-2">
               <button
                 onClick={handleGoToDashboard}
-                className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-4 px-6 rounded-xl hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary-600/25"
+                className="flex-1 flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-primary-700 transition-all text-sm"
               >
-                Continuar con la venta
-                <ArrowRight className="w-5 h-5" />
+                Continuar
+                <ArrowRight className="w-4 h-4" />
               </button>
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 bg-green-600 text-white font-semibold py-4 px-6 rounded-xl hover:bg-green-700 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-green-600/25"
+                className="flex items-center justify-center gap-2 bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700 transition-all text-sm"
               >
-                <WhatsAppIcon className="w-5 h-5" />
-                Agendar por WhatsApp
+                <WhatsAppIcon className="w-4 h-4" />
               </a>
-            </div>
-
-            {/* Secondary Actions */}
-            <div className="flex items-center justify-center gap-6 pt-4 border-t border-gray-100">
-              <button
-                onClick={() => window.print()}
-                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                Imprimir
-              </button>
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                className="flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 py-3 px-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-all"
               >
                 {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                {copied ? 'Copiado' : 'Compartir'}
+              </button>
+              <button
+                onClick={handleReset}
+                className="flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 py-3 px-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-all"
+              >
+                <RefreshCw className="w-4 h-4" />
               </button>
             </div>
-
-            {/* Reset */}
-            <button
-              onClick={handleReset}
-              className="w-full flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 py-2 transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Cotizar otro auto
-            </button>
           </div>
         </div>
       </div>
