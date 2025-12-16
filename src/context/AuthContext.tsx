@@ -1,10 +1,13 @@
 'use client';
 
-import React, { createContext, useState, useEffect, useContext, ReactNode, useCallback } from 'react';
-import { supabase } from '../../supabaseClient';
+import React, { createContext, useState, useEffect, useContext, ReactNode, useCallback, useRef } from 'react';
+import { getSupabaseClient } from '../../supabaseClient';
 import type { Session, User } from '@supabase/supabase-js';
 import type { Profile } from '../types/types';
 import { checkIsAdmin } from '../constants/adminEmails';
+
+// Obtener el cliente singleton de Supabase
+const supabase = getSupabaseClient();
 
 interface AuthContextType {
     session: Session | null;
@@ -241,37 +244,85 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }, []); // No dependencies - stable function
 
     useEffect(() => {
+        let isMounted = true;
         setLoading(true);
 
         // Safety timeout to prevent eternal loading states
         const loadingTimeout = setTimeout(() => {
-            console.warn('[AuthContext] Loading timeout reached - forcing loading to false');
-            setLoading(false);
+            if (isMounted) {
+                console.warn('[AuthContext] Loading timeout reached - forcing loading to false');
+                setLoading(false);
+            }
         }, 10000); // 10 second timeout
 
+        // Primero verificar si ya hay una sesion existente
+        const checkExistingSession = async () => {
+            try {
+                console.log('[AuthContext] Verificando sesion existente...');
+                const { data: { session: existingSession }, error } = await supabase.auth.getSession();
+
+                if (error) {
+                    console.error('[AuthContext] Error al obtener sesion:', error);
+                    if (isMounted) {
+                        setLoading(false);
+                    }
+                    return;
+                }
+
+                if (existingSession && isMounted) {
+                    console.log('[AuthContext] Sesion existente encontrada para:', existingSession.user?.email);
+                    setSession(existingSession);
+                    setUser(existingSession.user);
+
+                    // Cargar perfil
+                    if (existingSession.user) {
+                        await fetchProfile(existingSession.user.id, existingSession.user);
+                    }
+                    clearTimeout(loadingTimeout);
+                    setLoading(false);
+                } else {
+                    console.log('[AuthContext] No hay sesion existente');
+                    if (isMounted) {
+                        clearTimeout(loadingTimeout);
+                        setLoading(false);
+                    }
+                }
+            } catch (e) {
+                console.error('[AuthContext] Error en checkExistingSession:', e);
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        // Ejecutar verificacion inicial
+        checkExistingSession();
+
+        // Suscribirse a cambios de estado de autenticacion
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, session) => {
+                if (!isMounted) return;
+
                 try {
-                    console.log('[AuthContext] Auth state change:', event);
+                    console.log('[AuthContext] Auth state change:', event, '- User:', session?.user?.email || 'none');
 
                     if (event === 'INITIAL_SESSION') {
-                        setSession(session);
-                        const currentUser = session?.user ?? null;
-                        setUser(currentUser);
-                        if (currentUser) {
-                            // Pass the user object to avoid race conditions
-                            await fetchProfile(currentUser.id, currentUser);
-                        } else {
-                            setProfile(null);
-                            sessionStorage.removeItem('userProfile');
+                        // Ya manejamos esto arriba con checkExistingSession
+                        // pero lo dejamos por si el evento llega antes
+                        if (!user && session?.user) {
+                            setSession(session);
+                            setUser(session.user);
+                            await fetchProfile(session.user.id, session.user);
                         }
-                        clearTimeout(loadingTimeout); // Clear timeout on success
+                        clearTimeout(loadingTimeout);
                         setLoading(false);
-                    } else if (event === 'SIGNED_IN') {
-                        console.log('[AuthContext] SIGNED_IN event - checking if profile needs refresh');
+
+                    } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                        console.log('[AuthContext]', event, '- actualizando estado');
                         setSession(session);
                         const currentUser = session?.user ?? null;
                         setUser(currentUser);
+
                         if (currentUser) {
                             // Check if we already have a valid cached profile with correct role
                             const cachedProfile = sessionStorage.getItem('userProfile');
@@ -281,43 +332,53 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                                 try {
                                     const parsed = JSON.parse(cachedProfile);
                                     if (parsed.id === currentUser.id && parsed.role && ['user', 'sales', 'admin', 'marketing'].includes(parsed.role)) {
-                                        console.log('[AuthContext] Valid cached profile exists with role:', parsed.role, '- skipping refresh');
+                                        console.log('[AuthContext] Perfil en cache valido con rol:', parsed.role);
                                         needsRefresh = false;
                                         setProfile(parsed);
                                     }
                                 } catch (e) {
-                                    console.warn('[AuthContext] Failed to parse cached profile');
+                                    console.warn('[AuthContext] Error al parsear perfil en cache');
                                 }
                             }
 
                             if (needsRefresh) {
-                                console.log('[AuthContext] Refreshing profile from database');
-                                // Update last_sign_in_at in profiles table
-                                await supabase
+                                console.log('[AuthContext] Cargando perfil desde base de datos');
+                                // Update last_sign_in_at in profiles table (non-blocking)
+                                supabase
                                     .from('profiles')
                                     .update({ last_sign_in_at: new Date().toISOString() })
-                                    .eq('id', currentUser.id);
+                                    .eq('id', currentUser.id)
+                                    .then(() => console.log('[AuthContext] last_sign_in_at actualizado'))
+                                    .catch(e => console.warn('[AuthContext] Error actualizando last_sign_in_at:', e));
+
                                 // Pass the user object to avoid race conditions
                                 await fetchProfile(currentUser.id, currentUser);
                             }
                         }
+                        clearTimeout(loadingTimeout);
+                        setLoading(false);
+
                     } else if (event === 'SIGNED_OUT') {
+                        console.log('[AuthContext] Usuario cerro sesion');
                         setSession(null);
                         setUser(null);
                         setProfile(null);
                         sessionStorage.removeItem('userProfile');
+                        clearTimeout(loadingTimeout);
+                        setLoading(false);
                     }
                 } catch (error) {
-                    console.error('[AuthContext] Error in auth state change handler:', error);
-                } finally {
-                    // Ensure loading is always set to false eventually
+                    console.error('[AuthContext] Error en auth state change handler:', error);
                     clearTimeout(loadingTimeout);
-                    setLoading(false);
+                    if (isMounted) {
+                        setLoading(false);
+                    }
                 }
             }
         );
 
         return () => {
+            isMounted = false;
             clearTimeout(loadingTimeout);
             subscription?.unsubscribe();
         };

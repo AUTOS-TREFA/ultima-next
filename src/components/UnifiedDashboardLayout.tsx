@@ -229,14 +229,49 @@ const SidebarLoadingSkeleton: React.FC = () => (
 
 // Sidebar content component
 const AppSidebarContent: React.FC = () => {
-    const { profile, isAdmin, isSales, loading, signOut } = useAuth();
+    const { profile, user, isAdmin, isSales, loading, signOut } = useAuth();
     const pathname = usePathname();
     const router = useRouter();
 
-    // Show loading skeleton while auth is loading or profile hasn't loaded yet
-    // But allow admin emails to pass through even without profile (email-based admin check)
-    if (loading || (!profile && !isAdmin)) {
+    // Mostrar skeleton mientras carga, pero con timeout para evitar carga infinita
+    // Permitir que admins por email pasen aunque no tengan perfil
+    const [loadingTimeout, setLoadingTimeout] = React.useState(false);
+
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            if (loading) {
+                console.warn('[Sidebar] Timeout de carga alcanzado');
+                setLoadingTimeout(true);
+            }
+        }, 5000); // 5 segundos maximo de espera
+        return () => clearTimeout(timer);
+    }, [loading]);
+
+    // Si hay sesion pero no perfil, mostrar sidebar basico con usuario logueado
+    const hasSession = !!user;
+
+    // Mostrar skeleton solo si esta cargando Y no ha pasado el timeout Y no hay sesion
+    if (loading && !loadingTimeout && !hasSession) {
         return <SidebarLoadingSkeleton />;
+    }
+
+    // Si no hay usuario despues del timeout, algo esta mal - mostrar mensaje
+    if (!hasSession && loadingTimeout) {
+        console.error('[Sidebar] No hay sesion despues del timeout');
+        return (
+            <>
+                <SidebarHeader className="border-b border-gray-100/80">
+                    <div className="flex items-center gap-2 px-2 py-3">
+                        <img src="/images/trefalogo.png" alt="TREFA" className="h-8 w-auto object-contain" />
+                    </div>
+                    <div className="p-4 text-center text-sm text-muted-foreground">
+                        Sesion no detectada.
+                        <br />
+                        <a href="/acceder" className="text-primary hover:underline">Iniciar sesion</a>
+                    </div>
+                </SidebarHeader>
+            </>
+        );
     }
 
     const isActiveLink = (path: string, end?: boolean) => {
@@ -578,12 +613,15 @@ const MobileSidebarLoadingSkeleton: React.FC = () => (
 
 // Mobile sidebar content (reused in Sheet)
 const MobileSidebarContent: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
-    const { profile, isAdmin, isSales, loading, signOut } = useAuth();
+    const { profile, user, isAdmin, isSales, loading, signOut } = useAuth();
     const pathname = usePathname();
     const router = useRouter();
 
-    // Show loading skeleton while auth is loading
-    if (loading || (!profile && !isAdmin)) {
+    // Si hay sesion pero no perfil, mostrar sidebar basico
+    const hasSession = !!user;
+
+    // Mostrar skeleton solo brevemente mientras carga
+    if (loading && !hasSession) {
         return <MobileSidebarLoadingSkeleton />;
     }
 

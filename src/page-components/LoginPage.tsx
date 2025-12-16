@@ -20,7 +20,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 
-import { createBrowserSupabaseClient } from '@/lib/supabase/client';
+// IMPORTANTE: Usar el singleton de Supabase para consistencia con AuthContext
+import { supabase } from '@/lib/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { GoogleIcon } from '@/components/icons';
 import { conversionTracking } from '@/services/ConversionTrackingService';
@@ -54,7 +55,7 @@ const LoginPage: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { session, profile, loading: authLoading } = useAuth();
-  const supabase = createBrowserSupabaseClient();
+  // Ya no creamos un nuevo cliente, usamos el singleton importado arriba
 
   // Estados del formulario
   const [email, setEmail] = useState('');
@@ -242,8 +243,14 @@ const LoginPage: React.FC = () => {
         });
       }
 
-      // Wait for session to be fully established
-      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('[LoginPage] OTP verificado exitosamente para:', data.user?.email);
+
+      // Verificar que la sesion este establecida correctamente
+      const { data: sessionCheck } = await supabase.auth.getSession();
+      console.log('[LoginPage] Sesion despues de OTP:', sessionCheck.session ? 'activa' : 'no activa');
+
+      // Esperar un momento para que las cookies se sincronicen
+      await new Promise(resolve => setTimeout(resolve, 800));
 
       // Determinar redirect
       let redirectPath = localStorage.getItem('loginRedirect');
@@ -251,6 +258,8 @@ const LoginPage: React.FC = () => {
         redirectPath = checkIsAdmin(data.user?.email) ? '/escritorio/admin/dashboard' : '/escritorio';
       }
       localStorage.removeItem('loginRedirect');
+
+      console.log('[LoginPage] Redirigiendo a:', redirectPath);
 
       // Use window.location for full page reload to ensure session cookies are sent
       window.location.href = redirectPath;

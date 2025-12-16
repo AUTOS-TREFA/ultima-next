@@ -8,7 +8,9 @@ import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ProfileService } from '../services/profileService';
-import { supabase } from '../../supabaseClient';
+// Usar el singleton de Supabase para consistencia
+import { getSupabaseClient } from '../../supabaseClient';
+const supabase = getSupabaseClient();
 import {
   User, ArrowLeft, CheckCircle, Loader2, Info,
   ChevronRight, ChevronLeft, Phone, Mail, Building2,
@@ -261,10 +263,21 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
 // ============================================================================
 
 const ProfilePage: React.FC = () => {
-  const { user, profile, loading, reloadProfile } = useAuth();
+  const { user, profile, loading, reloadProfile, session } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const formInitialized = useRef(false);
+
+  // Debug logging para verificar que tenemos la sesion
+  useEffect(() => {
+    console.log('[ProfilePage] Estado de auth:', {
+      hasSession: !!session,
+      hasUser: !!user,
+      userEmail: user?.email,
+      hasProfile: !!profile,
+      loading
+    });
+  }, [session, user, profile, loading]);
 
   // State
   const [currentStep, setCurrentStep] = useState(1);

@@ -30,7 +30,9 @@ import { usePathname } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent } from '@/components/ui/card';
-import { supabase } from '../../supabaseClient';
+// Usar el singleton de Supabase para consistencia con AuthContext
+import { getSupabaseClient } from '../../supabaseClient';
+const supabase = getSupabaseClient();
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { DocumentService } from '@/services/documentService';

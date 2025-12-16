@@ -1,3 +1,4 @@
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { createClient } from '@supabase/supabase-js';
 
 // IMPORTANT: Your Supabase project's URL and Anon Key should be stored in environment variables.
@@ -12,48 +13,69 @@ const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const envUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const envKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-const supabaseUrl = (envUrl && typeof envUrl === 'string' && envUrl.startsWith('http')) ? envUrl : FALLBACK_URL;
-
-/**
- * Validates if the Supabase key is a valid JWT for the specific project.
- * This prevents using keys from other projects or malformed keys.
- * @param key The Supabase anon key to validate.
- * @returns True if the key is valid for this project, false otherwise.
- */
-const isKeyValidForProject = (key: string): boolean => {
-    if (typeof key !== 'string' || !key.startsWith('ey')) {
-        return false;
-    }
-    try {
-        const payloadBase64 = key.split('.')[1];
-        if (!payloadBase64) return false;
-        // Supabase uses URL-safe Base64, so we need to replace characters before decoding.
-        const decodedPayload = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
-        const payload = JSON.parse(decodedPayload);
-        // The 'ref' in the JWT payload should match the project ID from the URL.
-        const projectId = (new URL(supabaseUrl)).hostname.split('.')[0];
-        return payload.ref === projectId;
-    } catch (e) {
-        console.warn("Could not validate Supabase key from environment, it might be malformed. Using fallback.", e);
-        return false;
-    }
-};
-
-const supabaseAnonKey = (envKey && isKeyValidForProject(envKey)) ? envKey : FALLBACK_KEY;
+export const supabaseUrl = (envUrl && typeof envUrl === 'string' && envUrl.startsWith('http')) ? envUrl : FALLBACK_URL;
+export const supabaseAnonKey = envKey || FALLBACK_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Supabase URL and Anon Key must be defined.');
 }
 
-// Create the Supabase client with explicit session persistence settings.
-// This ensures sessions persist across page reloads and browser restarts.
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+/**
+ * Supabase client SINGLETON for browser components using @supabase/auth-helpers-nextjs
+ *
+ * CRITICO: Usar UN SOLO cliente en toda la aplicacion para evitar problemas de sesion.
+ * El auth-helpers-nextjs maneja automaticamente:
+ * - Almacenamiento de sesion basado en cookies (requerido para SSR/middleware)
+ * - Refresco automatico de tokens
+ * - Deteccion de sesion desde URL (para OAuth callbacks)
+ *
+ * IMPORTANTE: Este singleton DEBE ser usado por:
+ * - AuthContext.tsx
+ * - LoginPage.tsx
+ * - Cualquier componente que necesite autenticacion
+ */
+let _supabaseClient: ReturnType<typeof createClientComponentClient> | null = null;
+
+/**
+ * Obtiene el cliente singleton de Supabase.
+ * En el navegador, siempre devuelve la misma instancia.
+ * En el servidor (SSR/build), devuelve un cliente basico sin sesion.
+ */
+export const getSupabaseClient = (): ReturnType<typeof createClientComponentClient> => {
+    // Solo crear el cliente en el navegador
+    if (typeof window !== 'undefined') {
+        if (!_supabaseClient) {
+            console.log('[Supabase] Creando cliente singleton para browser');
+            _supabaseClient = createClientComponentClient({
+                supabaseUrl,
+                supabaseKey: supabaseAnonKey,
+            });
+        }
+        return _supabaseClient;
+    }
+
+    // Para SSR/build time, crear un cliente basico sin sesion persistente
+    // Esto previene errores de build mientras asegura que el cliente real solo se crea en el browser
+    console.log('[Supabase] Creando cliente temporal para SSR');
+    return createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+        }
+    }) as ReturnType<typeof createClientComponentClient>;
+};
+
+// Export del cliente singleton - USAR ESTE EN TODA LA APP
+export const supabase = getSupabaseClient();
+
+// Funcion helper para crear cliente de browser (usa el singleton)
+// DEPRECATED: Usar 'supabase' directamente o 'getSupabaseClient()'
+export const createBrowserSupabaseClient = getSupabaseClient;
+
+// Para compatibilidad con codigo server-side explicito
+export const createServerClient = () => createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: 'pkce',
-        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-        storageKey: 'supabase.auth.token',
+        persistSession: false,
+        autoRefreshToken: false,
     }
 });

@@ -1,13 +1,17 @@
-import { createClient } from '@supabase/supabase-js';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * Auth Callback Route Handler
  *
  * Handles the server-side code exchange for Supabase auth.
- * Used when Supabase redirects back after email verification.
+ * Used when Supabase redirects back after OAuth or email magic link.
  *
  * URL pattern: /auth/callback?code=xxx&redirect=/vender-mi-auto
+ *
+ * IMPORTANT: This route uses @supabase/auth-helpers-nextjs to properly
+ * set session cookies, which are required for the middleware to work.
  */
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
@@ -26,13 +30,33 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(errorUrl);
   }
 
-  // If we have a code, redirect to the auth page to handle client-side exchange
-  // This ensures the session is properly set in the browser
+  // If we have a code, exchange it for a session using auth-helpers
+  // This properly sets the session cookies needed by the middleware
   if (code) {
-    const authUrl = new URL('/auth', requestUrl.origin);
-    authUrl.searchParams.set('code', code);
-    authUrl.searchParams.set('redirect', redirectTo);
-    return NextResponse.redirect(authUrl);
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+
+    try {
+      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+
+      if (exchangeError) {
+        console.error('[Auth Callback] Error exchanging code:', exchangeError);
+        const errorUrl = new URL('/auth', requestUrl.origin);
+        errorUrl.searchParams.set('error', 'exchange_failed');
+        errorUrl.searchParams.set('error_description', exchangeError.message);
+        return NextResponse.redirect(errorUrl);
+      }
+
+      // Successfully exchanged code - redirect to the intended destination
+      console.log('[Auth Callback] Code exchanged successfully, redirecting to:', redirectTo);
+      return NextResponse.redirect(new URL(redirectTo, requestUrl.origin));
+    } catch (e: any) {
+      console.error('[Auth Callback] Unexpected error:', e);
+      const errorUrl = new URL('/auth', requestUrl.origin);
+      errorUrl.searchParams.set('error', 'unexpected_error');
+      errorUrl.searchParams.set('error_description', e.message || 'Error inesperado');
+      return NextResponse.redirect(errorUrl);
+    }
   }
 
   // No code, redirect to login

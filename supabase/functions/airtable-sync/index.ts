@@ -360,6 +360,10 @@ serve(async (req: Request) => {
       rezago: fields.Rezago === true || fields.rezago === true,
       promociones: promocionesValue,
 
+      // URLs del vehículo
+      liga_bot: fields.ligaBot || fields.LigaBot || null,  // Directo de Airtable
+      liga_web: `https://autostrefa.mx/autos/${slug}`,     // URL generada
+
       last_synced_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       // Store full Airtable data for reference

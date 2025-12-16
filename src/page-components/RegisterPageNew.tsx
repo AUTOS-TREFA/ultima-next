@@ -303,9 +303,10 @@ const RegisterPageNew: React.FC = () => {
 
       setStep('complete');
 
-      // Redirigir después de 1.5s
+      // Redirigir después de 1.5s usando window.location para full page reload
+      // Esto asegura que las cookies de sesión se inicialicen correctamente
       setTimeout(() => {
-        router.push(`/escritorio/profile${urlParamsString ? `?${urlParamsString}` : ''}`);
+        window.location.href = `/escritorio/profile${urlParamsString ? `?${urlParamsString}` : ''}`;
       }, 1500);
 
     } catch (err: any) {

@@ -47,6 +47,7 @@ export async function middleware(req: NextRequest) {
     '/faq',
     '/kit-trefa',
     '/politica-de-privacidad',
+    '/proteccion-de-datos',
     '/vacantes',
     '/marcas',
     '/carroceria',
@@ -57,6 +58,8 @@ export async function middleware(req: NextRequest) {
     '/landing',
     '/vender-mi-auto',
     '/acceder',
+    '/registro',  // Registration page
+    '/auth',      // Auth callback page
     '/admin/login',
     '/bank-login',
     '/api',
@@ -68,7 +71,7 @@ export async function middleware(req: NextRequest) {
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
 
   // Auth-only routes (redirect to dashboard if logged in)
-  const authOnlyRoutes = ['/acceder', '/admin/login', '/bank-login'];
+  const authOnlyRoutes = ['/acceder', '/registro', '/admin/login', '/bank-login'];
   const isAuthOnlyRoute = authOnlyRoutes.some(route => pathname.startsWith(route));
 
   if (isAuthOnlyRoute && session) {

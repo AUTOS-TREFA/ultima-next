@@ -328,7 +328,8 @@ const AuthPage: React.FC = () => {
                 }
             }
             localStorage.removeItem('loginRedirect');
-            router.replace(redirectPath);
+            // Use window.location for full page reload to ensure session cookies are properly set
+            window.location.href = redirectPath;
 
         } catch (error: any) {
              console.error('Full OTP Verification Error:', error);
