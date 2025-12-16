@@ -43,7 +43,7 @@ const TestimonialsComponent = ({ heroSlides, testimonials }: TestimonialsCompone
             fade
             slide={{ direction: 'down' }}
             transition={{ duration: 0.5 }}
-            className='text-primary z-1 inline-block text-2xl font-bold md:text-3xl lg:text-4xl'
+            className='text-black z-1 inline-block text-2xl font-black md:text-3xl lg:text-4xl tracking-tight'
           >
             Nuestros clientes nos respaldan ⭐
           </MotionPreset>

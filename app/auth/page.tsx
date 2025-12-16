@@ -60,9 +60,9 @@ export default function AuthPage() {
             setStatus('success');
             setMessage('¡Acceso verificado!');
 
-            // Small delay for UX, then redirect
+            // Small delay for UX, then redirect with full page reload
             setTimeout(() => {
-              router.push(redirectTo);
+              window.location.href = redirectTo;
             }, 1500);
             return;
           }
@@ -91,7 +91,7 @@ export default function AuthPage() {
           setMessage('¡Cuenta verificada!');
 
           setTimeout(() => {
-            router.push('/escritorio');
+            window.location.href = '/escritorio';
           }, 1500);
           return;
         }
@@ -104,7 +104,7 @@ export default function AuthPage() {
           setMessage('Ya tienes sesión activa');
 
           setTimeout(() => {
-            router.push('/escritorio');
+            window.location.href = '/escritorio';
           }, 1500);
           return;
         }

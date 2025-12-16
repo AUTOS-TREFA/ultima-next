@@ -47,6 +47,11 @@ export interface ImageOptions {
 export function getCdnUrl(url: string | null | undefined, options?: ImageOptions): string {
   if (!url) return '';
 
+  // Validate that it's actually a URL (not an error string like '{"error": "#ERROR!"}')
+  if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('/')) {
+    return '';
+  }
+
   // If URL is already from R2, return as-is
   if (R2_PUBLIC_URL && url.startsWith(R2_PUBLIC_URL)) {
     return url;

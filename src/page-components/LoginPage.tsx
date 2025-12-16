@@ -240,8 +240,10 @@ const LoginPage: React.FC = () => {
           email,
           vehicleId: urlTrackingData.ordencompra
         });
-        await new Promise(resolve => setTimeout(resolve, 500));
       }
+
+      // Wait for session to be fully established
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Determinar redirect
       let redirectPath = localStorage.getItem('loginRedirect');
@@ -249,7 +251,9 @@ const LoginPage: React.FC = () => {
         redirectPath = checkIsAdmin(data.user?.email) ? '/escritorio/admin/dashboard' : '/escritorio';
       }
       localStorage.removeItem('loginRedirect');
-      router.replace(redirectPath);
+
+      // Use window.location for full page reload to ensure session cookies are sent
+      window.location.href = redirectPath;
 
     } catch (err: any) {
       setError(err.message || 'Código inválido o expirado');
@@ -267,8 +271,9 @@ const LoginPage: React.FC = () => {
       // Limpiar cualquier sesión anterior para evitar conflictos
       await supabase.auth.signOut();
 
-      // Construir redirect URL usando window.location.origin SIEMPRE
-      const redirectUrl = `${window.location.origin}/auth/callback?redirect=/escritorio`;
+      // Usar NEXT_PUBLIC_SITE_URL para producción, fallback a window.location.origin
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+      const redirectUrl = `${siteUrl}/auth/callback?redirect=/escritorio`;
 
       console.log('[OAuth] Iniciando Google Sign In con redirect:', redirectUrl);
 

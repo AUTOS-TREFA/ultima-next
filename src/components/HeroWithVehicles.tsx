@@ -12,6 +12,7 @@ import { useState, useEffect, memo } from 'react';
 import type { Vehicle } from '@/types/types';
 import { getVehicleImage } from '@/utils/getVehicleImage';
 import { getCdnUrl } from '@/utils/imageUrl';
+import { DEFAULT_PLACEHOLDER_IMAGE } from '@/utils/constants';
 
 const rotatingPhrases = [
   'con tranquilidad absoluta',
@@ -26,7 +27,12 @@ const rotatingPhrases = [
 const VehicleMarqueeCard = memo(({ vehicle }: { vehicle: Vehicle }) => {
   const rawImageUrl = getVehicleImage(vehicle);
   // Transform to CDN URL for optimization
-  const imageUrl = getCdnUrl(rawImageUrl, { width: 520, quality: 85, format: 'auto' }) || rawImageUrl;
+  const cdnUrl = getCdnUrl(rawImageUrl, { width: 520, quality: 85, format: 'auto' });
+  const tempUrl = cdnUrl || rawImageUrl || DEFAULT_PLACEHOLDER_IMAGE;
+  // Validate URL
+  const isValidUrl = tempUrl && (tempUrl.startsWith('http://') || tempUrl.startsWith('https://') || tempUrl.startsWith('/'));
+  const imageUrl = isValidUrl ? tempUrl : DEFAULT_PLACEHOLDER_IMAGE;
+
   const formattedPrice = new Intl.NumberFormat('es-MX', {
     style: 'currency',
     currency: 'MXN',
@@ -39,12 +45,15 @@ const VehicleMarqueeCard = memo(({ vehicle }: { vehicle: Vehicle }) => {
       className="group block bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 ease-out overflow-hidden w-[260px] border border-gray-100 hover:-translate-y-1"
     >
       <div className="relative h-44 overflow-hidden bg-gray-100">
-        <Image
+        <img
           src={imageUrl}
           alt={vehicle.titulo || vehicle.title || 'Vehículo'}
-          fill
-          sizes="260px"
-          className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          loading="lazy"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = DEFAULT_PLACEHOLDER_IMAGE;
+          }}
         />
         {/* Badges - always visible */}
         {vehicle.garantia && (
@@ -96,7 +105,7 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
   const rightVehicles = vehicles.slice(halfLength);
 
   return (
-    <section className="from-primary/10 via-orange-50/50 to-background flex min-h-screen flex-1 flex-col bg-gradient-to-bl to-60% overflow-hidden relative">
+    <section className="from-primary/10 via-orange-50/50 to-transparent flex min-h-screen flex-1 flex-col bg-gradient-to-bl to-80% overflow-hidden relative">
       {/* Mobile background images - only visible on mobile */}
       <div className="lg:hidden absolute inset-0 pointer-events-none overflow-hidden">
         {/* Advisor image - positioned bottom right with transparency */}
@@ -115,9 +124,9 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
         />
       </div>
 
-      <div className="grid w-full flex-1 gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:pl-8 xl:pl-16 2xl:pl-24 lg:pr-0 items-center relative z-10">
-        {/* Left Content - extended width, vertically centered */}
-        <div className="flex max-w-2xl flex-col justify-center gap-8 py-8 lg:py-12 lg:pr-8 xl:max-w-3xl">
+      <div className="grid w-full flex-1 gap-6 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:pl-12 xl:pl-20 2xl:pl-28 lg:pr-0 items-center relative z-10 pt-4 lg:pt-0">
+        {/* Left Content - extended width, positioned higher */}
+        <div className="flex max-w-2xl flex-col justify-center gap-6 py-4 lg:py-6 lg:pr-6 xl:max-w-3xl lg:-mt-20">
           <div className="flex flex-col items-start gap-6">
             <MotionPreset
               fade

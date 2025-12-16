@@ -146,5 +146,6 @@ export const getEmailRedirectUrl = (): string => {
  * Esta URL debe estar configurada en la consola de Google Cloud y Supabase
  */
 export const getGoogleOAuthCallbackUrl = (): string => {
-  return `${window.location.origin}/auth/callback?redirect=/escritorio`;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+  return `${siteUrl}/auth/callback?redirect=/escritorio`;
 };

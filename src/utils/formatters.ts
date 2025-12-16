@@ -128,7 +128,18 @@ export function formatPromotion(promo: string): string {
     'lavado gratis': 'Lavado Gratis',
   };
 
-  return promoMap[promoKey] || promo;
+  // If mapped, return the mapped value
+  if (promoMap[promoKey]) {
+    return promoMap[promoKey];
+  }
+
+  // If it looks like an Airtable record ID (starts with 'rec'), show generic label
+  if (promoKey.startsWith('rec')) {
+    return 'Promoción Especial';
+  }
+
+  // Otherwise return the original (might be already human-readable)
+  return promo;
 }
 
 /**

@@ -40,6 +40,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'images.trefa.mx',
       },
+      {
+        protocol: 'https',
+        hostname: 'web.miniextensions.com',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
     // Optimize image loading

@@ -172,7 +172,11 @@ const FilterSidebar: React.FC<FilterSidebarProps> = (props) => {
             <AccordionItem title="Carrocería" startOpen>
                 <div className="grid grid-cols-4 gap-2">
                     {(filterOptions?.carroceria || [])
-                        .filter(c => !['motos', 'motocicleta', 'motocicletas', 'moto'].includes(String(c.name).toLowerCase()))
+                        .filter(c => {
+                            const name = String(c.name).toLowerCase().trim();
+                            // Exclude any variation of moto/motocicleta
+                            return !name.includes('moto') && !name.includes('motocicleta');
+                        })
                         .map(c => {
                         const isSelected = (currentFilters.carroceria || []).includes(c.name as string);
                         return (

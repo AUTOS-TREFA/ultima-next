@@ -269,32 +269,32 @@ const BranchesSection: React.FC<BranchesSectionProps> = ({ content }) => {
           document.body
         )}
 
-        {/* Branch Cards Grid */}
-        <ul className="max-w-5xl mx-auto w-full grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {/* Branch Cards Grid - 4 columns on desktop, 2x2 on mobile */}
+        <ul className="max-w-7xl mx-auto w-full grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           {cards.map((card) => (
             <li
               key={card.title}
               onClick={() => setActive(card)}
-              className="p-4 flex flex-col rounded-2xl cursor-pointer transition-all duration-300 hover:shadow-lg bg-white border border-gray-200"
+              className="p-3 lg:p-4 flex flex-col rounded-2xl cursor-pointer transition-all duration-300 hover:shadow-lg bg-white border border-gray-200"
             >
-              <div className="flex gap-4 flex-col w-full">
+              <div className="flex gap-3 flex-col w-full">
                 <div className="relative overflow-hidden rounded-xl">
                   <img
                     src={card.src}
                     alt={card.title}
-                    className="h-48 w-full rounded-xl object-cover transition-transform duration-300 hover:scale-105"
+                    className="h-32 lg:h-40 w-full rounded-xl object-cover transition-transform duration-300 hover:scale-105"
                   />
                 </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg text-neutral-800">
+                <div className="flex flex-col gap-2">
+                  <div>
+                    <h3 className="font-bold text-sm lg:text-base text-neutral-800">
                       {card.title}
                     </h3>
-                    <p className="text-neutral-600 text-sm">
+                    <p className="text-neutral-600 text-xs lg:text-sm">
                       {card.description}
                     </p>
                   </div>
-                  <button className="px-4 py-2 text-sm rounded-full font-semibold bg-primary-600 hover:bg-primary-700 text-white transition-colors shadow-sm">
+                  <button className="px-3 py-1.5 text-xs lg:text-sm rounded-full font-semibold bg-primary-600 hover:bg-primary-700 text-white transition-colors shadow-sm w-full">
                     Ver más
                   </button>
                 </div>

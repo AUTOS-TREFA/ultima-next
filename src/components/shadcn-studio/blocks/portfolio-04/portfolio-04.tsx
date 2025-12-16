@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { MotionPreset } from '@/components/ui/motion-preset'
 import { cn } from '@/lib/utils'
 import { createBrowserSupabaseClient } from '@/lib/supabase/client'
 import { getVehicleImage } from '@/utils/getVehicleImage'
+import { getCdnUrl } from '@/utils/imageUrl'
 import { DEFAULT_PLACEHOLDER_IMAGE, BRAND_LOGOS } from '@/utils/constants'
 import type { Vehicle } from '@/types/types'
 import { Car, DollarSign, Sparkles, ArrowRight } from 'lucide-react'
@@ -22,7 +24,46 @@ export type VehiclePortfolioItem = {
 // Filter types for color coding
 type FilterType = 'carroceria' | 'brand' | 'other'
 
-// Filter shortcuts with type for color coding
+// Brand filters for 1x1 blocks
+const brandFilters: Array<{
+  id: string
+  label: string
+  description: string
+  href: string
+  icon: typeof Car | null
+  bgImage: string | null
+  type: FilterType
+}> = [
+  {
+    id: 'nissan',
+    label: 'Nissan',
+    description: 'Innovación para todos',
+    href: '/marca/Nissan',
+    icon: null,
+    bgImage: '/images/Nissan.png',
+    type: 'brand',
+  },
+  {
+    id: 'honda',
+    label: 'Honda',
+    description: 'Confiabilidad probada',
+    href: '/marca/Honda',
+    icon: null,
+    bgImage: '/images/Honda.png',
+    type: 'brand',
+  },
+  {
+    id: 'volkswagen',
+    label: 'Volkswagen',
+    description: 'Ingeniería alemana',
+    href: '/marca/Volkswagen',
+    icon: null,
+    bgImage: '/images/Volkswagen.png',
+    type: 'brand',
+  },
+]
+
+// Filter shortcuts with type for color coding (for mobile and other sections)
 const filterShortcuts: Array<{
   id: string
   label: string
@@ -137,7 +178,13 @@ const FilterCard = ({
             <img
               src={filter.bgImage}
               alt={filter.label}
-              className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-3 opacity-90 group-hover:scale-110 transition-transform duration-300 brightness-0 invert"
+              className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-3 opacity-90 group-hover:scale-110 transition-transform duration-300"
+              style={{ filter: 'brightness(0) invert(1)' }}
+              onError={(e) => {
+                // Remove filter if image doesn't look good inverted
+                const target = e.target as HTMLImageElement
+                target.style.filter = 'none'
+              }}
             />
           ) : Icon ? (
             <Icon className="w-12 h-12 sm:w-16 sm:h-16 text-white/90 mb-3 group-hover:scale-110 transition-transform duration-300" />
@@ -171,35 +218,54 @@ const VehicleCard = ({
   delay?: number
   className?: string
   aspectClass?: string
-}) => (
-  <MotionPreset
-    fade
-    delay={delay}
-    slide={{ direction: 'up', offset: 6 }}
-    blur
-    transition={{ duration: 0.4 }}
-    className={cn('group relative overflow-hidden rounded-xl transition-shadow duration-500 hover:shadow-2xl', className)}
-  >
-    <Link href={`/autos/${vehicle.slug}`} className="block h-full">
-      <img
-        src={vehicle.image}
-        alt={vehicle.title}
-        className={cn('w-full h-full object-cover', aspectClass)}
-      />
-      {/* Hover overlay */}
-      <div className='absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100' />
-      {/* Vehicle info */}
-      <div className='absolute inset-x-0 bottom-0 p-3 sm:p-4 opacity-0 translate-y-4 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0'>
-        <h3 className='text-sm sm:text-lg font-bold text-white line-clamp-2 drop-shadow-lg'>
-          {vehicle.title}
-        </h3>
-        <p className='text-[#FF6801] font-bold text-base sm:text-xl mt-1 drop-shadow-lg'>
-          ${vehicle.precio.toLocaleString('es-MX')}
-        </p>
-      </div>
-    </Link>
-  </MotionPreset>
-)
+}) => {
+  // Transform to CDN URL for optimization, fallback to placeholder if invalid
+  const cdnUrl = getCdnUrl(vehicle.image, { width: 800, quality: 85, format: 'auto' })
+  const imageUrl = cdnUrl || vehicle.image || DEFAULT_PLACEHOLDER_IMAGE
+
+  // Validate the final image URL
+  const isValidImage = imageUrl &&
+    (imageUrl.startsWith('http://') || imageUrl.startsWith('https://') || imageUrl.startsWith('/'))
+
+  // Use placeholder if image is invalid
+  const finalImageUrl = isValidImage ? imageUrl : DEFAULT_PLACEHOLDER_IMAGE
+
+  return (
+    <MotionPreset
+      fade
+      delay={delay}
+      slide={{ direction: 'up', offset: 6 }}
+      blur
+      transition={{ duration: 0.4 }}
+      className={cn('group relative overflow-hidden rounded-xl transition-shadow duration-500 hover:shadow-2xl bg-gray-100', className)}
+    >
+      <Link href={`/autos/${vehicle.slug}`} className={cn('block h-full relative', aspectClass)}>
+        {/* Use regular img tag to avoid Next.js Image errors with invalid URLs */}
+        <img
+          src={finalImageUrl}
+          alt={vehicle.title}
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="lazy"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement
+            target.src = DEFAULT_PLACEHOLDER_IMAGE
+          }}
+        />
+        {/* Hover overlay */}
+        <div className='absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100' />
+        {/* Vehicle info */}
+        <div className='absolute inset-x-0 bottom-0 p-3 sm:p-4 opacity-0 translate-y-4 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0'>
+          <h3 className='text-sm sm:text-lg font-bold text-white line-clamp-2 drop-shadow-lg'>
+            {vehicle.title}
+          </h3>
+          <p className='text-[#FF6801] font-bold text-base sm:text-xl mt-1 drop-shadow-lg'>
+            ${vehicle.precio.toLocaleString('es-MX')}
+          </p>
+        </div>
+      </Link>
+    </MotionPreset>
+  )
+}
 
 const Portfolio = ({
   maxVehicles = 8,
@@ -485,71 +551,47 @@ const Portfolio = ({
           {renderMobileMosaic()}
         </div>
 
-        {/* Desktop Mosaic - Varied vehicle sizes, consistent small filter cards */}
+        {/* Desktop Mosaic - 2x1 blocks for vehicles, 1x1 blocks for brands */}
         <div className='hidden sm:flex flex-col gap-4'>
           {(() => {
             const elements: JSX.Element[] = []
-            let idx = 0
+            let vehicleIdx = 0
             const baseDelay = 0.5
 
-            // Row 1: Large vehicle (2 cols) + vehicle + filter
-            if (vehicles[idx] && vehicles[idx + 1]) {
+            // Row 1: Large vehicle (2 cols) + Nissan brand + Kia brand
+            if (vehicles[vehicleIdx]) {
               elements.push(
                 <div key="row1" className="grid grid-cols-4 gap-4">
-                  <VehicleCard vehicle={vehicles[idx]} delay={baseDelay} className="col-span-2" aspectClass="aspect-[16/9]" />
-                  <VehicleCard vehicle={vehicles[idx + 1]} delay={baseDelay + 0.05} aspectClass="aspect-[4/3]" />
-                  <FilterCard filter={filterShortcuts[0]} delay={baseDelay + 0.1} aspectClass="aspect-[4/3]" />
+                  <VehicleCard vehicle={vehicles[vehicleIdx]} delay={baseDelay} className="col-span-2" aspectClass="aspect-[16/9]" />
+                  <FilterCard filter={brandFilters[0]} delay={baseDelay + 0.05} aspectClass="aspect-[4/3]" />
+                  <FilterCard filter={brandFilters[1]} delay={baseDelay + 0.1} aspectClass="aspect-[4/3]" />
                 </div>
               )
-              idx += 2
+              vehicleIdx += 1
             }
 
-            // Row 2: Filter + vehicle + large vehicle (2 cols)
-            if (vehicles[idx] && vehicles[idx + 1]) {
+            // Row 2: Volkswagen brand + Toyota brand + Large vehicle (2 cols)
+            if (vehicles[vehicleIdx]) {
               elements.push(
                 <div key="row2" className="grid grid-cols-4 gap-4">
-                  <FilterCard filter={filterShortcuts[1]} delay={baseDelay + 0.15} aspectClass="aspect-[4/3]" />
-                  <VehicleCard vehicle={vehicles[idx]} delay={baseDelay + 0.2} aspectClass="aspect-[4/3]" />
-                  <VehicleCard vehicle={vehicles[idx + 1]} delay={baseDelay + 0.25} className="col-span-2" aspectClass="aspect-[16/9]" />
+                  <FilterCard filter={brandFilters[2]} delay={baseDelay + 0.15} aspectClass="aspect-[4/3]" />
+                  <FilterCard filter={filterShortcuts[3]} delay={baseDelay + 0.2} aspectClass="aspect-[4/3]" />
+                  <VehicleCard vehicle={vehicles[vehicleIdx]} delay={baseDelay + 0.25} className="col-span-2" aspectClass="aspect-[16/9]" />
                 </div>
               )
-              idx += 2
+              vehicleIdx += 1
             }
 
-            // Row 3: Vehicle + filter + vehicle + vehicle
-            if (vehicles[idx] && vehicles[idx + 1] && vehicles[idx + 2]) {
+            // Row 3: Large vehicle (2 cols) + SUVs + Sedanes
+            if (vehicles[vehicleIdx]) {
               elements.push(
                 <div key="row3" className="grid grid-cols-4 gap-4">
-                  <VehicleCard vehicle={vehicles[idx]} delay={baseDelay + 0.3} aspectClass="aspect-[4/3]" />
-                  <FilterCard filter={filterShortcuts[2]} delay={baseDelay + 0.35} aspectClass="aspect-[4/3]" />
-                  <VehicleCard vehicle={vehicles[idx + 1]} delay={baseDelay + 0.4} aspectClass="aspect-[4/3]" />
-                  <VehicleCard vehicle={vehicles[idx + 2]} delay={baseDelay + 0.45} aspectClass="aspect-[4/3]" />
+                  <VehicleCard vehicle={vehicles[vehicleIdx]} delay={baseDelay + 0.3} className="col-span-2" aspectClass="aspect-[16/9]" />
+                  <FilterCard filter={filterShortcuts[0]} delay={baseDelay + 0.35} aspectClass="aspect-[4/3]" />
+                  <FilterCard filter={filterShortcuts[1]} delay={baseDelay + 0.4} aspectClass="aspect-[4/3]" />
                 </div>
               )
-              idx += 3
-            }
-
-            // Row 4: Large vehicle (2 cols) + filter + vehicle
-            if (vehicles[idx]) {
-              elements.push(
-                <div key="row4" className="grid grid-cols-4 gap-4">
-                  <VehicleCard vehicle={vehicles[idx]} delay={baseDelay + 0.5} className="col-span-2" aspectClass="aspect-[16/9]" />
-                  <FilterCard filter={filterShortcuts[3]} delay={baseDelay + 0.55} aspectClass="aspect-[4/3]" />
-                  <FilterCard filter={filterShortcuts[4]} delay={baseDelay + 0.6} aspectClass="aspect-[4/3]" />
-                </div>
-              )
-              idx += 1
-            }
-
-            // Row 5: Remaining filters + vehicle if any
-            if (filterShortcuts[5]) {
-              elements.push(
-                <div key="row5" className="grid grid-cols-4 gap-4">
-                  <FilterCard filter={filterShortcuts[5]} delay={baseDelay + 0.65} aspectClass="aspect-[4/3]" />
-                  {vehicles[idx] && <VehicleCard vehicle={vehicles[idx]} delay={baseDelay + 0.7} className="col-span-2" aspectClass="aspect-[16/9]" />}
-                  {vehicles[idx + 1] && <VehicleCard vehicle={vehicles[idx + 1]} delay={baseDelay + 0.75} aspectClass="aspect-[4/3]" />}
-                </div>
-              )
+              vehicleIdx += 1
             }
 
             return elements

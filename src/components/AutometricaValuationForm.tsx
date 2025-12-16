@@ -564,7 +564,7 @@ export function AutometricaValuationForm({
             phone: cleanPhone,
             source: 'vender-mi-auto'
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=/vender-mi-auto`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback?redirect=/vender-mi-auto`,
         }
       });
 
@@ -628,7 +628,7 @@ export function AutometricaValuationForm({
       const { error: signInError } = await supabase.auth.signInWithOtp({
         email: emailInput,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=/vender-mi-auto`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback?redirect=/vender-mi-auto`,
         }
       });
 

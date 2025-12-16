@@ -579,29 +579,41 @@ const YouTubeVSLSection: React.FC<{ content: YouTubeVSLContent | null }> = ({ co
   const videoContent = content || defaultContent;
 
   return (
-    <Section className="bg-white">
+    <Section className="bg-white py-12 lg:py-16">
       <div
         ref={ref}
         className={cn(
-          "max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-700",
+          "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-700",
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
         )}
       >
-        <AnimatedHeader
-          title={videoContent.title}
-          subtitle={videoContent.subtitle}
-          className="mb-12"
-        />
-        <div className="rounded-3xl overflow-hidden relative shadow-2xl" style={{ paddingBottom: '56.25%', height: 0 }}>
-          <iframe
-            className="absolute top-0 left-0 w-full h-full"
-            src={`https://www.youtube.com/embed/${videoContent.videoId}?rel=0`}
-            title="TREFA VSL"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-          />
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          {/* Video - Left side */}
+          <div className="order-2 lg:order-1">
+            <div className="rounded-2xl overflow-hidden relative shadow-xl" style={{ paddingBottom: '56.25%', height: 0 }}>
+              <iframe
+                className="absolute top-0 left-0 w-full h-full"
+                src={`https://www.youtube.com/embed/${videoContent.videoId}?rel=0`}
+                title="TREFA VSL"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            </div>
+          </div>
+          {/* Text - Right side */}
+          <div className="order-1 lg:order-2 text-center lg:text-left">
+            <h2 className="text-2xl font-bold md:text-3xl lg:text-4xl tracking-tight text-slate-800 mb-4">
+              {videoContent.title}
+            </h2>
+            <p className="text-lg text-slate-600 mb-6">
+              {videoContent.subtitle}
+            </p>
+            <p className="text-base text-slate-500">
+              Descubre por qué miles de familias en el noreste de México confían en TREFA para encontrar su auto ideal con garantías extendidas y financiamiento accesible.
+            </p>
+          </div>
         </div>
       </div>
     </Section>
@@ -673,19 +685,19 @@ const CarroceriaCarouselSection: React.FC<{ content: CarroceriaCarouselContent |
   const carouselContent = content || defaultContent;
 
   return (
-    <Section className="bg-gradient-to-b from-white to-gray-50">
+    <Section className="bg-gradient-to-b from-white to-gray-50 py-12 lg:py-16">
       <div
         ref={ref}
         className={cn(
-          "transition-all duration-700",
+          "transition-all duration-700 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
         )}
       >
-        <div className="text-center mb-12 lg:mb-16">
-          <h2 className="text-2xl font-bold md:text-3xl lg:text-4xl tracking-tight text-slate-800 leading-tight mb-4">
+        <div className="text-center mb-8 lg:mb-10">
+          <h2 className="text-xl font-bold md:text-2xl lg:text-3xl tracking-tight text-slate-800 leading-tight mb-3">
             {carouselContent.title}
           </h2>
-          <p className="text-lg lg:text-xl text-slate-600 max-w-3xl mx-auto">
+          <p className="text-base lg:text-lg text-slate-600 max-w-2xl mx-auto">
             {carouselContent.subtitle}
           </p>
         </div>

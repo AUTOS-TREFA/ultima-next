@@ -240,7 +240,7 @@ const RegisterPageNew: React.FC = () => {
             phone: cleanPhone,
             source: 'registro-directo'
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=/escritorio`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback?redirect=/escritorio`,
         }
       });
 
@@ -321,7 +321,9 @@ const RegisterPageNew: React.FC = () => {
 
     try {
       await supabase.auth.signOut();
-      const redirectUrl = `${window.location.origin}/auth/callback?redirect=/escritorio/profile`;
+      // Usar NEXT_PUBLIC_SITE_URL para producción, fallback a window.location.origin
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+      const redirectUrl = `${siteUrl}/auth/callback?redirect=/escritorio/profile`;
 
       conversionTracking.trackButtonClick('Google Sign Up Initiated', {
         page: 'register',
