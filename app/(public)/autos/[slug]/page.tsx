@@ -6,6 +6,9 @@ import VehicleService from '@/services/VehicleService';
 import { getVehicleImage } from '@/utils/getVehicleImage';
 import { formatPrice, formatMileage } from '@/utils/formatters';
 
+// Get site URL from env or default to autostrefa.mx for development
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://autostrefa.mx';
+
 interface PageProps {
   params: { slug: string };
   searchParams?: { [key: string]: string | string[] | undefined };
@@ -28,7 +31,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const imageUrl = getVehicleImage(vehicle);
   const absoluteImageUrl = imageUrl.startsWith('http')
     ? imageUrl
-    : `https://trefa.mx${imageUrl}`;
+    : `${SITE_URL}${imageUrl}`;
 
   // Descripción optimizada para SEO
   const description = vehicle.metadescripcion ||
@@ -60,7 +63,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: title,
       description: description.slice(0, 200),
       type: 'website',
-      url: `https://trefa.mx/autos/${params.slug}`,
+      url: `${SITE_URL}/autos/${params.slug}`,
       siteName: 'TREFA',
       images: [
         {
@@ -85,7 +88,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     // Alternate para otros idiomas/regiones
     alternates: {
-      canonical: `https://trefa.mx/autos/${params.slug}`,
+      canonical: `${SITE_URL}/autos/${params.slug}`,
     },
 
     // Robots meta tags
@@ -164,7 +167,7 @@ export default async function Page({ params }: PageProps) {
     notFound();
   }
 
-  const url = `https://trefa.mx/autos/${params.slug}`;
+  const url = `${SITE_URL}/autos/${params.slug}`;
 
   return (
     <>

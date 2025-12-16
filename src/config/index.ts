@@ -55,6 +55,10 @@ const CALENDLY_URL_TMPS = getEnvVar('CALENDLY_URL_TMPS', 'https://calendly.com/t
 const CALENDLY_URL_COAH = getEnvVar('CALENDLY_URL_COAH', 'https://calendly.com/trefa-saltillo/cita-saltillo?month=2025-09');
 const CALENDLY_URL_GPE = getEnvVar('CALENDLY_URL_GPE', 'https://calendly.com/trefa-guadalupe/cita-guadalupe?month=2025-09');
 
+// --- Site URL Configuration ---
+// For production, set NEXT_PUBLIC_SITE_URL in .env (e.g., https://autostrefa.mx)
+const SITE_URL = getEnvVar('SITE_URL', 'https://autostrefa.mx');
+
 // --- Kommo CRM Configuration ---
 const KOMMO_INTEGRATION_ID = getEnvVar('KOMMO_INTEGRATION_ID', '');
 const KOMMO_SECRET_KEY = getEnvVar('KOMMO_SECRET_KEY', '');
@@ -64,6 +68,7 @@ const KOMMO_REFRESH_TOKEN = getEnvVar('KOMMO_REFRESH_TOKEN', '');
 const KOMMO_REDIRECT_URI = getEnvVar('KOMMO_REDIRECT_URI', `${typeof window !== 'undefined' ? window.location.origin : ''}/oauth/kommo/callback`);
 
 export const config = {
+    siteUrl: SITE_URL,
     supabase: {
         url: SUPABASE_URL,
         anonKey: SUPABASE_ANON_KEY,
@@ -117,12 +122,23 @@ export const config = {
 };
 
 /**
+ * Obtiene la URL base del sitio de forma dinámica
+ * Usa window.location.origin en cliente, o NEXT_PUBLIC_SITE_URL como fallback
+ */
+export const getSiteUrl = (): string => {
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  return SITE_URL;
+};
+
+/**
  * Obtiene la URL de redireccion para callbacks de OAuth/Email
  * La redireccion final a admin dashboard se maneja en AuthContext/middleware
  */
 export const getEmailRedirectUrl = (): string => {
   // Use auth callback route which handles code exchange and redirect
-  return `${window.location.origin}/auth/callback?redirect=/escritorio`;
+  return `${getSiteUrl()}/auth/callback?redirect=/escritorio`;
 };
 
 /**

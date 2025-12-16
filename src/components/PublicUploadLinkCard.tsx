@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link2, Copy, CheckCircle, QrCode, ExternalLink } from 'lucide-react';
 import QRCode from 'qrcode';
+import { getSiteUrl } from '@/config';
 
 interface PublicUploadLinkCardProps {
   token: string;
@@ -12,7 +13,7 @@ const PublicUploadLinkCard: React.FC<PublicUploadLinkCardProps> = ({ token, comp
   const [showQR, setShowQR] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
 
-  const publicUrl = `https://trefa.mx/documentos/${token}`;
+  const publicUrl = `${getSiteUrl()}/documentos/${token}`;
 
   const handleCopy = async () => {
     try {

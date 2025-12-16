@@ -240,6 +240,57 @@ class VehicleService {
         };
     }
 
+    /**
+     * Fetch a single vehicle by slug from rapid-processor edge function
+     * Uses the edge function's 1-hour cache for optimal performance
+     */
+    private static async fetchFromRapidProcessorBySlug(slug: string): Promise<Vehicle | null> {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || !supabaseKey) {
+            console.warn('[VehicleService] Missing Supabase config for rapid-processor');
+            return null;
+        }
+
+        const url = `${supabaseUrl}/functions/v1/rapid-processor/${encodeURIComponent(slug)}`;
+        console.log('[VehicleService] Fetching from rapid-processor by slug:', slug);
+
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${supabaseKey}`,
+                    'Content-Type': 'application/json',
+                },
+                // Short timeout to fail fast and try other sources
+                signal: AbortSignal.timeout(5000),
+            });
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    console.log('[VehicleService] Vehicle not found in rapid-processor cache');
+                    return null;
+                }
+                throw new Error(`rapid-processor returned ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (!data || !data.id) {
+                console.log('[VehicleService] Invalid data from rapid-processor');
+                return null;
+            }
+
+            // Transform single vehicle to match expected format
+            const transformed = this.transformRapidProcessorData([data]);
+            console.log('[VehicleService] Successfully fetched from rapid-processor:', transformed[0]?.titulo);
+            return transformed[0] || null;
+        } catch (error) {
+            console.warn('[VehicleService] rapid-processor fetch failed:', error);
+            return null;
+        }
+    }
+
     private static async buildSupabaseQuery(filters: VehicleFilters = {}, page: number = 1) {
         console.log('Building Supabase query with filters:', filters);
         const reverseSucursalMapping: Record<string, string> = {
@@ -527,40 +578,107 @@ class VehicleService {
         return null;
     }
 
+    /**
+     * Get vehicle by slug using 3-tier architecture for maximum reliability:
+     *
+     * TIER 1: rapid-processor Edge Function (1h cache, fastest)
+     * TIER 2: Supabase direct query (fresh data)
+     * TIER 3: Airtable API (source of truth, always has slug)
+     */
     public static async getVehicleBySlug(slug: string): Promise<Vehicle | null> {
         if (!slug) return null;
+
+        console.log(`[VehicleService] 🔍 Getting vehicle by slug: ${slug}`);
+
         try {
+            // ═══════════════════════════════════════════════════════════════
+            // TIER 1: rapid-processor Edge Function (Cache 1h - FASTEST)
+            // ═══════════════════════════════════════════════════════════════
+            if (this.USE_RAPID_PROCESSOR) {
+                const rpVehicle = await this.fetchFromRapidProcessorBySlug(slug);
+                if (rpVehicle) {
+                    console.log(`[VehicleService] ✅ TIER 1: Found in rapid-processor cache`);
+                    return rpVehicle;
+                }
+                console.log(`[VehicleService] ⏭️ TIER 1: Not in cache, trying Supabase direct...`);
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // TIER 2: Supabase Direct Query (Fresh data)
+            // ═══════════════════════════════════════════════════════════════
             const { data, error } = await supabase
                 .from('inventario_cache')
                 .select('*')
                 .eq('slug', slug)
                 .single();
 
-            if (error) {
-                if (error.code === 'PGRST116') return null; // No single row found
-                throw error;
+            if (error && error.code !== 'PGRST116') {
+                console.warn('[VehicleService] Supabase query error:', error.message);
             }
+
             if (data) {
+                console.log(`[VehicleService] ✅ TIER 2: Found in Supabase`);
                 const normalized = this.normalizeVehicleData([data]);
                 const vehicle = normalized[0];
 
-                // If vehicle data is incomplete and we have ordencompra, try Airtable fallback
+                // Enrich incomplete data from Airtable if needed
                 if (!this.isVehicleDataComplete(vehicle) && data.ordencompra) {
-                    console.log(`[VehicleService] Vehicle ${slug} has incomplete data, trying Airtable fallback...`);
+                    console.log(`[VehicleService] 🔄 Vehicle has incomplete data, enriching from Airtable...`);
                     try {
                         const AirtableDirectService = (await import('./AirtableDirectService')).default;
                         const airtableVehicle = await AirtableDirectService.getVehicleByOrdenCompra(data.ordencompra);
                         if (airtableVehicle && this.isVehicleDataComplete(airtableVehicle as Vehicle)) {
-                            // Preserve the slug from the cache
                             return { ...airtableVehicle, slug: data.slug } as Vehicle;
                         }
                     } catch (airtableError) {
-                        console.error('[VehicleService] Airtable fallback failed:', airtableError);
+                        console.warn('[VehicleService] Airtable enrichment failed:', airtableError);
                     }
                 }
 
                 return vehicle;
             }
+
+            // Try fuzzy search for similar slugs (handles mazda-3-2024 vs mazda-3-2024-2)
+            console.log(`[VehicleService] 🔎 Trying fuzzy search...`);
+            const { data: fuzzyData, error: fuzzyError } = await supabase
+                .from('inventario_cache')
+                .select('*')
+                .or(`slug.ilike.${slug}%,slug.ilike.%${slug}`)
+                .eq('ordenstatus', 'Comprado')
+                .limit(1)
+                .maybeSingle();
+
+            if (fuzzyError) {
+                console.warn('[VehicleService] Fuzzy search error:', fuzzyError.message);
+            }
+
+            if (fuzzyData) {
+                console.log(`[VehicleService] ✅ TIER 2: Found fuzzy match: ${fuzzyData.slug}`);
+                const normalized = this.normalizeVehicleData([fuzzyData]);
+                return normalized[0];
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // TIER 3: Airtable API (Source of Truth - Always has slug)
+            // ═══════════════════════════════════════════════════════════════
+            console.log(`[VehicleService] 🌐 TIER 3: Fetching from Airtable (source of truth)...`);
+            try {
+                const AirtableDirectService = (await import('./AirtableDirectService')).default;
+                const airtableVehicle = await AirtableDirectService.getVehicleBySlug(slug);
+                if (airtableVehicle) {
+                    console.log(`[VehicleService] ✅ TIER 3: Found in Airtable: ${airtableVehicle.title}`);
+                    return airtableVehicle as Vehicle;
+                }
+            } catch (airtableError) {
+                console.error('[VehicleService] ❌ Airtable fallback failed:', airtableError);
+            }
+
+            // Last resort: check if slug might be an ordencompra (e.g., OC1234, ID5678)
+            if (slug.startsWith('OC') || slug.startsWith('ID')) {
+                console.log(`[VehicleService] Trying slug as ordencompra: ${slug}`);
+                return this.getVehicleByOrdenCompra(slug);
+            }
+
             return null;
         } catch (error) {
             console.error(`Error fetching vehicle by slug '${slug}':`, error);

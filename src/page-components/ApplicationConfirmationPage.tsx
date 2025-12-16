@@ -145,7 +145,7 @@ const ApplicationConfirmationPage: React.FC = () => {
   }, [id, user?.id, isFirstSubmit, router]);
 
   const publicUrl = application?.public_upload_token
-    ? `https://trefa.mx/documentos/${application.public_upload_token}`
+    ? `${typeof window !== 'undefined' ? window.location.origin : 'https://autostrefa.mx'}/documentos/${application.public_upload_token}`
     : null;
 
   const handleCopyLink = () => {

@@ -56,6 +56,7 @@ import {
     SidebarMenuSub,
     SidebarMenuSubButton,
     SidebarMenuSubItem,
+    SidebarMenuSkeleton,
     SidebarProvider,
     SidebarRail,
     SidebarTrigger,
@@ -182,11 +183,61 @@ const secondaryNavItems: NavItem[] = [
     { to: '/faq', label: 'Ayuda / FAQs', icon: HelpCircle, roles: ['admin', 'sales', 'user'] },
 ];
 
+// Loading skeleton component for sidebar
+const SidebarLoadingSkeleton: React.FC = () => (
+    <>
+        <SidebarHeader className="border-b border-gray-100/80">
+            <div className="flex items-center gap-2 px-2 py-3">
+                <img src="/images/trefalogo.png" alt="TREFA" className="h-8 w-auto object-contain" />
+            </div>
+            <div className="flex items-center gap-3 rounded-lg border border-gray-100/80 bg-gray-50/50 p-3 mx-2 mb-2">
+                <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse" />
+                <div className="flex-1 space-y-2">
+                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+                    <div className="h-3 w-16 bg-gray-200 rounded animate-pulse" />
+                </div>
+            </div>
+        </SidebarHeader>
+        <SidebarContent className="[&>div]:py-1">
+            <SidebarGroup className="py-1">
+                <SidebarGroupLabel>General</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <SidebarMenuItem key={i}>
+                                <SidebarMenuSkeleton showIcon />
+                            </SidebarMenuItem>
+                        ))}
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+            <SidebarGroup className="py-1">
+                <SidebarGroupLabel>Cargando...</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        {[1, 2, 3, 4].map((i) => (
+                            <SidebarMenuItem key={i}>
+                                <SidebarMenuSkeleton showIcon />
+                            </SidebarMenuItem>
+                        ))}
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+        </SidebarContent>
+    </>
+);
+
 // Sidebar content component
 const AppSidebarContent: React.FC = () => {
-    const { profile, isAdmin, isSales, signOut } = useAuth();
+    const { profile, isAdmin, isSales, loading, signOut } = useAuth();
     const pathname = usePathname();
     const router = useRouter();
+
+    // Show loading skeleton while auth is loading or profile hasn't loaded yet
+    // But allow admin emails to pass through even without profile (email-based admin check)
+    if (loading || (!profile && !isAdmin)) {
+        return <SidebarLoadingSkeleton />;
+    }
 
     const isActiveLink = (path: string, end?: boolean) => {
         if (end) {
@@ -507,11 +558,34 @@ const AppSidebarContent: React.FC = () => {
     );
 };
 
+// Mobile loading skeleton
+const MobileSidebarLoadingSkeleton: React.FC = () => (
+    <div className="p-4 space-y-4">
+        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+            <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse" />
+            <div className="flex-1 space-y-2">
+                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+                <div className="h-3 w-16 bg-gray-200 rounded animate-pulse" />
+            </div>
+        </div>
+        <div className="space-y-2">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="h-10 bg-gray-100 rounded-md animate-pulse" />
+            ))}
+        </div>
+    </div>
+);
+
 // Mobile sidebar content (reused in Sheet)
 const MobileSidebarContent: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
-    const { profile, isAdmin, isSales, signOut } = useAuth();
+    const { profile, isAdmin, isSales, loading, signOut } = useAuth();
     const pathname = usePathname();
     const router = useRouter();
+
+    // Show loading skeleton while auth is loading
+    if (loading || (!profile && !isAdmin)) {
+        return <MobileSidebarLoadingSkeleton />;
+    }
 
     const isActiveLink = (path: string, end?: boolean) => {
         if (end) {

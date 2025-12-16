@@ -479,6 +479,98 @@ export default class AirtableDirectService {
     }
 
     /**
+     * Fetch a single vehicle by slug from Airtable
+     * Used as fallback when Supabase cache is missing the slug
+     */
+    public static async getVehicleBySlug(slug: string): Promise<any | null> {
+        console.log(`🔍 [Airtable] Fetching vehicle by slug: ${slug}`);
+
+        if (!AIRTABLE_API_KEY) {
+            console.error('❌ [Airtable] API key not configured');
+            return null;
+        }
+
+        try {
+            const url = new URL(`${AIRTABLE_API_BASE}/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}`);
+            // Try exact match first on slug field
+            url.searchParams.append('filterByFormula', `{slug} = "${slug}"`);
+            url.searchParams.append('maxRecords', '1');
+
+            const response = await fetch(url.toString(), {
+                headers: {
+                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                console.error(`❌ [Airtable] API error: ${response.status}`);
+                return null;
+            }
+
+            const data = await response.json();
+
+            if (!data.records || data.records.length === 0) {
+                console.log(`⚠️ [Airtable] No vehicle found with slug: ${slug}`);
+                // Try ligawp field as alternative
+                return this.getVehicleByLigaWp(slug);
+            }
+
+            const normalized = this.normalizeAirtableRecords(data.records);
+            console.log(`✅ [Airtable] Found vehicle by slug: ${normalized[0]?.title}`);
+            return normalized[0] || null;
+
+        } catch (error) {
+            console.error('❌ [Airtable] Error fetching vehicle by slug:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Fetch a single vehicle by ligawp field from Airtable
+     * Used as secondary fallback when slug field doesn't match
+     */
+    public static async getVehicleByLigaWp(ligawp: string): Promise<any | null> {
+        console.log(`🔍 [Airtable] Fetching vehicle by ligawp: ${ligawp}`);
+
+        if (!AIRTABLE_API_KEY) {
+            return null;
+        }
+
+        try {
+            const url = new URL(`${AIRTABLE_API_BASE}/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}`);
+            url.searchParams.append('filterByFormula', `{ligawp} = "${ligawp}"`);
+            url.searchParams.append('maxRecords', '1');
+
+            const response = await fetch(url.toString(), {
+                headers: {
+                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                return null;
+            }
+
+            const data = await response.json();
+
+            if (!data.records || data.records.length === 0) {
+                console.log(`⚠️ [Airtable] No vehicle found with ligawp: ${ligawp}`);
+                return null;
+            }
+
+            const normalized = this.normalizeAirtableRecords(data.records);
+            console.log(`✅ [Airtable] Found vehicle by ligawp: ${normalized[0]?.title}`);
+            return normalized[0] || null;
+
+        } catch (error) {
+            console.error('❌ [Airtable] Error fetching vehicle by ligawp:', error);
+            return null;
+        }
+    }
+
+    /**
      * Fetch a single vehicle by OrdenCompra from Airtable
      * Used as fallback when Supabase cache is missing data
      */

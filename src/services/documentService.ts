@@ -49,6 +49,31 @@ export interface DocumentListItem extends UploadedDocument {}
  */
 const BUCKET_NAME = 'application-documents';
 
+/**
+ * Standardizes document type names for consistent validation
+ * Maps various input formats to canonical document type names
+ */
+const standardizeDocumentType = (documentType: string): string => {
+  const normalized = documentType.toLowerCase().replace(/[\s_-]/g, '');
+
+  // Map to standardized names that match our validation logic
+  if (normalized.includes('inefront') || normalized.includes('inefrontal') || normalized === 'inefront') {
+    return 'INE Front';
+  }
+  if (normalized.includes('ineback') || normalized.includes('inetrasera') || normalized === 'ineback') {
+    return 'INE Back';
+  }
+  if (normalized.includes('proofaddress') || normalized.includes('comprobantedomicilio') || normalized.includes('comprobantededomicilio')) {
+    return 'Comprobante Domicilio';
+  }
+  if (normalized.includes('proofincome') || normalized.includes('comprobanteingresos') || normalized.includes('comprobantedeingresos')) {
+    return 'Comprobante Ingresos';
+  }
+
+  // Return original if no match (preserves any custom document types)
+  return documentType;
+};
+
 export class DocumentService {
   static async uploadDocument(
     file: File,
@@ -56,6 +81,8 @@ export class DocumentService {
     documentType: string,
     userId: string
   ): Promise<UploadedDocument> {
+    // Standardize the document type for consistent validation
+    const standardizedType = standardizeDocumentType(documentType);
     const filePath = `${userId}/${applicationId}/${documentType}/${Date.now()}-${file.name}`;
 
     // 1. Upload file to Supabase Storage
@@ -72,11 +99,11 @@ export class DocumentService {
         throw new Error('No se recibió confirmación de la subida del archivo.');
     }
 
-    // 2. Insert metadata record into the database table
+    // 2. Insert metadata record into the database table with standardized type
     const documentRecord = {
       user_id: userId,
       application_id: applicationId,
-      document_type: documentType,
+      document_type: standardizedType,  // Use standardized name
       file_name: file.name,
       file_path: uploadData.path,
       file_size: file.size,
