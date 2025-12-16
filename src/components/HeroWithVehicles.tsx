@@ -25,13 +25,18 @@ const rotatingPhrases = [
 
 // Compact vehicle card for the marquee - hover overlay (memoized for performance)
 const VehicleMarqueeCard = memo(({ vehicle }: { vehicle: Vehicle }) => {
-  const rawImageUrl = getVehicleImage(vehicle);
-  // Transform to CDN URL for optimization
-  const cdnUrl = getCdnUrl(rawImageUrl, { width: 520, quality: 85, format: 'auto' });
-  const tempUrl = cdnUrl || rawImageUrl || DEFAULT_PLACEHOLDER_IMAGE;
-  // Validate URL
-  const isValidUrl = tempUrl && (tempUrl.startsWith('http://') || tempUrl.startsWith('https://') || tempUrl.startsWith('/'));
-  const imageUrl = isValidUrl ? tempUrl : DEFAULT_PLACEHOLDER_IMAGE;
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageSrc, setImageSrc] = useState<string>('');
+
+  useEffect(() => {
+    const rawImageUrl = getVehicleImage(vehicle);
+    // Transform to CDN URL for optimization
+    const cdnUrl = getCdnUrl(rawImageUrl, { width: 520, quality: 85, format: 'auto' });
+    const tempUrl = cdnUrl || rawImageUrl || DEFAULT_PLACEHOLDER_IMAGE;
+    // Validate URL
+    const isValidUrl = tempUrl && (tempUrl.startsWith('http://') || tempUrl.startsWith('https://') || tempUrl.startsWith('/'));
+    setImageSrc(isValidUrl ? tempUrl : DEFAULT_PLACEHOLDER_IMAGE);
+  }, [vehicle]);
 
   const formattedPrice = new Intl.NumberFormat('es-MX', {
     style: 'currency',
@@ -44,15 +49,22 @@ const VehicleMarqueeCard = memo(({ vehicle }: { vehicle: Vehicle }) => {
       href={`/autos/${vehicle.slug}`}
       className="group block bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 ease-out overflow-hidden w-[260px] border border-gray-100 hover:-translate-y-1"
     >
-      <div className="relative h-44 overflow-hidden bg-gray-100">
+      <div className="relative h-44 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
+        {/* Skeleton loader */}
+        {!imageLoaded && (
+          <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer" />
+        )}
         <img
-          src={imageUrl}
+          src={imageSrc}
           alt={vehicle.titulo || vehicle.title || 'Vehículo'}
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-out group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
           loading="lazy"
+          decoding="async"
+          onLoad={() => setImageLoaded(true)}
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.src = DEFAULT_PLACEHOLDER_IMAGE;
+            setImageLoaded(true);
           }}
         />
         {/* Badges - always visible */}

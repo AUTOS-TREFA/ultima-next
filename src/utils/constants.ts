@@ -1,29 +1,20 @@
 import { proxyImage } from './proxyImage';
-import { getCdnUrl } from './imageUrl';
 
-// Base Supabase URLs for placeholder images
-const SUPABASE_BASE = 'https://pemgwyymodlwabaexxrb.supabase.co/storage/v1/object/public/fotos_airtable/app';
-
-// Raw placeholder URLs (before CDN transformation)
-const RAW_PLACEHOLDER_IMAGES: Record<string, string> = {
-  "suv": `${SUPABASE_BASE}/suv-2Artboard-12-trefa.png`,
-  "pick-up": `${SUPABASE_BASE}/pickup-2Artboard-12-trefa-1.png`,
-  "pickup": `${SUPABASE_BASE}/pickup-2Artboard-12-trefa-1.png`,
-  "sedan": `${SUPABASE_BASE}/sedan-2Artboard-12-trefa.png`,
-  "sedán": `${SUPABASE_BASE}/sedan-2Artboard-12-trefa.png`,
-  "hatchback": `${SUPABASE_BASE}/hbArtboard-12-trefa.png`,
-  "motos": `${SUPABASE_BASE}/motos-placeholder.png`,
-  "moto": `${SUPABASE_BASE}/motos-placeholder.png`,
+// Local placeholder images - branded TREFA car silhouettes
+export const PLACEHOLDER_IMAGES: Record<string, string> = {
+  "suv": "/images/placeholders/suv-placeholder.png",
+  "pick-up": "/images/placeholders/pickup-placeholder.png",
+  "pickup": "/images/placeholders/pickup-placeholder.png",
+  "sedan": "/images/placeholders/sedan-placeholder.png",
+  "sedán": "/images/placeholders/sedan-placeholder.png",
+  "hatchback": "/images/placeholders/hatchback-placeholder.png",
+  "motos": "/images/placeholders/sedan-placeholder.png",
+  "moto": "/images/placeholders/sedan-placeholder.png",
+  "minivan": "/images/placeholders/suv-placeholder.png",
+  "van": "/images/placeholders/suv-placeholder.png",
+  "coupe": "/images/placeholders/sedan-placeholder.png",
+  "convertible": "/images/placeholders/sedan-placeholder.png",
 };
-
-// Export CDN-optimized placeholder images
-export const PLACEHOLDER_IMAGES: Record<string, string> = Object.entries(RAW_PLACEHOLDER_IMAGES).reduce(
-  (acc, [key, url]) => {
-    acc[key] = getCdnUrl(url, { width: 800, quality: 85, format: 'auto' });
-    return acc;
-  },
-  {} as Record<string, string>
-);
 
 export const DEFAULT_PLACEHOLDER_IMAGE = PLACEHOLDER_IMAGES.sedan;
 
