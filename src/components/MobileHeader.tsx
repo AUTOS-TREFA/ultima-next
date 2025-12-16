@@ -311,10 +311,10 @@ const MobileHeader: React.FC = () => {
                                 </>
                             ) : (
                                 <>
-                                    {/* Primary CTA - Blue #050C9C */}
+                                    {/* Primary CTA - Blue #003161 */}
                                     <button
                                         onClick={() => handleMobileLinkClick('/acceder')}
-                                        className="w-full text-center px-6 py-3 rounded-lg bg-[#050C9C] hover:bg-[#040A8A] text-white font-semibold shadow-md transition-all duration-300"
+                                        className="w-full text-center px-6 py-3 rounded-lg bg-[#003161] hover:bg-[#002850] text-white font-semibold shadow-md transition-all duration-300"
                                     >
                                         Iniciar Sesión
                                     </button>

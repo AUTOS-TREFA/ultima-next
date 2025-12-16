@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
-import RegisterPage from '@/page-components/RegisterPage';
+import { Suspense } from 'react';
+import RegisterPageNew from '@/page-components/RegisterPageNew';
+import { Loader2 } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Crear Cuenta | Portal TREFA',
@@ -13,5 +15,13 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <RegisterPage />;
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center h-screen w-full bg-white">
+        <Loader2 className="h-10 w-10 animate-spin text-[#003161]" />
+      </div>
+    }>
+      <RegisterPageNew />
+    </Suspense>
+  );
 }

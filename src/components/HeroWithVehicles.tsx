@@ -164,10 +164,10 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
               transition={{ duration: 0.5, ease: 'easeOut' }}
               className="flex flex-wrap items-center gap-4"
             >
-              {/* Primary CTA - Blue #050C9C - Pill shape (same as header, scaled up) */}
+              {/* Primary CTA - Blue #003161 - Pill shape (same as header, scaled up) */}
               <Link
                 href="/autos"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-white font-bold text-base bg-[#050C9C] hover:bg-[#040A8A] shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-white font-bold text-base bg-[#003161] hover:bg-[#002850] shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
               >
                 Comprar un auto
               </Link>

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&family=Inter:wght@300;400;500;600;700;800;900&family=Jost:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700;800;900&family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap');
+/* Using system-ui fonts - no external font imports needed */
 
 @tailwind base;
 @tailwind components;
@@ -39,9 +39,9 @@
     --sidebar-border: oklch(0.94 0 0 / 0.4);
     --sidebar-ring: oklch(0.70 0.20 44.07);
 
-    --font-sans: Inter, sans-serif;
-    --font-serif: PT Serif, serif;
-    --font-mono: Geist Mono, monospace;
+    --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
     --radius: 1.125rem;
 
@@ -116,80 +116,86 @@
     letter-spacing: var(--tracking-normal);
   }
 
-  /* All headings use DM Sans with consistent styling */
+  /* All headings use system-ui with bold weights - shadcn sizing */
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'DM Sans', var(--font-sans);
+    font-family: var(--font-sans);
     letter-spacing: -0.025em;
-    color: #1e293b; /* slate-800 */
+    color: #0f172a; /* slate-900 for better contrast */
     font-style: normal;
   }
 
-  /* H1 - Largest, boldest */
+  /* H1 - 3rem/48px - Extra bold (shadcn text-4xl lg:text-5xl) */
   h1 {
-    font-weight: 900;
-    font-size: 2.5rem; /* 40px */
-    line-height: 1.15;
+    font-weight: 800;
+    font-size: 2.25rem; /* 36px - text-4xl */
+    line-height: 1.1;
   }
 
-  /* H2 - Large sections */
+  /* H2 - 1.875rem/30px - Bold (shadcn text-3xl) */
   h2 {
-    font-weight: 800;
-    font-size: 2rem; /* 32px */
+    font-weight: 700;
+    font-size: 1.875rem; /* 30px - text-3xl */
     line-height: 1.2;
   }
 
-  /* H3 - Subsections */
+  /* H3 - 1.5rem/24px - Semibold (shadcn text-2xl) */
   h3 {
     font-weight: 600;
-    font-size: 1.5rem; /* 24px */
+    font-size: 1.5rem; /* 24px - text-2xl */
     line-height: 1.25;
   }
 
-  /* H4 - Card titles, smaller sections */
+  /* H4 - 1.25rem/20px - Semibold (shadcn text-xl) */
   h4 {
     font-weight: 600;
     font-size: 1.25rem; /* 20px */
     line-height: 1.3;
   }
 
-  /* H5 - Small headings */
+  /* H5 - 1.125rem/18px - Medium (shadcn text-lg) */
   h5 {
-    font-weight: 500;
-    font-size: 1.125rem; /* 18px */
+    font-weight: 600;
+    font-size: 1.125rem; /* 18px - text-lg */
     line-height: 1.35;
   }
 
-  /* H6 - Smallest headings */
+  /* H6 - 1rem/16px - Medium (shadcn text-base) */
   h6 {
-    font-weight: 500;
-    font-size: 1rem; /* 16px */
+    font-weight: 600;
+    font-size: 1rem; /* 16px - text-base */
     line-height: 1.4;
   }
 
-  /* Responsive heading sizes for mobile */
+  /* Responsive heading sizes for mobile - shadcn mobile sizes */
   @media (max-width: 640px) {
     h1 {
-      font-size: 1.875rem; /* 30px */
+      font-size: 1.875rem; /* 30px - text-3xl */
+      font-weight: 800;
       line-height: 1.2;
     }
     h2 {
-      font-size: 1.5rem; /* 24px */
+      font-size: 1.5rem; /* 24px - text-2xl */
+      font-weight: 700;
       line-height: 1.25;
     }
     h3 {
-      font-size: 1.25rem; /* 20px */
+      font-size: 1.25rem; /* 20px - text-xl */
+      font-weight: 600;
       line-height: 1.3;
     }
     h4 {
-      font-size: 1.125rem; /* 18px */
+      font-size: 1.125rem; /* 18px - text-lg */
+      font-weight: 600;
       line-height: 1.35;
     }
     h5 {
-      font-size: 1rem; /* 16px */
+      font-size: 1rem; /* 16px - text-base */
+      font-weight: 600;
       line-height: 1.4;
     }
     h6 {
-      font-size: 0.875rem; /* 14px */
+      font-size: 0.875rem; /* 14px - text-sm */
+      font-weight: 600;
       line-height: 1.45;
     }
   }
@@ -1098,77 +1104,125 @@ background: radial-gradient(circle, rgba(255, 120, 10, 1) 18%, rgba(255, 104, 1,
 .input-animated-focus:focus {
   outline: none;
   border-color: transparent;
-  box-shadow: 0 0 0 1.25px #050C9C;
+  box-shadow: 0 0 0 1.25px #003161;
 }
 
-/* Animated gradient border wrapper - for select/input fields */
+/* Animated traveling border - conic gradient rotating around element */
 .animated-border-wrapper {
   position: relative;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
+  isolation: isolate;
 }
 
 .animated-border-wrapper::before {
   content: '';
   position: absolute;
-  inset: -1.25px;
+  inset: 0;
   border-radius: inherit;
   padding: 1.25px;
-  background: linear-gradient(90deg, transparent, transparent);
+  background: conic-gradient(
+    from var(--border-angle, 0deg),
+    transparent 0deg,
+    transparent 60deg,
+    #003161 90deg,
+    #3B82F6 120deg,
+    #003161 150deg,
+    transparent 180deg,
+    transparent 360deg
+  );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.3s ease;
   pointer-events: none;
 }
 
 .animated-border-wrapper:focus-within::before {
   opacity: 1;
-  background: linear-gradient(90deg, #050C9C, #3B82F6, #050C9C);
-  background-size: 200% 100%;
-  animation: border-flow 2s linear infinite;
+  animation: border-rotate 3s linear infinite;
 }
 
-@keyframes border-flow {
+@keyframes border-rotate {
   0% {
-    background-position: 0% 50%;
+    --border-angle: 0deg;
   }
   100% {
-    background-position: 200% 50%;
+    --border-angle: 360deg;
   }
+}
+
+/* For browsers that don't support @property, use transform rotation */
+@supports not (background: conic-gradient(from 0deg, red, blue)) {
+  .animated-border-wrapper:focus-within::before {
+    background: linear-gradient(90deg, #003161, #3B82F6, #003161);
+    background-size: 200% 100%;
+    animation: border-flow-fallback 2s linear infinite;
+  }
+
+  @keyframes border-flow-fallback {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+}
+
+/* Register the custom property for smooth animation */
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
 }
 
 /* Simpler subtle glow effect for form inputs */
 .form-input-glow {
   transition: all 0.2s ease;
   border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
 }
 
 .form-input-glow:focus {
   outline: none;
-  border-color: #050C9C;
-  box-shadow: 0 0 0 3px rgba(5, 12, 156, 0.08), 0 0 8px rgba(5, 12, 156, 0.12);
+  border-color: #003161;
+  box-shadow: 0 0 0 1px rgba(0, 49, 97, 0.15);
 }
 
 .form-input-glow:hover:not(:focus):not(:disabled) {
   border-color: #d1d5db;
 }
 
-/* Select dropdown with animated focus */
+/* Select dropdown with traveling border focus */
 .form-select-animated {
-  transition: all 0.2s ease;
-  border: 1px solid #e5e7eb;
+  position: relative;
+  transition: border-color 0.2s ease;
+  border: 1.25px solid #e5e7eb;
+  border-radius: 0.75rem;
   background-color: white;
 }
 
 .form-select-animated:focus {
   outline: none;
-  border-color: #050C9C;
-  box-shadow:
-    0 0 0 1px #050C9C,
-    0 0 0 4px rgba(5, 12, 156, 0.06),
-    0 0 12px rgba(5, 12, 156, 0.1);
+  border-color: transparent;
+  background-image:
+    linear-gradient(white, white),
+    conic-gradient(
+      from var(--border-angle, 0deg),
+      #e5e7eb 0deg,
+      #e5e7eb 60deg,
+      #003161 90deg,
+      #3B82F6 120deg,
+      #003161 150deg,
+      #e5e7eb 180deg,
+      #e5e7eb 360deg
+    );
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  animation: select-border-rotate 3s linear infinite;
+}
+
+@keyframes select-border-rotate {
+  0% { --border-angle: 0deg; }
+  100% { --border-angle: 360deg; }
 }
 
 .form-select-animated:hover:not(:focus):not(:disabled) {
@@ -1179,19 +1233,28 @@ background: radial-gradient(circle, rgba(255, 120, 10, 1) 18%, rgba(255, 104, 1,
   background-color: #f9fafb;
   border-color: #f3f4f6;
   cursor: not-allowed;
+  background-image: none;
 }
 
-/* Pulse animation for first field attention */
-@keyframes subtle-pulse {
+/* Remove pulse animation - replaced with traveling border */
+.animate-subtle-pulse {
+  /* No longer pulsating - static subtle highlight on first load */
+  box-shadow: 0 0 0 1px rgba(0, 49, 97, 0.1);
+}
+
+/* Subtle floating blob animation for backgrounds */
+@keyframes blob-float {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(5, 12, 156, 0);
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(5%, 10%) scale(1.05);
   }
   50% {
-    box-shadow: 0 0 0 4px rgba(5, 12, 156, 0.1);
+    transform: translate(-5%, 5%) scale(0.95);
   }
-}
-
-.animate-subtle-pulse {
-  animation: subtle-pulse 2s ease-in-out infinite;
+  75% {
+    transform: translate(8%, -5%) scale(1.02);
+  }
 }
 

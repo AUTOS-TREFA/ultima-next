@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-const RegisterForm = () => {
+const LoginForm = () => {
   const [isVisible, setIsVisible] = useState(false)
 
   return (
@@ -34,20 +34,26 @@ const RegisterForm = () => {
         </Button>
       </div>
 
-      {/* Privacy policy */}
-      <div className='flex items-center gap-3'>
-        <Checkbox id='rememberMe' className='size-6' />
-        <Label htmlFor='rememberMe' className='text-muted-foreground'>
-          {' '}
-          I agree to all Term, privacy Policy and Fees
-        </Label>
+      {/* Remember Me and Forgot Password */}
+      <div className='flex items-center justify-between gap-y-2'>
+        <div className='flex items-center gap-3'>
+          <Checkbox id='rememberMe' className='size-6' />
+          <Label htmlFor='rememberMe' className='text-muted-foreground'>
+            {' '}
+            Remember Me
+          </Label>
+        </div>
+
+        <a href='#' className='hover:underline'>
+          Forgot Password?
+        </a>
       </div>
 
       <Button className='w-full' type='submit'>
-        Sign up to Shadcn Studio
+        Sign in to Shadcn Studio
       </Button>
     </form>
   )
 }
 
-export default RegisterForm
+export default LoginForm

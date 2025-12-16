@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LogOutIcon, UserIcon } from './icons';
-import { ArrowDown, ArrowUp } from 'lucide-react';
+import { ArrowDown, ArrowUp, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ComprarMegaMenu from './ComprarMegaMenu';
 import HeaderSearchBar from './HeaderSearchBar';
@@ -66,13 +66,13 @@ const Header: React.FC = () => {
 
               {/* Right Section - Desktop Menu and Auth */}
               <div className={`flex items-center flex-shrink-0 ${isListPage ? 'ml-auto' : ''}`}>
-                {/* Action Buttons - Using brand colors: CTA Blue #050C9C, Brand Orange #FF6801 */}
+                {/* Action Buttons - Using brand colors: CTA Blue #003161, Brand Orange #FF6801 */}
                 <div className="flex items-center gap-2.5">
                   {/* Comprar Button - CTA Blue - Pill shape */}
                   <button
                     ref={comprarButtonRef}
                     onClick={handleComprarClick}
-                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-white font-bold text-sm bg-[#050C9C] hover:bg-[#040A8A] shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-white font-bold text-sm bg-[#003161] hover:bg-[#002850] shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <ArrowDown className="w-4 h-4 stroke-[2.5]" />
                     Comprar
@@ -97,9 +97,10 @@ const Header: React.FC = () => {
                     <>
                       <Link
                         href={isSalesUser ? "/escritorio/ventas/crm" : "/escritorio"}
-                        className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                        className="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-[#003161] transition-colors"
                       >
-                        Dashboard
+                        <LayoutDashboard className="w-4 h-4" />
+                        Escritorio
                       </Link>
                       <button
                         onClick={handleSignOut}

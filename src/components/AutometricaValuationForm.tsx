@@ -1070,18 +1070,18 @@ export function AutometricaValuationForm({
                         setSelectedBrand(e.target.value);
                         setShowPulse(false);
                       }}
-                      className={`w-full appearance-none form-select-animated rounded-lg ${inputPy} px-3 pr-8 ${inputText} text-gray-900 font-medium cursor-pointer ${showPulse && !selectedBrand ? 'border-[#050C9C]/30' : ''}`}
+                      className={`w-full appearance-none form-select-animated rounded-lg ${inputPy} px-3 pr-8 ${inputText} text-gray-900 font-medium cursor-pointer ${showPulse && !selectedBrand ? 'border-[#003161]/30' : ''}`}
                     >
                       <option value="">Seleccionar</option>
                       {brands.map((brand) => (
                         <option key={brand} value={brand}>{brand}</option>
                       ))}
                     </select>
-                    <ChevronDown className={`absolute right-2 top-1/2 -translate-y-1/2 ${iconSize} ${showPulse && !selectedBrand ? 'text-[#050C9C]' : 'text-gray-400'} pointer-events-none`} />
+                    <ChevronDown className={`absolute right-2 top-1/2 -translate-y-1/2 ${iconSize} ${showPulse && !selectedBrand ? 'text-[#003161]' : 'text-gray-400'} pointer-events-none`} />
                     {showPulse && !selectedBrand && (
                       <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#050C9C] opacity-50"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-[#050C9C]"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#003161] opacity-50"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-[#003161]"></span>
                       </span>
                     )}
                   </div>
@@ -1180,7 +1180,7 @@ export function AutometricaValuationForm({
                   <button
                     onClick={handleGetValuation}
                     disabled={!isFormComplete || isQueryInProgress}
-                    className={`w-full flex items-center justify-center gap-2 bg-[#050C9C] text-white font-semibold ${inputPy} px-4 rounded-lg hover:bg-[#040A8A] shadow-md transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none text-sm`}
+                    className={`w-full flex items-center justify-center gap-2 bg-[#003161] text-white font-semibold ${inputPy} px-4 rounded-lg hover:bg-[#002850] shadow-md transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none text-sm`}
                   >
                     {isQueryInProgress ? (
                       <Loader2 className="w-4 h-4 animate-spin" />

@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
  *
  * Brand Colors:
  * - Primary (Orange): #FF6801 - Brand identity color
- * - Secondary/CTA (Blue): #050C9C - Action buttons color
+ * - Secondary/CTA (Blue): #003161 - Action buttons color
  *
  * Use this component for all CTAs across the site to maintain consistency.
  */
@@ -20,11 +20,11 @@ const ctaButtonVariants = cva(
   {
     variants: {
       variant: {
-        // Primary CTA - Blue (#050C9C)
-        default: 'bg-[#050C9C] text-white hover:bg-[#040A8A] shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-[#050C9C]',
+        // Primary CTA - Blue (#003161)
+        default: 'bg-[#003161] text-white hover:bg-[#002850] shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-[#003161]',
 
         // Secondary CTA - Blue outline
-        outline: 'border-2 border-[#050C9C] text-[#050C9C] bg-transparent hover:bg-[#050C9C] hover:text-white shadow-sm hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-[#050C9C]',
+        outline: 'border-2 border-[#003161] text-[#003161] bg-transparent hover:bg-[#003161] hover:text-white shadow-sm hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-[#003161]',
 
         // Brand Primary - Orange (#FF6801) for brand elements
         brand: 'bg-[#FF6801] text-white hover:bg-[#E55E01] shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-[#FF6801]',
@@ -33,10 +33,10 @@ const ctaButtonVariants = cva(
         'brand-outline': 'border-2 border-[#FF6801] text-[#FF6801] bg-transparent hover:bg-[#FF6801] hover:text-white shadow-sm hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-[#FF6801]',
 
         // Ghost - subtle for secondary actions
-        ghost: 'text-[#050C9C] hover:bg-[#050C9C]/10 hover:text-[#040A8A]',
+        ghost: 'text-[#003161] hover:bg-[#003161]/10 hover:text-[#002850]',
 
         // Link style
-        link: 'text-[#050C9C] underline-offset-4 hover:underline',
+        link: 'text-[#003161] underline-offset-4 hover:underline',
       },
       size: {
         sm: 'h-9 px-4 text-xs',
