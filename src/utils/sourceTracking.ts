@@ -97,3 +97,76 @@ export function hasSourceParameters(): boolean {
   ];
   return sourceParams.some(param => urlParams.has(param));
 }
+
+/**
+ * Builds a URL preserving all tracking parameters
+ * Combines current URL params, sessionStorage data, and additional params
+ * @param basePath - The base path to redirect to
+ * @param currentSearchParams - Current URL search params (from useSearchParams or URLSearchParams)
+ * @param additionalParams - Additional params to add (optional)
+ * @returns Full URL with all tracking params preserved
+ */
+export function buildUrlWithTracking(
+  basePath: string,
+  currentSearchParams?: { get: (key: string) => string | null } | null,
+  additionalParams?: Record<string, string>
+): string {
+  const params = new URLSearchParams();
+
+  // 1. Add additional params first (like returnTo, ordencompra)
+  if (additionalParams) {
+    Object.entries(additionalParams).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+    });
+  }
+
+  // 2. Copy tracking params from current URL
+  const trackingParams = [
+    'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+    'fbclid', 'gclid', 'rfdm', 'referrer'
+  ];
+
+  if (currentSearchParams) {
+    trackingParams.forEach(param => {
+      const value = currentSearchParams.get(param);
+      if (value && !params.has(param)) {
+        params.set(param, value);
+      }
+    });
+
+    // Also preserve ordencompra if present
+    const ordencompra = currentSearchParams.get('ordencompra');
+    if (ordencompra && !params.has('ordencompra')) {
+      params.set('ordencompra', ordencompra);
+    }
+  }
+
+  // 3. Fill in missing params from sessionStorage (leadSourceData)
+  try {
+    const leadSourceData = sessionStorage.getItem('leadSourceData');
+    if (leadSourceData) {
+      const parsed = JSON.parse(leadSourceData);
+      trackingParams.forEach(param => {
+        if (parsed[param] && !params.has(param)) {
+          params.set(param, parsed[param]);
+        }
+      });
+    }
+  } catch (e) {
+    console.warn('[sourceTracking] Error parsing leadSourceData:', e);
+  }
+
+  // 4. Also check SOURCE_TRACKING_KEY (strefa_source_tracking)
+  const sourceData = getSourceTracking();
+  if (sourceData) {
+    if (sourceData.utm_source && !params.has('utm_source')) params.set('utm_source', sourceData.utm_source);
+    if (sourceData.utm_medium && !params.has('utm_medium')) params.set('utm_medium', sourceData.utm_medium);
+    if (sourceData.utm_campaign && !params.has('utm_campaign')) params.set('utm_campaign', sourceData.utm_campaign);
+    if (sourceData.utm_term && !params.has('utm_term')) params.set('utm_term', sourceData.utm_term);
+    if (sourceData.utm_content && !params.has('utm_content')) params.set('utm_content', sourceData.utm_content);
+    if (sourceData.rfdm && !params.has('rfdm')) params.set('rfdm', sourceData.rfdm);
+  }
+
+  const paramsString = params.toString();
+  return paramsString ? `${basePath}?${paramsString}` : basePath;
+}

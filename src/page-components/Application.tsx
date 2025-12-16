@@ -22,6 +22,7 @@ import { DEFAULT_PLACEHOLDER_IMAGE } from '../utils/constants';
 import { BrevoEmailService } from '../services/BrevoEmailService';
 import { supabase } from '../../supabaseClient';
 import { conversionTracking } from '../services/ConversionTrackingService';
+import { buildUrlWithTracking } from '../utils/sourceTracking';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -260,7 +261,7 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
                         setApplicationId(newDraft.id);
 
                         // Navigate to the new URL (this will trigger the effect to reload the full draft)
-                        router.replace(`/escritorio/nueva-solicitud/${newDraft.id}`);
+                        router.replace(`/escritorio/aplicacion/${newDraft.id}`);
                     } else {
                         throw new Error('No pudimos crear el borrador de tu solicitud. Por favor, intenta nuevamente. Si el problema persiste, contacta con soporte.');
                     }
@@ -547,11 +548,22 @@ const Application: React.FC<ApplicationProps> = ({ id: applicationIdFromUrl }) =
     };
 
     const StatusDisplay: React.FC<{ icon: React.ElementType, title: string, message: string, linkTo: string, linkText: string }> = ({ icon: Icon, title, message, linkTo, linkText }) => {
-        // Preserve ordencompra when redirecting
-        const ordenCompra = searchParams?.get('ordencompra') || sessionStorage.getItem('pendingOrdenCompra');
-        const finalLinkTo = ordenCompra && (linkTo === '/escritorio/profile' || linkTo === '/escritorio/perfilacion-bancaria')
-            ? `${linkTo}?returnTo=/escritorio/aplicacion&ordencompra=${ordenCompra}`
-            : linkTo;
+        // Usar la utilidad para preservar todos los parametros de tracking
+        const buildRedirectUrl = () => {
+            if (linkTo !== '/escritorio/profile' && linkTo !== '/escritorio/perfilacion-bancaria') {
+                return linkTo;
+            }
+
+            // Obtener ordencompra de la URL o sessionStorage
+            const ordenCompra = searchParams?.get('ordencompra') || sessionStorage.getItem('pendingOrdenCompra');
+
+            return buildUrlWithTracking(linkTo, searchParams, {
+                returnTo: '/escritorio/aplicacion',
+                ...(ordenCompra ? { ordencompra: ordenCompra } : {})
+            });
+        };
+
+        const finalLinkTo = buildRedirectUrl();
 
         return (
             <div className="max-w-xl mx-auto p-8 text-center bg-white rounded-xl shadow-sm border border-yellow-300">

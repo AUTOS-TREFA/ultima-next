@@ -21,6 +21,7 @@ import type { Profile } from '../types/types';
 import { calculateRFC } from '../utils/rfcCalculator';
 import { toast } from 'sonner';
 import { conversionTracking } from '../services/ConversionTrackingService';
+import { buildUrlWithTracking } from '../utils/sourceTracking';
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
@@ -532,9 +533,10 @@ const ProfilePage: React.FC = () => {
         await reloadProfile();
 
         const returnTo = searchParams?.get('returnTo');
-        const ordencompra = searchParams?.get('ordencompra');
-        if (returnTo && ordencompra) {
-          router.push(`${returnTo}?ordencompra=${ordencompra}`);
+        if (returnTo) {
+          // Preservar todos los parametros de tracking al redirigir
+          const finalPath = buildUrlWithTracking(returnTo, searchParams);
+          router.push(finalPath);
         } else {
           router.push('/escritorio');
         }
@@ -545,14 +547,13 @@ const ProfilePage: React.FC = () => {
       await reloadProfile();
 
       setTimeout(() => {
-        const returnTo = searchParams?.get('returnTo');
-        const ordencompra = searchParams?.get('ordencompra');
-        let redirectPath = '/escritorio/perfilacion-bancaria';
+        // Usar la utilidad para preservar todos los parametros de tracking
+        const redirectPath = buildUrlWithTracking(
+          '/escritorio/perfilacion-bancaria',
+          searchParams
+        );
 
-        if (returnTo && ordencompra) {
-          redirectPath = `${redirectPath}?returnTo=${returnTo}&ordencompra=${ordencompra}`;
-        }
-
+        console.log('[ProfilePage] Redirigiendo a:', redirectPath);
         router.push(redirectPath);
       }, 1000);
     } else {

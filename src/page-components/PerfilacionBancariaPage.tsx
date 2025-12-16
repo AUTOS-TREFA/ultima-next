@@ -11,6 +11,8 @@ import { BankProfilingService, getBankColor, getBankLogo } from '../services/Ban
 import { Profile } from '../types/types';
 import { Building2, User, Loader2, CheckCircle, Info } from 'lucide-react';
 import Confetti from '../components/Confetti';
+import { conversionTracking } from '../services/ConversionTrackingService';
+import { buildUrlWithTracking } from '../utils/sourceTracking';
 
 const bankProfileSchema = z.object({
   trabajo_tiempo: z.string().min(1, 'La antigüedad es requerida'),
@@ -211,8 +213,10 @@ const PerfilacionBancariaPage: React.FC = () => {
             const basePath = localStorage.getItem('loginRedirect') || '/escritorio/aplicacion';
             localStorage.removeItem('loginRedirect');
 
-            const params = new URLSearchParams(searchParams.toString());
-            const redirectPath = `${basePath}?${params.toString()}`;
+            // Usar la utilidad para preservar todos los parametros de tracking
+            const redirectPath = buildUrlWithTracking(basePath, searchParams);
+
+            console.log('[PerfilacionBancariaPage] Redirigiendo a:', redirectPath);
 
             const timer = setTimeout(() => {
                 router.push(redirectPath);
@@ -239,6 +243,14 @@ const PerfilacionBancariaPage: React.FC = () => {
             if (!lowScore) {
                 setShowConfetti(true);
             }
+
+            // Track perfilacion bancaria completada
+            conversionTracking.trackProfile.bankProfilingCompleted(recommendedBank, {
+                userId: user.id,
+                secondOption: secondOption || undefined,
+                lowScore
+            });
+
             setStatus('success');
         } catch (error) {
             console.error('Error saving bank profile:', error);
