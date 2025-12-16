@@ -91,23 +91,23 @@ const TestimonialsComponent = ({ heroSlides, testimonials }: TestimonialsCompone
             style={{ background: 'linear-gradient(to top, white 0%, rgba(255,255,255,0.8) 40%, transparent 100%)' }}
           />
 
-          <Marquee vertical pauseOnHover delay={0.9} duration={22} gap={4} className='h-[44rem]'>
-            {testimonials.slice(0, 3).map((testimonial, index) => (
+          <Marquee vertical pauseOnHover delay={0.9} duration={32} gap={4} className='h-[56rem]'>
+            {testimonials.slice(0, 4).map((testimonial, index) => (
               <TestimonialCard key={index} testimonial={testimonial} />
             ))}
           </Marquee>
-          <Marquee vertical pauseOnHover delay={0.9} duration={25} gap={4} reverse className='h-[44rem] max-sm:hidden'>
-            {testimonials.slice(3, 6).map((testimonial, index) => (
+          <Marquee vertical pauseOnHover delay={0.9} duration={36} gap={4} reverse className='h-[56rem] max-sm:hidden'>
+            {testimonials.slice(4, 8).map((testimonial, index) => (
               <TestimonialCard key={index} testimonial={testimonial} />
             ))}
           </Marquee>
-          <Marquee vertical pauseOnHover delay={0.9} duration={28} gap={4} className='h-[44rem] max-lg:hidden'>
-            {testimonials.slice(6, 9).map((testimonial, index) => (
+          <Marquee vertical pauseOnHover delay={0.9} duration={38} gap={4} className='h-[56rem] max-lg:hidden'>
+            {testimonials.slice(8, 12).map((testimonial, index) => (
               <TestimonialCard key={index} testimonial={testimonial} />
             ))}
           </Marquee>
-          <Marquee vertical pauseOnHover delay={0.9} duration={24} gap={4} reverse className='h-[44rem] max-xl:hidden'>
-            {testimonials.slice(9, 12).map((testimonial, index) => (
+          <Marquee vertical pauseOnHover delay={0.9} duration={34} gap={4} reverse className='h-[56rem] max-xl:hidden'>
+            {testimonials.slice(12, 16).map((testimonial, index) => (
               <TestimonialCard key={index} testimonial={testimonial} />
             ))}
           </Marquee>

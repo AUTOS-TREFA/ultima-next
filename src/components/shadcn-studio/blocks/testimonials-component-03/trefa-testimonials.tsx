@@ -142,6 +142,46 @@ const testimonials: TestimonialItem[] = [
     content: 'El mejor trato que he recibido. Me explicaron todo sobre el financiamiento y me ayudaron a elegir la mejor opción. Cero presiones y muy transparentes.',
     platformName: 'Google',
     platformImage: '/images/google-logo.svg'
+  },
+  {
+    name: 'Patricia M.',
+    handle: '@patricia.m',
+    avatar: '/images/avatars/avatar-1.svg',
+    rating: 5,
+    title: 'Tranquilidad total',
+    content: 'Muchísima apoya en el trámite y paciencia al momento de elegir el mejor financiamiento.',
+    platformName: 'Google',
+    platformImage: '/images/google-logo.svg'
+  },
+  {
+    name: 'Daniel Herrera',
+    handle: '@daniel.h',
+    avatar: '/images/avatars/avatar-2.svg',
+    rating: 5,
+    title: 'Nos ofrecía tranquilidad y seguridad',
+    content: 'Su experiencia de compra en TREFA es la encomiable en ninguna parte',
+    platformName: 'Facebook',
+    platformImage: '/images/facebook-logo.svg'
+  },
+  {
+    name: 'Carmen Sánchez',
+    handle: '@carmen.s',
+    avatar: '/images/avatars/avatar-3.svg',
+    rating: 5,
+    title: 'Me ayudó a encontrar el carro perfecto para mí',
+    content: 'Me ayudó a encontrar el carro perfecto para mí, ofreciéndome totalmente nuevas opciones tanto o más de lo que buscaba que hacerte fue como facil.',
+    platformName: 'Google',
+    platformImage: '/images/google-logo.svg'
+  },
+  {
+    name: 'Roberto García',
+    handle: '@roberto.g',
+    avatar: '/images/avatars/avatar-4.svg',
+    rating: 5,
+    title: 'El vendedor fue honesto',
+    content: 'El vendedor fue honesto en todo, me aconsejó y eso de que fueron las cosas bien.',
+    platformName: 'Facebook',
+    platformImage: '/images/facebook-logo.svg'
   }
 ]
 

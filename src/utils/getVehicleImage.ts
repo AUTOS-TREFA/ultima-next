@@ -52,17 +52,42 @@ export function getVehicleImage(vehicle: Partial<Vehicle & WordPressVehicle>): s
 
   // Find the first valid, non-empty URL from the prioritized list
   for (const imageSource of potentialImages) {
-    if (imageSource && typeof imageSource === 'string' && imageSource.trim() !== '' && imageSource.trim() !== '#ERROR!') {
-      // Convert Supabase URL to CDN URL
-      return getCdnUrl(imageSource.trim());
+    if (imageSource && typeof imageSource === 'string') {
+      const trimmed = imageSource.trim();
+      // Skip empty or invalid values
+      if (
+        trimmed === '' ||
+        trimmed === '#ERROR!' ||
+        trimmed === 'null' ||
+        trimmed === 'undefined' ||
+        trimmed === 'N/A' ||
+        trimmed === 'n/a' ||
+        trimmed === '-'
+      ) {
+        continue;
+      }
+      // Only accept URLs that start with http://, https://, or /
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/')) {
+        // Convert Supabase URL to CDN URL
+        return getCdnUrl(trimmed);
+      }
     }
   }
 
   // 3. If no valid image URL is found, use the classification-specific placeholder
+  // Try clasificacionid first, then fallback to carroceria field
+  let clasificacion = '';
+
   const value = Array.isArray(vehicle.clasificacionid)
     ? vehicle.clasificacionid[0]
     : vehicle.clasificacionid;
 
-  const clasificacion = typeof value === "string" ? value.toLowerCase().replace(/ /g, '-') : "";
+  if (typeof value === "string" && value.trim()) {
+    clasificacion = value.toLowerCase().replace(/ /g, '-');
+  } else if ((vehicle as any).carroceria && typeof (vehicle as any).carroceria === "string") {
+    // Fallback to carroceria field if clasificacionid is not available
+    clasificacion = (vehicle as any).carroceria.toLowerCase().replace(/ /g, '-');
+  }
+
   return PLACEHOLDER_IMAGES[clasificacion] ?? DEFAULT_PLACEHOLDER_IMAGE;
 }

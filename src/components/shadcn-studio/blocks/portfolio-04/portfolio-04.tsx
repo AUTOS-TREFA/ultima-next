@@ -305,7 +305,6 @@ const Portfolio = ({
                 precio: vehicle.precio || 0
               }
             })
-            .filter(item => item.image !== DEFAULT_PLACEHOLDER_IMAGE)
             .slice(0, maxVehicles)
 
           setVehicles(portfolioItems)
@@ -589,6 +588,18 @@ const Portfolio = ({
                   <VehicleCard vehicle={vehicles[vehicleIdx]} delay={baseDelay + 0.3} className="col-span-2" aspectClass="aspect-[16/9]" />
                   <FilterCard filter={filterShortcuts[0]} delay={baseDelay + 0.35} aspectClass="aspect-[4/3]" />
                   <FilterCard filter={filterShortcuts[1]} delay={baseDelay + 0.4} aspectClass="aspect-[4/3]" />
+                </div>
+              )
+              vehicleIdx += 1
+            }
+
+            // Row 4: Budget filter + Newest filter + Large vehicle (2 cols)
+            if (vehicles[vehicleIdx]) {
+              elements.push(
+                <div key="row4" className="grid grid-cols-4 gap-4">
+                  <FilterCard filter={filterShortcuts[4]} delay={baseDelay + 0.45} aspectClass="aspect-[4/3]" />
+                  <FilterCard filter={filterShortcuts[5]} delay={baseDelay + 0.5} aspectClass="aspect-[4/3]" />
+                  <VehicleCard vehicle={vehicles[vehicleIdx]} delay={baseDelay + 0.55} className="col-span-2" aspectClass="aspect-[16/9]" />
                 </div>
               )
               vehicleIdx += 1

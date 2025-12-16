@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LogOutIcon, UserIcon } from './icons';
-import { ArrowDown, ArrowUp, LayoutDashboard } from 'lucide-react';
+import { ChevronDown, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ComprarMegaMenu from './ComprarMegaMenu';
 import HeaderSearchBar from './HeaderSearchBar';
@@ -67,23 +67,22 @@ const Header: React.FC = () => {
               {/* Right Section - Desktop Menu and Auth */}
               <div className={`flex items-center flex-shrink-0 ${isListPage ? 'ml-auto' : ''}`}>
                 {/* Action Buttons - Using brand colors: CTA Blue #003161, Brand Orange #FF6801 */}
-                <div className="flex items-center gap-2.5">
-                  {/* Comprar Button - CTA Blue - Pill shape */}
+                <div className="flex items-center gap-2">
+                  {/* Comprar Button - CTA Blue - Pill shape with chevron for mega menu */}
                   <button
                     ref={comprarButtonRef}
                     onClick={handleComprarClick}
-                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-white font-bold text-sm bg-[#003161] hover:bg-[#002850] shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                    className="flex items-center gap-1 px-4 py-2 rounded-full text-white font-semibold text-sm bg-[#003161] hover:bg-[#002850] shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    <ArrowDown className="w-4 h-4 stroke-[2.5]" />
                     Comprar
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${comprarMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
 
                   {/* Vender Button - Brand Orange - Pill shape */}
                   <Link
                     href="/vender-mi-auto"
-                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-white font-bold text-sm bg-[#FF6801] hover:bg-[#E55E01] shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                    className="px-4 py-2 rounded-full text-white font-semibold text-sm bg-[#FF6801] hover:bg-[#E55E01] shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    <ArrowUp className="w-4 h-4 stroke-[2.5]" />
                     Vender mi auto
                   </Link>
                 </div>
