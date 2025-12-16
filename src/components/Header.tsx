@@ -68,20 +68,20 @@ const Header: React.FC = () => {
               <div className={`flex items-center flex-shrink-0 ${isListPage ? 'ml-auto' : ''}`}>
                 {/* Action Buttons - Using brand colors: CTA Blue #050C9C, Brand Orange #FF6801 */}
                 <div className="flex items-center gap-2.5">
-                  {/* Comprar Button - CTA Blue */}
+                  {/* Comprar Button - CTA Blue - Pill shape */}
                   <button
                     ref={comprarButtonRef}
                     onClick={handleComprarClick}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-md text-white font-bold text-sm bg-[#050C9C] hover:bg-[#040A8A] shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-white font-bold text-sm bg-[#050C9C] hover:bg-[#040A8A] shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <ArrowDown className="w-4 h-4 stroke-[2.5]" />
                     Comprar
                   </button>
 
-                  {/* Vender Button - Brand Orange */}
+                  {/* Vender Button - Brand Orange - Pill shape */}
                   <Link
                     href="/vender-mi-auto"
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-md text-white font-bold text-sm bg-[#FF6801] hover:bg-[#E55E01] shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-white font-bold text-sm bg-[#FF6801] hover:bg-[#E55E01] shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <ArrowUp className="w-4 h-4 stroke-[2.5]" />
                     Vender mi auto

@@ -164,25 +164,20 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
               transition={{ duration: 0.5, ease: 'easeOut' }}
               className="flex flex-wrap items-center gap-4"
             >
-              {/* Primary CTA - Blue #050C9C */}
-              <Button
-                size="lg"
-                asChild
-                className="bg-[#050C9C] hover:bg-[#040A8A] shadow-lg h-14 px-8 text-lg font-bold transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+              {/* Primary CTA - Blue #050C9C - Pill shape (same as header, scaled up) */}
+              <Link
+                href="/autos"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-white font-bold text-base bg-[#050C9C] hover:bg-[#040A8A] shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
               >
-                <Link href="/autos">
-                  Comprar un auto
-                </Link>
-              </Button>
-              {/* Secondary CTA - Brand Orange outline */}
-              <Button
-                size="lg"
-                variant="outline"
-                asChild
-                className="border-[#FF6801] border-2 hover:bg-[#FF6801] hover:text-white text-[#FF6801] h-14 px-8 text-lg font-bold transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                Comprar un auto
+              </Link>
+              {/* Secondary CTA - Brand Orange outline - Pill shape */}
+              <Link
+                href="/vender-mi-auto"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold text-base border-2 border-[#FF6801] text-[#FF6801] bg-transparent hover:bg-[#FF6801] hover:text-white shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
               >
-                <Link href="/vender-mi-auto">Vender mi auto</Link>
-              </Button>
+                Vender mi auto
+              </Link>
             </MotionPreset>
           </div>
 
