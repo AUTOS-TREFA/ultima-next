@@ -1062,7 +1062,7 @@ export function AutometricaValuationForm({
               <div className={`grid grid-cols-1 sm:grid-cols-3 ${gap}`}>
                 <div className="space-y-1.5">
                   <label className={`block ${labelText}`}>Marca</label>
-                  <div className={`relative ${showPulse && !selectedBrand ? 'animate-pulse-border' : ''}`}>
+                  <div className={`relative animated-border-wrapper ${showPulse && !selectedBrand ? 'animate-subtle-pulse' : ''}`}>
                     <select
                       ref={brandRef}
                       value={selectedBrand}
@@ -1070,18 +1070,18 @@ export function AutometricaValuationForm({
                         setSelectedBrand(e.target.value);
                         setShowPulse(false);
                       }}
-                      className={`w-full appearance-none bg-white border-2 rounded-lg ${inputPy} px-3 pr-8 ${inputText} text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300 ${showPulse && !selectedBrand ? 'border-primary-400 ring-2 ring-primary-200 ring-opacity-50' : 'border-gray-200'}`}
+                      className={`w-full appearance-none form-select-animated rounded-lg ${inputPy} px-3 pr-8 ${inputText} text-gray-900 font-medium cursor-pointer ${showPulse && !selectedBrand ? 'border-[#050C9C]/30' : ''}`}
                     >
                       <option value="">Seleccionar</option>
                       {brands.map((brand) => (
                         <option key={brand} value={brand}>{brand}</option>
                       ))}
                     </select>
-                    <ChevronDown className={`absolute right-2 top-1/2 -translate-y-1/2 ${iconSize} ${showPulse && !selectedBrand ? 'text-primary-500' : 'text-gray-400'} pointer-events-none`} />
+                    <ChevronDown className={`absolute right-2 top-1/2 -translate-y-1/2 ${iconSize} ${showPulse && !selectedBrand ? 'text-[#050C9C]' : 'text-gray-400'} pointer-events-none`} />
                     {showPulse && !selectedBrand && (
                       <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-primary-500"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#050C9C] opacity-50"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-[#050C9C]"></span>
                       </span>
                     )}
                   </div>
@@ -1089,13 +1089,13 @@ export function AutometricaValuationForm({
 
                 <div className="space-y-1.5">
                   <label className={`block ${labelText} ${!selectedBrand ? 'opacity-40' : ''}`}>Modelo</label>
-                  <div className="relative">
+                  <div className="relative animated-border-wrapper">
                     <select
                       ref={modelRef}
                       value={selectedSubbrand}
                       onChange={(e) => setSelectedSubbrand(e.target.value)}
                       disabled={!selectedBrand}
-                      className={`w-full appearance-none border rounded-lg ${inputPy} px-3 pr-8 ${inputText} font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all ${!selectedBrand ? 'bg-gray-100 border-gray-100 text-gray-300 cursor-not-allowed' : 'bg-white border-gray-200 text-gray-900 cursor-pointer hover:border-gray-300'}`}
+                      className={`w-full appearance-none form-select-animated rounded-lg ${inputPy} px-3 pr-8 ${inputText} font-medium ${!selectedBrand ? 'cursor-not-allowed' : 'cursor-pointer'} ${selectedBrand ? 'text-gray-900' : 'text-gray-300'}`}
                     >
                       <option value="">{selectedBrand ? 'Seleccionar' : '—'}</option>
                       {subbrands.map((subbrand) => (
@@ -1108,13 +1108,13 @@ export function AutometricaValuationForm({
 
                 <div className="space-y-1.5">
                   <label className={`block ${labelText} ${!selectedSubbrand ? 'opacity-40' : ''}`}>Año</label>
-                  <div className="relative">
+                  <div className="relative animated-border-wrapper">
                     <select
                       ref={yearRef}
                       value={selectedYear}
                       onChange={(e) => setSelectedYear(e.target.value)}
                       disabled={!selectedSubbrand}
-                      className={`w-full appearance-none border rounded-lg ${inputPy} px-3 pr-7 ${inputText} font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all ${!selectedSubbrand ? 'bg-gray-100 border-gray-100 text-gray-300 cursor-not-allowed' : 'bg-white border-gray-200 text-gray-900 cursor-pointer hover:border-gray-300'}`}
+                      className={`w-full appearance-none form-select-animated rounded-lg ${inputPy} px-3 pr-7 ${inputText} font-medium ${!selectedSubbrand ? 'cursor-not-allowed' : 'cursor-pointer'} ${selectedSubbrand ? 'text-gray-900' : 'text-gray-300'}`}
                     >
                       <option value="">{selectedSubbrand ? 'Seleccionar' : '—'}</option>
                       {years.map((year) => (
@@ -1130,13 +1130,13 @@ export function AutometricaValuationForm({
               <div className={`grid grid-cols-1 sm:grid-cols-3 ${gap} items-end`}>
                 <div className="space-y-1.5">
                   <label className={`block ${labelText} ${!selectedYear ? 'opacity-40' : ''}`}>Versión</label>
-                  <div className="relative">
+                  <div className="relative animated-border-wrapper">
                     <select
                       ref={versionRef}
                       value={selectedVersion}
                       onChange={(e) => setSelectedVersion(e.target.value)}
                       disabled={!selectedYear}
-                      className={`w-full appearance-none border rounded-lg ${inputPy} px-3 pr-7 ${inputText} font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all ${!selectedYear ? 'bg-gray-100 border-gray-100 text-gray-300 cursor-not-allowed' : 'bg-white border-gray-200 text-gray-900 cursor-pointer hover:border-gray-300'}`}
+                      className={`w-full appearance-none form-select-animated rounded-lg ${inputPy} px-3 pr-7 ${inputText} font-medium ${!selectedYear ? 'cursor-not-allowed' : 'cursor-pointer'} ${selectedYear ? 'text-gray-900' : 'text-gray-300'}`}
                     >
                       <option value="">{selectedYear ? 'Seleccionar' : '—'}</option>
                       {versions.map((version) => (
@@ -1149,7 +1149,7 @@ export function AutometricaValuationForm({
 
                 <div className="space-y-1.5">
                   <label className={`block ${labelText} ${!selectedVersion ? 'opacity-40' : ''}`}>Kilometraje</label>
-                  <div className="relative">
+                  <div className="relative animated-border-wrapper">
                     <input
                       ref={kmRef}
                       type="text"
@@ -1168,19 +1168,19 @@ export function AutometricaValuationForm({
                           setKilometraje('');
                         }
                       }}
-                      className={`w-full border rounded-lg ${inputPy} px-3 pr-8 ${inputText} font-medium placeholder-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all ${!selectedVersion ? 'bg-gray-100 border-gray-100 text-gray-300 cursor-not-allowed' : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'}`}
+                      className={`w-full form-input-glow rounded-lg ${inputPy} px-3 pr-8 ${inputText} font-medium placeholder-gray-300 ${!selectedVersion ? 'cursor-not-allowed !bg-gray-50 !border-gray-100' : ''} ${selectedVersion ? 'text-gray-900' : 'text-gray-300'}`}
                     />
                     <span className={`absolute right-2 top-1/2 -translate-y-1/2 text-xs ${!selectedVersion ? 'text-gray-300' : 'text-gray-400'}`}>km</span>
                   </div>
                 </div>
 
-                {/* Inline Button */}
+                {/* Inline Button - CTA Blue */}
                 <div className="space-y-1.5">
                   <label className={`block ${labelText} opacity-0`}>Acción</label>
                   <button
                     onClick={handleGetValuation}
                     disabled={!isFormComplete || isQueryInProgress}
-                    className={`w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold ${inputPy} px-4 rounded-lg hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm`}
+                    className={`w-full flex items-center justify-center gap-2 bg-[#050C9C] text-white font-semibold ${inputPy} px-4 rounded-lg hover:bg-[#040A8A] shadow-md transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none text-sm`}
                   >
                     {isQueryInProgress ? (
                       <Loader2 className="w-4 h-4 animate-spin" />

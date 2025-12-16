@@ -1085,3 +1085,113 @@ background: radial-gradient(circle, rgba(255, 120, 10, 1) 18%, rgba(255, 104, 1,
   animation: marquee-vertical var(--marquee-duration, 40s) linear infinite;
 }
 
+/* ===================================================================
+   ANIMATED FOCUS STYLES - Subtle circling border effect
+   =================================================================== */
+
+/* Base input with subtle animated focus */
+.input-animated-focus {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.input-animated-focus:focus {
+  outline: none;
+  border-color: transparent;
+  box-shadow: 0 0 0 1.25px #050C9C;
+}
+
+/* Animated gradient border wrapper - for select/input fields */
+.animated-border-wrapper {
+  position: relative;
+  border-radius: 0.5rem;
+}
+
+.animated-border-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -1.25px;
+  border-radius: inherit;
+  padding: 1.25px;
+  background: linear-gradient(90deg, transparent, transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.animated-border-wrapper:focus-within::before {
+  opacity: 1;
+  background: linear-gradient(90deg, #050C9C, #3B82F6, #050C9C);
+  background-size: 200% 100%;
+  animation: border-flow 2s linear infinite;
+}
+
+@keyframes border-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* Simpler subtle glow effect for form inputs */
+.form-input-glow {
+  transition: all 0.2s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.form-input-glow:focus {
+  outline: none;
+  border-color: #050C9C;
+  box-shadow: 0 0 0 3px rgba(5, 12, 156, 0.08), 0 0 8px rgba(5, 12, 156, 0.12);
+}
+
+.form-input-glow:hover:not(:focus):not(:disabled) {
+  border-color: #d1d5db;
+}
+
+/* Select dropdown with animated focus */
+.form-select-animated {
+  transition: all 0.2s ease;
+  border: 1px solid #e5e7eb;
+  background-color: white;
+}
+
+.form-select-animated:focus {
+  outline: none;
+  border-color: #050C9C;
+  box-shadow:
+    0 0 0 1px #050C9C,
+    0 0 0 4px rgba(5, 12, 156, 0.06),
+    0 0 12px rgba(5, 12, 156, 0.1);
+}
+
+.form-select-animated:hover:not(:focus):not(:disabled) {
+  border-color: #d1d5db;
+}
+
+.form-select-animated:disabled {
+  background-color: #f9fafb;
+  border-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
+/* Pulse animation for first field attention */
+@keyframes subtle-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(5, 12, 156, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(5, 12, 156, 0.1);
+  }
+}
+
+.animate-subtle-pulse {
+  animation: subtle-pulse 2s ease-in-out infinite;
+}
+
