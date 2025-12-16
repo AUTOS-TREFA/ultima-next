@@ -171,10 +171,10 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
               >
                 Comprar un auto
               </Link>
-              {/* Secondary CTA - Brand Orange outline - Pill shape */}
+              {/* Secondary CTA - Brand Orange solid - Pill shape */}
               <Link
                 href="/vender-mi-auto"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold text-base border-2 border-[#FF6801] text-[#FF6801] bg-transparent hover:bg-[#FF6801] hover:text-white shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold text-base text-white bg-[#FF6801] hover:bg-[#E55E01] shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
               >
                 Vender mi auto
               </Link>
