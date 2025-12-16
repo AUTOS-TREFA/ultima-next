@@ -146,7 +146,7 @@ export function isOptimizedUrl(url: string | null | undefined): boolean {
  * Gets the base URL for Supabase storage (for direct uploads)
  */
 export function getSupabaseStorageUrl(): string {
-  return SUPABASE_STORAGE_BASE;
+  return CURRENT_SUPABASE_STORAGE_BASE;
 }
 
 /**

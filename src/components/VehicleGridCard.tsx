@@ -123,7 +123,11 @@ const VehicleGridCard: React.FC<VehicleGridCardProps> = ({ vehicle }) => {
                     })}
                 </div>
                 <h3 className="font-bold text-base text-gray-900 group-hover:text-primary-600 transition-colors truncate mb-2" title={vehicle.title}>
-                    {vehicle.title} {(vehicle.autoano || vehicle.year) && <span className="text-gray-600">{vehicle.autoano || vehicle.year}</span>}
+                    {vehicle.title}{(() => {
+                      const year = vehicle.autoano || vehicle.year;
+                      const titleContainsYear = year && vehicle.title.includes(String(year));
+                      return !titleContainsYear && year ? <span className="text-gray-600"> {year}</span> : null;
+                    })()}
                 </h3>
 
                 {/* Specs badges in white section */}

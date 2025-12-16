@@ -7,9 +7,11 @@ import { MotionPreset } from '@/components/ui/motion-preset';
 import { Rating } from '@/components/ui/rating';
 import { Shield, LockKeyhole, Zap } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect, memo } from 'react';
 import type { Vehicle } from '@/types/types';
 import { getVehicleImage } from '@/utils/getVehicleImage';
+import { getCdnUrl } from '@/utils/imageUrl';
 
 const rotatingPhrases = [
   'con tranquilidad absoluta',
@@ -22,7 +24,9 @@ const rotatingPhrases = [
 
 // Compact vehicle card for the marquee - hover overlay (memoized for performance)
 const VehicleMarqueeCard = memo(({ vehicle }: { vehicle: Vehicle }) => {
-  const imageUrl = getVehicleImage(vehicle);
+  const rawImageUrl = getVehicleImage(vehicle);
+  // Transform to CDN URL for optimization
+  const imageUrl = getCdnUrl(rawImageUrl, { width: 520, quality: 85, format: 'auto' }) || rawImageUrl;
   const formattedPrice = new Intl.NumberFormat('es-MX', {
     style: 'currency',
     currency: 'MXN',
@@ -34,12 +38,13 @@ const VehicleMarqueeCard = memo(({ vehicle }: { vehicle: Vehicle }) => {
       href={`/autos/${vehicle.slug}`}
       className="group block bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 ease-out overflow-hidden w-[260px] border border-gray-100 hover:-translate-y-1"
     >
-      <div className="relative h-44 overflow-hidden">
-        <img
+      <div className="relative h-44 overflow-hidden bg-gray-100">
+        <Image
           src={imageUrl}
           alt={vehicle.titulo || vehicle.title || 'Vehículo'}
-          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-          loading="lazy"
+          fill
+          sizes="260px"
+          className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />
         {/* Badges - always visible */}
         {vehicle.garantia && (
@@ -134,7 +139,7 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
               slide
               delay={0.3}
               transition={{ duration: 0.5, ease: 'easeOut' }}
-              className="text-3xl leading-tight font-extrabold text-balance sm:text-4xl sm:font-bold lg:text-5xl text-gray-900"
+              className="text-3xl leading-tight font-black text-balance sm:text-4xl sm:font-extrabold lg:text-5xl lg:font-black text-gray-900"
             >
               Estrena un auto seminuevo{' '}
               <span
