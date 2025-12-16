@@ -150,7 +150,7 @@ const ComprarMegaMenu: React.FC<ComprarMegaMenuProps> = ({ isOpen, onClose, trig
             <Link
               href="/autos"
               onClick={() => onClose()}
-              className="text-sm font-semibold text-primary-600 hover:text-primary-700 flex items-center gap-1 transition-colors"
+              className="text-sm font-semibold text-[#050C9C] hover:text-[#040A8A] flex items-center gap-1 transition-colors"
             >
               Ver todos los autos disponibles
               <ArrowRightIcon className="w-4 h-4" />

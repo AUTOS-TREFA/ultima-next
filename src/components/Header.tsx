@@ -66,22 +66,22 @@ const Header: React.FC = () => {
 
               {/* Right Section - Desktop Menu and Auth */}
               <div className={`flex items-center flex-shrink-0 ${isListPage ? 'ml-auto' : ''}`}>
-                {/* Action Buttons */}
+                {/* Action Buttons - Using brand colors: CTA Blue #050C9C, Brand Orange #FF6801 */}
                 <div className="flex items-center gap-2.5">
-                  {/* Comprar Button - Dark blue gradient */}
+                  {/* Comprar Button - CTA Blue */}
                   <button
                     ref={comprarButtonRef}
                     onClick={handleComprarClick}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-md text-white font-bold text-sm bg-gradient-to-b from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 shadow-sm hover:shadow transition-all"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-md text-white font-bold text-sm bg-[#050C9C] hover:bg-[#040A8A] shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <ArrowDown className="w-4 h-4 stroke-[2.5]" />
                     Comprar
                   </button>
 
-                  {/* Vender Button - Orange gradient, direct link */}
+                  {/* Vender Button - Brand Orange */}
                   <Link
                     href="/vender-mi-auto"
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-md text-white font-bold text-sm bg-gradient-to-b from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 shadow-sm hover:shadow transition-all"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-md text-white font-bold text-sm bg-[#FF6801] hover:bg-[#E55E01] shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <ArrowUp className="w-4 h-4 stroke-[2.5]" />
                     Vender mi auto

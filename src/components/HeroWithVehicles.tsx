@@ -164,15 +164,17 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
               transition={{ duration: 0.5, ease: 'easeOut' }}
               className="flex flex-wrap items-center gap-4"
             >
+              {/* Primary CTA - Blue #050C9C */}
               <Button
                 size="lg"
                 asChild
-                className="bg-[#FF6801] hover:bg-[#E55E01] shadow-lg h-14 px-8 text-lg font-bold transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                className="bg-[#050C9C] hover:bg-[#040A8A] shadow-lg h-14 px-8 text-lg font-bold transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Link href="/autos">
                   Comprar un auto
                 </Link>
               </Button>
+              {/* Secondary CTA - Brand Orange outline */}
               <Button
                 size="lg"
                 variant="outline"
