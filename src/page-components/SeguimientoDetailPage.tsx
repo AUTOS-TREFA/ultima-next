@@ -182,9 +182,9 @@ const SeguimientoDetailPage: React.FC = () => {
     : null;
 
   return (
-    <div className="-m-4 sm:-m-6 min-h-screen bg-gray-50 no-print overflow-x-hidden">
+    <div className="min-h-screen bg-gray-50 no-print overflow-x-hidden">
       {/* Animated Status Bar - Full Width */}
-      <div className={`${statusConfig.bgColor} ${statusConfig.color} h-[60px] flex items-center overflow-hidden sticky top-0 z-50 border-b-2 ${application.status === APPLICATION_STATUS.FALTAN_DOCUMENTOS ? 'border-yellow-600' : 'border-transparent'} mb-4 sm:mb-6`}>
+      <div className={`${statusConfig.bgColor} ${statusConfig.color} h-[60px] flex items-center overflow-hidden sticky top-0 z-50 border-b-2 ${application.status === APPLICATION_STATUS.FALTAN_DOCUMENTOS ? 'border-yellow-600' : application.status === APPLICATION_STATUS.APROBADA ? 'border-green-600' : 'border-transparent'} mt-2 mx-2 sm:mx-4 rounded-lg`}>
         <div className="animate-marquee whitespace-nowrap flex items-center">
           <span className="text-sm sm:text-base lg:text-lg font-bold px-4 sm:px-8">
             {statusConfig.text} • Solicitud #{application.id.substring(0, 8)} • {statusConfig.text} • Solicitud #{application.id.substring(0, 8)} • {statusConfig.text} • Solicitud #{application.id.substring(0, 8)} • {statusConfig.text} • Solicitud #{application.id.substring(0, 8)}
@@ -192,7 +192,7 @@ const SeguimientoDetailPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="w-full px-4 sm:px-6 max-w-full">
+      <div className="w-full px-3 sm:px-4 py-4 max-w-full">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
           {/* Main Content - Printable Application */}
           <div className="lg:col-span-3 space-y-4">
@@ -228,8 +228,10 @@ const SeguimientoDetailPage: React.FC = () => {
             </div>
 
             {showPrintable && (
-              <div className="bg-white rounded-lg border border-gray-200 max-h-[calc(100vh-200px)] overflow-y-auto">
-                <PrintableApplication application={application} />
+              <div className="bg-white rounded-lg border border-gray-200 max-h-[calc(100vh-200px)] overflow-y-auto overflow-x-hidden max-w-full">
+                <div className="max-w-[800px] mx-auto">
+                  <PrintableApplication application={application} />
+                </div>
               </div>
             )}
           </div>
@@ -363,14 +365,14 @@ const SeguimientoDetailPage: React.FC = () => {
                   href={`https://wa.me/5218187049079?text=Hola,%20quisiera%20dar%20seguimiento%20a%20mi%20solicitud%20${application.id.substring(0, 8)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block"
+                  className="block w-full"
                 >
-                  <Button className="w-full bg-green-600 hover:bg-green-700 !text-white py-6">
+                  <Button className="w-full bg-green-600 hover:bg-green-700 !text-white py-4 text-sm">
                     Contactar por WhatsApp
                   </Button>
                 </a>
-                <Link href={`/escritorio/aplicacion/${application.id}`}>
-                  <Button variant="outline" className="w-full border-gray-300 hover:bg-gray-100">
+                <Link href={`/escritorio/aplicacion/${application.id}`} className="block w-full">
+                  <Button variant="outline" className="w-full border-gray-300 hover:bg-gray-100 py-4 text-sm">
                     Editar Solicitud
                   </Button>
                 </Link>

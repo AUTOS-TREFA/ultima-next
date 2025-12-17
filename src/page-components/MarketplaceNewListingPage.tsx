@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,8 +13,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/lib/supabase/client';
 import { ConsignmentService } from '@/services/ConsignmentService';
-import { Upload, X, Car, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Upload, X, Car, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useAuth } from '@/context/AuthContext';
 
 const listingSchema = z.object({
   brand: z.string().min(1, 'La marca es requerida'),
@@ -39,6 +40,7 @@ interface UploadedImage {
 
 export default function MarketplaceNewListingPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +58,27 @@ export default function MarketplaceNewListingPage() {
       negotiable: true,
     },
   });
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/escritorio/login?redirect=/escritorio/marketplace/nuevo');
+    }
+  }, [user, authLoading, router]);
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Show nothing while redirecting
+  if (!user) {
+    return null;
+  }
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);

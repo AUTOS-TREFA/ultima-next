@@ -119,12 +119,13 @@ const PrintableApplication: React.FC<{ application: any }> = ({ application }) =
     }, [application.id, refreshKey]);
 
     // Set up polling interval in a separate useEffect to avoid creating multiple intervals
+    // Changed from 5 seconds to 60 seconds to reduce unnecessary API calls
     useEffect(() => {
-        console.log('[PrintableApplication] Setting up auto-refresh polling (every 5 seconds)');
+        console.log('[PrintableApplication] Setting up auto-refresh polling (every 60 seconds)');
         const pollInterval = setInterval(() => {
             console.log('[PrintableApplication] Auto-refreshing document status...');
             setRefreshKey(prev => prev + 1);
-        }, 5000);
+        }, 60000); // 60 seconds instead of 5
 
         // Cleanup interval on unmount
         return () => {

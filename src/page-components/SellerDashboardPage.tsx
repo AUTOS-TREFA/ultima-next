@@ -648,28 +648,24 @@ const SellerDashboardPage: React.FC = () => {
         {/* NEW VALUATION TAB */}
         <TabsContent value="valuate" className="mt-6">
           <div className="grid lg:grid-cols-2 gap-6">
-            {/* Valuation Form */}
+            {/* Valuation Form - Clean layout without bounding box */}
             <div>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Zap className="w-5 h-5 text-primary" />
-                    Cotiza tu Auto
-                  </CardTitle>
-                  <CardDescription>
-                    Ingresa los datos de tu vehículo y recibe una oferta instantánea
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <AutometricaValuationForm
-                    onComplete={() => {
-                      loadListings();
-                      setActiveTab('history');
-                    }}
-                    compact
-                  />
-                </CardContent>
-              </Card>
+              <div className="mb-4">
+                <h2 className="flex items-center gap-2 text-xl font-bold">
+                  <Zap className="w-5 h-5 text-primary" />
+                  Cotiza tu Auto
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Ingresa los datos de tu vehículo y recibe una oferta instantánea
+                </p>
+              </div>
+              <AutometricaValuationForm
+                onComplete={() => {
+                  loadListings();
+                  setActiveTab('history');
+                }}
+                compact
+              />
             </div>
 
             {/* Benefits */}
