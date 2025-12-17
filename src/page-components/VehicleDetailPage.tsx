@@ -910,38 +910,38 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
       <main className="relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-6 lg:py-8" id="page-content">
         <div className="mb-3 sm:mb-6"><Breadcrumbs crumbs={crumbs} /></div>
 
-        <nav className="no-print flex items-center justify-between bg-gray-100 p-1.5 sm:p-2 rounded-lg sm:rounded-xl mb-4 sm:mb-8 border border-gray-200">
+        <nav className="no-print flex items-center justify-between bg-gray-100 p-1.5 sm:p-2 rounded-lg sm:rounded-xl mb-3 sm:mb-4 md:mb-8 border border-gray-200">
           {/* Previous Vehicle */}
           {prevVehicle ? (() => {
             const prevImage = getVehicleImage(prevVehicle);
             return (
-              <Link href={`/autos/${prevVehicle.slug}`} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-white/60 transition-colors">
-                <ChevronLeftIcon className="w-8 h-8 flex-shrink-0 text-gray-400 group-hover:text-primary-600 transition-colors" />
-                <img src={prevImage} alt={prevVehicle.title} className="w-20 h-16 object-cover rounded-md flex-shrink-0 hidden sm:block" />
-                <div className="truncate text-left">
-                  <span className="text-xs text-gray-500 block">Anterior</span>
-                  <span className="font-semibold hidden md:block truncate text-neutral-800 group-hover:text-primary-700">{prevVehicle.title}</span>
+              <Link href={`/autos/${prevVehicle.slug}`} className="group flex items-center gap-1.5 sm:gap-3 p-1.5 sm:p-2 rounded-lg hover:bg-white/60 transition-colors min-w-0 flex-1">
+                <ChevronLeftIcon className="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0 text-gray-400 group-hover:text-primary-600 transition-colors" />
+                <img src={prevImage} alt={prevVehicle.title} className="w-12 h-10 sm:w-20 sm:h-16 object-cover rounded-md flex-shrink-0 hidden sm:block" />
+                <div className="truncate text-left min-w-0">
+                  <span className="text-[10px] sm:text-xs text-gray-500 block">Anterior</span>
+                  <span className="font-semibold text-xs sm:text-sm md:text-base truncate text-neutral-800 group-hover:text-primary-700 block">{prevVehicle.title}</span>
                 </div>
               </Link>
             );
-          })() : <div />}
+          })() : <div className="flex-1" />}
 
-          {prevVehicle && nextVehicle && <div className="h-12 border-r border-gray-200 mx-2 hidden sm:block"></div>}
+          {prevVehicle && nextVehicle && <div className="h-8 sm:h-12 border-r border-gray-200 mx-1 sm:mx-2"></div>}
 
           {/* Next Vehicle */}
           {nextVehicle ? (() => {
             const nextImage = getVehicleImage(nextVehicle);
             return (
-              <Link href={`/autos/${nextVehicle.slug}`} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-white/60 transition-colors">
-                <div className="truncate text-right">
-                  <span className="text-xs text-gray-500 block">Siguiente</span>
-                  <span className="font-semibold hidden md:block truncate text-neutral-800 group-hover:text-primary-700">{nextVehicle.title}</span>
+              <Link href={`/autos/${nextVehicle.slug}`} className="group flex items-center gap-1.5 sm:gap-3 p-1.5 sm:p-2 rounded-lg hover:bg-white/60 transition-colors min-w-0 flex-1">
+                <div className="truncate text-right min-w-0 flex-1">
+                  <span className="text-[10px] sm:text-xs text-gray-500 block">Siguiente</span>
+                  <span className="font-semibold text-xs sm:text-sm md:text-base truncate text-neutral-800 group-hover:text-primary-700 block">{nextVehicle.title}</span>
                 </div>
-                <img src={nextImage} alt={nextVehicle.title} className="w-20 h-16 object-cover rounded-md flex-shrink-0 hidden sm:block" />
-                <ChevronRightIcon className="w-8 h-8 flex-shrink-0 text-gray-400 group-hover:text-primary-600 transition-colors" />
+                <img src={nextImage} alt={nextVehicle.title} className="w-12 h-10 sm:w-20 sm:h-16 object-cover rounded-md flex-shrink-0 hidden sm:block" />
+                <ChevronRightIcon className="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0 text-gray-400 group-hover:text-primary-600 transition-colors" />
               </Link>
             );
-          })() : <div />}
+          })() : <div className="flex-1" />}
         </nav>
 
         {/* Main Content Grid */}

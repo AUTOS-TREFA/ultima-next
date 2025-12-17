@@ -73,19 +73,19 @@ const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({
   }, [profile, setValue, useDifferentAddress, trigger]);
 
   return (
-    <CardContent className="col-span-5 flex flex-col gap-6 p-6 md:col-span-3">
+    <CardContent className="col-span-5 flex flex-col gap-4 sm:gap-6 p-3 sm:p-4 md:p-6 md:col-span-3">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Información Personal</h2>
-        <p className="text-sm text-gray-600">Confirma que tu información personal esté correcta y actualizada.</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">Información Personal</h2>
+        <p className="text-xs sm:text-sm text-gray-600">Confirma que tu información personal esté correcta y actualizada.</p>
       </div>
 
       {/* Profile Information Summary */}
-      <div className="bg-gradient-to-r from-blue-50 to-primary-50 rounded-xl p-6">
-        <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-4 flex items-center">
-          <User className="w-4 h-4 mr-2" />
+      <div className="bg-gradient-to-r from-blue-50 to-primary-50 rounded-lg sm:rounded-xl p-4 sm:p-6">
+        <h3 className="text-xs sm:text-sm font-bold text-gray-700 uppercase tracking-wide mb-3 sm:mb-4 flex items-center">
+          <User className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
           Datos Personales Registrados
         </h3>
-        <div className="grid md:grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
           <div>
             <p className="text-xs text-gray-500">Nombre Completo</p>
             <p className="font-semibold text-gray-900">
@@ -123,9 +123,9 @@ const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({
       </div>
 
       {/* Address Section */}
-      <div className="bg-white rounded-xl p-6 border">
-        <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-4">Domicilio Actual</h3>
-        <div className="space-y-4">
+      <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 border">
+        <h3 className="text-xs sm:text-sm font-bold text-gray-700 uppercase tracking-wide mb-3 sm:mb-4">Domicilio Actual</h3>
+        <div className="space-y-3 sm:space-y-4">
           <div className="flex items-start">
             <div className="flex items-center h-5">
               <input
@@ -145,7 +145,7 @@ const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({
           </div>
 
           {useDifferentAddress ? (
-            <div className="grid md:grid-cols-2 gap-4 pt-4 border-t">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t">
               <Controller
                 name="current_address"
                 control={control}
@@ -223,8 +223,8 @@ const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({
       </div>
 
       {/* Housing & Personal Info */}
-      <div className="bg-white rounded-xl p-6 border space-y-6">
-        <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Información del Hogar</h3>
+      <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 border space-y-4 sm:space-y-6">
+        <h3 className="text-xs sm:text-sm font-bold text-gray-700 uppercase tracking-wide">Información del Hogar</h3>
 
         <Controller
           name="time_at_address"
@@ -327,12 +327,12 @@ const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({
         />
       </div>
 
-      <div className="flex justify-between gap-4 mt-6">
-        <Button variant="secondary" size="lg" onClick={stepper.prev} disabled={stepper.isFirst}>
+      <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 mt-4 sm:mt-6">
+        <Button variant="secondary" size="lg" onClick={stepper.prev} disabled={stepper.isFirst} className="w-full sm:w-auto">
           <ArrowLeftIcon className="w-4 h-4 mr-2" />
           Anterior
         </Button>
-        <Button size="lg" onClick={onNext}>
+        <Button size="lg" onClick={onNext} className="w-full sm:w-auto">
           Siguiente
           <ArrowRightIcon className="w-4 h-4 ml-2" />
         </Button>

@@ -248,27 +248,27 @@ const MarketingHubPage: React.FC = () => {
   ];
 
   return (
-    <div className="flex-1 w-full max-w-[1400px] mx-auto space-y-4 p-4 md:p-6 pt-6 overflow-x-hidden">
+    <div className="flex-1 w-full max-w-[1400px] mx-auto space-y-3 sm:space-y-4 p-3 sm:p-4 md:p-6 pt-4 sm:pt-6 overflow-x-hidden">
       {/* Header */}
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard General</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard General</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground">
           Centro de herramientas de marketing, ventas y análisis
         </p>
       </div>
 
       {/* Summary Metrics Row */}
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {/* 1. Total Leads */}
         <Card className="bg-blue-50/50 border-blue-100">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Leads</p>
-                <p className="text-2xl font-bold mt-1">{summaryMetrics.totalLeads.toLocaleString()}</p>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Leads</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1 truncate">{summaryMetrics.totalLeads.toLocaleString()}</p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                <Users className="h-5 w-5 text-blue-600" />
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
               </div>
             </div>
           </CardContent>
@@ -279,12 +279,12 @@ const MarketingHubPage: React.FC = () => {
           summaryMetrics.registros24h.direction === 'up' ? 'bg-cyan-50/50 border-cyan-100' :
           summaryMetrics.registros24h.direction === 'down' ? 'bg-orange-50/50 border-orange-100' : 'bg-slate-50/50 border-slate-100'
         }`}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Registros 24h</p>
-                <p className="text-2xl font-bold mt-1">{summaryMetrics.registros24h.count}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Registros 24h</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1">{summaryMetrics.registros24h.count}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 truncate">
                   {summaryMetrics.registros24h.direction === 'up' && (
                     <span className="text-cyan-600">+{summaryMetrics.registros24h.changePercentage}% vs ayer</span>
                   )}
@@ -296,13 +296,13 @@ const MarketingHubPage: React.FC = () => {
                   )}
                 </p>
               </div>
-              <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+              <div className={`h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                 summaryMetrics.registros24h.direction === 'up' ? 'bg-cyan-100' :
                 summaryMetrics.registros24h.direction === 'down' ? 'bg-orange-100' : 'bg-slate-100'
               }`}>
-                {summaryMetrics.registros24h.direction === 'up' && <ArrowUp className="h-5 w-5 text-cyan-600" />}
-                {summaryMetrics.registros24h.direction === 'down' && <ArrowDown className="h-5 w-5 text-orange-600" />}
-                {summaryMetrics.registros24h.direction === 'stable' && <Minus className="h-5 w-5 text-slate-500" />}
+                {summaryMetrics.registros24h.direction === 'up' && <ArrowUp className="h-4 w-4 sm:h-5 sm:w-5 text-cyan-600" />}
+                {summaryMetrics.registros24h.direction === 'down' && <ArrowDown className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />}
+                {summaryMetrics.registros24h.direction === 'stable' && <Minus className="h-4 w-4 sm:h-5 sm:w-5 text-slate-500" />}
               </div>
             </div>
           </CardContent>
@@ -310,14 +310,14 @@ const MarketingHubPage: React.FC = () => {
 
         {/* 3. Solicitudes Enviadas */}
         <Card className="bg-green-50/50 border-green-100">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Solicitudes Enviadas</p>
-                <p className="text-2xl font-bold mt-1">{summaryMetrics.totalSolicitudes.toLocaleString()}</p>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Solicitudes Enviadas</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1 truncate">{summaryMetrics.totalSolicitudes.toLocaleString()}</p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                <FileText className="h-5 w-5 text-green-600" />
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
               </div>
             </div>
           </CardContent>
@@ -325,14 +325,14 @@ const MarketingHubPage: React.FC = () => {
 
         {/* 4. Total Tráfico */}
         <Card className="bg-purple-50/50 border-purple-100">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Tráfico</p>
-                <p className="text-2xl font-bold mt-1">{summaryMetrics.totalTraffic.toLocaleString()}</p>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Total Tráfico</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1 truncate">{summaryMetrics.totalTraffic.toLocaleString()}</p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
-                <Eye className="h-5 w-5 text-purple-600" />
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
               </div>
             </div>
           </CardContent>
@@ -343,38 +343,38 @@ const MarketingHubPage: React.FC = () => {
           summaryMetrics.trend24h.direction === 'up' ? 'bg-green-50/50 border-green-100' :
           summaryMetrics.trend24h.direction === 'down' ? 'bg-red-50/50 border-red-100' : 'bg-gray-50/50 border-gray-100'
         }`}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tendencia 24h</p>
-                <div className="flex items-center gap-1 mt-1">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Tendencia 24h</p>
+                <div className="flex items-center gap-1 mt-0.5 sm:mt-1">
                   {summaryMetrics.trend24h.direction === 'up' && (
                     <>
-                      <ArrowUp className="h-5 w-5 text-green-600" />
-                      <span className="text-2xl font-bold text-green-600">+{summaryMetrics.trend24h.percentage}%</span>
+                      <ArrowUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
+                      <span className="text-xl sm:text-2xl font-bold text-green-600 truncate">+{summaryMetrics.trend24h.percentage}%</span>
                     </>
                   )}
                   {summaryMetrics.trend24h.direction === 'down' && (
                     <>
-                      <ArrowDown className="h-5 w-5 text-red-600" />
-                      <span className="text-2xl font-bold text-red-600">-{summaryMetrics.trend24h.percentage}%</span>
+                      <ArrowDown className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 flex-shrink-0" />
+                      <span className="text-xl sm:text-2xl font-bold text-red-600 truncate">-{summaryMetrics.trend24h.percentage}%</span>
                     </>
                   )}
                   {summaryMetrics.trend24h.direction === 'stable' && (
                     <>
-                      <Minus className="h-5 w-5 text-gray-600" />
-                      <span className="text-2xl font-bold text-gray-600">~{summaryMetrics.trend24h.percentage}%</span>
+                      <Minus className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 flex-shrink-0" />
+                      <span className="text-xl sm:text-2xl font-bold text-gray-600 truncate">~{summaryMetrics.trend24h.percentage}%</span>
                     </>
                   )}
                 </div>
               </div>
-              <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+              <div className={`h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                 summaryMetrics.trend24h.direction === 'up' ? 'bg-green-100' :
                 summaryMetrics.trend24h.direction === 'down' ? 'bg-red-100' : 'bg-gray-100'
               }`}>
-                {summaryMetrics.trend24h.direction === 'up' && <TrendingUp className="h-5 w-5 text-green-600" />}
-                {summaryMetrics.trend24h.direction === 'down' && <TrendingUp className="h-5 w-5 text-red-600 rotate-180" />}
-                {summaryMetrics.trend24h.direction === 'stable' && <Minus className="h-5 w-5 text-gray-600" />}
+                {summaryMetrics.trend24h.direction === 'up' && <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />}
+                {summaryMetrics.trend24h.direction === 'down' && <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 rotate-180" />}
+                {summaryMetrics.trend24h.direction === 'stable' && <Minus className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />}
               </div>
             </div>
           </CardContent>
@@ -382,22 +382,22 @@ const MarketingHubPage: React.FC = () => {
       </div>
 
       {/* Main Tools Grid */}
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {mainTools.map((tool) => {
           const Icon = tool.icon;
           return (
             <Link key={tool.title} to={tool.link}>
               <Card className="cursor-pointer hover:bg-accent transition-colors">
-                <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-                  <div className="p-2 rounded-lg bg-muted mr-4">
-                    <Icon className="h-5 w-5 text-muted-foreground" />
+                <CardHeader className="flex flex-row items-center space-y-0 pb-2 p-3 sm:p-6">
+                  <div className="p-1.5 sm:p-2 rounded-lg bg-muted mr-2 sm:mr-4 flex-shrink-0">
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                   </div>
-                  <div className="flex-1">
-                    <CardTitle className="text-base">{tool.title}</CardTitle>
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-sm sm:text-base truncate">{tool.title}</CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">{tool.description}</p>
+                <CardContent className="p-3 sm:p-6 pt-0">
+                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{tool.description}</p>
                 </CardContent>
               </Card>
             </Link>
@@ -407,11 +407,11 @@ const MarketingHubPage: React.FC = () => {
 
       {/* Events Section */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Eventos de Tracking (Últimos 90 días)</CardTitle>
-              <CardDescription>
+        <CardHeader className="p-3 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-base sm:text-lg">Eventos de Tracking (Últimos 90 días)</CardTitle>
+              <CardDescription className="text-xs sm:text-sm mt-1">
                 Todos los eventos registrados incluyendo PageView, ConversionLandingPage y más
               </CardDescription>
             </div>
@@ -419,32 +419,33 @@ const MarketingHubPage: React.FC = () => {
               variant="outline"
               onClick={loadEventStats}
               disabled={loading}
+              className="w-full sm:w-auto text-xs sm:text-sm"
             >
               {loading ? 'Cargando...' : 'Actualizar'}
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 sm:p-6">
           {eventStats.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-sm text-muted-foreground">No hay eventos registrados en los últimos 7 días</p>
+            <div className="text-center py-6 sm:py-8">
+              <p className="text-xs sm:text-sm text-muted-foreground">No hay eventos registrados en los últimos 7 días</p>
             </div>
           ) : (
             <div className="space-y-2">
               {eventStats.map((stat) => (
                 <div
                   key={stat.type}
-                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-2 sm:p-3 border rounded-lg hover:bg-accent transition-colors gap-2"
                 >
-                  <div>
-                    <p className="font-medium">{stat.type}</p>
-                    <p className="text-sm text-muted-foreground">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm sm:text-base truncate">{stat.type}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {stat.unique_users} usuario{stat.unique_users !== 1 ? 's' : ''} único{stat.unique_users !== 1 ? 's' : ''}
                       {' • '}
                       {stat.percentage.toFixed(1)}% del total
                     </p>
                   </div>
-                  <Badge variant="secondary">{stat.count} eventos</Badge>
+                  <Badge variant="secondary" className="text-xs whitespace-nowrap">{stat.count} eventos</Badge>
                 </div>
               ))}
             </div>
