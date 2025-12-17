@@ -385,7 +385,7 @@ export const Navbar02 = React.forwardRef<HTMLElement, Navbar02Props>(
                       </>
                     ) : (
                       <NavigationMenuLink
-                        href={link.href}
+                        href={link.href || '#'}
                         className={cn(navigationMenuTriggerStyle(), 'cursor-pointer')}
                         onClick={(e) => e.preventDefault()}
                       >

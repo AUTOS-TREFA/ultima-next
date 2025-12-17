@@ -36,7 +36,7 @@ export const AppleCardsCarousel = ({
               onMouseLeave={() => setHoveredIndex(null)}
               className="last:pr-[5%] md:last:pr-[33%] rounded-3xl"
             >
-              <Link href={item.link}>
+              <Link href={item.link || '#'}>
                 <Card
                   card={item}
                   index={index}
