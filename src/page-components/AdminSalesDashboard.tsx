@@ -398,7 +398,7 @@ export default function AdminSalesDashboard() {
                 {/* Source Attribution */}
                 <div className="bg-white rounded-2xl shadow-md p-8 border-2 border-gray-200 mb-10 hover:border-gray-300 hover:shadow-lg transition-all">
                     <div className="flex items-center justify-between mb-8">
-                        <h3 className="text-xl font-bold text-gray-900">Atribución por Fuente</h3>
+                        <h3 className="text-base font-bold text-gray-900">Atribución por Fuente</h3>
                         <div className="px-3 py-1 bg-gray-100 rounded-lg">
                             <span className="text-sm font-semibold text-gray-600">{metrics.totalLeads} Total</span>
                         </div>
@@ -485,7 +485,7 @@ export default function AdminSalesDashboard() {
                             <div className="space-y-8">
                                 {/* 30-Day Trends Chart */}
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-900 mb-4">Tendencia de 30 Días</h3>
+                                    <h3 className="text-base font-bold text-gray-900 mb-4">Tendencia de 30 Días</h3>
                                     {timeSeriesData.length > 0 ? (
                                         <div style={{ height: '280px' }}>
                                             <TrendLineChart data={timeSeriesData} />
@@ -499,13 +499,13 @@ export default function AdminSalesDashboard() {
 
                                 {/* Enhanced Source Attribution with Pie Chart */}
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-900 mb-4">Distribución de Fuentes</h3>
+                                    <h3 className="text-base font-bold text-gray-900 mb-4">Distribución de Fuentes</h3>
                                     <SourcePieChart data={metrics.sourceBreakdown} height={280} />
                                 </div>
 
                                 {/* Conversion Funnel */}
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-900 mb-4">Pipeline de Conversión</h3>
+                                    <h3 className="text-base font-bold text-gray-900 mb-4">Pipeline de Conversión</h3>
                                     <ConversionFunnel metrics={{
                                         totalLeads: metrics.totalLeads,
                                         contactedLeads: metrics.contactedLeads,
@@ -562,7 +562,7 @@ export default function AdminSalesDashboard() {
 
                                     {/* Recent Applications */}
                                     <div>
-                                        <h3 className="text-xl font-bold text-gray-900 mb-4">Solicitudes Recientes</h3>
+                                        <h3 className="text-base font-bold text-gray-900 mb-4">Solicitudes Recientes</h3>
                                         <div className="space-y-2 max-h-96 overflow-y-auto">
                                             {metrics.recentApplications.length === 0 ? (
                                                 <p className="text-sm text-gray-500 text-center py-4">No hay solicitudes recientes</p>
@@ -637,7 +637,7 @@ export default function AdminSalesDashboard() {
                         {activeTab === 'emails' && (
                             <div>
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-xl font-bold text-gray-900">Últimos Emails Enviados (Brevo)</h3>
+                                    <h3 className="text-base font-bold text-gray-900">Últimos Emails Enviados (Brevo)</h3>
                                     <Mail className="w-5 h-5 text-gray-400" />
                                 </div>
                                 {emailHistory.length === 0 ? (
@@ -693,7 +693,7 @@ export default function AdminSalesDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div className="bg-white rounded-xl shadow-sm p-6 border-2 border-gray-200">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-xl font-bold text-gray-900">Tareas y Recordatorios</h3>
+                            <h3 className="text-base font-bold text-gray-900">Tareas y Recordatorios</h3>
                             <Calendar className="w-6 h-6 text-gray-400" />
                         </div>
                         <div className="space-y-4">
@@ -710,7 +710,7 @@ export default function AdminSalesDashboard() {
 
                     {/* Quick Actions */}
                     <div className="bg-white rounded-xl shadow-sm p-6 border-2 border-gray-200">
-                        <h3 className="text-xl font-bold text-gray-900 mb-4">Acciones Rápidas</h3>
+                        <h3 className="text-base font-bold text-gray-900 mb-4">Acciones Rápidas</h3>
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 onClick={() => router.push(isAdmin ? '/escritorio/admin/crm' : '/escritorio/ventas/crm')}
@@ -746,7 +746,7 @@ export default function AdminSalesDashboard() {
 
                 {/* Marketing Links */}
                 <div className="bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl shadow-md p-6 text-white mb-8">
-                    <h3 className="text-xl font-bold mb-4">Enlaces de Marketing</h3>
+                    <h3 className="text-base font-bold mb-4">Enlaces de Marketing</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <a
                             href="https://trefa.mx"

@@ -123,13 +123,19 @@ export const config = {
 
 /**
  * Obtiene la URL base del sitio de forma dinámica
- * Usa window.location.origin en cliente, o NEXT_PUBLIC_SITE_URL como fallback
+ * SIEMPRE usa NEXT_PUBLIC_SITE_URL para OAuth redirects
+ * Fallback a window.location.origin solo si no está definido (dev local)
  */
 export const getSiteUrl = (): string => {
+  // ALWAYS prioritize NEXT_PUBLIC_SITE_URL for production consistency
+  if (SITE_URL && SITE_URL !== '') {
+    return SITE_URL;
+  }
+  // Fallback to window.location.origin only if SITE_URL is not set
   if (typeof window !== 'undefined') {
     return window.location.origin;
   }
-  return SITE_URL;
+  return 'https://autostrefa.mx'; // Final fallback
 };
 
 /**
@@ -144,8 +150,8 @@ export const getEmailRedirectUrl = (): string => {
 /**
  * Obtiene la URL de callback para Google OAuth
  * Esta URL debe estar configurada en la consola de Google Cloud y Supabase
+ * SIEMPRE usa getSiteUrl() para consistencia
  */
 export const getGoogleOAuthCallbackUrl = (): string => {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-  return `${siteUrl}/auth/callback?redirect=/escritorio`;
+  return `${getSiteUrl()}/auth/callback?redirect=/escritorio`;
 };
