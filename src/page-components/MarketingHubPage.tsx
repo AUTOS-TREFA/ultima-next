@@ -249,7 +249,7 @@ const MarketingHubPage: React.FC = () => {
   ];
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-6 pt-6">
+    <div className="flex-1 w-full max-w-[1400px] mx-auto space-y-4 p-4 md:p-6 pt-6 overflow-x-hidden">
       {/* Header */}
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Dashboard General</h2>
@@ -259,7 +259,7 @@ const MarketingHubPage: React.FC = () => {
       </div>
 
       {/* Summary Metrics Row */}
-      <div className="grid gap-3 md:grid-cols-5">
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {/* 1. Total Leads */}
         <Card className="bg-blue-50/50 border-blue-100">
           <CardContent className="p-4">
@@ -383,7 +383,7 @@ const MarketingHubPage: React.FC = () => {
       </div>
 
       {/* Main Tools Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {mainTools.map((tool) => {
           const Icon = tool.icon;
           return (

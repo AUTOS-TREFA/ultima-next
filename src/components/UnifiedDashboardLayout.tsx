@@ -717,8 +717,10 @@ const UnifiedDashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
                 </header>
 
                 {/* Page Content */}
-                <main className="w-full flex-1 px-4 py-4 md:px-6 md:py-6 overflow-x-hidden transition-all duration-300">
-                    {children}
+                <main className="w-full max-w-[1600px] mx-auto flex-1 px-2 py-4 sm:px-4 md:px-6 md:py-6 overflow-x-hidden transition-all duration-300">
+                    <div className="w-full overflow-x-hidden">
+                        {children}
+                    </div>
                 </main>
             </SidebarInset>
         </SidebarProvider>

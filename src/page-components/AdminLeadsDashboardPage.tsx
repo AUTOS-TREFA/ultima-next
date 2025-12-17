@@ -235,7 +235,7 @@ const AdminLeadsDashboardPage: React.FC = () => {
     if (isError) return <div className="p-4 bg-red-100 text-red-800 rounded-md"><AlertTriangle className="inline w-5 h-5 mr-2"/>{error?.message}</div>;
 
     return (
-        <div className="space-y-6">
+        <div className="w-full max-w-[1400px] mx-auto space-y-6 overflow-x-hidden">
             {/* Action Bar */}
             {leadsNeedingAction > 0 && (
                 <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-4 shadow-sm">
@@ -264,7 +264,7 @@ const AdminLeadsDashboardPage: React.FC = () => {
             )}
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 <StatsCard title="Total de Clientes Potenciales" value={stats.total_leads || 0} change="" changeType="neutral" icon={Users} color="blue" />
                 <StatsCard title="Con Solicitud Activa" value={stats.leads_with_active_app || 0} change="" changeType="neutral" icon={FileText} color="purple" />
                 <StatsCard title="Solicitud Incompleta" value={stats.leads_with_unfinished_app || 0} change="" changeType="neutral" icon={User} color="yellow" />
@@ -272,7 +272,7 @@ const AdminLeadsDashboardPage: React.FC = () => {
             </div>
 
             {/* Main Content */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border">
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border overflow-hidden">
                 {/* Search and Filters */}
                 <div className="space-y-4 mb-6">
                     <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
@@ -351,8 +351,10 @@ const AdminLeadsDashboardPage: React.FC = () => {
                 </div>
 
                 {/* Table */}
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left text-gray-500">
+                <div className="overflow-x-auto -mx-4 md:-mx-6">
+                    <div className="inline-block min-w-full align-middle">
+                        <div className="overflow-hidden">
+                            <table className="min-w-full text-sm text-left text-gray-500">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
                                 <th scope="col" className="px-4 py-3">Prioridad</th>
@@ -479,6 +481,8 @@ const AdminLeadsDashboardPage: React.FC = () => {
                             })}
                         </tbody>
                     </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

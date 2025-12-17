@@ -79,7 +79,7 @@ const SourcePieChart: React.FC<SourcePieChartProps> = ({ data, height = 300 }) =
     };
 
     return (
-        <div style={{ width: '100%', height, minHeight: height }}>
+        <div className="w-full overflow-hidden" style={{ height, minHeight: height }}>
           <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                   <Pie

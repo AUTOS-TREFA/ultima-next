@@ -149,10 +149,10 @@ export default function AdminSalesDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-12">
+        <div className="min-h-screen bg-gray-50 pb-12 overflow-x-hidden">
             {/* Header */}
             <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900">
@@ -182,7 +182,7 @@ export default function AdminSalesDashboard() {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 {/* Filter Panel */}
                 <FilterPanel
                     filters={filters}
@@ -221,7 +221,7 @@ export default function AdminSalesDashboard() {
                 </div>
 
                 {/* Key Metrics Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
                     {/* Total Applications */}
                     <MetricCard
                         title="Solicitudes Totales"
@@ -265,7 +265,7 @@ export default function AdminSalesDashboard() {
                         <Globe className="w-6 h-6 text-blue-600" />
                         Leads del Sitio Web
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                         <MetricCard
                             title="Total de Leads Web"
                             value={metrics.websiteLeads.total}
@@ -299,7 +299,7 @@ export default function AdminSalesDashboard() {
                         <Bot className="w-6 h-6 text-purple-600" />
                         Leads de Kommo CRM
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                         <MetricCard
                             title="Total de Leads Kommo"
                             value={metrics.kommoLeads.total}
@@ -325,7 +325,7 @@ export default function AdminSalesDashboard() {
                 </div>
 
                 {/* Performance Metrics */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mb-10">
                     <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl shadow-md p-8 border-2 border-orange-200 hover:border-orange-300 hover:shadow-lg transition-all">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-lg font-bold text-gray-900">Tasa de Conversión</h3>
@@ -396,14 +396,14 @@ export default function AdminSalesDashboard() {
                 </div>
 
                 {/* Source Attribution */}
-                <div className="bg-white rounded-2xl shadow-md p-8 border-2 border-gray-200 mb-10 hover:border-gray-300 hover:shadow-lg transition-all">
+                <div className="bg-white rounded-2xl shadow-md p-4 md:p-8 border-2 border-gray-200 mb-10 hover:border-gray-300 hover:shadow-lg transition-all overflow-hidden">
                     <div className="flex items-center justify-between mb-8">
                         <h3 className="text-base font-bold text-gray-900">Atribución por Fuente</h3>
                         <div className="px-3 py-1 bg-gray-100 rounded-lg">
                             <span className="text-sm font-semibold text-gray-600">{metrics.totalLeads} Total</span>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
                         <SourceCard
                             name="Facebook"
                             count={metrics.sourceBreakdown.facebook}
@@ -443,9 +443,9 @@ export default function AdminSalesDashboard() {
                 </div>
 
                 {/* Tabs for Charts, Recent Activity, and Email History */}
-                <div className="bg-white rounded-2xl shadow-md border-2 border-gray-200 mb-8">
+                <div className="bg-white rounded-2xl shadow-md border-2 border-gray-200 mb-8 overflow-hidden">
                     {/* Tab Headers */}
-                    <div className="flex border-b-2 border-gray-100 px-2 pt-2">
+                    <div className="flex border-b-2 border-gray-100 px-2 pt-2 overflow-x-auto">
                         <button
                             onClick={() => setActiveTab('charts')}
                             className={`px-6 py-3 text-sm font-semibold transition-all rounded-t-xl ${
@@ -479,15 +479,15 @@ export default function AdminSalesDashboard() {
                     </div>
 
                     {/* Tab Content */}
-                    <div className="p-8">
+                    <div className="p-4 md:p-8">
                         {/* Charts Tab */}
                         {activeTab === 'charts' && (
                             <div className="space-y-8">
                                 {/* 30-Day Trends Chart */}
-                                <div>
+                                <div className="overflow-hidden">
                                     <h3 className="text-base font-bold text-gray-900 mb-4">Tendencia de 30 Días</h3>
                                     {timeSeriesData.length > 0 ? (
-                                        <div style={{ height: '280px' }}>
+                                        <div className="w-full" style={{ height: '280px' }}>
                                             <TrendLineChart data={timeSeriesData} />
                                         </div>
                                     ) : (
@@ -498,13 +498,15 @@ export default function AdminSalesDashboard() {
                                 </div>
 
                                 {/* Enhanced Source Attribution with Pie Chart */}
-                                <div>
+                                <div className="overflow-hidden">
                                     <h3 className="text-base font-bold text-gray-900 mb-4">Distribución de Fuentes</h3>
-                                    <SourcePieChart data={metrics.sourceBreakdown} height={280} />
+                                    <div className="w-full">
+                                        <SourcePieChart data={metrics.sourceBreakdown} height={280} />
+                                    </div>
                                 </div>
 
                                 {/* Conversion Funnel */}
-                                <div>
+                                <div className="overflow-x-auto">
                                     <h3 className="text-base font-bold text-gray-900 mb-4">Pipeline de Conversión</h3>
                                     <ConversionFunnel metrics={{
                                         totalLeads: metrics.totalLeads,
@@ -690,7 +692,7 @@ export default function AdminSalesDashboard() {
                 </div>
 
                 {/* Tasks and Actions */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8">
                     <div className="bg-white rounded-xl shadow-sm p-6 border-2 border-gray-200">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-base font-bold text-gray-900">Tareas y Recordatorios</h3>
