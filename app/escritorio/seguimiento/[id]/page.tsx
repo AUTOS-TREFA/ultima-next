@@ -1,6 +1,6 @@
 'use client';
 
-import Application from '@/page-components/Application';
+import SeguimientoDetailPage from '@/page-components/SeguimientoDetailPage';
 
 interface PageProps {
   params: { id: string };
@@ -8,5 +8,5 @@ interface PageProps {
 }
 
 export default function Page({ params }: PageProps) {
-  return <Application id={params.id} />;
+  return <SeguimientoDetailPage />;
 }
