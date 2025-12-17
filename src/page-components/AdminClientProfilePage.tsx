@@ -12,6 +12,9 @@ import { ApplicationService } from '../services/ApplicationService';
 import { supabase } from '../../supabaseClient';
 import BankingProfileSummary from '../components/BankingProfileSummary';
 import EmailNotificationsHistory from '../components/EmailNotificationsHistory';
+import ProminentStatusSelector from '../components/ProminentStatusSelector';
+import ApplicationDecision from '../components/ApplicationDecision';
+import RefreshPublicUploadToken from '../components/RefreshPublicUploadToken';
 import { toast } from 'sonner';
 
 const BUCKET_NAME = 'application-documents';
@@ -553,11 +556,13 @@ interface AdminClientProfilePageProps {
 
 const AdminClientProfilePage: React.FC<AdminClientProfilePageProps> = ({ id }) => {
     const { user } = useAuth();
-    const [clientData, setClientData] = useState<{ profile: Profile; applications: any[]; tags: any[]; reminders: any[]; documents: any[] } | null>(null);
+    const [clientData, setClientData] = useState<{ profile: Profile; applications: any[]; tags: any[]; reminders: any[]; documents: any[]; bank_profile: any } | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isSyncing, setIsSyncing] = useState(false);
     const [syncMessage, setSyncMessage] = useState('');
+    const [isDownloading, setIsDownloading] = useState(false);
+    const printRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!id) {
@@ -682,6 +687,71 @@ const AdminClientProfilePage: React.FC<AdminClientProfilePageProps> = ({ id }) =
         }
     };
 
+    const handleContactadoToggle = async () => {
+        if (!clientData) return;
+        const newContactadoValue = !clientData.profile.contactado;
+
+        try {
+            // Update in database
+            const { error } = await supabase
+                .from('profiles')
+                .update({ contactado: newContactadoValue })
+                .eq('id', clientData.profile.id);
+
+            if (error) throw error;
+
+            // Update local state
+            setClientData(prev => prev ? ({
+                ...prev,
+                profile: { ...prev.profile, contactado: newContactadoValue }
+            }) : null);
+
+            toast.success(newContactadoValue ? 'Marcado como contactado' : 'Marcado como no contactado');
+        } catch (e: any) {
+            console.error('Error updating contactado:', e);
+            toast.error('Error al actualizar el estado de contactado');
+        }
+    };
+
+    const handlePrint = () => {
+        window.print();
+    };
+
+    const handleDownloadPDF = async () => {
+        if (!printRef.current || !clientData?.applications[0]) return;
+
+        setIsDownloading(true);
+        try {
+            const html2canvas = (await import('html2canvas')).default;
+            const jsPDF = (await import('jspdf')).default;
+
+            const canvas = await html2canvas(printRef.current, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4',
+            });
+
+            const imgWidth = 210;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            pdf.save(`solicitud-${clientData.applications[0].id?.slice(0, 8)}.pdf`);
+            toast.success('PDF descargado exitosamente');
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            toast.error('Error al generar el PDF');
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex justify-center items-center h-full">
@@ -730,7 +800,7 @@ const AdminClientProfilePage: React.FC<AdminClientProfilePageProps> = ({ id }) =
         );
     }
 
-    const { profile, applications, tags, reminders, documents } = clientData;
+    const { profile, applications, tags, reminders, documents, bank_profile } = clientData;
 
     return (
         <div className="space-y-8">
@@ -757,7 +827,20 @@ const AdminClientProfilePage: React.FC<AdminClientProfilePageProps> = ({ id }) =
                             <ProfileDataItem label="Fuente" value={profile.source} />
                             <ProfileDataItem label="RFC" value={profile.rfc} />
                             <ProfileDataItem label="Asesor Asignado" value={profile.asesor_asignado_name || 'N/A'} />
-                            <ProfileDataItem label="Contactado" value={profile.contactado ? 'Sí' : 'No'} />
+                            <div>
+                                <p className="text-xs text-gray-500 uppercase tracking-wider">Contactado</p>
+                                <label className="flex items-center gap-2 mt-1 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={profile.contactado}
+                                        onChange={handleContactadoToggle}
+                                        className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                                    />
+                                    <span className="text-sm font-semibold text-gray-800">
+                                        {profile.contactado ? 'Sí' : 'No'}
+                                    </span>
+                                </label>
+                            </div>
                         </div>
                         <div className="mt-6 border-t pt-4 space-y-2">
                             <button onClick={handleCallClient} disabled={!profile.phone} className="w-full flex items-center justify-center gap-2 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -779,17 +862,109 @@ const AdminClientProfilePage: React.FC<AdminClientProfilePageProps> = ({ id }) =
                         </div>
                     </div>
 
-                    <BankingProfileSummary applications={applications} />
+                    {/* Application Status Selector */}
+                    {applications.length > 0 && applications[0] && (
+                        <div className="bg-white p-6 rounded-xl shadow-sm border">
+                            <h2 className="text-lg font-semibold text-gray-800 mb-4">Estado de la Solicitud</h2>
+                            <ProminentStatusSelector
+                                applicationId={applications[0].id}
+                                currentStatus={applications[0].status}
+                                onStatusChanged={(newStatus) => {
+                                    handleStatusChange(applications[0].id, newStatus);
+                                }}
+                            />
+
+                            {/* Action Buttons - Only enabled when status is "submitted" (Completa) */}
+                            <div className="mt-4 pt-4 border-t space-y-2">
+                                <button
+                                    onClick={handleDownloadPDF}
+                                    disabled={isDownloading || applications[0].status !== 'submitted'}
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-bold rounded-lg hover:from-primary-700 hover:to-primary-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-md transform transition-all hover:scale-105 disabled:hover:scale-100"
+                                    title={applications[0].status !== 'submitted' ? 'Solo disponible cuando el estado es Completa' : 'Descargar solicitud como PDF'}
+                                >
+                                    {isDownloading ? (
+                                        <>
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                            Generando PDF...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Download className="w-5 h-5" />
+                                            Descargar Solicitud (PDF)
+                                        </>
+                                    )}
+                                </button>
+                                <button
+                                    onClick={handlePrint}
+                                    disabled={applications[0].status !== 'submitted'}
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                                    title={applications[0].status !== 'submitted' ? 'Solo disponible cuando el estado es Completa' : 'Imprimir solicitud'}
+                                >
+                                    <Printer className="w-5 h-5" />
+                                    Imprimir Solicitud
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Public Upload Token Manager - Dropzone Público */}
+                    {applications.length > 0 && applications[0] && (
+                        <div className="bg-white p-6 rounded-xl shadow-sm border">
+                            <h2 className="text-lg font-semibold text-gray-800 mb-4">Dropzone Público de Documentos</h2>
+                            <RefreshPublicUploadToken
+                                applicationId={applications[0].id}
+                                currentToken={applications[0].public_upload_token}
+                                tokenExpiresAt={applications[0].token_expires_at}
+                                onTokenRefreshed={(newToken, expiresAt) => {
+                                    // Actualizar el estado local
+                                    setClientData(prev => {
+                                        if (!prev) return prev;
+                                        return {
+                                            ...prev,
+                                            applications: prev.applications.map(app =>
+                                                app.id === applications[0].id
+                                                    ? { ...app, public_upload_token: newToken, token_expires_at: expiresAt }
+                                                    : app
+                                            )
+                                        };
+                                    });
+                                }}
+                            />
+                        </div>
+                    )}
+
+                    <BankingProfileSummary bankProfile={bank_profile} />
                     <LeadSourceInfo metadata={profile.metadata} source={profile.source} />
                     <KommoDataDisplay kommoData={profile.kommo_data} lastSynced={profile.kommo_last_synced} />
-                    <EmailNotificationsHistory userId={profile.id} />
+                    <EmailNotificationsHistory userId={profile.id} recipientEmail={profile.email} />
                     <TagsManager leadId={profile.id} initialTags={tags} />
                     <RemindersManager leadId={profile.id} initialReminders={reminders} agentId={user.id} />
                 </div>
 
                 {/* Right Column: Applications & History */}
                 <div className="lg:col-span-2 space-y-6">
-                    <ApplicationManager applications={applications} onStatusChange={handleStatusChange} />
+                    {/* Application Decision - Approval/Rejection */}
+                    {applications.length > 0 && applications[0] && (
+                        <ApplicationDecision
+                            applicationId={applications[0].id}
+                            currentStatus={applications[0].status}
+                            onStatusChanged={() => {
+                                // Reload client data to reflect the new decision
+                                if (id) {
+                                    AdminService.getClientProfile(id).then(data => {
+                                        if (data) setClientData(data);
+                                    });
+                                }
+                            }}
+                        />
+                    )}
+
+                    {/* Application Preview for Print/PDF */}
+                    {applications.length > 0 && applications[0] && (
+                        <div ref={printRef} className="print:p-0">
+                            <PrintableApplication application={applications[0]} />
+                        </div>
+                    )}
                     <DocumentViewer documents={documents} onStatusChange={handleDocumentStatusChange} />
                 </div>
             </div>
