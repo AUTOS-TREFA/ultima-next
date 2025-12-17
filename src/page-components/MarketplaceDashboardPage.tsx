@@ -464,9 +464,9 @@ const MarketplaceDashboardPage: React.FC = () => {
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
                     <DollarSign className="w-5 h-5 text-primary" />
                   </div>
-                  <h4 className="font-medium mb-1">4. Recibe ofertas</h4>
+                  <h4 className="font-medium mb-1">4. Te contactamos</h4>
                   <p className="text-sm text-muted-foreground">
-                    Contacta con compradores interesados
+                    Te contactaremos cuando tengamos compradores serios
                   </p>
                 </div>
               </div>

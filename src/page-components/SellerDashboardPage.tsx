@@ -86,7 +86,7 @@ const SellerDashboardPage: React.FC = () => {
 
   const [listings, setListings] = useState<UserVehicleForSale[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showValuationApp, setShowValuationApp] = useState(false);
+  const [showValuationApp, setShowValuationApp] = useState(true); // Show ValuationApp by default
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -106,6 +106,12 @@ const SellerDashboardPage: React.FC = () => {
     try {
       const data = await SellCarService.getSellListings(user.id);
       setListings(data);
+      // If no listings exist, show the ValuationApp directly
+      if (data.length === 0) {
+        setShowValuationApp(true);
+      } else {
+        setShowValuationApp(false);
+      }
     } catch (error) {
       console.error('Error loading sell listings:', error);
     } finally {

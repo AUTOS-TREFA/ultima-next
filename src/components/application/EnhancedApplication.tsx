@@ -485,7 +485,7 @@ const EnhancedApplication: React.FC = () => {
     </div>
   );
 
-  if (pageStatus === 'loading' || pageStatus === 'checking_profile') {
+  if (pageStatus === 'initializing' || pageStatus === 'loading' || pageStatus === 'checking_profile') {
     return (
       <div className="flex justify-center items-center h-full min-h-[50vh]">
         <Loader2 className="w-8 h-8 animate-spin text-primary-600" />

@@ -181,13 +181,13 @@ export const sellerNavGroup: NavGroup = {
     items: [
         {
             to: '/escritorio/vende-tu-auto',
-            label: 'Venta Directa',
+            label: 'Vender mi auto',
             icon: DollarSign,
             roles: ['admin', 'sales', 'user']
         },
         {
             to: '/escritorio/marketplace',
-            label: 'Marketplace',
+            label: 'Consignación',
             icon: Store,
             roles: ['admin', 'sales', 'user'],
             badge: 'Nuevo'

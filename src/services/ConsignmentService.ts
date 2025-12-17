@@ -1,4 +1,4 @@
-import { supabase } from '../../supabaseClient';
+import { supabase } from '@/lib/supabase/client';
 
 // Types for Consignment Listings
 export interface ConsignmentListing {

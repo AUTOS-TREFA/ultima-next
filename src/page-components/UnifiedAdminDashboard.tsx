@@ -435,19 +435,19 @@ export default function UnifiedAdminDashboard() {
                 <CardTitle className="text-base">Acciones Rápidas</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Link to="/escritorio/admin/marketing-analytics">
+                <Link href="/escritorio/admin/marketing-analytics">
                   <Button variant="outline" className="w-full justify-between">
                     Marketing Analytics Detallado
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                 </Link>
-                <Link to="/escritorio/admin/crm">
+                <Link href="/escritorio/admin/crm">
                   <Button variant="outline" className="w-full justify-between">
                     CRM y Gestión de Leads
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                 </Link>
-                <Link to="/escritorio/admin/solicitudes">
+                <Link href="/escritorio/admin/solicitudes">
                   <Button variant="outline" className="w-full justify-between">
                     Analytics de Solicitudes
                     <ExternalLink className="h-4 w-4" />
