@@ -249,7 +249,7 @@ export const adminDashboardsGroup: NavGroup = {
             roles: ['admin']
         },
         {
-            to: '/escritorio/dashboard',
+            to: '/escritorio/admin/dashboard',
             label: 'Desempeno',
             icon: TrendingUp,
             roles: ['admin']
