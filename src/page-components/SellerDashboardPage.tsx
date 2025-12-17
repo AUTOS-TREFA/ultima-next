@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import UnifiedDashboardLayout from '@/components/UnifiedDashboardLayout';
 import { SellCarService } from '@/services/SellCarService';
 import type { UserVehicleForSale } from '@/types/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -147,55 +146,50 @@ const SellerDashboardPage: React.FC = () => {
 
   if (authLoading) {
     return (
-      <UnifiedDashboardLayout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      </UnifiedDashboardLayout>
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+      </div>
     );
   }
 
   // If the valuation app is open, show it full-screen
   if (showValuationApp) {
     return (
-      <UnifiedDashboardLayout>
-        <div className="space-y-4">
-          {/* Header with close button */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                <DollarSign className="w-6 h-6 text-primary" />
-                Nueva Valuacion
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Obtén una valuacion instantanea de tu vehiculo
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setShowValuationApp(false);
-                loadListings(); // Reload listings in case a new one was created
-              }}
-            >
-              <X className="w-4 h-4 mr-2" />
-              Cerrar
-            </Button>
+      <div className="space-y-4">
+        {/* Header with close button */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <DollarSign className="w-6 h-6 text-primary" />
+              Nueva Valuacion
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Obtén una valuacion instantanea de tu vehiculo
+            </p>
           </div>
-
-          {/* Valuation App */}
-          <div className="w-full">
-            <ValuationApp />
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setShowValuationApp(false);
+              loadListings(); // Reload listings in case a new one was created
+            }}
+          >
+            <X className="w-4 h-4 mr-2" />
+            Cerrar
+          </Button>
         </div>
-      </UnifiedDashboardLayout>
+
+        {/* Valuation App */}
+        <div className="w-full">
+          <ValuationApp />
+        </div>
+      </div>
     );
   }
 
   return (
-    <UnifiedDashboardLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -537,7 +531,6 @@ const SellerDashboardPage: React.FC = () => {
           </Card>
         )}
       </div>
-    </UnifiedDashboardLayout>
   );
 };
 

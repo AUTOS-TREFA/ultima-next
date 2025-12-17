@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import UnifiedDashboardLayout from '@/components/UnifiedDashboardLayout';
 import { ConsignmentService, ConsignmentListing } from '@/services/ConsignmentService';
 import { ImageService } from '@/services/ImageService';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -279,34 +278,29 @@ const MarketplaceFormPage: React.FC<MarketplaceFormPageProps> = ({ mode, listing
 
   if (authLoading || loading) {
     return (
-      <UnifiedDashboardLayout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      </UnifiedDashboardLayout>
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+      </div>
     );
   }
 
   if (success) {
     return (
-      <UnifiedDashboardLayout>
-        <Card className="max-w-md mx-auto mt-12">
-          <CardContent className="pt-6 text-center">
-            <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">
-              {mode === 'create' ? '¡Listado creado!' : '¡Cambios guardados!'}
-            </h2>
-            <p className="text-muted-foreground">
-              Redirigiendo al dashboard...
-            </p>
-          </CardContent>
-        </Card>
-      </UnifiedDashboardLayout>
+      <Card className="max-w-md mx-auto mt-12">
+        <CardContent className="pt-6 text-center">
+          <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">
+            {mode === 'create' ? '¡Listado creado!' : '¡Cambios guardados!'}
+          </h2>
+          <p className="text-muted-foreground">
+            Redirigiendo al dashboard...
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <UnifiedDashboardLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -717,7 +711,6 @@ const MarketplaceFormPage: React.FC<MarketplaceFormPageProps> = ({ mode, listing
           </CardFooter>
         </Card>
       </div>
-    </UnifiedDashboardLayout>
   );
 };
 

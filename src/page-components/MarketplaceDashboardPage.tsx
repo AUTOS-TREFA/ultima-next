@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import UnifiedDashboardLayout from '@/components/UnifiedDashboardLayout';
 import { ConsignmentService, ConsignmentListing, ConsignmentStats } from '@/services/ConsignmentService';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -294,16 +293,13 @@ const MarketplaceDashboardPage: React.FC = () => {
 
   if (authLoading) {
     return (
-      <UnifiedDashboardLayout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      </UnifiedDashboardLayout>
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+      </div>
     );
   }
 
   return (
-    <UnifiedDashboardLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -478,7 +474,6 @@ const MarketplaceDashboardPage: React.FC = () => {
           </Card>
         )}
       </div>
-    </UnifiedDashboardLayout>
   );
 };
 
