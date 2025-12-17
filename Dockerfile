@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1.4
 # Multi-stage build for Next.js on Cloud Run
 # Optimized for production deployment with BuildKit caching
 
@@ -10,10 +9,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install ALL dependencies with BuildKit cache mount for npm
-RUN --mount=type=cache,target=/root/.npm \
-    npm ci && \
-    npm cache clean --force
+# Install ALL dependencies
+RUN npm ci && npm cache clean --force
 
 # Stage 2: Builder
 FROM node:20-alpine AS builder
