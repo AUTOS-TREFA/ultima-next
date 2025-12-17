@@ -244,11 +244,26 @@ const DashboardSidebarPage: React.FC = () => {
         bankProfileComplete
       });
 
-      // Cargar asesor asignado
+      // Cargar asesor asignado con foto
       if (profile?.asesor_asignado_id) {
-        const agent = SALES_AGENTS.find(a => a.id === profile.asesor_asignado_id);
-        if (agent) {
-          setAssignedAgent(agent);
+        // Buscar info básica del agente
+        const agentBasicInfo = SALES_AGENTS.find(a => a.id === profile.asesor_asignado_id);
+
+        // Obtener foto del perfil del asesor
+        const { data: agentProfile } = await supabase
+          .from('profiles')
+          .select('picture_url, first_name, last_name')
+          .eq('id', profile.asesor_asignado_id)
+          .single();
+
+        if (agentBasicInfo) {
+          setAssignedAgent({
+            ...agentBasicInfo,
+            picture_url: agentProfile?.picture_url,
+            full_name: agentProfile?.first_name && agentProfile?.last_name
+              ? `${agentProfile.first_name} ${agentProfile.last_name}`
+              : agentBasicInfo.name
+          });
         }
       }
 
@@ -792,30 +807,43 @@ const DashboardSidebarPage: React.FC = () => {
 
             {/* Mobile Only: Sidebar Content in Main Area */}
             <div className="md:hidden space-y-4">
-              {/* Assigned Agent Card */}
+              {/* Assigned Agent Card - Actualizado con foto y mejor diseño */}
               {assignedAgent && (
-                <Card>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                      <User className="w-4 h-4" />
-                      Mi Asesor
+                <Card className="bg-gradient-to-br from-orange-50 to-white border-2 border-orange-100">
+                  <CardContent className="p-5">
+                    <h3 className="font-bold text-base text-gray-900 mb-4 flex items-center gap-2">
+                      <User className="w-5 h-5 text-orange-600" />
+                      Tu Asesor Personal
                     </h3>
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-12 h-12 rounded-full bg-primary-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
-                        {assignedAgent.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{assignedAgent.name}</p>
-                        <p className="text-sm text-gray-600">{assignedAgent.phone}</p>
+                    <div className="flex items-center gap-4 mb-4">
+                      {assignedAgent.picture_url ? (
+                        <img
+                          src={assignedAgent.picture_url}
+                          alt={assignedAgent.full_name || assignedAgent.name}
+                          className="w-16 h-16 rounded-full object-cover border-4 border-white shadow-md flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-bold text-xl border-4 border-white shadow-md flex-shrink-0">
+                          {(assignedAgent.full_name || assignedAgent.name).charAt(0)}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-base text-gray-900 mb-1">
+                          {assignedAgent.full_name || assignedAgent.name}
+                        </p>
+                        <p className="text-sm text-gray-600 flex items-center gap-1">
+                          <Phone className="w-3.5 h-3.5" />
+                          {assignedAgent.phone}
+                        </p>
                       </div>
                     </div>
                     <a
                       href={`https://wa.me/${assignedAgent.phone.replace(/\D/g, '')}?text=Hola,%20necesito%20ayuda`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium touch-manipulation"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all hover:scale-[1.02] font-semibold shadow-sm touch-manipulation"
                     >
-                      <MessageCircle className="w-4 h-4" />
+                      <MessageCircle className="w-5 h-5" />
                       Contactar por WhatsApp
                     </a>
                   </CardContent>
@@ -989,26 +1017,34 @@ const DashboardSidebarPage: React.FC = () => {
         <div className="lg:col-span-4 xl:col-span-3 min-w-0 hidden lg:block">
           <Card className="sticky top-6">
             <CardContent className="p-3 md:p-4 space-y-3 md:space-y-4">
-            {/* Assigned Agent */}
+            {/* Assigned Agent - Actualizado con foto y mejor diseño */}
             {assignedAgent && (
-              <div className="bg-accent/50 p-2 rounded-lg border">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm flex-shrink-0">
-                    {assignedAgent.name.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate">
-                      {assignedAgent.name}
+              <div className="bg-gradient-to-br from-orange-50 to-white p-4 rounded-xl border-2 border-orange-100 shadow-sm">
+                <div className="flex flex-col items-center text-center mb-3">
+                  {assignedAgent.picture_url ? (
+                    <img
+                      src={assignedAgent.picture_url}
+                      alt={assignedAgent.full_name || assignedAgent.name}
+                      className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md mb-2"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-bold text-2xl border-4 border-white shadow-md mb-2">
+                      {(assignedAgent.full_name || assignedAgent.name).charAt(0)}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-bold text-gray-900 mb-0.5">
+                      {assignedAgent.full_name || assignedAgent.name}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">Tu Asesor</p>
+                    <p className="text-xs text-orange-600 font-medium">Tu Asesor Personal</p>
                   </div>
                 </div>
                 <a
                   href={`tel:${assignedAgent.phone}`}
-                  className="flex items-center justify-center gap-1.5 w-full px-2 py-1.5 bg-background border rounded-md hover:bg-accent transition-colors text-xs font-medium"
+                  className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-all hover:scale-[1.02] text-sm font-semibold shadow-sm"
                 >
-                  <Phone className="w-3 h-3" />
-                  <span className="truncate">{assignedAgent.phone}</span>
+                  <Phone className="w-4 h-4" />
+                  <span>{assignedAgent.phone}</span>
                 </a>
               </div>
             )}
