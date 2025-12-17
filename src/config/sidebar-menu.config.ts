@@ -32,6 +32,10 @@ import {
     HandCoins,
     Scroll,
     Plus,
+    Store,
+    Package,
+    DollarSign,
+    Eye,
     type LucideIcon,
 } from 'lucide-react';
 
@@ -63,6 +67,7 @@ export interface NavGroup {
 export interface SidebarConfig {
     commonItems: NavItem[];
     adminFirstLevelItems: NavItem[];
+    sellerGroup: NavGroup;
     dashboardsGroup: NavGroup;
     toolsGroup: NavGroup;
     salesItems: NavItem[];
@@ -85,12 +90,6 @@ export const commonNavItems: NavItem[] = [
         to: '/autos',
         label: 'Inventario',
         icon: Car,
-        roles: ['admin', 'sales', 'user']
-    },
-    {
-        to: '/escritorio/vende-tu-auto',
-        label: 'Vender mi auto',
-        icon: HandCoins,
         roles: ['admin', 'sales', 'user']
     },
     {
@@ -155,12 +154,52 @@ export const adminFirstLevelItems: NavItem[] = [
         roles: ['admin']
     },
     {
+        to: '/escritorio/admin/marketplace',
+        label: 'Marketplace',
+        icon: Store,
+        roles: ['admin'],
+        badge: 'Nuevo'
+    },
+    {
         to: '/changelog',
         label: 'Changelog',
         icon: Scroll,
         roles: ['admin']
     },
 ];
+
+// ============================================================================
+// SELLER GROUP (ALL USERS - COLLAPSIBLE)
+// ============================================================================
+
+export const sellerNavGroup: NavGroup = {
+    id: 'seller',
+    label: 'Vende tu Auto',
+    icon: HandCoins,
+    roles: ['admin', 'sales', 'user'],
+    defaultOpen: false,
+    items: [
+        {
+            to: '/escritorio/vende-tu-auto',
+            label: 'Venta Directa',
+            icon: DollarSign,
+            roles: ['admin', 'sales', 'user']
+        },
+        {
+            to: '/escritorio/marketplace',
+            label: 'Marketplace',
+            icon: Store,
+            roles: ['admin', 'sales', 'user'],
+            badge: 'Nuevo'
+        },
+        {
+            to: '/escritorio/mis-vehiculos',
+            label: 'Mis Vehículos',
+            icon: Package,
+            roles: ['admin', 'sales', 'user']
+        },
+    ],
+};
 
 // ============================================================================
 // ADMIN DASHBOARDS GROUP (COLLAPSIBLE)
@@ -336,6 +375,7 @@ export const secondaryNavItems: NavItem[] = [
 export const sidebarConfig: SidebarConfig = {
     commonItems: commonNavItems,
     adminFirstLevelItems,
+    sellerGroup: sellerNavGroup,
     dashboardsGroup: adminDashboardsGroup,
     toolsGroup: adminToolsGroup,
     salesItems: salesNavItems,

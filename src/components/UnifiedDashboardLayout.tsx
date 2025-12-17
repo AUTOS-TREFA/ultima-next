@@ -38,6 +38,9 @@ import {
     Search,
     Bell,
     ChevronRight,
+    Store,
+    Package,
+    DollarSign,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '@/lib/utils';
@@ -99,6 +102,7 @@ interface NavItem {
     icon: React.ElementType;
     end?: boolean;
     roles?: ('admin' | 'sales' | 'user')[];
+    badge?: string;
 }
 
 interface NavGroup {
@@ -106,17 +110,30 @@ interface NavGroup {
     icon: React.ElementType;
     items: NavItem[];
     roles?: ('admin' | 'sales' | 'user')[];
+    defaultOpen?: boolean;
 }
 
 // Navigation configuration
 const commonNavItems: NavItem[] = [
     { to: '/escritorio', label: 'Escritorio', icon: LayoutDashboard, roles: ['admin', 'sales', 'user'], end: true },
     { to: '/autos', label: 'Inventario', icon: Car, roles: ['admin', 'sales', 'user'] },
-    { to: '/escritorio/vende-tu-auto', label: 'Vender mi auto', icon: HandCoins, roles: ['admin', 'sales', 'user'] },
     { to: '/escritorio/profile', label: 'Mi Perfil', icon: User, roles: ['admin', 'sales', 'user'] },
     { to: '/escritorio/seguimiento', label: 'Solicitudes', icon: FileText, roles: ['admin', 'sales', 'user'] },
     { to: '/escritorio/aplicacion', label: 'Nueva solicitud', icon: Plus, roles: ['admin', 'sales', 'user'] },
 ];
+
+// Seller Group - Vende tu Auto (collapsible)
+const sellerGroup: NavGroup = {
+    label: 'Vende tu Auto',
+    icon: HandCoins,
+    roles: ['admin', 'sales', 'user'],
+    defaultOpen: false,
+    items: [
+        { to: '/escritorio/vende-tu-auto', label: 'Venta Directa', icon: DollarSign, roles: ['admin', 'sales', 'user'] },
+        { to: '/escritorio/marketplace', label: 'Marketplace', icon: Store, roles: ['admin', 'sales', 'user'], badge: 'Nuevo' },
+        { to: '/escritorio/mis-vehiculos', label: 'Mis Vehiculos', icon: Package, roles: ['admin', 'sales', 'user'] },
+    ],
+};
 
 const adminFirstLevelItems: NavItem[] = [
     { to: '/escritorio/admin/marketing', label: 'Dashboard General', icon: LayoutDashboard, roles: ['admin'], end: true },
@@ -125,6 +142,7 @@ const adminFirstLevelItems: NavItem[] = [
     { to: '/escritorio/admin/customer-journeys', label: 'Customer Journeys', icon: Route, roles: ['admin'] },
     { to: '/escritorio/admin/bancos', label: 'Portal Bancario', icon: Building2, roles: ['admin'] },
     { to: '/escritorio/admin/compras', label: 'Compras', icon: ShoppingCart, roles: ['admin'] },
+    { to: '/escritorio/admin/marketplace', label: 'Marketplace', icon: Store, roles: ['admin'], badge: 'Nuevo' },
     { to: '/changelog', label: 'Changelog', icon: Scroll, roles: ['admin'] },
 ];
 
@@ -371,6 +389,50 @@ const AppSidebarContent: React.FC = () => {
                                     </SidebarMenuItem>
                                 );
                             })}
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+
+                {/* 1.5. Vende tu Auto - Collapsible Group for All Users */}
+                <SidebarGroup className="py-1">
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            <Collapsible className="group/collapsible">
+                                <SidebarMenuItem>
+                                    <CollapsibleTrigger asChild>
+                                        <SidebarMenuButton tooltip={sellerGroup.label}>
+                                            <HandCoins className="h-4 w-4" />
+                                            <span>{sellerGroup.label}</span>
+                                            <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                        </SidebarMenuButton>
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                        <SidebarMenuSub>
+                                            {filterByRole(sellerGroup.items).map((item) => {
+                                                const Icon = item.icon;
+                                                return (
+                                                    <SidebarMenuSubItem key={item.to}>
+                                                        <SidebarMenuSubButton
+                                                            asChild
+                                                            isActive={isActiveLink(item.to, item.end)}
+                                                        >
+                                                            <Link href={item.to} className="flex items-center gap-2">
+                                                                <Icon className="h-3 w-3" />
+                                                                <span>{item.label}</span>
+                                                                {item.badge && (
+                                                                    <span className="ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-600">
+                                                                        {item.badge}
+                                                                    </span>
+                                                                )}
+                                                            </Link>
+                                                        </SidebarMenuSubButton>
+                                                    </SidebarMenuSubItem>
+                                                );
+                                            })}
+                                        </SidebarMenuSub>
+                                    </CollapsibleContent>
+                                </SidebarMenuItem>
+                            </Collapsible>
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
@@ -822,6 +884,45 @@ const MobileSidebarContent: React.FC<{ onClose?: () => void }> = ({ onClose }) =
                         </nav>
                     </div>
                 )}
+
+                {/* Vende tu Auto - Collapsible Group for All Users */}
+                <Collapsible>
+                    <CollapsibleTrigger className="flex w-full items-center justify-between py-2">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            <HandCoins className="h-4 w-4" />
+                            <span>Vende tu Auto</span>
+                        </div>
+                        <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                        <nav className="space-y-1 mt-2">
+                            {filterByRole(sellerGroup.items).map((item) => {
+                                const Icon = item.icon;
+                                return (
+                                    <Link
+                                        key={item.to}
+                                        href={item.to}
+                                        onClick={handleNavClick}
+                                        className={cn(
+                                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent ml-2",
+                                            isActiveLink(item.to, item.end)
+                                                ? "bg-accent text-accent-foreground"
+                                                : "text-muted-foreground hover:text-foreground"
+                                        )}
+                                    >
+                                        <Icon className="h-4 w-4" />
+                                        {item.label}
+                                        {item.badge && (
+                                            <span className="ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-600">
+                                                {item.badge}
+                                            </span>
+                                        )}
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+                    </CollapsibleContent>
+                </Collapsible>
 
                 <Separator />
 
