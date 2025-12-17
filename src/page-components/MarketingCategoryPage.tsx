@@ -157,88 +157,38 @@ const MarketingCategoryPage: React.FC<MarketingCategoryPageProps> = ({ marca, ca
 
     return (
         <main className="bg-gray-50">
-            {/* Hero Section with Overlay Stats */}
-            <div className="relative h-[400px] sm:h-[450px] lg:h-[500px] overflow-hidden">
-                <img
-                    src={seoContent.banner}
-                    alt={seoContent.title}
-                    className="absolute inset-0 w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30"></div>
-
-                <div className="relative h-full flex flex-col justify-end max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12">
+            {/* Hero Section with Gradient Background */}
+            <div className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 py-12 sm:py-16 lg:py-20">
+                <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10"></div>
+                <div className="relative max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-white space-y-4">
-                        <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight drop-shadow-2xl">
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold leading-tight">
                             {seoContent.title}
                         </h1>
-                        <p className="text-base sm:text-lg lg:text-xl max-w-3xl drop-shadow-lg opacity-95">
+                        <p className="text-sm sm:text-base lg:text-lg max-w-2xl opacity-90">
                             {seoContent.description}
                         </p>
 
                         {stats && (
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6 max-w-4xl">
-                                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
-                                    <div className="text-2xl sm:text-3xl font-bold">{stats.total}</div>
-                                    <div className="text-xs sm:text-sm opacity-90">Autos Disponibles</div>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6 max-w-3xl">
+                                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                                    <div className="text-xl sm:text-2xl font-bold">{stats.total}</div>
+                                    <div className="text-xs opacity-80">Disponibles</div>
                                 </div>
-                                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
-                                    <div className="text-xl sm:text-2xl font-bold">{currencyFormatter.format(stats.avgPrice)}</div>
-                                    <div className="text-xs sm:text-sm opacity-90">Precio Promedio</div>
+                                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                                    <div className="text-lg sm:text-xl font-bold">{currencyFormatter.format(stats.avgPrice)}</div>
+                                    <div className="text-xs opacity-80">Promedio</div>
                                 </div>
-                                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
-                                    <div className="text-xl sm:text-2xl font-bold">{currencyFormatter.format(stats.minPrice)}</div>
-                                    <div className="text-xs sm:text-sm opacity-90">Desde</div>
+                                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                                    <div className="text-lg sm:text-xl font-bold">{currencyFormatter.format(stats.minPrice)}</div>
+                                    <div className="text-xs opacity-80">Desde</div>
                                 </div>
-                                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
-                                    <div className="text-xl sm:text-2xl font-bold">{currencyFormatter.format(stats.maxPrice)}</div>
-                                    <div className="text-xs sm:text-sm opacity-90">Hasta</div>
+                                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                                    <div className="text-lg sm:text-xl font-bold">{currencyFormatter.format(stats.maxPrice)}</div>
+                                    <div className="text-xs opacity-80">Hasta</div>
                                 </div>
                             </div>
                         )}
-                    </div>
-                </div>
-            </div>
-
-            {/* Trust Badges */}
-            <div className="bg-white border-y border-gray-200">
-                <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                                <Shield className="w-5 h-5 text-green-600" />
-                            </div>
-                            <div>
-                                <div className="text-sm font-semibold text-gray-900">Certificados</div>
-                                <div className="text-xs text-gray-600">Inspección de 150 puntos</div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                                <DollarSign className="w-5 h-5 text-blue-600" />
-                            </div>
-                            <div>
-                                <div className="text-sm font-semibold text-gray-900">Financiamiento</div>
-                                <div className="text-xs text-gray-600">Desde 3.9% anual</div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-purple-100 rounded-lg">
-                                <Award className="w-5 h-5 text-purple-600" />
-                            </div>
-                            <div>
-                                <div className="text-sm font-semibold text-gray-900">Garantía</div>
-                                <div className="text-xs text-gray-600">3 meses incluida</div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-amber-100 rounded-lg">
-                                <Users className="w-5 h-5 text-amber-600" />
-                            </div>
-                            <div>
-                                <div className="text-sm font-semibold text-gray-900">+2,000 clientes</div>
-                                <div className="text-xs text-gray-600">Satisfechos</div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
