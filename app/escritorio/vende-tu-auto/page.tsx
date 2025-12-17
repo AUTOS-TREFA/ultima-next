@@ -1,7 +1,7 @@
 'use client';
 
-import SellMyCarPage from '@/page-components/SellMyCarPage';
+import SellerDashboardPage from '@/page-components/SellerDashboardPage';
 
 export default function Page() {
-  return <SellMyCarPage />;
+  return <SellerDashboardPage />;
 }
