@@ -152,18 +152,18 @@ export default function AdminSalesDashboard() {
         <div className="min-h-screen bg-gray-50 pb-12 overflow-x-hidden">
             {/* Header */}
             <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
-                <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">
+                <div className="w-full max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                            <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
                                 Dashboard {isAdmin ? 'Administrativo' : 'de Ventas'}
                             </h1>
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1 truncate">
                                 Bienvenido, {userName}
                             </p>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div className="text-right">
+                        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+                            <div className="text-right hidden sm:block">
                                 <p className="text-xs text-gray-500">Última actualización</p>
                                 <p className="text-sm font-medium text-gray-700">
                                     {lastUpdated.toLocaleTimeString('es-MX')}
@@ -172,17 +172,17 @@ export default function AdminSalesDashboard() {
                             <button
                                 onClick={handleManualRefresh}
                                 disabled={refreshing}
-                                className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 disabled:opacity-50"
+                                className="p-1.5 sm:p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 disabled:opacity-50"
                                 title="Actualizar datos"
                             >
-                                <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+                                <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 ${refreshing ? 'animate-spin' : ''}`} />
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="w-full max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
                 {/* Filter Panel */}
                 <FilterPanel
                     filters={filters}
@@ -191,28 +191,28 @@ export default function AdminSalesDashboard() {
                 />
 
                 {/* 24-Hour Metric - PROMINENT AT TOP */}
-                <div className="mb-8">
-                    <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl shadow-xl p-8 border-2 border-green-400 hover:shadow-2xl transition-all">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-5">
-                                <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
-                                    <Zap className="w-10 h-10 text-white" />
+                <div className="mb-6 sm:mb-8">
+                    <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-8 border-2 border-green-400 hover:shadow-2xl transition-all">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="flex items-center gap-3 sm:gap-5">
+                                <div className="p-3 sm:p-4 bg-white/20 rounded-xl sm:rounded-2xl backdrop-blur-sm flex-shrink-0">
+                                    <Zap className="w-6 h-6 sm:w-10 sm:h-10 text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="text-white text-sm font-semibold uppercase tracking-wider mb-2">
+                                    <h3 className="text-white text-xs sm:text-sm font-semibold uppercase tracking-wider mb-1 sm:mb-2">
                                         Últimas 24 Horas
                                     </h3>
-                                    <p className="text-white text-5xl font-bold mb-2">
+                                    <p className="text-white text-3xl sm:text-5xl font-bold mb-1 sm:mb-2">
                                         {metrics.completedLast24Hours}
                                     </p>
-                                    <p className="text-green-50 text-base font-medium">
+                                    <p className="text-green-50 text-sm sm:text-base font-medium">
                                         Solicitudes completadas (Aprobadas + Completadas)
                                     </p>
                                 </div>
                             </div>
-                            <div className="text-right bg-white/10 rounded-xl px-4 py-3 backdrop-blur-sm">
+                            <div className="text-left sm:text-right bg-white/10 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2 sm:py-3 backdrop-blur-sm self-stretch sm:self-auto">
                                 <div className="text-white/90 text-xs font-medium uppercase tracking-wide">Tiempo real</div>
-                                <div className="text-white text-base font-bold mt-1">
+                                <div className="text-white text-sm sm:text-base font-bold mt-1">
                                     {lastUpdated.toLocaleTimeString('es-MX')}
                                 </div>
                             </div>
@@ -260,12 +260,12 @@ export default function AdminSalesDashboard() {
                 </div>
 
                 {/* Website Lead Metrics */}
-                <div className="mb-8">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <Globe className="w-6 h-6 text-blue-600" />
+                <div className="mb-6 sm:mb-8">
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+                        <Globe className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                         Leads del Sitio Web
                     </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
                         <MetricCard
                             title="Total de Leads Web"
                             value={metrics.websiteLeads.total}
@@ -294,12 +294,12 @@ export default function AdminSalesDashboard() {
                 </div>
 
                 {/* Kommo CRM Lead Metrics */}
-                <div className="mb-8">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <Bot className="w-6 h-6 text-purple-600" />
+                <div className="mb-6 sm:mb-8">
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+                        <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
                         Leads de Kommo CRM
                     </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
                         <MetricCard
                             title="Total de Leads Kommo"
                             value={metrics.kommoLeads.total}
@@ -325,21 +325,21 @@ export default function AdminSalesDashboard() {
                 </div>
 
                 {/* Performance Metrics */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mb-10">
-                    <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl shadow-md p-8 border-2 border-orange-200 hover:border-orange-300 hover:shadow-lg transition-all">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-bold text-gray-900">Tasa de Conversión</h3>
-                            <div className="p-3 bg-orange-100 rounded-xl">
-                                <TrendingUp className="w-6 h-6 text-orange-600" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8 mb-6 sm:mb-8 lg:mb-10">
+                    <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-6 lg:p-8 border-2 border-orange-200 hover:border-orange-300 hover:shadow-lg transition-all">
+                        <div className="flex items-center justify-between mb-4 sm:mb-6">
+                            <h3 className="text-base sm:text-lg font-bold text-gray-900">Tasa de Conversión</h3>
+                            <div className="p-2 sm:p-3 bg-orange-100 rounded-lg sm:rounded-xl">
+                                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
                             </div>
                         </div>
-                        <div className="mb-4">
-                            <div className="flex items-baseline gap-3 mb-2">
-                                <span className="text-5xl font-black text-orange-600">
+                        <div className="mb-3 sm:mb-4">
+                            <div className="flex items-baseline gap-2 sm:gap-3 mb-1 sm:mb-2">
+                                <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-orange-600">
                                     {metrics.conversionRate}%
                                 </span>
                             </div>
-                            <span className="text-sm font-medium text-gray-600">Leads a Solicitudes</span>
+                            <span className="text-xs sm:text-sm font-medium text-gray-600">Leads a Solicitudes</span>
                         </div>
                         {trends?.conversionChangePercent !== undefined && trends.conversionChangePercent !== 0 && (
                             <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg mb-4 ${
@@ -360,20 +360,20 @@ export default function AdminSalesDashboard() {
                         </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl shadow-md p-8 border-2 border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-bold text-gray-900">Tasa de Aprobación</h3>
-                            <div className="p-3 bg-gray-200 rounded-xl">
-                                <CheckCircle className="w-6 h-6 text-gray-600" />
+                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-6 lg:p-8 border-2 border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all">
+                        <div className="flex items-center justify-between mb-4 sm:mb-6">
+                            <h3 className="text-base sm:text-lg font-bold text-gray-900">Tasa de Aprobación</h3>
+                            <div className="p-2 sm:p-3 bg-gray-200 rounded-lg sm:rounded-xl">
+                                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
                             </div>
                         </div>
-                        <div className="mb-4">
-                            <div className="flex items-baseline gap-3 mb-2">
-                                <span className="text-5xl font-black text-gray-700">
+                        <div className="mb-3 sm:mb-4">
+                            <div className="flex items-baseline gap-2 sm:gap-3 mb-1 sm:mb-2">
+                                <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-700">
                                     {metrics.approvalRate}%
                                 </span>
                             </div>
-                            <span className="text-sm font-medium text-gray-600">Solicitudes Aprobadas</span>
+                            <span className="text-xs sm:text-sm font-medium text-gray-600">Solicitudes Aprobadas</span>
                         </div>
                         {trends?.approvalChangePercent !== undefined && trends.approvalChangePercent !== 0 && (
                             <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg mb-4 ${
@@ -396,14 +396,14 @@ export default function AdminSalesDashboard() {
                 </div>
 
                 {/* Source Attribution */}
-                <div className="bg-white rounded-2xl shadow-md p-4 md:p-8 border-2 border-gray-200 mb-10 hover:border-gray-300 hover:shadow-lg transition-all overflow-hidden">
-                    <div className="flex items-center justify-between mb-8">
-                        <h3 className="text-base font-bold text-gray-900">Atribución por Fuente</h3>
-                        <div className="px-3 py-1 bg-gray-100 rounded-lg">
-                            <span className="text-sm font-semibold text-gray-600">{metrics.totalLeads} Total</span>
+                <div className="bg-white rounded-xl sm:rounded-2xl shadow-md p-3 sm:p-4 md:p-6 lg:p-8 border-2 border-gray-200 mb-6 sm:mb-8 lg:mb-10 hover:border-gray-300 hover:shadow-lg transition-all overflow-hidden">
+                    <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8 gap-2">
+                        <h3 className="text-sm sm:text-base font-bold text-gray-900">Atribución por Fuente</h3>
+                        <div className="px-2 sm:px-3 py-1 bg-gray-100 rounded-lg flex-shrink-0">
+                            <span className="text-xs sm:text-sm font-semibold text-gray-600">{metrics.totalLeads} Total</span>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
                         <SourceCard
                             name="Facebook"
                             count={metrics.sourceBreakdown.facebook}
@@ -443,71 +443,71 @@ export default function AdminSalesDashboard() {
                 </div>
 
                 {/* Tabs for Charts, Recent Activity, and Email History */}
-                <div className="bg-white rounded-2xl shadow-md border-2 border-gray-200 mb-8 overflow-hidden">
+                <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border-2 border-gray-200 mb-6 sm:mb-8 overflow-hidden">
                     {/* Tab Headers */}
-                    <div className="flex border-b-2 border-gray-100 px-2 pt-2 overflow-x-auto">
+                    <div className="flex border-b-2 border-gray-100 px-1 sm:px-2 pt-1 sm:pt-2 overflow-x-auto scrollbar-hide">
                         <button
                             onClick={() => setActiveTab('charts')}
-                            className={`px-6 py-3 text-sm font-semibold transition-all rounded-t-xl ${
+                            className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-all rounded-t-lg sm:rounded-t-xl whitespace-nowrap ${
                                 activeTab === 'charts'
                                     ? 'bg-orange-50 border-b-4 border-orange-600 text-orange-700'
                                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                             }`}
                         >
-                            📈 Gráficas y Análisis
+                            📈 Gráficas
                         </button>
                         <button
                             onClick={() => setActiveTab('activity')}
-                            className={`px-6 py-3 text-sm font-semibold transition-all rounded-t-xl ${
+                            className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-all rounded-t-lg sm:rounded-t-xl whitespace-nowrap ${
                                 activeTab === 'activity'
                                     ? 'bg-orange-50 border-b-4 border-orange-600 text-orange-700'
                                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                             }`}
                         >
-                            🔄 Actividad Reciente
+                            🔄 Actividad
                         </button>
                         <button
                             onClick={() => setActiveTab('emails')}
-                            className={`px-6 py-3 text-sm font-semibold transition-all rounded-t-xl ${
+                            className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-all rounded-t-lg sm:rounded-t-xl whitespace-nowrap ${
                                 activeTab === 'emails'
                                     ? 'bg-orange-50 border-b-4 border-orange-600 text-orange-700'
                                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                             }`}
                         >
-                            📧 Historial de Emails
+                            📧 Emails
                         </button>
                     </div>
 
                     {/* Tab Content */}
-                    <div className="p-4 md:p-8">
+                    <div className="p-3 sm:p-4 md:p-6 lg:p-8">
                         {/* Charts Tab */}
                         {activeTab === 'charts' && (
-                            <div className="space-y-8">
+                            <div className="space-y-6 sm:space-y-8">
                                 {/* 30-Day Trends Chart */}
                                 <div className="overflow-hidden">
-                                    <h3 className="text-base font-bold text-gray-900 mb-4">Tendencia de 30 Días</h3>
+                                    <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-3 sm:mb-4">Tendencia de 30 Días</h3>
                                     {timeSeriesData.length > 0 ? (
-                                        <div className="w-full" style={{ height: '280px' }}>
-                                            <TrendLineChart data={timeSeriesData} />
+                                        <div className="w-full -mx-2 sm:mx-0" style={{ height: '240px', minHeight: '240px' }}>
+                                            <TrendLineChart data={timeSeriesData} height={240} />
                                         </div>
                                     ) : (
-                                        <div className="flex items-center justify-center h-64 text-gray-400">
-                                            <p>Cargando datos de tendencias...</p>
+                                        <div className="flex items-center justify-center h-48 sm:h-64 text-gray-400">
+                                            <p className="text-sm">Cargando datos de tendencias...</p>
                                         </div>
                                     )}
                                 </div>
 
                                 {/* Enhanced Source Attribution with Pie Chart */}
                                 <div className="overflow-hidden">
-                                    <h3 className="text-base font-bold text-gray-900 mb-4">Distribución de Fuentes</h3>
-                                    <div className="w-full">
-                                        <SourcePieChart data={metrics.sourceBreakdown} height={280} />
+                                    <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-3 sm:mb-4">Distribución de Fuentes</h3>
+                                    <div className="w-full -mx-2 sm:mx-0">
+                                        <SourcePieChart data={metrics.sourceBreakdown} height={240} />
                                     </div>
                                 </div>
 
                                 {/* Conversion Funnel */}
-                                <div className="overflow-x-auto">
-                                    <h3 className="text-base font-bold text-gray-900 mb-4">Pipeline de Conversión</h3>
+                                <div className="overflow-x-auto -mx-3 sm:mx-0">
+                                    <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-3 sm:mb-4 px-3 sm:px-0">Pipeline de Conversión</h3>
                                     <ConversionFunnel metrics={{
                                         totalLeads: metrics.totalLeads,
                                         contactedLeads: metrics.contactedLeads,
@@ -692,55 +692,55 @@ export default function AdminSalesDashboard() {
                 </div>
 
                 {/* Tasks and Actions */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8">
-                    <div className="bg-white rounded-xl shadow-sm p-6 border-2 border-gray-200">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-base font-bold text-gray-900">Tareas y Recordatorios</h3>
-                            <Calendar className="w-6 h-6 text-gray-400" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
+                    <div className="bg-white rounded-lg sm:rounded-xl shadow-sm p-4 sm:p-6 border-2 border-gray-200">
+                        <div className="flex items-center justify-between mb-3 sm:mb-4">
+                            <h3 className="text-sm sm:text-base font-bold text-gray-900">Tareas y Recordatorios</h3>
+                            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
                         </div>
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                                <span className="text-gray-600">Recordatorios pendientes</span>
-                                <span className="text-2xl font-bold text-orange-600">{metrics.pendingReminders}</span>
+                        <div className="space-y-3 sm:space-y-4">
+                            <div className="flex items-center justify-between py-2 sm:py-3 border-b border-gray-100">
+                                <span className="text-sm sm:text-base text-gray-600">Recordatorios pendientes</span>
+                                <span className="text-xl sm:text-2xl font-bold text-orange-600">{metrics.pendingReminders}</span>
                             </div>
-                            <div className="flex items-center justify-between py-3">
-                                <span className="text-gray-600">Tareas para hoy</span>
-                                <span className="text-2xl font-bold text-gray-700">{metrics.tasksToday}</span>
+                            <div className="flex items-center justify-between py-2 sm:py-3">
+                                <span className="text-sm sm:text-base text-gray-600">Tareas para hoy</span>
+                                <span className="text-xl sm:text-2xl font-bold text-gray-700">{metrics.tasksToday}</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Quick Actions */}
-                    <div className="bg-white rounded-xl shadow-sm p-6 border-2 border-gray-200">
-                        <h3 className="text-base font-bold text-gray-900 mb-4">Acciones Rápidas</h3>
-                        <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white rounded-lg sm:rounded-xl shadow-sm p-4 sm:p-6 border-2 border-gray-200">
+                        <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-3 sm:mb-4">Acciones Rápidas</h3>
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
                             <button
                                 onClick={() => router.push(isAdmin ? '/escritorio/admin/crm' : '/escritorio/ventas/crm')}
-                                className="flex items-center justify-center gap-2 py-3 px-4 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
+                                className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
                             >
                                 <Users className="w-4 h-4" />
-                                <span className="text-sm font-medium">Ver Leads</span>
+                                <span className="text-xs sm:text-sm font-medium">Leads</span>
                             </button>
                             <button
                                 onClick={() => router.push('/escritorio/mis-aplicaciones')}
-                                className="flex items-center justify-center gap-2 py-3 px-4 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
+                                className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
                             >
                                 <FileText className="w-4 h-4" />
-                                <span className="text-sm font-medium">Solicitudes</span>
+                                <span className="text-xs sm:text-sm font-medium">Solicitudes</span>
                             </button>
                             <button
                                 onClick={() => router.push('/escritorio/seguimiento')}
-                                className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                                className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                             >
                                 <BarChart3 className="w-4 h-4" />
-                                <span className="text-sm font-medium">Tracking</span>
+                                <span className="text-xs sm:text-sm font-medium">Tracking</span>
                             </button>
                             <button
                                 onClick={() => router.push('/escritorio/autos')}
-                                className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                                className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                             >
                                 <FileText className="w-4 h-4" />
-                                <span className="text-sm font-medium">Inventario</span>
+                                <span className="text-xs sm:text-sm font-medium">Inventario</span>
                             </button>
                         </div>
                     </div>
@@ -819,23 +819,23 @@ function MetricCard({ title, value, icon, color, subtitle, urgent, onClick, tren
     return (
         <div
             onClick={onClick}
-            className={`${bgColorClasses[color]} rounded-xl shadow-sm p-8 border-2 ${
+            className={`${bgColorClasses[color]} rounded-lg sm:rounded-xl shadow-sm p-4 sm:p-6 lg:p-8 border-2 ${
                 urgent ? 'border-orange-400 ring-2 ring-orange-200' : 'border-gray-200'
             } ${onClick ? 'cursor-pointer hover:shadow-md transition-all duration-200' : ''} hover:border-orange-300`}
         >
-            <div className="flex items-start justify-between mb-6">
-                <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+            <div className="flex items-start justify-between mb-3 sm:mb-4 lg:mb-6 gap-2">
+                <h3 className="text-sm sm:text-base lg:text-lg font-bold text-gray-900 leading-tight">{title}</h3>
                 {trendPercent !== undefined && trendPercent !== 0 && (
-                    <div className={`flex items-center gap-1 px-3 py-1.5 rounded-lg ${trendPercent > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                        {trendPercent > 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                        <span className="text-sm font-bold">
+                    <div className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg flex-shrink-0 ${trendPercent > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {trendPercent > 0 ? <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" /> : <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4" />}
+                        <span className="text-xs sm:text-sm font-bold">
                             {trendPercent > 0 ? '+' : ''}{trendPercent.toFixed(1)}%
                         </span>
                     </div>
                 )}
             </div>
-            <p className={`text-5xl font-black ${textColorClasses[color]} mb-3`}>{value}</p>
-            {subtitle && <p className="text-base font-medium text-gray-600">{subtitle}</p>}
+            <p className={`text-3xl sm:text-4xl lg:text-5xl font-black ${textColorClasses[color]} mb-2 sm:mb-3`}>{value}</p>
+            {subtitle && <p className="text-xs sm:text-sm lg:text-base font-medium text-gray-600">{subtitle}</p>}
         </div>
     );
 }
@@ -868,13 +868,13 @@ function SourceCard({ name, count, total, icon, color }: SourceCardProps) {
     };
 
     return (
-        <div className={`text-center p-5 rounded-xl ${bgClasses[color]} border-2 ${colorClasses[color].split(' ')[2]} hover:shadow-md transition-all`}>
-            <div className={`inline-flex p-4 rounded-xl ${colorClasses[color].split(' ').slice(0, 2).join(' ')} mb-4 shadow-sm`}>
+        <div className={`text-center p-3 sm:p-4 lg:p-5 rounded-lg sm:rounded-xl ${bgClasses[color]} border-2 ${colorClasses[color].split(' ')[2]} hover:shadow-md transition-all`}>
+            <div className={`inline-flex p-2 sm:p-3 lg:p-4 rounded-lg sm:rounded-xl ${colorClasses[color].split(' ').slice(0, 2).join(' ')} mb-2 sm:mb-3 lg:mb-4 shadow-sm`}>
                 {icon}
             </div>
-            <p className="text-3xl font-black text-gray-900 mb-2">{count}</p>
-            <p className="text-sm font-semibold text-gray-600 mb-3">{name}</p>
-            <div className="inline-block px-3 py-1.5 bg-white rounded-full shadow-sm border border-gray-200">
+            <p className="text-2xl sm:text-3xl font-black text-gray-900 mb-1 sm:mb-2">{count}</p>
+            <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-2 sm:mb-3 truncate" title={name}>{name}</p>
+            <div className="inline-block px-2 sm:px-3 py-1 sm:py-1.5 bg-white rounded-full shadow-sm border border-gray-200">
                 <p className="text-xs font-bold text-gray-700">{percentage}%</p>
             </div>
         </div>

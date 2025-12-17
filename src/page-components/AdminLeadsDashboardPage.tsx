@@ -235,27 +235,27 @@ const AdminLeadsDashboardPage: React.FC = () => {
     if (isError) return <div className="p-4 bg-red-100 text-red-800 rounded-md"><AlertTriangle className="inline w-5 h-5 mr-2"/>{error?.message}</div>;
 
     return (
-        <div className="w-full max-w-[1400px] mx-auto space-y-6 overflow-x-hidden">
+        <div className="w-full max-w-[1400px] mx-auto space-y-4 sm:space-y-6 overflow-x-hidden px-3 sm:px-0">
             {/* Action Bar */}
             {leadsNeedingAction > 0 && (
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-4 shadow-sm">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center shadow-md">
-                                <AlertCircle className="w-6 h-6 text-white" />
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-lg sm:rounded-xl p-3 sm:p-4 shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-500 rounded-full flex items-center justify-center shadow-md flex-shrink-0">
+                                <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-amber-900">
+                                <h3 className="text-base sm:text-lg font-bold text-amber-900 leading-tight">
                                     {leadsNeedingAction} Lead{leadsNeedingAction > 1 ? 's' : ''} Necesitan Atención
                                 </h3>
-                                <p className="text-sm text-amber-700">
-                                    Hay leads sin contactar o con solicitudes pendientes de actualización
+                                <p className="text-xs sm:text-sm text-amber-700 mt-0.5">
+                                    Hay leads sin contactar o con solicitudes pendientes
                                 </p>
                             </div>
                         </div>
                         <button
                             onClick={() => setFilterPriority('needs_action')}
-                            className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shadow-md transition-all transform hover:scale-105"
+                            className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-amber-600 hover:bg-amber-700 text-white text-sm sm:text-base font-bold rounded-lg shadow-md transition-all hover:scale-105"
                         >
                             Ver Urgentes
                         </button>
@@ -264,7 +264,7 @@ const AdminLeadsDashboardPage: React.FC = () => {
             )}
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                 <StatsCard title="Total de Clientes Potenciales" value={stats.total_leads || 0} change="" changeType="neutral" icon={Users} color="blue" />
                 <StatsCard title="Con Solicitud Activa" value={stats.leads_with_active_app || 0} change="" changeType="neutral" icon={FileText} color="purple" />
                 <StatsCard title="Solicitud Incompleta" value={stats.leads_with_unfinished_app || 0} change="" changeType="neutral" icon={User} color="yellow" />
@@ -272,25 +272,25 @@ const AdminLeadsDashboardPage: React.FC = () => {
             </div>
 
             {/* Main Content */}
-            <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border overflow-hidden">
+            <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl shadow-sm border overflow-hidden">
                 {/* Search and Filters */}
-                <div className="space-y-4 mb-6">
-                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                        <h2 className="text-xl font-bold text-gray-800">Directorio de Clientes</h2>
+                <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 sm:gap-4">
+                        <h2 className="text-lg sm:text-xl font-bold text-gray-800">Directorio de Clientes</h2>
                         <div className="relative w-full sm:w-72">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Buscar por nombre, email o fuente..."
+                                placeholder="Buscar por nombre, email..."
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 text-sm sm:text-base bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                             />
                         </div>
                     </div>
 
                     {/* Filters */}
-                    <div className="flex flex-wrap gap-4 items-center">
+                    <div className="flex flex-wrap gap-2 sm:gap-4 items-center">
                         <div className="flex items-center gap-2">
                             <Filter className="w-5 h-5 text-gray-500" />
                             <span className="text-sm font-medium text-gray-700">Filtros:</span>
@@ -299,7 +299,7 @@ const AdminLeadsDashboardPage: React.FC = () => {
                         <select
                             value={filterPriority}
                             onChange={e => setFilterPriority(e.target.value)}
-                            className="text-sm px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-semibold"
+                            className="text-xs sm:text-sm px-2 sm:px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-semibold min-w-0"
                         >
                             <option value="all">Todos (Prioridad)</option>
                             <option value="needs_action">Necesitan Acción</option>
@@ -308,7 +308,7 @@ const AdminLeadsDashboardPage: React.FC = () => {
                         <select
                             value={filterContactado}
                             onChange={e => setFilterContactado(e.target.value)}
-                            className="text-sm px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="text-xs sm:text-sm px-2 sm:px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-w-0"
                         >
                             <option value="all">Todos (Contactado)</option>
                             <option value="not_contacted">No Contactados</option>
@@ -318,9 +318,9 @@ const AdminLeadsDashboardPage: React.FC = () => {
                         <select
                             value={filterStatus}
                             onChange={e => setFilterStatus(e.target.value)}
-                            className="text-sm px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="text-xs sm:text-sm px-2 sm:px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-w-0"
                         >
-                            <option value="all">Todos (Estado Solicitud)</option>
+                            <option value="all">Todos (Estado)</option>
                             <option value="draft">Borrador</option>
                             <option value="submitted">Completas</option>
                             <option value="pending_docs">Faltan Docs</option>
@@ -346,26 +346,26 @@ const AdminLeadsDashboardPage: React.FC = () => {
                 </div>
 
                 {/* Results count */}
-                <div className="mb-4 text-sm text-gray-600">
+                <div className="mb-3 sm:mb-4 text-xs sm:text-sm text-gray-600">
                     Mostrando {filteredLeads.length} de {processedLeads.length} leads
                 </div>
 
-                {/* Table */}
-                <div className="overflow-x-auto -mx-4 md:-mx-6">
+                {/* Table - TRIPLE WRAPPER for horizontal scroll on mobile */}
+                <div className="overflow-x-auto -mx-3 sm:-mx-4 md:-mx-6">
                     <div className="inline-block min-w-full align-middle">
                         <div className="overflow-hidden">
-                            <table className="min-w-full text-sm text-left text-gray-500">
-                        <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                            <table className="min-w-full text-xs sm:text-sm text-left text-gray-500">
+                        <thead className="text-[10px] sm:text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
-                                <th scope="col" className="px-4 py-3">Prioridad</th>
-                                <th scope="col" className="px-4 py-3">Nombre</th>
-                                <th scope="col" className="px-4 py-3">Contacto</th>
-                                <th scope="col" className="px-4 py-3">Último Auto</th>
-                                <th scope="col" className="px-4 py-3">Perfil Bancario</th>
-                                <th scope="col" className="px-4 py-3">Estado</th>
-                                <th scope="col" className="px-4 py-3">Fuente</th>
-                                <th scope="col" className="px-4 py-3 text-center">Contactado</th>
-                                <th scope="col" className="px-4 py-3">Asesor</th>
+                                <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">Prioridad</th>
+                                <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">Nombre</th>
+                                <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">Contacto</th>
+                                <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">Último Auto</th>
+                                <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">Perfil Bancario</th>
+                                <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">Estado</th>
+                                <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">Fuente</th>
+                                <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 text-center whitespace-nowrap">Contactado</th>
+                                <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">Asesor</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -378,61 +378,61 @@ const AdminLeadsDashboardPage: React.FC = () => {
                                         key={lead.id}
                                         className={`border-b hover:bg-gray-50 ${lead.needsAction ? 'bg-amber-50/30' : 'bg-white'}`}
                                     >
-                                        <td className="px-4 py-4">
+                                        <td className="px-2 sm:px-4 py-2 sm:py-4">
                                             {lead.needsAction ? (
                                                 <div className="flex items-center justify-center">
-                                                    <AlertCircle className="w-5 h-5 text-amber-600 animate-pulse" />
+                                                    <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 animate-pulse" />
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center justify-center">
-                                                    <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="px-4 py-4 font-medium text-gray-900">
-                                            <Link href={`/escritorio/admin/cliente/${lead.id}`} className="hover:underline text-primary-600 font-semibold">
+                                        <td className="px-2 sm:px-4 py-2 sm:py-4 font-medium text-gray-900">
+                                            <Link href={`/escritorio/admin/cliente/${lead.id}`} className="hover:underline text-primary-600 font-semibold whitespace-nowrap">
                                                 {`${lead.first_name || ''} ${lead.last_name || ''}`.trim() || 'Sin Nombre'}
                                             </Link>
                                         </td>
-                                        <td className="px-4 py-4">
-                                            <div className="flex flex-col gap-1">
-                                                <div className="flex items-center gap-1 text-xs">
-                                                    <Mail className="w-3 h-3 text-gray-400" />
-                                                    <span className="truncate max-w-[150px]" title={lead.email}>{lead.email}</span>
+                                        <td className="px-2 sm:px-4 py-2 sm:py-4">
+                                            <div className="flex flex-col gap-1 min-w-[120px]">
+                                                <div className="flex items-center gap-1 text-[10px] sm:text-xs">
+                                                    <Mail className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                                                    <span className="truncate max-w-[100px] sm:max-w-[150px]" title={lead.email}>{lead.email}</span>
                                                 </div>
                                                 {lead.phone && (
-                                                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                                                        <Phone className="w-3 h-3 text-gray-400" />
-                                                        <span>{lead.phone}</span>
+                                                    <div className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-500">
+                                                        <Phone className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                                                        <span className="whitespace-nowrap">{lead.phone}</span>
                                                     </div>
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-4">
-                                            <div className="max-w-[180px] truncate text-xs" title={lead.latest_app_car_info?._vehicleTitle}>
+                                        <td className="px-2 sm:px-4 py-2 sm:py-4">
+                                            <div className="max-w-[120px] sm:max-w-[180px] truncate text-[10px] sm:text-xs" title={lead.latest_app_car_info?._vehicleTitle}>
                                                 {lead.latest_app_car_info?._vehicleTitle || '-'}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-4">
+                                        <td className="px-2 sm:px-4 py-2 sm:py-4">
                                             {lead.hasBankProfile ? (
-                                                <div className="flex items-center gap-1">
-                                                    <TrendingUp className="w-4 h-4 text-green-600" />
-                                                    <span className="text-xs font-semibold text-green-700">
+                                                <div className="flex items-center gap-1 min-w-[100px]">
+                                                    <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 flex-shrink-0" />
+                                                    <span className="text-[10px] sm:text-xs font-semibold text-green-700 truncate">
                                                         {lead.bank_profile_data?.recommended_bank || 'Completado'}
                                                     </span>
                                                 </div>
                                             ) : (
-                                                <span className="text-xs text-gray-400">Sin perfil</span>
+                                                <span className="text-[10px] sm:text-xs text-gray-400 whitespace-nowrap">Sin perfil</span>
                                             )}
                                         </td>
-                                        <td className="px-4 py-4">
+                                        <td className="px-2 sm:px-4 py-2 sm:py-4">
                                             {lead.correctedStatus && lead.latest_app_id ? (
-                                                <div className="flex flex-col gap-2">
+                                                <div className="flex flex-col gap-1 sm:gap-2 min-w-[100px]">
                                                     <select
                                                         value={lead.correctedStatus}
                                                         onChange={(e) => updateApplicationStatus(lead, e.target.value)}
                                                         disabled={isUpdating}
-                                                        className={`text-xs font-bold px-3 py-1.5 rounded-lg border-2 ${statusColor.bg} ${statusColor.text} ${statusColor.border} cursor-pointer hover:opacity-80 transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                        className={`text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border-2 ${statusColor.bg} ${statusColor.text} ${statusColor.border} cursor-pointer hover:opacity-80 transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
                                                     >
                                                         <option value="draft">Borrador</option>
                                                         <option value="submitted">Completa</option>
@@ -442,39 +442,39 @@ const AdminLeadsDashboardPage: React.FC = () => {
                                                         <option value="rejected">Rechazada</option>
                                                     </select>
                                                     {isUpdating && (
-                                                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                                                        <div className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-500">
                                                             <Loader2 className="w-3 h-3 animate-spin" />
-                                                            <span>Actualizando...</span>
+                                                            <span className="hidden sm:inline">Actualizando...</span>
                                                         </div>
                                                     )}
                                                 </div>
                                             ) : (
-                                                <span className="text-xs text-gray-400">Sin solicitud</span>
+                                                <span className="text-[10px] sm:text-xs text-gray-400 whitespace-nowrap">Sin solicitud</span>
                                             )}
                                         </td>
-                                        <td className="px-4 py-4">
-                                            <div className="flex flex-col gap-0.5 max-w-[150px]">
-                                                <span className="truncate text-xs" title={lead.source || '-'}>
+                                        <td className="px-2 sm:px-4 py-2 sm:py-4">
+                                            <div className="flex flex-col gap-0.5 max-w-[100px] sm:max-w-[150px]">
+                                                <span className="truncate text-[10px] sm:text-xs" title={lead.source || '-'}>
                                                     {lead.source || '-'}
                                                 </span>
                                                 {(lead.utm_source || lead.utm_campaign || lead.rfdm || lead.referrer) && (
-                                                    <div className="text-[10px] text-gray-500 space-y-0.5">
+                                                    <div className="text-[9px] sm:text-[10px] text-gray-500 space-y-0.5">
                                                         {lead.utm_source && <div className="truncate">UTM: {lead.utm_source}</div>}
                                                         {lead.utm_campaign && <div className="truncate">Camp: {lead.utm_campaign}</div>}
                                                     </div>
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-4 text-center">
+                                        <td className="px-2 sm:px-4 py-2 sm:py-4 text-center">
                                             <input
                                                 type="checkbox"
                                                 checked={lead.contactado}
                                                 onChange={() => toggleContactado(lead.id, lead.contactado)}
-                                                className="w-5 h-5 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 focus:ring-2 cursor-pointer"
+                                                className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 focus:ring-2 cursor-pointer"
                                             />
                                         </td>
-                                        <td className="px-4 py-4">
-                                            <span className="text-xs text-gray-600">{lead.asesor_asignado || '-'}</span>
+                                        <td className="px-2 sm:px-4 py-2 sm:py-4">
+                                            <span className="text-[10px] sm:text-xs text-gray-600 whitespace-nowrap">{lead.asesor_asignado || '-'}</span>
                                         </td>
                                     </tr>
                                 );
