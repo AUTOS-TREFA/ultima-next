@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   Users, TrendingUp, BookOpen, Settings, Briefcase,
   BarChart3, FileText, Database, LayoutDashboard, Activity, Home, Camera, ClipboardCheck,
-  Eye, ArrowUp, ArrowDown, Minus
+  Eye, ArrowUp, ArrowDown, Minus, ArrowRight
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -172,79 +172,35 @@ const MarketingHubPage: React.FC = () => {
     }
   };
 
+  // Gradient color combinations for the cards
+  const gradients = [
+    'from-blue-600 to-blue-800',
+    'from-emerald-600 to-emerald-800',
+    'from-violet-600 to-violet-800',
+    'from-orange-500 to-orange-700',
+    'from-rose-600 to-rose-800',
+    'from-cyan-600 to-cyan-800',
+    'from-amber-500 to-amber-700',
+    'from-indigo-600 to-indigo-800',
+    'from-teal-600 to-teal-800',
+    'from-pink-600 to-pink-800',
+    'from-slate-600 to-slate-800',
+    'from-fuchsia-600 to-fuchsia-800',
+  ];
+
   const mainTools = [
-    {
-      title: 'CRM - Gestión de Leads',
-      description: 'Seguimiento de clientes potenciales y pipeline de ventas',
-      icon: Users,
-      link: '/escritorio/admin/crm',
-    },
-    {
-      title: 'Gestión de Asesores',
-      description: 'Administración de usuarios y equipo de ventas',
-      icon: TrendingUp,
-      link: '/escritorio/admin/usuarios',
-    },
-    {
-      title: 'Intel - Base de Conocimiento',
-      description: 'Documentación de procesos, guías y procedimientos operativos',
-      icon: BookOpen,
-      link: '/intel',
-    },
-    {
-      title: 'Dashboard Administrativo',
-      description: 'Dashboard unificado con métricas de marketing y negocio',
-      icon: LayoutDashboard,
-      link: '/escritorio/dashboard',
-    },
-    {
-      title: 'Configuración de Tracking',
-      description: 'Google Tag Manager, Meta Pixel y eventos de conversión',
-      icon: Settings,
-      link: '/escritorio/admin/marketing-config',
-    },
-    {
-      title: 'Reclutamiento y Vacantes',
-      description: 'Gestión de ofertas de empleo y candidatos',
-      icon: Briefcase,
-      link: '/escritorio/admin/vacantes',
-    },
-    {
-      title: 'Analytics de Solicitudes',
-      description: 'Análisis de aplicaciones de financiamiento y conversiones',
-      icon: FileText,
-      link: '/escritorio/admin/solicitudes',
-    },
-    {
-      title: 'Changelog y Roadmap',
-      description: 'Historial de cambios y plan de desarrollo de la plataforma',
-      icon: Activity,
-      link: '/changelog',
-    },
-    {
-      title: 'Marketing Analytics',
-      description: 'Eventos de marketing, embudos y métricas de campañas',
-      icon: Database,
-      link: '/escritorio/admin/marketing-analytics',
-    },
-    {
-      title: 'Editor de Página de Inicio',
-      description: 'Edita imágenes y contenido de la homepage sin redeployar',
-      icon: Home,
-      link: '/escritorio/marketing/homepage-editor',
-    },
-    {
-      title: 'Car Studio - Procesamiento de Imágenes',
-      description: 'API de Car Studio para procesar y generar imágenes de vehículos',
-      icon: Camera,
-      link: '/escritorio/car-studio',
-    },
-    {
-      title: 'Inspecciones de Vehículos',
-      description: 'Gestión de reportes de inspección de 150 puntos',
-      icon: ClipboardCheck,
-      link: '/escritorio/admin/inspecciones',
-    },
+    { title: 'CRM', link: '/escritorio/admin/crm' },
+    { title: 'Asesores', link: '/escritorio/admin/usuarios' },
+    { title: 'Intel', link: '/intel' },
+    { title: 'Dashboard', link: '/escritorio/dashboard' },
+    { title: 'Tracking', link: '/escritorio/admin/marketing-config' },
+    { title: 'Vacantes', link: '/escritorio/admin/vacantes' },
+    { title: 'Solicitudes', link: '/escritorio/admin/solicitudes' },
+    { title: 'Changelog', link: '/changelog' },
+    { title: 'Marketing', link: '/escritorio/admin/marketing-analytics' },
+    { title: 'Homepage', link: '/escritorio/marketing/homepage-editor' },
+    { title: 'Car Studio', link: '/escritorio/car-studio' },
+    { title: 'Inspecciones', link: '/escritorio/admin/inspecciones' },
   ];
 
   return (
@@ -381,28 +337,21 @@ const MarketingHubPage: React.FC = () => {
         </Card>
       </div>
 
-      {/* Main Tools Grid */}
-      <div className="grid gap-2 sm:gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {mainTools.map((tool) => {
-          const Icon = tool.icon;
-          return (
-            <Link key={tool.title} href={tool.link}>
-              <Card className="cursor-pointer hover:bg-accent transition-colors">
-                <CardHeader className="flex flex-row items-center space-y-0 pb-2 p-3 sm:p-6">
-                  <div className="p-1.5 sm:p-2 rounded-lg bg-muted mr-2 sm:mr-4 flex-shrink-0">
-                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-sm sm:text-base truncate">{tool.title}</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-3 sm:p-6 pt-0">
-                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{tool.description}</p>
-                </CardContent>
-              </Card>
-            </Link>
-          );
-        })}
+      {/* Main Tools Grid - Gradient Cards */}
+      <div className="grid gap-2 sm:gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        {mainTools.map((tool, index) => (
+          <Link key={tool.title} href={tool.link}>
+            <div className={`group relative h-16 sm:h-20 rounded-xl bg-gradient-to-br ${gradients[index % gradients.length]} cursor-pointer overflow-hidden transition-all hover:scale-[1.02] hover:shadow-lg`}>
+              {/* Shine effect on hover */}
+              <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all" />
+              {/* Content */}
+              <div className="relative h-full flex items-center justify-between px-3 sm:px-4">
+                <span className="font-semibold text-white text-xs sm:text-sm truncate">{tool.title}</span>
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white/60 group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-1" />
+              </div>
+            </div>
+          </Link>
+        ))}
       </div>
 
       {/* Events Section */}

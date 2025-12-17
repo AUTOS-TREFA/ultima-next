@@ -33,7 +33,7 @@ import {
   X,
 } from 'lucide-react';
 import { formatPrice } from '@/utils/formatters';
-import ValuationApp from '@/Valuation/App';
+import AutometricaValuationForm from '@/components/AutometricaValuationForm';
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ElementType; progress: number; description: string }> = {
   draft: {
@@ -186,9 +186,14 @@ const SellerDashboardPage: React.FC = () => {
           </Button>
         </div>
 
-        {/* Valuation App */}
-        <div className="w-full">
-          <ValuationApp />
+        {/* Autometrica Valuation Form */}
+        <div className="w-full max-w-4xl">
+          <AutometricaValuationForm
+            onComplete={() => {
+              setShowValuationApp(false);
+              loadListings();
+            }}
+          />
         </div>
       </div>
     );
