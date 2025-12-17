@@ -321,7 +321,7 @@ const SolicitudesPage: React.FC = () => {
                   </div>
 
                   <div className="w-full">
-                    <VehicleCarousel vehicles={[]} title="Vehículos Destacados" />
+                    <VehicleCarousel vehicles={[]} title="Autos Destacados" />
                   </div>
 
                   <div className="bg-white p-6 rounded-xl shadow-sm border">

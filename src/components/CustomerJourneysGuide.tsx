@@ -137,7 +137,7 @@ const CustomerJourneysGuide: React.FC = () => {
 
         {/* Ejemplo Práctico: Catálogo de Facebook */}
         <GuideSection
-          title="📘 Ejemplo Práctico: Rastrear Interés en Vehículos (Catálogo de Facebook)"
+          title="📘 Ejemplo Práctico: Rastrear Interés en Autos (Catálogo de Facebook)"
           icon={PlayCircle}
           defaultOpen={true}
         >
@@ -145,10 +145,10 @@ const CustomerJourneysGuide: React.FC = () => {
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-indigo-200">
               <h4 className="font-bold text-indigo-900 mb-2 flex items-center gap-2">
                 <Target className="w-5 h-5" />
-                Objetivo: Rastrear usuarios interesados en vehículos específicos
+                Objetivo: Rastrear usuarios interesados en autos específicos
               </h4>
               <p className="text-sm text-indigo-800">
-                Vamos a crear un journey que rastree cuando los usuarios ven vehículos en el catálogo
+                Vamos a crear un journey que rastree cuando los usuarios ven autos en el catálogo
                 y envíe eventos <code className="bg-indigo-200 px-1 rounded">ViewContent</code> a Facebook
                 para optimizar tus campañas de catálogo dinámico.
               </p>
@@ -172,10 +172,10 @@ const CustomerJourneysGuide: React.FC = () => {
                       Haz clic en <strong>"Nuevo Customer Journey"</strong>
                     </p>
                     <div className="bg-white border border-gray-200 rounded p-3 text-sm space-y-1">
-                      <div><strong>Nombre:</strong> <code className="bg-gray-100 px-2 py-0.5 rounded">Interés en Vehículos - Catálogo FB</code></div>
+                      <div><strong>Nombre:</strong> <code className="bg-gray-100 px-2 py-0.5 rounded">Interés en Autos - Catálogo FB</code></div>
                       <div><strong>Ruta principal:</strong> <code className="bg-gray-100 px-2 py-0.5 rounded">/autos</code></div>
                       <div><strong>Landing Page:</strong> <code className="bg-gray-100 px-2 py-0.5 rounded">/autos</code></div>
-                      <div><strong>Descripción:</strong> Rastrea usuarios que ven vehículos en el catálogo</div>
+                      <div><strong>Descripción:</strong> Rastrea usuarios que ven autos en el catálogo</div>
                     </div>
                   </div>
                 </div>
@@ -214,7 +214,7 @@ const CustomerJourneysGuide: React.FC = () => {
                     <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-3">
                       <div className="flex items-center gap-2 mb-2">
                         <Target className="w-4 h-4 text-purple-600" />
-                        <span className="font-semibold text-purple-900">Paso 2: Usuario ve detalle de vehículo</span>
+                        <span className="font-semibold text-purple-900">Paso 2: Usuario ve detalle de auto</span>
                       </div>
                       <div className="text-sm space-y-1 text-gray-700">
                         <div><strong>Nombre del paso:</strong> Ver Detalle de Auto</div>
@@ -385,7 +385,7 @@ const CustomerJourneysGuide: React.FC = () => {
           <ul className="space-y-2 text-sm text-gray-700">
             <li className="flex items-start gap-2">
               <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-              <span><strong>ViewContent para catálogo:</strong> Siempre usa el evento ViewContent cuando los usuarios ven detalles de productos/vehículos. Es crucial para Dynamic Ads de Facebook.</span>
+              <span><strong>ViewContent para catálogo:</strong> Siempre usa el evento ViewContent cuando los usuarios ven detalles de productos/autos. Es crucial para Dynamic Ads de Facebook.</span>
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
@@ -439,7 +439,7 @@ const CustomerJourneysGuide: React.FC = () => {
             ¿Listo para comenzar?
           </h4>
           <p className="text-indigo-100 mb-4">
-            Crea tu primer Customer Journey siguiendo el ejemplo del catálogo de vehículos.
+            Crea tu primer Customer Journey siguiendo el ejemplo del catálogo de autos.
             En minutos estarás rastreando el comportamiento de tus usuarios y optimizando tus campañas de Facebook.
           </p>
           <Button

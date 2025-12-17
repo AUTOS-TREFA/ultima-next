@@ -308,7 +308,7 @@ const AdminMarketplacePage: React.FC = () => {
                     {formatPrice(stats.avg_listing_price)}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    De {stats.approved_active} vehículos activos
+                    De {stats.approved_active} autos activos
                   </p>
                 </div>
                 <div className="space-y-2">

@@ -8,7 +8,7 @@ const ValuationWidget: React.FC = () => {
       <Car className="w-12 h-12 text-primary-500 mx-auto mb-4" />
       <h3 className="text-lg font-bold text-gray-900">Valúa tu Auto</h3>
       <p className="text-sm text-gray-600 mt-2">
-        Obtén una estimación rápida y precisa del valor de tu vehículo.
+        Obtén una estimación rápida y precisa del valor de tu auto.
       </p>
       <Link
         href="/vender-mi-auto"

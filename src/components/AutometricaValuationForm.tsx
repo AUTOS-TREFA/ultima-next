@@ -3,9 +3,9 @@
 /**
  * AutometricaValuationForm
  *
- * Formulario PÚBLICO de valuación de vehículos usando la API de Autométrica.
+ * Formulario PÚBLICO de valuación de autos usando la API de Autométrica.
  * Flujo:
- * 1. Usuario selecciona vehículo (público, sin login)
+ * 1. Usuario selecciona auto (público, sin login)
  * 2. Se calcula la valuación
  * 3. Se muestra oferta con valor oculto/difuminado
  * 4. Usuario verifica teléfono/email para ver oferta completa (crea cuenta)
@@ -286,7 +286,7 @@ export function AutometricaValuationForm({
         setTimeout(() => brandRef.current?.focus({ preventScroll: true }), 100);
       } catch (err) {
         console.error('Error loading catalog:', err);
-        setError('Error al cargar el catálogo de vehículos');
+        setError('Error al cargar el catálogo de autos');
       } finally {
         setCatalogLoading(false);
       }
@@ -352,7 +352,7 @@ export function AutometricaValuationForm({
 
   const handleGetValuation = async () => {
     if (!selectedBrand || !selectedSubbrand || !selectedYear || !selectedVersion) {
-      setError('Por favor, completa todos los campos del vehículo');
+      setError('Por favor, completa todos los campos del auto');
       return;
     }
 
@@ -749,7 +749,7 @@ export function AutometricaValuationForm({
                 </div>
 
                 {/* Vehicle info */}
-                <p className="text-white/60 text-sm mb-1">Tu vehículo</p>
+                <p className="text-white/60 text-sm mb-1">Tu auto</p>
                 <h3 className="text-white font-bold text-lg mb-4">
                   {selectedBrand} {selectedSubbrand} {selectedYear}
                 </h3>
@@ -939,7 +939,7 @@ export function AutometricaValuationForm({
               className="text-xs text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1 mx-auto"
             >
               <RefreshCw className="w-3 h-3" />
-              Cotizar otro vehículo
+              Cotizar otro auto
             </button>
           </div>
         </div>

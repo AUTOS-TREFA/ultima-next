@@ -18,7 +18,7 @@ const steps = [
   {
     icon: '📸',
     title: 'Navega las Fotos',
-    content: 'Desliza hacia la izquierda o derecha sobre las fotos de los vehículos para ver todas las imágenes. También puedes tocar los puntos en la parte inferior para cambiar de foto.',
+    content: 'Desliza hacia la izquierda o derecha sobre las fotos de los autos para ver todas las imágenes. También puedes tocar los puntos en la parte inferior para cambiar de foto.',
     animation: true
   },
   {

@@ -305,7 +305,7 @@ const SellerDashboardPage: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Comienza a vender tu auto</h3>
                 <p className="text-muted-foreground mb-6 max-w-md">
-                  Obtén una valuación instantánea de tu vehículo y recibe una oferta competitiva.
+                  Obtén una valuación instantánea de tu auto y recibe una oferta competitiva.
                   El proceso es rápido, seguro y sin compromisos.
                 </p>
                 <Button size="lg" onClick={handleStartNewValuation}>

@@ -75,7 +75,7 @@ const CompletedStep: React.FC<CompletedStepProps> = ({ vehicleInfo, applicationI
           <li className="flex gap-3">
             <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center text-xs font-bold">4</span>
             <div className="flex-1">
-              <p className="font-semibold text-gray-900">¡Separa tu vehículo!</p>
+              <p className="font-semibold text-gray-900">¡Separa tu auto!</p>
               <p className="text-gray-600 text-xs mt-1">Una vez aprobado, podrás reservar tu auto</p>
             </div>
           </li>

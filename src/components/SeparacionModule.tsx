@@ -12,13 +12,13 @@ const SeparacionModule: React.FC<SeparacionModuleProps> = ({ applicationStatus, 
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Separación de Vehículo</h2>
-      
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">Separación de Auto</h2>
+
       {vehicleTitle && (
         <div className="flex items-center gap-4 mb-6">
           <img src={vehicleImage || ''} alt={vehicleTitle} className="w-24 h-20 object-cover rounded-md flex-shrink-0" />
           <div>
-            <p className="text-sm text-gray-500">Vehículo en tu solicitud:</p>
+            <p className="text-sm text-gray-500">Auto en tu solicitud:</p>
             <h3 className="font-bold text-gray-900">{vehicleTitle}</h3>
           </div>
         </div>

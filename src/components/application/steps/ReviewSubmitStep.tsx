@@ -60,7 +60,7 @@ const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200">
           <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
             <Car className="w-5 h-5 text-blue-600" />
-            Vehículo y Financiamiento
+            Auto y Financiamiento
           </h3>
           <div className="grid md:grid-cols-2 gap-4 mb-4">
             <div>
@@ -218,7 +218,7 @@ const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
                   size="sm"
                   className="mt-3"
                 >
-                  Ir a Selección de Vehículo
+                  Ir a Selección de Auto
                 </Button>
               )}
             </div>

@@ -320,8 +320,8 @@ const MarketplaceFormPage: React.FC<MarketplaceFormPageProps> = ({ mode, listing
               </h1>
               <p className="text-muted-foreground text-sm mt-1">
                 {mode === 'create'
-                  ? 'Publica tu vehículo en nuestro marketplace'
-                  : 'Actualiza la información de tu vehículo'}
+                  ? 'Publica tu auto en nuestro marketplace'
+                  : 'Actualiza la información de tu auto'}
               </p>
             </div>
           </div>
@@ -340,7 +340,7 @@ const MarketplaceFormPage: React.FC<MarketplaceFormPageProps> = ({ mode, listing
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="vehicle">
               <Car className="w-4 h-4 mr-2" />
-              Vehículo
+              Auto
             </TabsTrigger>
             <TabsTrigger value="pricing">
               <DollarSign className="w-4 h-4 mr-2" />
@@ -356,9 +356,9 @@ const MarketplaceFormPage: React.FC<MarketplaceFormPageProps> = ({ mode, listing
           <TabsContent value="vehicle" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Información del vehículo</CardTitle>
+                <CardTitle>Información del auto</CardTitle>
                 <CardDescription>
-                  Proporciona los detalles básicos de tu vehículo
+                  Proporciona los detalles básicos de tu auto
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -474,7 +474,7 @@ const MarketplaceFormPage: React.FC<MarketplaceFormPageProps> = ({ mode, listing
                   <Label htmlFor="description">Descripción</Label>
                   <Textarea
                     id="description"
-                    placeholder="Describe las características y condición de tu vehículo..."
+                    placeholder="Describe las características y condición de tu auto..."
                     rows={5}
                     value={formData.description || ''}
                     onChange={e => handleInputChange('description', e.target.value)}
@@ -528,7 +528,7 @@ const MarketplaceFormPage: React.FC<MarketplaceFormPageProps> = ({ mode, listing
               <CardHeader>
                 <CardTitle>Precio y negociación</CardTitle>
                 <CardDescription>
-                  Establece el precio de venta de tu vehículo
+                  Establece el precio de venta de tu auto
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -563,7 +563,7 @@ const MarketplaceFormPage: React.FC<MarketplaceFormPageProps> = ({ mode, listing
                   <FileText className="h-4 w-4" />
                   <AlertDescription>
                     <strong>Nota:</strong> TREFA cobrará una comisión del 5% sobre el precio de venta
-                    una vez que el vehículo sea vendido.
+                    una vez que el auto sea vendido.
                   </AlertDescription>
                 </Alert>
               </CardContent>
@@ -574,9 +574,9 @@ const MarketplaceFormPage: React.FC<MarketplaceFormPageProps> = ({ mode, listing
           <TabsContent value="images" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Fotos del vehículo</CardTitle>
+                <CardTitle>Fotos del auto</CardTitle>
                 <CardDescription>
-                  Sube hasta 20 fotos de tu vehículo. La primera foto será la principal.
+                  Sube hasta 20 fotos de tu auto. La primera foto será la principal.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">

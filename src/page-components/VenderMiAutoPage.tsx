@@ -296,7 +296,7 @@ const VenderMiAutoPage: React.FC = () => {
                   </div>
                   <h3 className="font-bold text-lg text-slate-800 mb-2">Cotiza tu auto</h3>
                   <p className="text-sm text-slate-600">
-                    Ingresa los datos de tu vehículo y recibe una oferta instantánea basada en el mercado.
+                    Ingresa los datos de tu auto y recibe una oferta instantánea basada en el mercado.
                   </p>
                 </div>
               </div>
@@ -357,11 +357,11 @@ const VenderMiAutoPage: React.FC = () => {
           <MotionPreset fade blur transition={{ duration: 0.5 }}>
             <div className="prose prose-lg max-w-none">
               <h2 className="text-2xl font-bold text-slate-800 mb-6">
-                Valuación de auto gratis: Descubre cuánto vale tu vehículo
+                Valuación de auto gratis: Descubre cuánto vale tu auto
               </h2>
 
               <p className="text-slate-600 mb-4">
-                ¿Te preguntas <strong>cuánto vale mi auto</strong>? Con TREFA puedes obtener una <strong>valuación de auto instantánea y gratuita</strong> basada en datos reales del mercado mexicano. Nuestra herramienta utiliza la <strong>Guía Autométrica</strong>, la referencia más confiable para conocer el valor de tu vehículo.
+                ¿Te preguntas <strong>cuánto vale mi auto</strong>? Con TREFA puedes obtener una <strong>valuación de auto instantánea y gratuita</strong> basada en datos reales del mercado mexicano. Nuestra herramienta utiliza la <strong>Guía Autométrica</strong>, la referencia más confiable para conocer el valor de tu auto.
               </p>
 
               <p className="text-slate-600 mb-4">
@@ -424,7 +424,7 @@ const VenderMiAutoPage: React.FC = () => {
                     <span className="ml-2 text-primary-600 group-open:rotate-180 transition-transform">▼</span>
                   </summary>
                   <p className="text-slate-600 mt-3 text-sm">
-                    La cotización inicial es un estimado basado en los datos que proporcionas. El precio final se confirma después de la inspección física del vehículo.
+                    La cotización inicial es un estimado basado en los datos que proporcionas. El precio final se confirma después de la inspección física del auto.
                   </p>
                 </details>
 
@@ -451,7 +451,7 @@ const VenderMiAutoPage: React.FC = () => {
               ¿Listo para vender tu auto?
             </h2>
             <p className="text-primary-100 mb-8 max-w-xl mx-auto">
-              Obtén tu cotización gratuita ahora y descubre cuánto vale tu vehículo.
+              Obtén tu cotización gratuita ahora y descubre cuánto vale tu auto.
               El proceso toma menos de 2 minutos.
             </p>
             <a

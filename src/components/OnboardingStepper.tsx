@@ -222,7 +222,7 @@ export const OnboardingStepper: React.FC<OnboardingStepperProps> = ({
                       {userName}, ¡tu registro fue exitoso y cumples con las condiciones para continuar!
                     </p>
                     <p className="text-gray-700 text-sm mt-1">
-                      Estás muy cerca de reservar tu vehículo ideal 🚗
+                      Estás muy cerca de reservar tu auto ideal 🚗
                     </p>
                   </div>
                 </div>
@@ -273,9 +273,9 @@ export const OnboardingStepper: React.FC<OnboardingStepperProps> = ({
             </div>
             <div className="flex-1 space-y-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Selecciona tu Vehículo</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Selecciona tu Auto</h3>
                 <p className="text-gray-700 text-sm">
-                  Ya puedes seleccionar tu vehículo. Explora nuestro inventario y elige el auto que mejor se adapte a tus necesidades.
+                  Ya puedes seleccionar tu auto. Explora nuestro inventario y elige el que mejor se adapte a tus necesidades.
                 </p>
               </div>
               <button
@@ -285,7 +285,7 @@ export const OnboardingStepper: React.FC<OnboardingStepperProps> = ({
                 }}
                 className="inline-flex items-center px-4 py-2 bg-green-700 text-white text-sm font-medium rounded-lg hover:bg-green-800 transition-colors shadow-sm"
               >
-                Seleccionar Vehículo
+                Seleccionar Auto
               </button>
             </div>
           </div>

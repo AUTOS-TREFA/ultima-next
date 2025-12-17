@@ -201,7 +201,7 @@ const AdminComprasDashboardPage: React.FC = () => {
                                 <tr>
                                     <th scope="col" className="px-6 py-3">Propietario</th>
                                     <th scope="col" className="px-6 py-3">Email / Teléfono</th>
-                                    <th scope="col" className="px-6 py-3">Vehículo</th>
+                                    <th scope="col" className="px-6 py-3">Auto</th>
                                     <th scope="col" className="px-6 py-3">Oferta Inicial</th>
                                     <th scope="col" className="px-6 py-3">Estado</th>
                                     <th scope="col" className="px-6 py-3">Contactado</th>
@@ -260,7 +260,7 @@ const AdminComprasDashboardPage: React.FC = () => {
                                 <tr>
                                     <th scope="col" className="px-6 py-3">Nombre del Cliente</th>
                                     <th scope="col" className="px-6 py-3">Email / Teléfono</th>
-                                    <th scope="col" className="px-6 py-3">Vehículo</th>
+                                    <th scope="col" className="px-6 py-3">Auto</th>
                                     <th scope="col" className="px-6 py-3">Kilometraje</th>
                                     <th scope="col" className="px-6 py-3">Oferta Sugerida</th>
                                     <th scope="col" className="px-6 py-3">Fecha</th>

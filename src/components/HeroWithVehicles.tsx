@@ -56,7 +56,7 @@ const VehicleMarqueeCard = memo(({ vehicle }: { vehicle: Vehicle }) => {
         )}
         <img
           src={imageSrc}
-          alt={vehicle.titulo || vehicle.title || 'Vehículo'}
+          alt={vehicle.titulo || vehicle.title || 'Auto'}
           className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-out group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
           loading="lazy"
           decoding="async"

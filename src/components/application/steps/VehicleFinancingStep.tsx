@@ -142,7 +142,7 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
           <Car className="w-6 h-6 text-primary-600" />
-          {showCalculator ? 'Vehículo y Financiamiento' : 'Selecciona tu Vehículo'}
+          {showCalculator ? 'Auto y Financiamiento' : 'Selecciona tu Auto'}
         </h2>
         <p className="text-sm text-gray-600">
           {showCalculator ? 'Ajusta las opciones de financiamiento para tu auto.' : 'Elige el auto para el cual deseas solicitar financiamiento.'}
@@ -285,7 +285,7 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
       {/* Search Bar */}
       {!showCalculator && (
         <div className="relative">
-          <Label htmlFor="vehicle-search" className="sr-only">Buscar vehículo</Label>
+          <Label htmlFor="vehicle-search" className="sr-only">Buscar auto</Label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <Input
@@ -359,7 +359,7 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
             <div className="col-span-full text-center py-12">
               <Car className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500">
-                {searchTerm ? 'No se encontraron vehículos' : 'No hay autos disponibles'}
+                {searchTerm ? 'No se encontraron autos' : 'No hay autos disponibles'}
               </p>
             </div>
           )}
@@ -389,7 +389,7 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
       {/* Helper Text */}
       {!showCalculator && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
-          <p><strong>Consejo:</strong> Puedes buscar por marca, modelo o año. Selecciona el vehículo que más te guste para continuar.</p>
+          <p><strong>Consejo:</strong> Puedes buscar por marca, modelo o año. Selecciona el auto que más te guste para continuar.</p>
         </div>
       )}
     </CardContent>

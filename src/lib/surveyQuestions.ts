@@ -237,7 +237,7 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
     options: [
       { value: 'proceso-digital', label: 'Proceso digital y moderno' },
       { value: 'transparencia', label: 'Transparencia total' },
-      { value: 'variedad', label: 'Amplia variedad de vehículos' },
+      { value: 'variedad', label: 'Amplia variedad de autos' },
       { value: 'financiamiento', label: 'Opciones de financiamiento' },
       { value: 'confianza', label: 'Mayor confianza y seguridad' },
       { value: 'nada', label: 'No veo diferencias significativas' }
@@ -289,7 +289,7 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
     id: 'information-clarity',
     questionNumber: 20,
     section: 'Experiencia con Plataforma',
-    question: '¿La información de los vehículos es clara y completa?',
+    question: '¿La información de los autos es clara y completa?',
     type: 'likert-4',
     options: [
       { value: '1', label: 'Falta mucha información' },

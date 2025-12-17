@@ -710,7 +710,7 @@ export default function UnifiedAdminDashboard() {
                   <CardDescription>Autos más solicitados</CardDescription>
                 </div>
                 <Badge variant="secondary">
-                  {business.inventoryVehiclesWithApplications.filter(v => v.ongoingApplications > 0).length} vehículos
+                  {business.inventoryVehiclesWithApplications.filter(v => v.ongoingApplications > 0).length} autos
                 </Badge>
               </div>
             </CardHeader>

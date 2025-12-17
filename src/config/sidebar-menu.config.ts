@@ -194,7 +194,7 @@ export const sellerNavGroup: NavGroup = {
         },
         {
             to: '/escritorio/mis-vehiculos',
-            label: 'Mis Vehículos',
+            label: 'Mis Autos',
             icon: Package,
             roles: ['admin', 'sales', 'user']
         },

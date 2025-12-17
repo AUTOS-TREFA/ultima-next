@@ -95,7 +95,7 @@ const VehicleForSaleDetailPage: React.FC = () => {
         );
     }
 
-    const vehicleInfo = listing.valuation_data?.vehicle?.label || 'Vehículo';
+    const vehicleInfo = listing.valuation_data?.vehicle?.label || 'Auto';
     const suggestedOffer = listing.valuation_data?.valuation?.suggestedOffer;
     const userAccepted = listing.status === 'accepted';
     const offerMade = listing.status === 'offer_made' || userAccepted;
@@ -149,7 +149,7 @@ const VehicleForSaleDetailPage: React.FC = () => {
                     <div className="bg-white p-6 rounded-xl shadow-sm border">
                         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
                             <Car className="w-5 h-5" />
-                            Detalles del Vehículo
+                            Detalles del Auto
                         </h2>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -185,7 +185,7 @@ const VehicleForSaleDetailPage: React.FC = () => {
                             <div>
                                 <p className="text-sm text-gray-600 flex items-center gap-1">
                                     <MapPin className="w-4 h-4" />
-                                    Estado del Vehículo
+                                    Estado del Auto
                                 </p>
                                 <p className="font-semibold">{listing.vehicle_state || 'N/A'}</p>
                             </div>

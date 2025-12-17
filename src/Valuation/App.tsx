@@ -291,7 +291,7 @@ function ValuationApp({ initialSearchQuery, onComplete }: { initialSearchQuery?:
       // Store redirect path
       localStorage.setItem('redirectAfterLogin', '/escritorio/vende-tu-auto');
       // Redirect to auth page with a message
-      router.push('/auth?message=Por favor inicia sesión para continuar con la venta de tu vehículo&redirect=/escritorio/vende-tu-auto');
+      router.push('/auth?message=Por favor inicia sesión para continuar con la venta de tu auto&redirect=/escritorio/vende-tu-auto');
       return;
     }
 
@@ -406,7 +406,7 @@ function ValuationApp({ initialSearchQuery, onComplete }: { initialSearchQuery?:
                               ¡Gracias por tu interés! 😊
                             </p>
                             <p className="text-sm text-gray-700 mt-1">
-                              En este momento estamos comprando vehículos con menos de 90,000 km.
+                              En este momento estamos comprando autos con menos de 90,000 km.
                               Pero no te preocupes, tenemos algunas opciones excelentes para ti:
                             </p>
                           </div>

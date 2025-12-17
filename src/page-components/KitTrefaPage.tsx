@@ -583,7 +583,7 @@ const KitTrefaPage: React.FC = () => {
                         <div className="text-center lg:order-last">
                             <img
                                 src="https://r2.trefa.mx/r9GDYibmXVaw8Zv93n4Bfi9TIs.png.webp"
-                                alt="Vehículo TREFA con Kit de Seguridad"
+                                alt="Auto TREFA con Kit de Seguridad"
                                 className="max-w-md mx-auto w-full h-auto"
                             />
                         </div>

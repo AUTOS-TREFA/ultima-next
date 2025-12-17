@@ -317,7 +317,7 @@ export default function SeguimientoDetailPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <Car className="w-4 h-4 text-primary-600" />
-                    <h3 className="font-bold text-sm text-gray-900">Tu Vehículo</h3>
+                    <h3 className="font-bold text-sm text-gray-900">Tu Auto</h3>
                   </div>
                   <img
                     src={carInfo._featureImage || DEFAULT_PLACEHOLDER_IMAGE}
