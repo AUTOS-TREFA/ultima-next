@@ -173,17 +173,17 @@ const salesItems: NavItem[] = [
 // Loading skeleton component
 const SidebarLoadingSkeleton: React.FC = () => (
     <>
-        <SidebarHeader className="border-b border-white/10 bg-blue-950">
+        <SidebarHeader className="border-b border-gray-200 bg-gray-50">
             <div className="flex items-center gap-2 px-2 py-3">
-                <div className="h-8 w-24 bg-white/20 rounded animate-pulse" />
+                <div className="h-8 w-24 bg-gray-300 rounded animate-pulse" />
             </div>
         </SidebarHeader>
-        <SidebarContent className="bg-blue-950">
+        <SidebarContent className="bg-white">
             <SidebarGroup>
                 <SidebarMenu>
                     {[1, 2, 3, 4, 5].map((i) => (
                         <SidebarMenuItem key={i}>
-                            <div className="h-10 bg-white/10 rounded-md animate-pulse mx-2" />
+                            <div className="h-10 bg-gray-100 rounded-md animate-pulse mx-2" />
                         </SidebarMenuItem>
                     ))}
                 </SidebarMenu>
@@ -216,15 +216,15 @@ const AppSidebarContent: React.FC = () => {
 
     if (!hasSession && loadingTimeout) {
         return (
-            <div className="flex flex-col h-full bg-blue-950 text-white">
-                <SidebarHeader className="border-b border-white/10 p-4">
+            <div className="flex flex-col h-full bg-white text-gray-900">
+                <SidebarHeader className="border-b border-gray-200 p-4">
                     <div className="flex items-center gap-2">
-                        <img src="/images/trefalogo.png" alt="TREFA" className="h-8 w-auto object-contain brightness-0 invert" />
+                        <img src="/images/trefalogo.png" alt="TREFA" className="h-8 w-auto object-contain" />
                     </div>
-                    <p className="text-sm text-white/60 mt-4">
+                    <p className="text-sm text-gray-600 mt-4">
                         Sesión no detectada.
                         <br />
-                        <a href="/acceder" className="text-cyan-400 hover:underline">Iniciar sesión</a>
+                        <a href="/acceder" className="text-primary hover:underline">Iniciar sesión</a>
                     </p>
                 </SidebarHeader>
             </div>
@@ -262,30 +262,30 @@ const AppSidebarContent: React.FC = () => {
 
     return (
         <>
-            <SidebarHeader className="border-b border-white/10 bg-blue-950">
+            <SidebarHeader className="border-b border-gray-200 bg-gray-50">
                 {/* Logo */}
                 <div className="flex items-center gap-2 px-2 py-3">
                     <Link href="/" className="flex items-center gap-2">
                         <img
                             src="/images/trefalogo.png"
                             alt="TREFA"
-                            className="h-8 w-auto object-contain brightness-0 invert"
+                            className="h-8 w-auto object-contain"
                         />
                     </Link>
                 </div>
 
                 {/* User Profile - Expanded */}
-                <div className="flex items-center gap-3 rounded-lg bg-white/5 border border-white/10 p-3 mx-2 mb-2 group-data-[collapsible=icon]:hidden">
-                    <Avatar className="h-10 w-10 flex-shrink-0 ring-2 ring-cyan-400/50">
-                        <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-semibold">
+                <div className="flex items-center gap-3 rounded-lg bg-gray-100 border border-gray-200 p-3 mx-2 mb-2 group-data-[collapsible=icon]:hidden">
+                    <Avatar className="h-10 w-10 flex-shrink-0 ring-2 ring-primary/30">
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-blue-600 text-white font-semibold">
                             {profile?.first_name?.[0]?.toUpperCase() || 'U'}
                         </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">
+                        <p className="text-sm font-medium text-gray-900 truncate">
                             {profile?.first_name || 'Usuario'}
                         </p>
-                        <p className="text-xs text-white/60 truncate flex items-center gap-1">
+                        <p className="text-xs text-gray-600 truncate flex items-center gap-1">
                             {isAdmin && <><Sparkles className="w-3 h-3" /> Admin</>}
                             {isSales && <><Rocket className="w-3 h-3" /> Ventas</>}
                             {!isAdmin && !isSales && <User className="w-3 h-3" />}
@@ -294,10 +294,10 @@ const AppSidebarContent: React.FC = () => {
                 </div>
             </SidebarHeader>
 
-            <SidebarContent className="bg-blue-950 [&>div]:py-1">
+            <SidebarContent className="bg-white [&>div]:py-1">
                 {/* Essentials */}
                 <SidebarGroup className="py-2">
-                    <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-4">
+                    <SidebarGroupLabel className="text-gray-500 text-xs font-semibold uppercase tracking-wider px-4">
                         Esenciales
                     </SidebarGroupLabel>
                     <SidebarGroupContent>
@@ -311,8 +311,8 @@ const AppSidebarContent: React.FC = () => {
                                             isActive={isActiveLink(item.to, item.end)}
                                             tooltip={item.label}
                                             className={cn(
-                                                "text-white/90 hover:text-white hover:bg-white/10",
-                                                isActiveLink(item.to, item.end) && "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white border-l-2 border-l-cyan-400"
+                                                "text-gray-700 hover:text-gray-900 hover:bg-gray-100",
+                                                isActiveLink(item.to, item.end) && "bg-primary/10 text-primary font-medium border-l-2 border-l-primary"
                                             )}
                                         >
                                             <Link href={item.to}>
@@ -336,7 +336,7 @@ const AppSidebarContent: React.FC = () => {
                                     <CollapsibleTrigger asChild>
                                         <SidebarMenuButton
                                             tooltip={sellCarGroup.label}
-                                            className="text-white/90 hover:text-white hover:bg-white/10"
+                                            className="text-gray-700 hover:text-gray-900 hover:bg-gray-100"
                                         >
                                             <HandCoins className="h-4 w-4" />
                                             <span>{sellCarGroup.label}</span>
@@ -344,7 +344,7 @@ const AppSidebarContent: React.FC = () => {
                                         </SidebarMenuButton>
                                     </CollapsibleTrigger>
                                     <CollapsibleContent>
-                                        <SidebarMenuSub className="border-l border-white/10 ml-4">
+                                        <SidebarMenuSub className="border-l border-gray-200 ml-4">
                                             {filterByRole(sellCarGroup.items).map((item) => {
                                                 const Icon = item.icon;
                                                 return (
@@ -353,7 +353,7 @@ const AppSidebarContent: React.FC = () => {
                                                             asChild
                                                             isActive={isActiveLink(item.to, item.end)}
                                                             className={cn(
-                                                                "text-white/80 hover:text-white hover:bg-white/5",
+                                                                "text-gray-600 hover:text-gray-900 hover:bg-gray-50",
                                                                 isActiveLink(item.to, item.end) && "text-cyan-400 bg-white/5"
                                                             )}
                                                         >
@@ -380,7 +380,7 @@ const AppSidebarContent: React.FC = () => {
 
                         {/* Admin Main */}
                         <SidebarGroup className="py-2">
-                            <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-4">
+                            <SidebarGroupLabel className="text-gray-500 text-xs font-semibold uppercase tracking-wider px-4">
                                 Admin
                             </SidebarGroupLabel>
                             <SidebarGroupContent>
@@ -394,8 +394,8 @@ const AppSidebarContent: React.FC = () => {
                                                     isActive={isActiveLink(item.to, item.end)}
                                                     tooltip={item.label}
                                                     className={cn(
-                                                        "text-white/90 hover:text-white hover:bg-white/10",
-                                                        isActiveLink(item.to, item.end) && "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white border-l-2 border-l-cyan-400"
+                                                        "text-gray-700 hover:text-gray-900 hover:bg-gray-100",
+                                                        isActiveLink(item.to, item.end) && "bg-primary/10 text-primary font-medium border-l-2 border-l-primary"
                                                     )}
                                                 >
                                                     <Link href={item.to}>
@@ -419,7 +419,7 @@ const AppSidebarContent: React.FC = () => {
                                             <CollapsibleTrigger asChild>
                                                 <SidebarMenuButton
                                                     tooltip="Analytics"
-                                                    className="text-white/90 hover:text-white hover:bg-white/10"
+                                                    className="text-gray-700 hover:text-gray-900 hover:bg-gray-100"
                                                 >
                                                     <BarChart3 className="h-4 w-4" />
                                                     <span>Analytics</span>
@@ -427,7 +427,7 @@ const AppSidebarContent: React.FC = () => {
                                                 </SidebarMenuButton>
                                             </CollapsibleTrigger>
                                             <CollapsibleContent>
-                                                <SidebarMenuSub className="border-l border-white/10 ml-4">
+                                                <SidebarMenuSub className="border-l border-gray-200 ml-4">
                                                     {filterByRole(adminAnalyticsGroup.items).map((item) => {
                                                         const Icon = item.icon;
                                                         return (
@@ -436,7 +436,7 @@ const AppSidebarContent: React.FC = () => {
                                                                     asChild
                                                                     isActive={isActiveLink(item.to, item.end)}
                                                                     className={cn(
-                                                                        "text-white/80 hover:text-white hover:bg-white/5",
+                                                                        "text-gray-600 hover:text-gray-900 hover:bg-gray-50",
                                                                         isActiveLink(item.to, item.end) && "text-cyan-400 bg-white/5"
                                                                     )}
                                                                 >
@@ -465,7 +465,7 @@ const AppSidebarContent: React.FC = () => {
                                             <CollapsibleTrigger asChild>
                                                 <SidebarMenuButton
                                                     tooltip="Herramientas"
-                                                    className="text-white/90 hover:text-white hover:bg-white/10"
+                                                    className="text-gray-700 hover:text-gray-900 hover:bg-gray-100"
                                                 >
                                                     <Settings className="h-4 w-4" />
                                                     <span>Herramientas</span>
@@ -473,7 +473,7 @@ const AppSidebarContent: React.FC = () => {
                                                 </SidebarMenuButton>
                                             </CollapsibleTrigger>
                                             <CollapsibleContent>
-                                                <SidebarMenuSub className="border-l border-white/10 ml-4">
+                                                <SidebarMenuSub className="border-l border-gray-200 ml-4">
                                                     {filterByRole(adminToolsGroup.items).map((item) => {
                                                         const Icon = item.icon;
                                                         return (
@@ -482,7 +482,7 @@ const AppSidebarContent: React.FC = () => {
                                                                     asChild
                                                                     isActive={isActiveLink(item.to, item.end)}
                                                                     className={cn(
-                                                                        "text-white/80 hover:text-white hover:bg-white/5",
+                                                                        "text-gray-600 hover:text-gray-900 hover:bg-gray-50",
                                                                         isActiveLink(item.to, item.end) && "text-cyan-400 bg-white/5"
                                                                     )}
                                                                 >
@@ -509,7 +509,7 @@ const AppSidebarContent: React.FC = () => {
                     <>
                         <Separator className="bg-white/10 my-2" />
                         <SidebarGroup className="py-2">
-                            <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-4">
+                            <SidebarGroupLabel className="text-gray-500 text-xs font-semibold uppercase tracking-wider px-4">
                                 Ventas
                             </SidebarGroupLabel>
                             <SidebarGroupContent>
@@ -523,8 +523,8 @@ const AppSidebarContent: React.FC = () => {
                                                     isActive={isActiveLink(item.to, item.end)}
                                                     tooltip={item.label}
                                                     className={cn(
-                                                        "text-white/90 hover:text-white hover:bg-white/10",
-                                                        isActiveLink(item.to, item.end) && "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white border-l-2 border-l-cyan-400"
+                                                        "text-gray-700 hover:text-gray-900 hover:bg-gray-100",
+                                                        isActiveLink(item.to, item.end) && "bg-primary/10 text-primary font-medium border-l-2 border-l-primary"
                                                     )}
                                                 >
                                                     <Link href={item.to}>
@@ -542,13 +542,13 @@ const AppSidebarContent: React.FC = () => {
                 )}
             </SidebarContent>
 
-            <SidebarFooter className="border-t border-white/10 bg-blue-950">
+            <SidebarFooter className="border-t border-gray-200 bg-gray-50">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             asChild
                             tooltip="Ayuda / FAQs"
-                            className="text-white/90 hover:text-white hover:bg-white/10"
+                            className="text-gray-700 hover:text-gray-900 hover:bg-gray-100"
                         >
                             <Link href="/faq">
                                 <HelpCircle className="h-4 w-4" />
@@ -578,8 +578,8 @@ const AppSidebarContent: React.FC = () => {
 // Mobile sidebar (simplified for now - same content)
 const MobileSidebarContent: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
     return (
-        <div className="flex flex-col h-full bg-blue-950 text-white p-4">
-            <p className="text-sm text-white/60">Menu móvil - trabajo en progreso</p>
+        <div className="flex flex-col h-full bg-white text-gray-900 p-4">
+            <p className="text-sm text-gray-600">Menu móvil - trabajo en progreso</p>
         </div>
     );
 };
@@ -624,15 +624,15 @@ const UnifiedDashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
             <Sidebar
                 collapsible="icon"
                 className={cn(
-                    "border-r border-blue-900 bg-blue-950",
-                    // Collapsed state - darker background
-                    "group-data-[state=collapsed]:!bg-blue-950 group-data-[state=collapsed]:border-blue-900",
+                    "border-r border-gray-200 bg-white",
+                    // Collapsed state
+                    "group-data-[state=collapsed]:!bg-white group-data-[state=collapsed]:border-gray-200",
                     // Icon colors when collapsed
-                    "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]_svg]:!text-white",
+                    "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]_svg]:!text-gray-700",
                     "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]_svg]:!w-5",
                     "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]_svg]:!h-5",
-                    "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]]:hover:bg-white/10",
-                    "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]]:hover:!text-white",
+                    "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]]:hover:bg-gray-100",
+                    "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]]:hover:!text-gray-900",
                 )}
             >
                 <AppSidebarContent />
@@ -682,7 +682,7 @@ const UnifiedDashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" className="relative h-8 w-8 rounded-full ml-1 p-0">
                                         <Avatar className="h-8 w-8 border-2 border-primary/20">
-                                            <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-600 text-white text-xs font-semibold">
+                                            <AvatarFallback className="bg-gradient-to-br from-primary to-blue-600 text-white text-xs font-semibold">
                                                 {profile?.first_name?.[0]?.toUpperCase() || 'U'}
                                             </AvatarFallback>
                                         </Avatar>

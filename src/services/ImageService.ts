@@ -1,6 +1,7 @@
 import { supabase } from '../../supabaseClient';
 
 const BACKUP_BUCKET_NAME = 'car-studio-backups';
+const CONSIGNMENT_BUCKET_NAME = 'consignment-images';
 
 export const ImageService = {
   /**
@@ -127,5 +128,58 @@ export const ImageService = {
     }).catch(err => {
         console.error("An error occurred during the background image backup process:", err);
     });
-  }
+  },
+
+  /**
+   * Uploads a consignment listing image file to Supabase Storage.
+   * @param listingId - The ID of the consignment listing
+   * @param file - The image file to upload
+   * @returns Object with storagePath and publicUrl
+   */
+  async uploadConsignmentImage(listingId: string, file: File): Promise<{ storagePath: string; publicUrl: string }> {
+    try {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        throw new Error('Tipo de archivo no válido. Solo se permiten JPG, PNG y WebP.');
+      }
+
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        throw new Error('El archivo es demasiado grande. Máximo 5MB.');
+      }
+
+      // Create a unique file name
+      const fileExtension = file.name.split('.').pop() || 'jpg';
+      const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExtension}`;
+      const filePath = `${listingId}/${fileName}`;
+
+      // Upload to Supabase Storage
+      const { data, error: uploadError } = await supabase.storage
+        .from(CONSIGNMENT_BUCKET_NAME)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error(`Error al subir imagen: ${uploadError.message}`);
+      }
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from(CONSIGNMENT_BUCKET_NAME)
+        .getPublicUrl(data.path);
+
+      return {
+        storagePath: data.path,
+        publicUrl,
+      };
+    } catch (error: any) {
+      console.error('Error uploading consignment image:', error);
+      throw error;
+    }
+  },
 };
