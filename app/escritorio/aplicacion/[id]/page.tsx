@@ -1,12 +1,8 @@
 'use client';
 
-import Application from '@/page-components/Application';
+import EnhancedApplication from '@/components/application/EnhancedApplication';
 
-interface PageProps {
-  params: { id: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}
-
-export default function Page({ params }: PageProps) {
-  return <Application id={params.id} />;
+export default function Page() {
+  // EnhancedApplication uses useParams() internally to get the application ID
+  return <EnhancedApplication />;
 }
