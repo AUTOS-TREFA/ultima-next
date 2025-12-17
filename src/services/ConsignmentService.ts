@@ -98,6 +98,7 @@ export interface AdminConsignmentStats {
   total_users_selling: number;
   avg_listing_price: number;
   total_revenue_potential: number;
+  inventory_consignment_count: number; // Count from inventario_cache where consigna=true
 }
 
 export const ConsignmentService = {
@@ -632,11 +633,49 @@ export const ConsignmentService = {
 
   /**
    * Approve a listing (admin only)
+   * Also adds the vehicle to inventario_cache with consigna=true
    */
   async approveListing(adminId: string, listingId: string, expiresInDays: number = 30): Promise<ConsignmentListing> {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
+    // First, get the listing to extract vehicle data
+    const { data: listing, error: fetchError } = await supabase
+      .from('consignment_listings')
+      .select('*')
+      .eq('id', listingId)
+      .single();
+
+    if (fetchError || !listing) {
+      console.error('Error fetching listing for approval:', fetchError);
+      throw new Error('No se pudo obtener el listado.');
+    }
+
+    // Get primary image
+    const { data: primaryImage } = await supabase
+      .from('consignment_listing_images')
+      .select('public_url, storage_path')
+      .eq('listing_id', listingId)
+      .eq('is_primary', true)
+      .single();
+
+    // Get all images for gallery
+    const { data: allImages } = await supabase
+      .from('consignment_listing_images')
+      .select('public_url, image_type')
+      .eq('listing_id', listingId)
+      .order('position', { ascending: true });
+
+    const exteriorImages = allImages?.filter(img => img.image_type === 'exterior').map(img => img.public_url) || [];
+    const interiorImages = allImages?.filter(img => img.image_type === 'interior').map(img => img.public_url) || [];
+
+    // Create slug for the vehicle
+    const slug = `${listing.brand}-${listing.model}-${listing.year}-consignacion-${listingId.substring(0, 8)}`
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    // Update consignment listing status
     const { data, error } = await supabase
       .from('consignment_listings')
       .update({
@@ -654,6 +693,75 @@ export const ConsignmentService = {
       console.error('Error approving listing:', error);
       throw new Error('No se pudo aprobar el listado.');
     }
+
+    // Add to inventario_cache with consigna=true
+    try {
+      const { error: inventoryError } = await supabase
+        .from('inventario_cache')
+        .insert({
+          // Basic info
+          marca: listing.brand,
+          modelo: listing.model,
+          autoano: listing.year,
+          precio: listing.price,
+
+          // Description
+          title: `${listing.brand} ${listing.model} ${listing.year} - Consignación`,
+          description: listing.description || '',
+
+          // Location
+          ubicacion: listing.city ? `${listing.city}, ${listing.state}` : listing.state,
+
+          // Vehicle details
+          transmision: listing.transmission || 'N/A',
+          autotransmision: listing.transmission || 'N/A',
+          combustible: listing.fuel_type || 'N/A',
+          autocombustible: listing.fuel_type || 'N/A',
+          kilometraje: listing.mileage ? { valor: listing.mileage, unidad: 'km' } : null,
+
+          // Images
+          feature_image: primaryImage?.public_url || null,
+          feature_image_url: primaryImage?.public_url || null,
+          galeria_exterior: exteriorImages.length > 0 ? exteriorImages : null,
+          galeria_interior: interiorImages.length > 0 ? interiorImages : null,
+
+          // Consignment flag - THIS IS KEY
+          consigna: true,
+
+          // Slug and metadata
+          slug: slug,
+          airtable_id: `consignment_${listingId}`,
+
+          // Additional metadata
+          data: {
+            consignment_listing_id: listingId,
+            user_id: listing.user_id,
+            approved_at: data.approved_at,
+            expires_at: data.expires_at,
+            negotiable: listing.negotiable,
+            exterior_color: listing.exterior_color,
+            interior_color: listing.interior_color,
+          },
+
+          // Status
+          vendido: false,
+          separado: false,
+
+          // Timestamps
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+
+      if (inventoryError) {
+        console.error('Error adding to inventario_cache:', inventoryError);
+        // Don't throw - approval should succeed even if inventory insert fails
+        // We can manually sync later if needed
+      }
+    } catch (err) {
+      console.error('Exception adding to inventario_cache:', err);
+      // Don't throw - approval succeeded
+    }
+
     return data;
   },
 
@@ -724,6 +832,17 @@ export const ConsignmentService = {
       throw new Error('No se pudieron obtener las estadisticas.');
     }
 
+    // Get count from inventario_cache where consigna=true
+    const { count: inventoryCount, error: inventoryError } = await supabase
+      .from('inventario_cache')
+      .select('id', { count: 'exact', head: true })
+      .eq('consigna', true)
+      .eq('vendido', false);
+
+    if (inventoryError) {
+      console.error('Error fetching inventory consignment count:', inventoryError);
+    }
+
     const listings = data || [];
     const uniqueUsers = new Set(listings.map(l => l.user_id));
     const activeListings = listings.filter(l => l.status === 'active' || l.status === 'approved');
@@ -740,6 +859,7 @@ export const ConsignmentService = {
       total_users_selling: uniqueUsers.size,
       avg_listing_price: avgPrice,
       total_revenue_potential: activeListings.reduce((sum, l) => sum + (l.price || 0), 0),
+      inventory_consignment_count: inventoryCount || 0,
     };
   },
 
