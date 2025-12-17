@@ -1,7 +1,7 @@
 'use client';
 
-import AdminSalesDashboard from '@/page-components/AdminSalesDashboard';
+import UnifiedAdminDashboard from '@/page-components/UnifiedAdminDashboard';
 
 export default function Page() {
-  return <AdminSalesDashboard />;
+  return <UnifiedAdminDashboard />;
 }

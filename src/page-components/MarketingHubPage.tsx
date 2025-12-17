@@ -248,27 +248,27 @@ const MarketingHubPage: React.FC = () => {
   ];
 
   return (
-    <div className="flex-1 w-full max-w-[1400px] mx-auto space-y-3 sm:space-y-4 p-3 sm:p-4 md:p-6 pt-4 sm:pt-6 overflow-x-hidden">
+    <div className="flex-1 w-full max-w-[1400px] mx-auto space-y-2 sm:space-y-3 p-2 sm:p-3 md:p-4 overflow-x-hidden">
       {/* Header */}
       <div>
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard General</h2>
-        <p className="text-xs sm:text-sm text-muted-foreground">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">Dashboard General</h2>
+        <p className="text-xs text-muted-foreground">
           Centro de herramientas de marketing, ventas y análisis
         </p>
       </div>
 
       {/* Summary Metrics Row */}
-      <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {/* 1. Total Leads */}
-        <Card className="bg-blue-50/50 border-blue-100">
-          <CardContent className="p-3 sm:p-4">
+        <Card className="bg-blue-50/70 border-blue-100/80">
+          <CardContent className="p-2.5 sm:p-3">
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Leads</p>
-                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1 truncate">{summaryMetrics.totalLeads.toLocaleString()}</p>
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Total Leads</p>
+                <p className="text-lg sm:text-xl font-bold mt-0.5 truncate">{summaryMetrics.totalLeads.toLocaleString()}</p>
               </div>
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+              <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600" />
               </div>
             </div>
           </CardContent>
@@ -276,10 +276,10 @@ const MarketingHubPage: React.FC = () => {
 
         {/* 2. Registros últimas 24 horas */}
         <Card className={`${
-          summaryMetrics.registros24h.direction === 'up' ? 'bg-cyan-50/50 border-cyan-100' :
+          summaryMetrics.registros24h.direction === 'up' ? 'bg-cyan-50/70 border-cyan-100/80' :
           summaryMetrics.registros24h.direction === 'down' ? 'bg-orange-50/50 border-orange-100' : 'bg-slate-50/50 border-slate-100'
         }`}>
-          <CardContent className="p-3 sm:p-4">
+          <CardContent className="p-2.5 sm:p-3">
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Registros 24h</p>
@@ -309,8 +309,8 @@ const MarketingHubPage: React.FC = () => {
         </Card>
 
         {/* 3. Solicitudes Enviadas */}
-        <Card className="bg-green-50/50 border-green-100">
-          <CardContent className="p-3 sm:p-4">
+        <Card className="bg-green-50/70 border-green-100/80">
+          <CardContent className="p-2.5 sm:p-3">
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Solicitudes Enviadas</p>
@@ -324,8 +324,8 @@ const MarketingHubPage: React.FC = () => {
         </Card>
 
         {/* 4. Total Tráfico */}
-        <Card className="bg-purple-50/50 border-purple-100">
-          <CardContent className="p-3 sm:p-4">
+        <Card className="bg-purple-50/70 border-purple-100/80">
+          <CardContent className="p-2.5 sm:p-3">
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Total Tráfico</p>
@@ -340,10 +340,10 @@ const MarketingHubPage: React.FC = () => {
 
         {/* 5. Tendencia 24h */}
         <Card className={`${
-          summaryMetrics.trend24h.direction === 'up' ? 'bg-green-50/50 border-green-100' :
+          summaryMetrics.trend24h.direction === 'up' ? 'bg-green-50/70 border-green-100/80' :
           summaryMetrics.trend24h.direction === 'down' ? 'bg-red-50/50 border-red-100' : 'bg-gray-50/50 border-gray-100'
         }`}>
-          <CardContent className="p-3 sm:p-4">
+          <CardContent className="p-2.5 sm:p-3">
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Tendencia 24h</p>
@@ -382,7 +382,7 @@ const MarketingHubPage: React.FC = () => {
       </div>
 
       {/* Main Tools Grid */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-2 sm:gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {mainTools.map((tool) => {
           const Icon = tool.icon;
           return (

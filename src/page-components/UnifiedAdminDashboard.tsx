@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { usePathname } from 'next/navigation';
 import {
   TrendingUp, Users, DollarSign, BarChart3, Package, Car,
   AlertTriangle, RefreshCw, ArrowUpRight, ArrowDownRight,
@@ -50,8 +48,6 @@ interface DashboardData {
 }
 
 export default function UnifiedAdminDashboard() {
-  const router = useRouter();
-  const pathname = usePathname();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -439,19 +435,19 @@ export default function UnifiedAdminDashboard() {
                 <CardTitle className="text-base">Acciones Rápidas</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Link href="/escritorio/admin/marketing-analytics">
+                <Link to="/escritorio/admin/marketing-analytics">
                   <Button variant="outline" className="w-full justify-between">
                     Marketing Analytics Detallado
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                 </Link>
-                <Link href="/escritorio/admin/crm">
+                <Link to="/escritorio/admin/crm">
                   <Button variant="outline" className="w-full justify-between">
                     CRM y Gestión de Leads
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                 </Link>
-                <Link href="/escritorio/admin/solicitudes">
+                <Link to="/escritorio/admin/solicitudes">
                   <Button variant="outline" className="w-full justify-between">
                     Analytics de Solicitudes
                     <ExternalLink className="h-4 w-4" />
@@ -633,14 +629,14 @@ export default function UnifiedAdminDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Inventario con Demanda</CardTitle>
-                <CardDescription>Autos con solicitudes</CardDescription>
+                <CardDescription>Vehículos con solicitudes</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold mb-2">
                   {business.inventoryVehiclesWithApplications.filter(v => v.ongoingApplications > 0).length}
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  De {business.inventoryVehiclesWithApplications.length} autos totales
+                  De {business.inventoryVehiclesWithApplications.length} vehículos totales
                 </p>
               </CardContent>
             </Card>
@@ -652,7 +648,7 @@ export default function UnifiedAdminDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5" />
-                  Solicitudes con Autos No Disponibles
+                  Solicitudes con Vehículos No Disponibles
                 </CardTitle>
                 <CardDescription>
                   {business.unavailableVehicleApplications.length} solicitudes requieren atención
@@ -706,11 +702,11 @@ export default function UnifiedAdminDashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Autos con Más Solicitudes</CardTitle>
-                  <CardDescription>Autos más solicitados</CardDescription>
+                  <CardTitle>Vehículos con Más Solicitudes</CardTitle>
+                  <CardDescription>Vehículos más solicitados</CardDescription>
                 </div>
                 <Badge variant="secondary">
-                  {business.inventoryVehiclesWithApplications.filter(v => v.ongoingApplications > 0).length} autos
+                  {business.inventoryVehiclesWithApplications.filter(v => v.ongoingApplications > 0).length} vehículos
                 </Badge>
               </div>
             </CardHeader>

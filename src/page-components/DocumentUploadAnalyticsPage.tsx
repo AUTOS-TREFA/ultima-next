@@ -138,7 +138,7 @@ const DocumentUploadAnalyticsPage: React.FC = () => {
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-gray-900 mb-2">Error al Cargar Métricas</h2>
             <p className="text-gray-600 mb-4">{error}</p>
-            <Button onClick={() => loadMetrics()}>
+            <Button onClick={loadMetrics}>
               <RefreshCw className="w-4 h-4 mr-2" />
               Reintentar
             </Button>
@@ -160,7 +160,7 @@ const DocumentUploadAnalyticsPage: React.FC = () => {
                 Monitoreo y análisis del progreso de carga de documentos por solicitud
               </p>
             </div>
-            <Button onClick={() => loadMetrics()} variant="outline">
+            <Button onClick={loadMetrics} variant="outline">
               <RefreshCw className="w-4 h-4 mr-2" />
               Actualizar
             </Button>
@@ -418,7 +418,7 @@ const DocumentUploadAnalyticsPage: React.FC = () => {
                       </td>
                       <td className="px-4 py-4">
                         <div className="text-sm text-gray-900">
-                          {app.car_info?._vehicleTitle || 'Sin auto'}
+                          {app.car_info?._vehicleTitle || 'Sin vehículo'}
                         </div>
                         {app.car_info?._precioFormateado && (
                           <div className="text-sm text-gray-500">{app.car_info._precioFormateado}</div>
@@ -484,7 +484,7 @@ const DocumentUploadAnalyticsPage: React.FC = () => {
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <Link
-                            href="/escritorio/admin/solicitudes"
+                            to={`/escritorio/admin/solicitudes`}
                             className="text-blue-600 hover:text-blue-800"
                           >
                             <ExternalLink className="w-4 h-4" />

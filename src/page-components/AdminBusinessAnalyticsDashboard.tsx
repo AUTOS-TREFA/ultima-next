@@ -229,20 +229,20 @@ export default function AdminBusinessAnalyticsDashboard() {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+            <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4">
                 {/* Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <MetricCard
                         title="Solicitudes Activas"
                         value={filteredMetrics.totalActiveApplications}
-                        icon={<Package className="w-6 h-6" />}
+                        icon={<Package className="w-5 h-5" />}
                         color="orange"
                         subtitle="En proceso"
                     />
                     <MetricCard
                         title="Vehículos con Solicitudes"
                         value={filteredMetrics.inventoryVehiclesWithApplications.filter(v => v.ongoingApplications > 0).length}
-                        icon={<Car className="w-6 h-6" />}
+                        icon={<Car className="w-5 h-5" />}
                         color="blue"
                         subtitle="Inventario con demanda"
                     />
@@ -250,30 +250,30 @@ export default function AdminBusinessAnalyticsDashboard() {
 
                 {/* Unavailable Vehicle Applications - URGENT */}
                 {filteredMetrics.unavailableVehicleApplications.length > 0 && (
-                    <div className="bg-red-50 border-2 border-red-300 rounded-xl p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                            <AlertTriangle className="w-6 h-6 text-red-600" />
-                            <div>
-                                <h3 className="text-lg font-bold text-red-900">
+                    <div className="bg-red-50/70 border border-red-200 rounded-lg p-3 sm:p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                            <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                            <div className="min-w-0 flex-1">
+                                <h3 className="text-sm sm:text-base font-bold text-red-900">
                                     Solicitudes con Autos No Disponibles
                                 </h3>
-                                <p className="text-sm text-red-700">
+                                <p className="text-xs sm:text-sm text-red-700">
                                     {filteredMetrics.unavailableVehicleApplications.length} aplicaciones requieren acción inmediata
                                 </p>
                             </div>
                         </div>
-                        <div className="space-y-3 max-h-96 overflow-y-auto">
+                        <div className="space-y-2 max-h-96 overflow-y-auto">
                             {filteredMetrics.unavailableVehicleApplications.map(app => (
                                 <div
                                     key={app.applicationId}
-                                    className="bg-white rounded-lg p-4 flex items-center justify-between border border-red-200"
+                                    className="bg-white rounded-lg p-3 flex items-center justify-between border border-red-100 hover:border-red-200 transition-colors"
                                 >
-                                    <div className="flex-1">
-                                        <p className="font-semibold text-gray-900">{app.vehicleTitle}</p>
-                                        <p className="text-sm text-gray-600">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-semibold text-sm text-gray-900 truncate">{app.vehicleTitle}</p>
+                                        <p className="text-xs text-gray-600 truncate">
                                             Cliente: {app.applicantName} • {app.applicantEmail}
                                         </p>
-                                        <p className="text-xs text-gray-500 mt-1">
+                                        <p className="text-xs text-gray-500 mt-0.5">
                                             Solicitud: {new Date(app.createdAt).toLocaleDateString('es-MX')} •
                                             Estado: {app.status}
                                         </p>
@@ -281,14 +281,14 @@ export default function AdminBusinessAnalyticsDashboard() {
                                     <button
                                         onClick={() => handleSendAvailabilityEmail(app)}
                                         disabled={sendingEmail === app.applicationId}
-                                        className="ml-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2 text-sm font-medium"
+                                        className="ml-3 px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-1.5 text-xs font-medium flex-shrink-0"
                                     >
                                         {sendingEmail === app.applicationId ? (
-                                            <RefreshCw className="w-4 h-4 animate-spin" />
+                                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                                         ) : (
-                                            <Mail className="w-4 h-4" />
+                                            <Mail className="w-3.5 h-3.5" />
                                         )}
-                                        Notificar Cliente
+                                        Notificar
                                     </button>
                                 </div>
                             ))}
@@ -297,11 +297,11 @@ export default function AdminBusinessAnalyticsDashboard() {
                 )}
 
                 {/* Vehicle Insights - Most Active Vehicles */}
-                <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                <div className="bg-white/95 rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100">
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                <Car className="w-6 h-6 text-orange-600" />
+                            <h3 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
+                                <Car className="w-5 h-5 text-orange-600" />
                                 Vehículos con Mayor Demanda
                             </h3>
                             <p className="text-sm text-gray-600 mt-1">
@@ -399,11 +399,11 @@ export default function AdminBusinessAnalyticsDashboard() {
                 </div>
 
                 {/* Inventory Vehicles with Applications */}
-                <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                <div className="bg-white/95 rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100">
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                <Package className="w-6 h-6 text-orange-600" />
+                            <h3 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
+                                <Package className="w-5 h-5 text-orange-600" />
                                 Inventario con Solicitudes Activas
                             </h3>
                             <p className="text-sm text-gray-600 mt-1">
@@ -471,9 +471,9 @@ export default function AdminBusinessAnalyticsDashboard() {
 
                 {/* Price Range Insights */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                        <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-6">
-                            <DollarSign className="w-6 h-6 text-orange-600" />
+                    <div className="bg-white/95 rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100">
+                        <h3 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2 mb-3">
+                            <DollarSign className="w-5 h-5 text-orange-600" />
                             Distribución por Rango de Precio
                         </h3>
                         <ResponsiveContainer width="100%" height={300}>
@@ -497,9 +497,9 @@ export default function AdminBusinessAnalyticsDashboard() {
                         </ResponsiveContainer>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                        <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-6">
-                            <BarChart3 className="w-6 h-6 text-orange-600" />
+                    <div className="bg-white/95 rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100">
+                        <h3 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2 mb-3">
+                            <BarChart3 className="w-5 h-5 text-orange-600" />
                             Promedio de Solicitudes por Rango
                         </h3>
                         <ResponsiveContainer width="100%" height={300}>
@@ -516,9 +516,9 @@ export default function AdminBusinessAnalyticsDashboard() {
                 </div>
 
                 {/* Lead Persona Insights */}
-                <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                    <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-6">
-                        <Users className="w-6 h-6 text-orange-600" />
+                <div className="bg-white/95 rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100">
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2 mb-3">
+                        <Users className="w-5 h-5 text-orange-600" />
                         Perfil de Leads y Tasas de Aprobación
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -554,9 +554,9 @@ export default function AdminBusinessAnalyticsDashboard() {
                 </div>
 
                 {/* Conversion Rate by Price Chart */}
-                <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                    <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-6">
-                        <TrendingUp className="w-6 h-6 text-orange-600" />
+                <div className="bg-white/95 rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100">
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2 mb-3">
+                        <TrendingUp className="w-5 h-5 text-orange-600" />
                         Tasa de Conversión por Rango de Precio
                     </h3>
                     <ResponsiveContainer width="100%" height={300}>
@@ -592,24 +592,24 @@ interface MetricCardProps {
 
 function MetricCard({ title, value, icon, color, subtitle }: MetricCardProps) {
     const colorClasses = {
-        orange: 'bg-orange-50 border-orange-200 text-orange-600',
-        blue: 'bg-blue-50 border-blue-200 text-blue-600',
-        green: 'bg-green-50 border-green-200 text-green-600',
-        red: 'bg-red-50 border-red-200 text-red-600'
+        orange: 'bg-orange-50/70 border-orange-100 text-orange-600',
+        blue: 'bg-blue-50/70 border-blue-100 text-blue-600',
+        green: 'bg-green-50/70 border-green-100 text-green-600',
+        red: 'bg-red-50/70 border-red-100 text-red-600'
     };
 
     return (
-        <div className={`${colorClasses[color].split(' ')[0]} rounded-xl shadow-sm p-6 border-2 ${colorClasses[color].split(' ')[1]}`}>
-            <div className="flex items-start justify-between mb-4">
-                <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
-                <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
+        <div className={`${colorClasses[color].split(' ')[0]} rounded-lg shadow-sm p-3 sm:p-4 border ${colorClasses[color].split(' ')[1]}`}>
+            <div className="flex items-start justify-between mb-2">
+                <h3 className="text-xs sm:text-sm font-semibold text-gray-700">{title}</h3>
+                <div className={`p-1.5 rounded-md ${colorClasses[color]}`}>
                     {icon}
                 </div>
             </div>
-            <p className={`text-3xl font-black ${colorClasses[color].split(' ')[2]}`}>
+            <p className={`text-2xl sm:text-3xl font-bold ${colorClasses[color].split(' ')[2]}`}>
                 {value}
             </p>
-            {subtitle && <p className="text-sm text-gray-600 mt-2">{subtitle}</p>}
+            {subtitle && <p className="text-xs sm:text-sm text-gray-600 mt-1">{subtitle}</p>}
         </div>
     );
 }
