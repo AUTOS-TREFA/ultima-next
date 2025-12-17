@@ -31,8 +31,10 @@ import {
   Sparkles,
   ChevronRight,
   Eye,
+  X,
 } from 'lucide-react';
 import { formatPrice } from '@/utils/formatters';
+import ValuationApp from '@/Valuation/App';
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ElementType; progress: number; description: string }> = {
   draft: {
@@ -85,6 +87,7 @@ const SellerDashboardPage: React.FC = () => {
 
   const [listings, setListings] = useState<UserVehicleForSale[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showValuationApp, setShowValuationApp] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -135,7 +138,7 @@ const SellerDashboardPage: React.FC = () => {
       sessionStorage.removeItem('sellCarValuation');
       localStorage.removeItem('pendingValuationData');
     }
-    router.push('/vender-mi-auto');
+    setShowValuationApp(true);
   };
 
   const activeListings = listings.filter(l => !['completed', 'rejected'].includes(l.status));
@@ -147,6 +150,44 @@ const SellerDashboardPage: React.FC = () => {
       <UnifiedDashboardLayout>
         <div className="flex items-center justify-center min-h-[50vh]">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      </UnifiedDashboardLayout>
+    );
+  }
+
+  // If the valuation app is open, show it full-screen
+  if (showValuationApp) {
+    return (
+      <UnifiedDashboardLayout>
+        <div className="space-y-4">
+          {/* Header with close button */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                <DollarSign className="w-6 h-6 text-primary" />
+                Nueva Valuacion
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Obtén una valuacion instantanea de tu vehiculo
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setShowValuationApp(false);
+                loadListings(); // Reload listings in case a new one was created
+              }}
+            >
+              <X className="w-4 h-4 mr-2" />
+              Cerrar
+            </Button>
+          </div>
+
+          {/* Valuation App */}
+          <div className="w-full">
+            <ValuationApp />
+          </div>
         </div>
       </UnifiedDashboardLayout>
     );
@@ -380,14 +421,21 @@ const SellerDashboardPage: React.FC = () => {
                         {/* Offer and Actions */}
                         <div className="flex flex-col items-end gap-3 shrink-0">
                           {offer && (
-                            <div className="text-right">
-                              <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                                {listing.final_offer ? 'Oferta final' : 'Oferta estimada'}
-                              </p>
-                              <p className={`text-2xl font-bold ${listing.final_offer ? 'text-green-600' : 'text-foreground'}`}>
-                                {formatPrice(offer)}
-                              </p>
-                            </div>
+                            <Card className={`${listing.final_offer ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'}`}>
+                              <CardContent className="pt-3 pb-3 px-4">
+                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                                  {listing.final_offer ? '💰 Oferta final' : '📊 Valuacion estimada'}
+                                </p>
+                                <p className={`text-3xl font-bold ${listing.final_offer ? 'text-green-700' : 'text-blue-700'}`}>
+                                  {formatPrice(offer)}
+                                </p>
+                                {!listing.final_offer && (
+                                  <p className="text-[10px] text-muted-foreground mt-1">
+                                    Sujeto a inspeccion
+                                  </p>
+                                )}
+                              </CardContent>
+                            </Card>
                           )}
 
                           {/* Action buttons based on status */}
