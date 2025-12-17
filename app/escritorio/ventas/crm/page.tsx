@@ -1,7 +1,7 @@
 'use client';
 
-import SimpleCRMPage from '@/page-components/SimpleCRMPage';
+import UnifiedCRMPage from '@/page-components/UnifiedCRMPage';
 
 export default function Page() {
-  return <SimpleCRMPage />;
+  return <UnifiedCRMPage userRole="sales" />;
 }

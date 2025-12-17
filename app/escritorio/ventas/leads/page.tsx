@@ -1,7 +1,7 @@
 'use client';
 
-import SalesLeadsDashboardPage from '@/page-components/SalesLeadsDashboardPage';
+import UnifiedCRMPage from '@/page-components/UnifiedCRMPage';
 
 export default function Page() {
-  return <SalesLeadsDashboardPage />;
+  return <UnifiedCRMPage userRole="sales" />;
 }

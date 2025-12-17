@@ -1,7 +1,7 @@
 'use client';
 
-import AdminLeadsDashboardPage from '@/page-components/AdminLeadsDashboardPage';
+import UnifiedCRMPage from '@/page-components/UnifiedCRMPage';
 
 export default function Page() {
-  return <AdminLeadsDashboardPage />;
+  return <UnifiedCRMPage userRole="admin" />;
 }
