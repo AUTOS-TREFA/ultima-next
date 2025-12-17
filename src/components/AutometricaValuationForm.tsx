@@ -639,7 +639,6 @@ export function AutometricaValuationForm({
       setVerificationError(null);
       // Show success message
       alert('Te enviamos un enlace de acceso a tu correo. Revisa tu bandeja de entrada.');
-      setShowVerificationModal(false);
     } catch (err: any) {
       console.error('Login error:', err);
       setVerificationError(err.message || 'Error al iniciar sesión');
