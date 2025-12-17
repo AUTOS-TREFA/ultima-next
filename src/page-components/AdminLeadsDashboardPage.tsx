@@ -235,7 +235,7 @@ const AdminLeadsDashboardPage: React.FC = () => {
     if (isError) return <div className="p-4 bg-red-100 text-red-800 rounded-md"><AlertTriangle className="inline w-5 h-5 mr-2"/>{error?.message}</div>;
 
     return (
-        <div className="w-full max-w-[1400px] mx-auto space-y-4 sm:space-y-6 overflow-x-hidden px-3 sm:px-0">
+        <div className="flex-1 w-full max-w-[1400px] mx-auto space-y-3 sm:space-y-4 p-3 sm:p-4 md:p-6 pt-4 sm:pt-6 overflow-x-hidden">
             {/* Action Bar */}
             {leadsNeedingAction > 0 && (
                 <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-lg sm:rounded-xl p-3 sm:p-4 shadow-sm">

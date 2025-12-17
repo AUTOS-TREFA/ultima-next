@@ -403,7 +403,7 @@ const UnifiedCRMPage: React.FC<UnifiedCRMPageProps> = ({ userRole }) => {
     const profileBasePath = isAdmin ? '/escritorio/admin/cliente' : '/escritorio/ventas/cliente';
 
     return (
-        <div className="flex-1 space-y-4 p-4 md:p-6 pt-6">
+        <div className="flex-1 w-full max-w-[1400px] mx-auto space-y-3 sm:space-y-4 p-3 sm:p-4 md:p-6 pt-4 sm:pt-6 overflow-x-hidden">
             {/* Priority Action Bar */}
             {leadsNeedingAction > 0 && (
                 <Card className="border-amber-200 bg-amber-50/50">

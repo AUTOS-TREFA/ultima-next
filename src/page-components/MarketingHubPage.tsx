@@ -386,7 +386,7 @@ const MarketingHubPage: React.FC = () => {
         {mainTools.map((tool) => {
           const Icon = tool.icon;
           return (
-            <Link key={tool.title} to={tool.link}>
+            <Link key={tool.title} href={tool.link}>
               <Card className="cursor-pointer hover:bg-accent transition-colors">
                 <CardHeader className="flex flex-row items-center space-y-0 pb-2 p-3 sm:p-6">
                   <div className="p-1.5 sm:p-2 rounded-lg bg-muted mr-2 sm:mr-4 flex-shrink-0">
