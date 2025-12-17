@@ -76,7 +76,7 @@ type VehicleProductOverviewProps = {
   inspectionLoading?: boolean
 }
 
-// Lightbox Component
+// Lightbox Component - Enhanced with better controls and visibility
 const Lightbox = ({
   media,
   currentIndex,
@@ -94,6 +94,7 @@ const Lightbox = ({
 }) => {
   const [showZoom, setShowZoom] = useState(false)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [showControls, setShowControls] = useState(true)
   const ZOOM_LEVEL = 3
 
   useEffect(() => {
@@ -106,8 +107,23 @@ const Lightbox = ({
     window.addEventListener('keydown', handleKeyDown)
     document.body.style.overflow = 'hidden'
 
+    // Auto-hide controls after 3 seconds of inactivity
+    let hideTimeout: NodeJS.Timeout
+    const resetHideTimeout = () => {
+      setShowControls(true)
+      clearTimeout(hideTimeout)
+      hideTimeout = setTimeout(() => setShowControls(false), 3000)
+    }
+
+    window.addEventListener('mousemove', resetHideTimeout)
+    window.addEventListener('touchstart', resetHideTimeout)
+    resetHideTimeout()
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('mousemove', resetHideTimeout)
+      window.removeEventListener('touchstart', resetHideTimeout)
+      clearTimeout(hideTimeout)
       document.body.style.overflow = 'unset'
     }
   }, [onClose, onPrev, onNext])
@@ -123,42 +139,74 @@ const Lightbox = ({
   if (!currentItem) return null
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/95 backdrop-blur-sm">
-      {/* Close button */}
-      <button
-        onClick={onClose}
-        className="fixed top-4 right-4 z-[1001] flex items-center gap-2 px-4 py-2.5 bg-white text-black font-bold rounded-full shadow-xl hover:bg-gray-100 transition-all"
-        aria-label="Cerrar"
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/98">
+      {/* Top bar with close button - Always visible, with safe area for mobile notch */}
+      <div
+        className={cn(
+          "fixed top-0 left-0 right-0 z-[10001] flex items-center justify-between px-4 py-4 sm:px-6 sm:py-5 bg-gradient-to-b from-black/80 via-black/40 to-transparent transition-opacity duration-300",
+          showControls ? 'opacity-100' : 'opacity-0 pointer-events-none sm:opacity-100 sm:pointer-events-auto'
+        )}
+        style={{ paddingTop: 'max(1.25rem, env(safe-area-inset-top))' }}
       >
-        <XIcon className="w-5 h-5" />
-        <span>Cerrar</span>
-      </button>
+        {/* Left side - Counter and zoom hint */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-2 bg-white/10 text-white text-sm rounded-full backdrop-blur-sm">
+            <span className="font-bold">{currentIndex + 1}</span>
+            <span className="text-white/60">/</span>
+            <span>{media.length}</span>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-white/10 text-white text-xs rounded-full backdrop-blur-sm">
+            <ZoomInIcon className="w-3.5 h-3.5" />
+            <span>Pasa el mouse para zoom</span>
+          </div>
+        </div>
 
-      {/* Zoom indicator */}
-      <div className="fixed top-4 left-4 z-[1001] flex items-center gap-2 px-4 py-2.5 bg-white/10 text-white text-sm rounded-full backdrop-blur-sm">
-        <ZoomInIcon className="w-4 h-4" />
-        <span>Pasa el mouse para hacer zoom</span>
+        {/* Right side - Close button */}
+        <button
+          onClick={onClose}
+          className="flex items-center gap-2 px-4 py-2.5 bg-white text-black font-bold rounded-full shadow-2xl hover:bg-gray-100 hover:scale-105 transition-all active:scale-95"
+          aria-label="Cerrar galería"
+        >
+          <XIcon className="w-5 h-5" />
+          <span className="hidden sm:inline">Cerrar</span>
+          <span className="sm:hidden text-xs">ESC</span>
+        </button>
       </div>
 
-      {/* Prev button */}
+      {/* Navigation arrows - Enhanced visibility */}
       {media.length > 1 && (
-        <button
-          onClick={(e) => { e.stopPropagation(); onPrev() }}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-white z-10 p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-sm"
-          aria-label="Anterior"
-        >
-          <ChevronLeftIcon className="w-8 h-8" />
-        </button>
+        <>
+          <button
+            onClick={(e) => { e.stopPropagation(); onPrev() }}
+            className={cn(
+              "absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-[10000] p-3 sm:p-4 bg-white/20 hover:bg-white/40 text-white rounded-full transition-all backdrop-blur-sm hover:scale-110 active:scale-95 group",
+              showControls ? 'opacity-100' : 'opacity-0 sm:opacity-100'
+            )}
+            aria-label="Imagen anterior"
+          >
+            <ChevronLeftIcon className="w-6 h-6 sm:w-8 sm:h-8 group-hover:-translate-x-0.5 transition-transform" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onNext() }}
+            className={cn(
+              "absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-[10000] p-3 sm:p-4 bg-white/20 hover:bg-white/40 text-white rounded-full transition-all backdrop-blur-sm hover:scale-110 active:scale-95 group",
+              showControls ? 'opacity-100' : 'opacity-0 sm:opacity-100'
+            )}
+            aria-label="Siguiente imagen"
+          >
+            <ChevronRightIcon className="w-6 h-6 sm:w-8 sm:h-8 group-hover:translate-x-0.5 transition-transform" />
+          </button>
+        </>
       )}
 
-      {/* Content */}
+      {/* Main image content */}
       <div
-        className="max-w-screen-xl max-h-[85vh] w-full flex items-center justify-center px-16"
+        className="w-full h-full flex items-center justify-center px-4 sm:px-20 py-24 sm:py-28"
         onClick={onClose}
       >
         {currentItem.type === 'image' && (
           <div
-            className="relative cursor-crosshair"
+            className="relative cursor-crosshair max-w-full max-h-full"
             onMouseEnter={() => setShowZoom(true)}
             onMouseLeave={() => setShowZoom(false)}
             onMouseMove={handleMouseMove}
@@ -167,11 +215,12 @@ const Lightbox = ({
             <img
               src={currentItem.url}
               alt={`Imagen ${currentIndex + 1} de ${media.length}`}
-              className="object-contain w-auto h-auto max-w-full max-h-[85vh] rounded-lg"
+              className="object-contain w-auto h-auto max-w-full max-h-[70vh] sm:max-h-[75vh] rounded-lg shadow-2xl"
+              draggable={false}
             />
             {showZoom && (
               <div
-                className="absolute pointer-events-none w-64 h-64 rounded-full border-4 border-white/80 bg-no-repeat shadow-2xl"
+                className="absolute pointer-events-none w-48 h-48 sm:w-64 sm:h-64 rounded-full border-4 border-white/80 bg-no-repeat shadow-2xl hidden sm:block"
                 style={{
                   left: `${mousePosition.x}%`,
                   top: `${mousePosition.y}%`,
@@ -186,38 +235,55 @@ const Lightbox = ({
         )}
       </div>
 
-      {/* Next button */}
-      {media.length > 1 && (
-        <button
-          onClick={(e) => { e.stopPropagation(); onNext() }}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-white z-10 p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-sm"
-          aria-label="Siguiente"
-        >
-          <ChevronRightIcon className="w-8 h-8" />
-        </button>
-      )}
+      {/* Bottom thumbnails - Enhanced with better visibility */}
+      <div
+        className={cn(
+          "absolute bottom-0 left-0 right-0 z-[10001] bg-gradient-to-t from-black/80 via-black/40 to-transparent pb-4 sm:pb-6 pt-8 transition-opacity duration-300",
+          showControls ? 'opacity-100' : 'opacity-0 sm:opacity-100'
+        )}
+        style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+      >
+        <div className="flex justify-center px-4">
+          <div className="flex gap-1.5 sm:gap-2 p-2 bg-black/60 rounded-xl backdrop-blur-sm overflow-x-auto max-w-full scrollbar-hide">
+            {media.map((item, idx) => (
+              <button
+                key={idx}
+                onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx) }}
+                className={cn(
+                  'shrink-0 w-12 h-9 sm:w-16 sm:h-12 rounded-md overflow-hidden border-2 transition-all',
+                  currentIndex === idx
+                    ? 'border-white ring-2 ring-white/50 scale-110'
+                    : 'border-transparent opacity-50 hover:opacity-100 hover:border-white/50'
+                )}
+              >
+                <img src={item.url} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        </div>
 
-      {/* Counter and thumbnails at bottom */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 z-10">
-        {/* Thumbnail strip */}
-        <div className="flex gap-2 bg-black/60 p-2 rounded-xl backdrop-blur-sm">
-          {media.slice(0, 10).map((item, idx) => (
-            <button
-              key={idx}
-              onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx) }}
-              className={cn(
-                'w-16 h-12 rounded-md overflow-hidden border-2 transition-all',
-                currentIndex === idx ? 'border-white scale-110' : 'border-transparent opacity-60 hover:opacity-100'
-              )}
-            >
-              <img src={item.url} alt="" className="w-full h-full object-cover" />
-            </button>
-          ))}
+        {/* Keyboard hints - Desktop only */}
+        <div className="hidden sm:flex justify-center mt-3 gap-4 text-white/50 text-xs">
+          <span className="flex items-center gap-1.5">
+            <kbd className="px-2 py-1 bg-white/10 rounded">←</kbd>
+            <kbd className="px-2 py-1 bg-white/10 rounded">→</kbd>
+            <span>Navegar</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <kbd className="px-2 py-1 bg-white/10 rounded">ESC</kbd>
+            <span>Cerrar</span>
+          </span>
         </div>
-        {/* Counter */}
-        <div className="bg-white/10 text-white text-sm px-4 py-2 rounded-full font-medium backdrop-blur-sm">
-          {currentIndex + 1} / {media.length}
-        </div>
+      </div>
+
+      {/* Mobile swipe hint */}
+      <div className={cn(
+        "sm:hidden absolute bottom-28 left-1/2 -translate-x-1/2 text-white/60 text-xs flex items-center gap-2 transition-opacity",
+        showControls ? 'opacity-100' : 'opacity-0'
+      )}>
+        <ChevronLeftIcon className="w-4 h-4" />
+        <span>Desliza para navegar</span>
+        <ChevronRightIcon className="w-4 h-4" />
       </div>
     </div>
   )
@@ -1085,6 +1151,60 @@ const VehicleProductOverview = ({
           setCurrentIndex={setCurrentImageIndex}
         />
       )}
+
+      {/* Mobile Sticky CTA Footer - Kavak/CarMax style */}
+      <div
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]"
+        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+      >
+        <div className="px-4 py-3">
+          {/* Price summary */}
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-xs text-muted-foreground">Precio</p>
+              <p className="text-xl font-black text-foreground">
+                {formatPrice(hasPromotion && vehicle.precio_reduccion ? vehicle.precio_reduccion : vehicle.precio)}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">Desde</p>
+              <p className="text-base font-bold text-orange-600">
+                {formatPrice(financeData.monthlyPayment)}<span className="text-xs font-normal">/mes</span>
+              </p>
+            </div>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex gap-3">
+            <Button
+              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 text-sm shadow-lg shadow-orange-200"
+              onClick={onFinancingClick}
+            >
+              <CreditCardIcon className="w-4 h-4 mr-2" />
+              Financiar Ahora
+            </Button>
+            <Button
+              variant="outline"
+              className="bg-green-500 hover:bg-green-600 text-white border-green-500 hover:border-green-600 font-bold h-12 px-4"
+              onClick={onWhatsAppClick}
+              aria-label="Contactar por WhatsApp"
+            >
+              <MessageCircleIcon className="w-5 h-5" />
+            </Button>
+            <Button
+              variant="outline"
+              className="border-2 border-gray-200 hover:border-gray-300 font-bold h-12 px-4"
+              onClick={onFavoriteClick}
+              aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+            >
+              <HeartIcon className={cn('w-5 h-5', isFavorite && 'fill-red-500 text-red-500')} />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Spacer for mobile sticky footer */}
+      <div className="lg:hidden h-32" />
     </>
   )
 }

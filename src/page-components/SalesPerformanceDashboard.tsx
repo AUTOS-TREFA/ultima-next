@@ -84,54 +84,100 @@ interface ApplicationDetail {
 }
 
 const SalesPerformanceDashboard: React.FC = () => {
-    const { user, profile } = useAuth();
+    const { user, profile, isSales, isAdmin, loading } = useAuth();
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-    // Fetch comprehensive performance metrics
+    // Early return if not authorized - prevents race conditions
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+            </div>
+        );
+    }
+
+    if (!isSales && !isAdmin) {
+        return (
+            <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-center">
+                    <AlertTriangle className="w-6 h-6 text-yellow-600 mr-3" />
+                    <div>
+                        <h3 className="text-lg font-semibold text-yellow-900">Acceso Denegado</h3>
+                        <p className="text-yellow-700">No tienes permisos para ver este dashboard. Rol actual: {profile?.role || 'unknown'}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!user?.id) {
+        return (
+            <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center">
+                    <AlertCircle className="w-6 h-6 text-red-600 mr-3" />
+                    <div>
+                        <h3 className="text-lg font-semibold text-red-900">Error de Sesión</h3>
+                        <p className="text-red-700">No se pudo obtener tu información de usuario. Por favor, recarga la página.</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Fetch comprehensive performance metrics - ONLY if authorized
     const { data: performanceMetrics, isLoading: loadingMetrics, isError: isErrorMetrics, error: errorMetrics } = useQuery<SalesPerformanceMetrics, Error>({
-        queryKey: ['salesPerformanceMetrics', user?.id],
+        queryKey: ['salesPerformanceMetrics', user.id],
         queryFn: async () => {
             const { data, error } = await supabase.rpc('get_sales_performance_metrics', {
-                sales_user_id: user?.id
+                p_sales_user_id: user.id
             });
-            if (error) throw error;
+            if (error) {
+                console.error('Error fetching performance metrics:', error);
+                throw error;
+            }
             return data?.[0] || {};
         },
-        enabled: !!user?.id,
+        enabled: !loading && (isSales || isAdmin) && !!user?.id,
     });
 
-    // Fetch applications by status for the sales user
+    // Fetch applications by status for the sales user - ONLY if authorized
     const { data: applicationsByStatus, isLoading: loadingAppsByStatus } = useQuery<any[], Error>({
-        queryKey: ['salesApplicationsByStatus', user?.id],
+        queryKey: ['salesApplicationsByStatus', user.id],
         queryFn: async () => {
             const { data, error } = await supabase.rpc('get_sales_applications_by_status', {
-                sales_user_id: user?.id
+                p_sales_user_id: user.id
             });
-            if (error) throw error;
+            if (error) {
+                console.error('Error fetching applications by status:', error);
+                throw error;
+            }
             return data || [];
         },
-        enabled: !!user?.id,
+        enabled: !loading && (isSales || isAdmin) && !!user?.id,
     });
 
-    // Fetch detailed applications list
+    // Fetch detailed applications list - ONLY if authorized
     const { data: detailedApplications, isLoading: loadingDetails } = useQuery<ApplicationDetail[], Error>({
-        queryKey: ['salesDetailedApplications', user?.id, statusFilter],
+        queryKey: ['salesDetailedApplications', user.id, statusFilter],
         queryFn: async () => {
             const { data, error } = await supabase.rpc('get_sales_detailed_applications', {
-                sales_user_id: user?.id,
-                status_filter: statusFilter
+                p_sales_user_id: user.id,
+                p_status_filter: statusFilter
             });
-            if (error) throw error;
+            if (error) {
+                console.error('Error fetching detailed applications:', error);
+                throw error;
+            }
             return data || [];
         },
-        enabled: !!user?.id,
+        enabled: !loading && (isSales || isAdmin) && !!user?.id,
     });
 
-    // Fetch my assigned leads
+    // Fetch my assigned leads - ONLY if authorized
     const { data: myLeads = [], isLoading: loadingLeads } = useQuery<any[], Error>({
-        queryKey: ['salesAssignedLeads', user?.id],
-        queryFn: () => SalesService.getMyAssignedLeads(user?.id || ''),
-        enabled: !!user?.id,
+        queryKey: ['salesAssignedLeads', user.id],
+        queryFn: () => SalesService.getMyAssignedLeads(user.id),
+        enabled: !loading && (isSales || isAdmin) && !!user?.id,
     });
 
     const getStatusBadge = (status: string) => {
@@ -217,7 +263,7 @@ const SalesPerformanceDashboard: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <StatsCard
                                 title="Total de Leads"
-                                value={metrics.total_leads || 0}
+                                value={String(metrics.total_leads || 0)}
                                 change=""
                                 changeType="neutral"
                                 icon={Users}
@@ -225,15 +271,15 @@ const SalesPerformanceDashboard: React.FC = () => {
                             />
                             <StatsCard
                                 title="Leads Contactados"
-                                value={metrics.leads_contacted || 0}
+                                value={String(metrics.leads_contacted || 0)}
                                 change={`${metrics.contact_rate?.toFixed(1) || 0}%`}
-                                changeType={metrics.contact_rate >= 80 ? "positive" : "negative"}
+                                changeType={metrics.contact_rate >= 80 ? "increase" : "decrease"}
                                 icon={CheckCircle2}
                                 color="green"
                             />
                             <StatsCard
                                 title="Sin Contactar"
-                                value={metrics.leads_not_contacted || 0}
+                                value={String(metrics.leads_not_contacted || 0)}
                                 change=""
                                 changeType="neutral"
                                 icon={AlertCircle}
@@ -248,7 +294,7 @@ const SalesPerformanceDashboard: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <StatsCard
                                 title="Total Solicitudes"
-                                value={metrics.total_applications || 0}
+                                value={String(metrics.total_applications || 0)}
                                 change=""
                                 changeType="neutral"
                                 icon={FileText}
@@ -256,7 +302,7 @@ const SalesPerformanceDashboard: React.FC = () => {
                             />
                             <StatsCard
                                 title="Solicitudes Enviadas"
-                                value={metrics.submitted_applications || 0}
+                                value={String(metrics.submitted_applications || 0)}
                                 change=""
                                 changeType="neutral"
                                 icon={CheckSquare}
@@ -264,9 +310,9 @@ const SalesPerformanceDashboard: React.FC = () => {
                             />
                             <StatsCard
                                 title="Aprobadas"
-                                value={metrics.approved_applications || 0}
+                                value={String(metrics.approved_applications || 0)}
                                 change={`${metrics.approval_rate?.toFixed(1) || 0}%`}
-                                changeType={metrics.approval_rate >= 60 ? "positive" : "negative"}
+                                changeType={metrics.approval_rate >= 60 ? "increase" : "decrease"}
                                 icon={Award}
                                 color="green"
                             />
@@ -274,15 +320,15 @@ const SalesPerformanceDashboard: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                             <StatsCard
                                 title="Completas"
-                                value={metrics.complete_applications || 0}
+                                value={String(metrics.complete_applications || 0)}
                                 change={`${metrics.completion_rate?.toFixed(1) || 0}%`}
-                                changeType={metrics.completion_rate >= 70 ? "positive" : "negative"}
+                                changeType={metrics.completion_rate >= 70 ? "increase" : "decrease"}
                                 icon={CheckCircle2}
                                 color="green"
                             />
                             <StatsCard
                                 title="Incompletas"
-                                value={metrics.incomplete_applications || 0}
+                                value={String(metrics.incomplete_applications || 0)}
                                 change=""
                                 changeType="neutral"
                                 icon={Clock}
@@ -290,7 +336,7 @@ const SalesPerformanceDashboard: React.FC = () => {
                             />
                             <StatsCard
                                 title="Rechazadas"
-                                value={metrics.rejected_applications || 0}
+                                value={String(metrics.rejected_applications || 0)}
                                 change=""
                                 changeType="neutral"
                                 icon={XCircle}
@@ -386,7 +432,7 @@ const SalesPerformanceDashboard: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {detailedApplications?.length > 0 ? (
+                                    {detailedApplications && detailedApplications.length > 0 ? (
                                         detailedApplications.slice(0, 10).map((app) => (
                                             <tr key={app.application_id} className="hover:bg-gray-50">
                                                 <td className="px-6 py-4 whitespace-nowrap">
@@ -421,7 +467,7 @@ const SalesPerformanceDashboard: React.FC = () => {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                     <Link
-                                                        to={`/escritorio/ventas/cliente/${app.lead_id}`}
+                                                        href={`/escritorio/ventas/cliente/${app.lead_id}`}
                                                         className="text-primary-600 hover:text-primary-800 inline-flex items-center gap-1"
                                                     >
                                                         Ver <ExternalLink className="w-3 h-3" />
@@ -549,14 +595,14 @@ const SalesPerformanceDashboard: React.FC = () => {
                         <h3 className="text-lg font-bold text-gray-900 mb-4">Acciones Rápidas</h3>
                         <div className="space-y-3">
                             <Link
-                                to="/escritorio/ventas/crm"
+                                href="/escritorio/ventas/crm"
                                 className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 transition-all shadow-sm"
                             >
                                 <Users className="w-5 h-5" />
                                 <span className="font-medium">Ver Mis Leads</span>
                             </Link>
                             <Link
-                                to="/escritorio/seguimiento"
+                                href="/escritorio/seguimiento"
                                 className="flex items-center gap-3 p-3 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all"
                             >
                                 <FileText className="w-5 h-5" />

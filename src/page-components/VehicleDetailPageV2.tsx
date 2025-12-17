@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import VehicleService from '@/services/VehicleService';
 import { useAuth } from '@/context/AuthContext';
 import { useVehicles } from '@/context/VehicleContext';
@@ -10,11 +11,14 @@ import { FavoritesService } from '@/services/FavoritesService';
 import { InspectionService } from '@/services/InspectionService';
 import type { WordPressVehicle, InspectionReportData } from '@/types/types';
 import { getVehicleImage } from '@/utils/getVehicleImage';
+import { formatPrice, formatMileage } from '@/utils/formatters';
 import VehicleProductOverview from '@/components/shadcn-studio/blocks/vehicle-product-overview/vehicle-product-overview';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import RecentlyViewed from '@/components/RecentlyViewed';
 import SimpleVehicleCard from '@/components/SimpleVehicleCard';
 import VehicleCarousel from '@/components/VehicleCarousel';
+import { ChevronLeft, ChevronRight, ArrowLeft, Grid3X3 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface VehicleDetailPageV2Props {
   slug: string;
@@ -125,6 +129,30 @@ const VehicleDetailPageV2: React.FC<VehicleDetailPageV2Props> = ({ slug }) => {
       .slice(0, 8);
   }, [vehicle, allVehicles]);
 
+  // Previous and Next vehicles for navigation
+  const { prevVehicle, nextVehicle } = useMemo(() => {
+    if (!vehicle || !allVehicles.length) return { prevVehicle: null, nextVehicle: null };
+
+    // Find current vehicle index in all vehicles
+    const currentIndex = allVehicles.findIndex(v => v.id === vehicle.id);
+
+    // If not found in list, use similar vehicles for navigation
+    if (currentIndex === -1) {
+      const prev = similarVehicles[0] || null;
+      const next = similarVehicles[1] || null;
+      return { prevVehicle: prev, nextVehicle: next };
+    }
+
+    // Get previous and next from the full list
+    const prev = currentIndex > 0 ? allVehicles[currentIndex - 1] : allVehicles[allVehicles.length - 1];
+    const next = currentIndex < allVehicles.length - 1 ? allVehicles[currentIndex + 1] : allVehicles[0];
+
+    return {
+      prevVehicle: prev?.id !== vehicle.id ? prev : null,
+      nextVehicle: next?.id !== vehicle.id ? next : null
+    };
+  }, [vehicle, allVehicles, similarVehicles]);
+
   const handleFinancingClick = () => {
     if (!vehicle) return;
 
@@ -228,9 +256,30 @@ const VehicleDetailPageV2: React.FC<VehicleDetailPageV2Props> = ({ slug }) => {
 
   return (
     <div className="bg-background min-h-screen">
-      {/* Breadcrumbs */}
+      {/* Enhanced Breadcrumbs with back button */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-2">
-        <Breadcrumbs crumbs={crumbs} />
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/autos"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted rounded-full transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Volver al inventario</span>
+              <span className="sm:hidden">Volver</span>
+            </Link>
+            <div className="hidden sm:block">
+              <Breadcrumbs crumbs={crumbs} />
+            </div>
+          </div>
+          <Link
+            href="/autos"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Grid3X3 className="w-4 h-4" />
+            <span className="hidden sm:inline">Ver todos</span>
+          </Link>
+        </div>
       </div>
 
       {/* Main shadcn Product Overview Component */}
@@ -250,6 +299,86 @@ const VehicleDetailPageV2: React.FC<VehicleDetailPageV2Props> = ({ slug }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <RecentlyViewed currentVehicleId={vehicle.id} />
       </div>
+
+      {/* Vehicle Navigation - Previous/Next (Kavak/CarMax style) */}
+      {(prevVehicle || nextVehicle) && (
+        <div className="bg-white border-y border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex items-center justify-between gap-4">
+              {/* Previous Vehicle */}
+              {prevVehicle ? (
+                <Link
+                  href={`/autos/${prevVehicle.slug}`}
+                  className="flex items-center gap-4 group flex-1 max-w-[45%] p-3 rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 group-hover:bg-orange-100 transition-colors">
+                    <ChevronLeft className="w-5 h-5 text-gray-600 group-hover:text-orange-600 transition-colors" />
+                  </div>
+                  <div className="hidden sm:flex items-center gap-3 flex-1 min-w-0">
+                    <img
+                      src={getVehicleImage(prevVehicle)}
+                      alt={prevVehicle.title}
+                      className="w-16 h-12 object-cover rounded-lg"
+                    />
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Anterior</p>
+                      <p className="text-sm font-semibold text-foreground truncate group-hover:text-orange-600 transition-colors">
+                        {prevVehicle.autoano} {prevVehicle.marca} {prevVehicle.modelo}
+                      </p>
+                      <p className="text-xs text-orange-600 font-bold">{formatPrice(prevVehicle.precio)}</p>
+                    </div>
+                  </div>
+                  <span className="sm:hidden text-sm font-medium text-muted-foreground group-hover:text-orange-600">
+                    Anterior
+                  </span>
+                </Link>
+              ) : (
+                <div className="flex-1" />
+              )}
+
+              {/* Center - Back to list */}
+              <Link
+                href="/autos"
+                className="flex flex-col items-center justify-center px-4 py-2 text-center hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <Grid3X3 className="w-5 h-5 text-muted-foreground mb-1" />
+                <span className="text-xs text-muted-foreground font-medium">Ver todos</span>
+              </Link>
+
+              {/* Next Vehicle */}
+              {nextVehicle ? (
+                <Link
+                  href={`/autos/${nextVehicle.slug}`}
+                  className="flex items-center gap-4 group flex-1 max-w-[45%] p-3 rounded-xl hover:bg-gray-50 transition-colors justify-end"
+                >
+                  <span className="sm:hidden text-sm font-medium text-muted-foreground group-hover:text-orange-600">
+                    Siguiente
+                  </span>
+                  <div className="hidden sm:flex items-center gap-3 flex-1 min-w-0 justify-end text-right">
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Siguiente</p>
+                      <p className="text-sm font-semibold text-foreground truncate group-hover:text-orange-600 transition-colors">
+                        {nextVehicle.autoano} {nextVehicle.marca} {nextVehicle.modelo}
+                      </p>
+                      <p className="text-xs text-orange-600 font-bold">{formatPrice(nextVehicle.precio)}</p>
+                    </div>
+                    <img
+                      src={getVehicleImage(nextVehicle)}
+                      alt={nextVehicle.title}
+                      className="w-16 h-12 object-cover rounded-lg"
+                    />
+                  </div>
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 group-hover:bg-orange-100 transition-colors">
+                    <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-orange-600 transition-colors" />
+                  </div>
+                </Link>
+              ) : (
+                <div className="flex-1" />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Similar Vehicles */}
       {similarVehicles.length > 0 && (

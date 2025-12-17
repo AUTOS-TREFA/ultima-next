@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { BusinessAnalyticsService, BusinessMetrics } from '../services/BusinessAnalyticsService';
 import { BrevoEmailService } from '../services/BrevoEmailService';
+import DateRangeFilter, { DateRange } from '../components/DateRangeFilter';
 import {
     Car,
     AlertTriangle,
@@ -30,8 +31,37 @@ export default function AdminBusinessAnalyticsDashboard() {
     const [refreshing, setRefreshing] = useState(false);
     const [sendingEmail, setSendingEmail] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [dateRange, setDateRange] = useState<DateRange>({
+        startDate: null,
+        endDate: null,
+        preset: 'allTime'
+    });
 
     const isAdmin = profile?.role === 'admin';
+
+    // Filter metrics based on date range
+    const filteredMetrics = useMemo(() => {
+        if (!metrics) return null;
+        if (!dateRange.startDate || !dateRange.endDate) return metrics;
+
+        const filterByDate = (items: any[], dateField: string = 'createdAt') => {
+            return items.filter(item => {
+                const itemDate = new Date(item[dateField]);
+                return itemDate >= dateRange.startDate! && itemDate <= dateRange.endDate!;
+            });
+        };
+
+        // Filter unavailable vehicle applications
+        const filteredUnavailableApps = filterByDate(metrics.unavailableVehicleApplications);
+
+        return {
+            ...metrics,
+            unavailableVehicleApplications: filteredUnavailableApps,
+            totalActiveApplications: filteredUnavailableApps.length > 0
+                ? filteredUnavailableApps.length
+                : metrics.totalActiveApplications,
+        };
+    }, [metrics, dateRange]);
 
     useEffect(() => {
         console.log('[Business Analytics Page] Component mounted');
@@ -145,7 +175,7 @@ export default function AdminBusinessAnalyticsDashboard() {
         );
     }
 
-    if (!metrics) {
+    if (!metrics || !filteredMetrics) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-50">
                 <div className="text-center">
@@ -176,21 +206,24 @@ export default function AdminBusinessAnalyticsDashboard() {
                                 Análisis de autos, ventas y tendencias de mercado
                             </p>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div className="text-right">
-                                <p className="text-xs text-gray-500">Última actualización</p>
-                                <p className="text-sm font-medium text-gray-700">
-                                    {lastUpdated.toLocaleTimeString('es-MX')}
-                                </p>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                            <DateRangeFilter value={dateRange} onChange={setDateRange} />
+                            <div className="flex items-center gap-3">
+                                <div className="text-right">
+                                    <p className="text-xs text-gray-500">Última actualización</p>
+                                    <p className="text-sm font-medium text-gray-700">
+                                        {lastUpdated.toLocaleTimeString('es-MX')}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => loadBusinessData(true)}
+                                    disabled={refreshing}
+                                    className="p-2 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 disabled:opacity-50"
+                                    title="Actualizar datos"
+                                >
+                                    <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+                                </button>
                             </div>
-                            <button
-                                onClick={() => loadBusinessData(true)}
-                                disabled={refreshing}
-                                className="p-2 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 disabled:opacity-50"
-                                title="Actualizar datos"
-                            >
-                                <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -201,14 +234,14 @@ export default function AdminBusinessAnalyticsDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <MetricCard
                         title="Solicitudes Activas"
-                        value={metrics.totalActiveApplications}
+                        value={filteredMetrics.totalActiveApplications}
                         icon={<Package className="w-6 h-6" />}
                         color="orange"
                         subtitle="En proceso"
                     />
                     <MetricCard
                         title="Vehículos con Solicitudes"
-                        value={metrics.inventoryVehiclesWithApplications.filter(v => v.ongoingApplications > 0).length}
+                        value={filteredMetrics.inventoryVehiclesWithApplications.filter(v => v.ongoingApplications > 0).length}
                         icon={<Car className="w-6 h-6" />}
                         color="blue"
                         subtitle="Inventario con demanda"
@@ -216,7 +249,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                 </div>
 
                 {/* Unavailable Vehicle Applications - URGENT */}
-                {metrics.unavailableVehicleApplications.length > 0 && (
+                {filteredMetrics.unavailableVehicleApplications.length > 0 && (
                     <div className="bg-red-50 border-2 border-red-300 rounded-xl p-6">
                         <div className="flex items-center gap-3 mb-4">
                             <AlertTriangle className="w-6 h-6 text-red-600" />
@@ -225,12 +258,12 @@ export default function AdminBusinessAnalyticsDashboard() {
                                     Solicitudes con Autos No Disponibles
                                 </h3>
                                 <p className="text-sm text-red-700">
-                                    {metrics.unavailableVehicleApplications.length} aplicaciones requieren acción inmediata
+                                    {filteredMetrics.unavailableVehicleApplications.length} aplicaciones requieren acción inmediata
                                 </p>
                             </div>
                         </div>
                         <div className="space-y-3 max-h-96 overflow-y-auto">
-                            {metrics.unavailableVehicleApplications.map(app => (
+                            {filteredMetrics.unavailableVehicleApplications.map(app => (
                                 <div
                                     key={app.applicationId}
                                     className="bg-white rounded-lg p-4 flex items-center justify-between border border-red-200"
@@ -276,7 +309,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                             </p>
                         </div>
                     </div>
-                    {metrics.vehicleInsights.length === 0 ? (
+                    {filteredMetrics.vehicleInsights.length === 0 ? (
                         <div className="text-center py-12">
                             <Car className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                             <p className="text-gray-500 text-sm">No hay datos de solicitudes por auto aún</p>
@@ -284,7 +317,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            {metrics.vehicleInsights.slice(0, 10).map((vehicle, index) => (
+                            {filteredMetrics.vehicleInsights.slice(0, 10).map((vehicle, index) => (
                             <div
                                 key={vehicle.id}
                                 className="bg-gradient-to-r from-orange-50 to-white rounded-lg p-4 border border-orange-200 hover:border-orange-300 transition-all"
@@ -378,7 +411,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                             </p>
                         </div>
                     </div>
-                    {metrics.inventoryVehiclesWithApplications.length === 0 ? (
+                    {filteredMetrics.inventoryVehiclesWithApplications.length === 0 ? (
                         <div className="text-center py-12">
                             <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                             <p className="text-gray-500 text-sm">No hay autos en inventario con solicitudes activas</p>
@@ -386,7 +419,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                         </div>
                     ) : (
                         <div className="space-y-2">
-                            {metrics.inventoryVehiclesWithApplications
+                            {filteredMetrics.inventoryVehiclesWithApplications
                                 .filter(v => v.ongoingApplications > 0)
                                 .slice(0, 30)
                                 .map((vehicle) => (
@@ -427,7 +460,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                                     </a>
                                 </div>
                             ))}
-                            {metrics.inventoryVehiclesWithApplications.filter(v => v.ongoingApplications > 0).length === 0 && (
+                            {filteredMetrics.inventoryVehiclesWithApplications.filter(v => v.ongoingApplications > 0).length === 0 && (
                                 <div className="text-center py-8 text-gray-500 text-sm">
                                     No hay autos en inventario con solicitudes activas en este momento
                                 </div>
@@ -446,7 +479,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                         <ResponsiveContainer width="100%" height={300}>
                             <RechartsPieChart>
                                 <Pie
-                                    data={metrics.priceRangeInsights}
+                                    data={filteredMetrics.priceRangeInsights}
                                     cx="50%"
                                     cy="50%"
                                     labelLine={false}
@@ -455,7 +488,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                                     fill="#8884d8"
                                     dataKey="count"
                                 >
-                                    {metrics.priceRangeInsights.map((entry, index) => (
+                                    {filteredMetrics.priceRangeInsights.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
@@ -470,7 +503,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                             Promedio de Solicitudes por Rango
                         </h3>
                         <ResponsiveContainer width="100%" height={300}>
-                            <RechartsBarChart data={metrics.priceRangeInsights}>
+                            <RechartsBarChart data={filteredMetrics.priceRangeInsights}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="range" angle={-45} textAnchor="end" height={80} />
                                 <YAxis />
@@ -489,7 +522,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                         Perfil de Leads y Tasas de Aprobación
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {metrics.leadPersonaInsights.map(persona => (
+                        {filteredMetrics.leadPersonaInsights.map(persona => (
                             <div
                                 key={persona.civilStatus}
                                 className="bg-gradient-to-br from-orange-50 to-white rounded-lg p-4 border border-orange-200"
@@ -527,7 +560,7 @@ export default function AdminBusinessAnalyticsDashboard() {
                         Tasa de Conversión por Rango de Precio
                     </h3>
                     <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={metrics.conversionRateByPrice}>
+                        <LineChart data={filteredMetrics.conversionRateByPrice}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="range" />
                             <YAxis />
