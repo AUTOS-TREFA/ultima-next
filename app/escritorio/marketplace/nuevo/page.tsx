@@ -1,9 +1,12 @@
 'use client';
 
-import MarketplaceNewListingPage from '@/page-components/MarketplaceNewListingPage';
+import dynamic from 'next/dynamic';
 
-// Force dynamic rendering to avoid static generation errors
-export const dynamic = 'force-dynamic';
+// Dynamically import the component to avoid SSR issues
+const MarketplaceNewListingPage = dynamic(
+  () => import('@/page-components/MarketplaceNewListingPage'),
+  { ssr: false }
+);
 
 export default function Page() {
   return <MarketplaceNewListingPage />;
