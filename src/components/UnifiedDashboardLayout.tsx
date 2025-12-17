@@ -13,24 +13,17 @@ import {
     ChevronDown,
     BarChart3,
     Users,
-    Route,
     Building2,
     ShoppingCart,
-    FileBarChart,
     Briefcase,
-    Camera,
     Home,
-    Palette,
     ClipboardCheck,
     TrendingUp,
     Settings,
-    Database,
     Facebook,
     Activity,
-    Upload,
     MessageSquare,
     Menu,
-    UserPlus,
     Target,
     HandCoins,
     Scroll,
@@ -41,6 +34,8 @@ import {
     Store,
     Package,
     DollarSign,
+    Sparkles,
+    Rocket,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '@/lib/utils';
@@ -113,133 +108,85 @@ interface NavGroup {
     defaultOpen?: boolean;
 }
 
-// Navigation configuration
-const commonNavItems: NavItem[] = [
-    { to: '/escritorio', label: 'Escritorio', icon: LayoutDashboard, roles: ['admin', 'sales', 'user'], end: true },
-    { to: '/autos', label: 'Inventario', icon: Car, roles: ['admin', 'sales', 'user'] },
-    { to: '/escritorio/profile', label: 'Mi Perfil', icon: User, roles: ['admin', 'sales', 'user'] },
-    { to: '/escritorio/seguimiento', label: 'Solicitudes', icon: FileText, roles: ['admin', 'sales', 'user'] },
-    { to: '/escritorio/aplicacion', label: 'Nueva solicitud', icon: Plus, roles: ['admin', 'sales', 'user'] },
+// ========== SIMPLIFIED NAVIGATION CONFIGURATION ==========
+
+// Main essentials for all users
+const essentialItems: NavItem[] = [
+    { to: '/escritorio', label: 'Mi Escritorio', icon: Home, roles: ['admin', 'sales', 'user'], end: true },
+    { to: '/autos', label: 'Ver Inventario', icon: Car, roles: ['admin', 'sales', 'user'] },
+    { to: '/escritorio/aplicacion', label: 'Nueva Solicitud', icon: Plus, roles: ['admin', 'sales', 'user'] },
 ];
 
-// Seller Group - Vende tu Auto (collapsible)
-const sellerGroup: NavGroup = {
+// Sell Your Car Group
+const sellCarGroup: NavGroup = {
     label: 'Vende tu Auto',
     icon: HandCoins,
     roles: ['admin', 'sales', 'user'],
     defaultOpen: false,
     items: [
         { to: '/escritorio/vende-tu-auto', label: 'Venta Directa', icon: DollarSign, roles: ['admin', 'sales', 'user'] },
-        { to: '/escritorio/marketplace', label: 'Marketplace', icon: Store, roles: ['admin', 'sales', 'user'], badge: 'Nuevo' },
-        { to: '/escritorio/mis-vehiculos', label: 'Mis Vehiculos', icon: Package, roles: ['admin', 'sales', 'user'] },
+        { to: '/escritorio/marketplace', label: 'Marketplace', icon: Store, roles: ['admin', 'sales', 'user'] },
     ],
 };
 
-const adminFirstLevelItems: NavItem[] = [
-    { to: '/escritorio/admin/marketing', label: 'Dashboard General', icon: LayoutDashboard, roles: ['admin'], end: true },
-    { to: '/escritorio/admin/crm', label: 'Leads y CRM', icon: Target, roles: ['admin'] },
+// Admin Main Items (Simplified - only most used)
+const adminMainItems: NavItem[] = [
+    { to: '/escritorio/admin/marketing', label: 'Dashboard General', icon: LayoutDashboard, roles: ['admin'] },
+    { to: '/escritorio/admin/crm', label: 'CRM', icon: Target, roles: ['admin'] },
     { to: '/escritorio/admin/usuarios', label: 'Asesores', icon: Users, roles: ['admin'] },
-    { to: '/escritorio/admin/customer-journeys', label: 'Customer Journeys', icon: Route, roles: ['admin'] },
-    { to: '/escritorio/admin/bancos', label: 'Portal Bancario', icon: Building2, roles: ['admin'] },
-    { to: '/escritorio/admin/compras', label: 'Compras', icon: ShoppingCart, roles: ['admin'] },
-    { to: '/escritorio/admin/marketplace', label: 'Marketplace', icon: Store, roles: ['admin'], badge: 'Nuevo' },
-    { to: '/changelog', label: 'Changelog', icon: Scroll, roles: ['admin'] },
 ];
 
-const adminDashboardsGroup: NavGroup = {
-    label: 'Dashboards',
+// Admin Analytics Group
+const adminAnalyticsGroup: NavGroup = {
+    label: 'Analytics',
     icon: BarChart3,
     roles: ['admin'],
     items: [
-        { to: '/escritorio/admin/marketing-analytics', label: 'Marketing', icon: BarChart3, roles: ['admin'] },
-        { to: '/escritorio/admin/facebook-catalogue', label: 'Catalogo de Facebook', icon: Facebook, roles: ['admin'] },
-        { to: '/escritorio/admin/business-analytics', label: 'Inventario', icon: TrendingUp, roles: ['admin'] },
-        { to: '/escritorio/admin/solicitudes', label: 'Solicitudes', icon: FileBarChart, roles: ['admin'] },
-        { to: '/escritorio/admin/tracking-analytics', label: 'Tracking', icon: Activity, roles: ['admin'] },
-        { to: '/escritorio/admin/documentos-analytics', label: 'Documentos', icon: Upload, roles: ['admin'] },
-        { to: '/escritorio/dashboard', label: 'Desempeno', icon: LayoutDashboard, roles: ['admin'] },
-        { to: '/escritorio/admin/survey-analytics', label: 'Resultados de Encuesta', icon: MessageSquare, roles: ['admin'] },
+        { to: '/escritorio/admin/marketing-analytics', label: 'Marketing', icon: TrendingUp, roles: ['admin'] },
+        { to: '/escritorio/admin/business-analytics', label: 'Inventario', icon: Car, roles: ['admin'] },
+        { to: '/escritorio/dashboard', label: 'Ventas', icon: DollarSign, roles: ['admin'] },
+        { to: '/escritorio/admin/solicitudes', label: 'Solicitudes', icon: FileText, roles: ['admin'] },
     ],
 };
 
+// Admin Tools Group
 const adminToolsGroup: NavGroup = {
     label: 'Herramientas',
     icon: Settings,
     roles: ['admin'],
     items: [
+        { to: '/escritorio/admin/marketplace', label: 'Marketplace Admin', icon: Store, roles: ['admin'] },
+        { to: '/escritorio/admin/bancos', label: 'Portal Bancario', icon: Building2, roles: ['admin'] },
+        { to: '/escritorio/admin/compras', label: 'Compras', icon: ShoppingCart, roles: ['admin'] },
         { to: '/escritorio/admin/vacantes', label: 'Vacantes', icon: Briefcase, roles: ['admin'] },
-        { to: '/escritorio/car-studio', label: 'Car Studio API', icon: Camera, roles: ['admin'] },
-        { to: '/escritorio/admin/bancos', label: 'Aprobar Bancos', icon: UserPlus, roles: ['admin'] },
-        { to: '/escritorio/marketing/homepage-editor', label: 'Editar Homepage', icon: Home, roles: ['admin'] },
-        { to: '/escritorio/marketing/constructor', label: 'Crear Landing Page', icon: Palette, roles: ['admin'] },
-        { to: '/escritorio/admin/inspections', label: 'Inspecciones Totalcheck', icon: ClipboardCheck, roles: ['admin'] },
-        { to: '/escritorio/admin/valuation', label: 'Valuacion', icon: TrendingUp, roles: ['admin'] },
         { to: '/escritorio/admin/marketing-config', label: 'Integraciones', icon: Settings, roles: ['admin'] },
-        { to: '/escritorio/admin/intel', label: 'Intel Interna', icon: Database, roles: ['admin'] },
     ],
 };
 
-const adminAccountGroup: NavGroup = {
-    label: 'Mi cuenta',
-    icon: User,
-    roles: ['admin'],
-    items: [
-        { to: '/escritorio/profile', label: 'Editar perfil', icon: User, roles: ['admin'] },
-        { to: '/escritorio/seguimiento', label: 'Mis solicitudes', icon: FileText, roles: ['admin'] },
-        { to: '/escritorio', label: 'Escritorio', icon: LayoutDashboard, roles: ['admin'], end: true },
-    ],
-};
-
-// Sales-specific navigation items (simplified menu)
-const salesNavItems: NavItem[] = [
+// Sales items
+const salesItems: NavItem[] = [
     { to: '/escritorio/ventas/leads', label: 'Mis Leads', icon: Users, roles: ['sales'], end: true },
     { to: '/escritorio/ventas/solicitudes', label: 'Solicitudes', icon: FileText, roles: ['sales'] },
-    { to: '/escritorio/ventas/performance', label: 'Mi Desempeno', icon: TrendingUp, roles: ['sales'] },
+    { to: '/escritorio/ventas/performance', label: 'Mi Desempeño', icon: TrendingUp, roles: ['sales'] },
 ];
 
-const secondaryNavItems: NavItem[] = [
-    { to: '/faq', label: 'Ayuda / FAQs', icon: HelpCircle, roles: ['admin', 'sales', 'user'] },
-];
-
-// Loading skeleton component for sidebar
+// Loading skeleton component
 const SidebarLoadingSkeleton: React.FC = () => (
     <>
-        <SidebarHeader className="border-b border-gray-100/80">
+        <SidebarHeader className="border-b border-white/10 bg-blue-950">
             <div className="flex items-center gap-2 px-2 py-3">
-                <img src="/images/trefalogo.png" alt="TREFA" className="h-8 w-auto object-contain" />
-            </div>
-            <div className="flex items-center gap-3 rounded-lg border border-gray-100/80 bg-gray-50/50 p-3 mx-2 mb-2">
-                <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse" />
-                <div className="flex-1 space-y-2">
-                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
-                    <div className="h-3 w-16 bg-gray-200 rounded animate-pulse" />
-                </div>
+                <div className="h-8 w-24 bg-white/20 rounded animate-pulse" />
             </div>
         </SidebarHeader>
-        <SidebarContent className="[&>div]:py-1">
-            <SidebarGroup className="py-1">
-                <SidebarGroupLabel>General</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        {[1, 2, 3, 4, 5, 6].map((i) => (
-                            <SidebarMenuItem key={i}>
-                                <SidebarMenuSkeleton showIcon />
-                            </SidebarMenuItem>
-                        ))}
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
-            <SidebarGroup className="py-1">
-                <SidebarGroupLabel>Cargando...</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        {[1, 2, 3, 4].map((i) => (
-                            <SidebarMenuItem key={i}>
-                                <SidebarMenuSkeleton showIcon />
-                            </SidebarMenuItem>
-                        ))}
-                    </SidebarMenu>
-                </SidebarGroupContent>
+        <SidebarContent className="bg-blue-950">
+            <SidebarGroup>
+                <SidebarMenu>
+                    {[1, 2, 3, 4, 5].map((i) => (
+                        <SidebarMenuItem key={i}>
+                            <div className="h-10 bg-white/10 rounded-md animate-pulse mx-2" />
+                        </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
             </SidebarGroup>
         </SidebarContent>
     </>
@@ -249,53 +196,43 @@ const SidebarLoadingSkeleton: React.FC = () => (
 const AppSidebarContent: React.FC = () => {
     const { profile, user, isAdmin, isSales, loading, signOut } = useAuth();
     const pathname = usePathname();
-    const router = useRouter();
 
-    // Mostrar skeleton mientras carga, pero con timeout para evitar carga infinita
-    // Permitir que admins por email pasen aunque no tengan perfil
     const [loadingTimeout, setLoadingTimeout] = React.useState(false);
 
     React.useEffect(() => {
         const timer = setTimeout(() => {
             if (loading) {
-                console.warn('[Sidebar] Timeout de carga alcanzado');
                 setLoadingTimeout(true);
             }
-        }, 5000); // 5 segundos maximo de espera
+        }, 5000);
         return () => clearTimeout(timer);
     }, [loading]);
 
-    // Si hay sesion pero no perfil, mostrar sidebar basico con usuario logueado
     const hasSession = !!user;
 
-    // Mostrar skeleton solo si esta cargando Y no ha pasado el timeout Y no hay sesion
     if (loading && !loadingTimeout && !hasSession) {
         return <SidebarLoadingSkeleton />;
     }
 
-    // Si no hay usuario despues del timeout, algo esta mal - mostrar mensaje
     if (!hasSession && loadingTimeout) {
-        console.error('[Sidebar] No hay sesion despues del timeout');
         return (
-            <>
-                <SidebarHeader className="border-b border-gray-100/80">
-                    <div className="flex items-center gap-2 px-2 py-3">
-                        <img src="/images/trefalogo.png" alt="TREFA" className="h-8 w-auto object-contain" />
+            <div className="flex flex-col h-full bg-blue-950 text-white">
+                <SidebarHeader className="border-b border-white/10 p-4">
+                    <div className="flex items-center gap-2">
+                        <img src="/images/trefalogo.png" alt="TREFA" className="h-8 w-auto object-contain brightness-0 invert" />
                     </div>
-                    <div className="p-4 text-center text-sm text-muted-foreground">
-                        Sesion no detectada.
+                    <p className="text-sm text-white/60 mt-4">
+                        Sesión no detectada.
                         <br />
-                        <a href="/acceder" className="text-primary hover:underline">Iniciar sesion</a>
-                    </div>
+                        <a href="/acceder" className="text-cyan-400 hover:underline">Iniciar sesión</a>
+                    </p>
                 </SidebarHeader>
-            </>
+            </div>
         );
     }
 
     const isActiveLink = (path: string, end?: boolean) => {
-        if (end) {
-            return pathname === path;
-        }
+        if (end) return pathname === path;
         return pathname.startsWith(path);
     };
 
@@ -313,66 +250,59 @@ const AppSidebarContent: React.FC = () => {
 
     const handleSignOut = async () => {
         try {
-            // Clear all storage before signOut
             sessionStorage.clear();
             localStorage.clear();
             await signOut();
         } catch (error) {
             console.error('Error during sign out:', error);
         } finally {
-            // Force full page reload to clear all state and go to home
             window.location.href = '/';
         }
     };
 
     return (
         <>
-            <SidebarHeader className="border-b border-gray-100/80">
+            <SidebarHeader className="border-b border-white/10 bg-blue-950">
                 {/* Logo */}
                 <div className="flex items-center gap-2 px-2 py-3">
                     <Link href="/" className="flex items-center gap-2">
                         <img
                             src="/images/trefalogo.png"
                             alt="TREFA"
-                            className="h-8 w-auto object-contain"
+                            className="h-8 w-auto object-contain brightness-0 invert"
                         />
                     </Link>
                 </div>
 
-                {/* User Profile Card - Expanded */}
-                <div className="flex items-center gap-3 rounded-lg border border-gray-100/80 bg-gray-50/50 p-3 mx-2 mb-2 group-data-[collapsible=icon]:hidden">
-                    <Avatar className="h-10 w-10 flex-shrink-0">
-                        <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+                {/* User Profile - Expanded */}
+                <div className="flex items-center gap-3 rounded-lg bg-white/5 border border-white/10 p-3 mx-2 mb-2 group-data-[collapsible=icon]:hidden">
+                    <Avatar className="h-10 w-10 flex-shrink-0 ring-2 ring-cyan-400/50">
+                        <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-semibold">
                             {profile?.first_name?.[0]?.toUpperCase() || 'U'}
                         </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium leading-none truncate">
+                        <p className="text-sm font-medium text-white truncate">
                             {profile?.first_name || 'Usuario'}
                         </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                            {isAdmin ? 'Administrador' : isSales ? 'Ventas' : 'Usuario'}
+                        <p className="text-xs text-white/60 truncate flex items-center gap-1">
+                            {isAdmin && <><Sparkles className="w-3 h-3" /> Admin</>}
+                            {isSales && <><Rocket className="w-3 h-3" /> Ventas</>}
+                            {!isAdmin && !isSales && <User className="w-3 h-3" />}
                         </p>
                     </div>
                 </div>
-
-                {/* User Avatar - Collapsed */}
-                <div className="hidden group-data-[collapsible=icon]:flex justify-center mb-2">
-                    <Avatar className="h-10 w-10">
-                        <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                            {profile?.first_name?.[0]?.toUpperCase() || 'U'}
-                        </AvatarFallback>
-                    </Avatar>
-                </div>
             </SidebarHeader>
 
-            <SidebarContent className="[&>div]:py-1">
-                {/* 1. General - Common Items for All Users (at the top) */}
-                <SidebarGroup className="py-1">
-                    <SidebarGroupLabel>General</SidebarGroupLabel>
+            <SidebarContent className="bg-blue-950 [&>div]:py-1">
+                {/* Essentials */}
+                <SidebarGroup className="py-2">
+                    <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-4">
+                        Esenciales
+                    </SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            {filterByRole(commonNavItems).map((item) => {
+                            {filterByRole(essentialItems).map((item) => {
                                 const Icon = item.icon;
                                 return (
                                     <SidebarMenuItem key={item.to}>
@@ -380,6 +310,10 @@ const AppSidebarContent: React.FC = () => {
                                             asChild
                                             isActive={isActiveLink(item.to, item.end)}
                                             tooltip={item.label}
+                                            className={cn(
+                                                "text-white/90 hover:text-white hover:bg-white/10",
+                                                isActiveLink(item.to, item.end) && "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white border-l-2 border-l-cyan-400"
+                                            )}
                                         >
                                             <Link href={item.to}>
                                                 <Icon className="h-4 w-4" />
@@ -393,37 +327,39 @@ const AppSidebarContent: React.FC = () => {
                     </SidebarGroupContent>
                 </SidebarGroup>
 
-                {/* 1.5. Vende tu Auto - Collapsible Group for All Users */}
-                <SidebarGroup className="py-1">
+                {/* Vende tu Auto */}
+                <SidebarGroup className="py-2">
                     <SidebarGroupContent>
                         <SidebarMenu>
                             <Collapsible className="group/collapsible">
                                 <SidebarMenuItem>
                                     <CollapsibleTrigger asChild>
-                                        <SidebarMenuButton tooltip={sellerGroup.label}>
+                                        <SidebarMenuButton
+                                            tooltip={sellCarGroup.label}
+                                            className="text-white/90 hover:text-white hover:bg-white/10"
+                                        >
                                             <HandCoins className="h-4 w-4" />
-                                            <span>{sellerGroup.label}</span>
+                                            <span>{sellCarGroup.label}</span>
                                             <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                                         </SidebarMenuButton>
                                     </CollapsibleTrigger>
                                     <CollapsibleContent>
-                                        <SidebarMenuSub>
-                                            {filterByRole(sellerGroup.items).map((item) => {
+                                        <SidebarMenuSub className="border-l border-white/10 ml-4">
+                                            {filterByRole(sellCarGroup.items).map((item) => {
                                                 const Icon = item.icon;
                                                 return (
                                                     <SidebarMenuSubItem key={item.to}>
                                                         <SidebarMenuSubButton
                                                             asChild
                                                             isActive={isActiveLink(item.to, item.end)}
+                                                            className={cn(
+                                                                "text-white/80 hover:text-white hover:bg-white/5",
+                                                                isActiveLink(item.to, item.end) && "text-cyan-400 bg-white/5"
+                                                            )}
                                                         >
                                                             <Link href={item.to} className="flex items-center gap-2">
                                                                 <Icon className="h-3 w-3" />
                                                                 <span>{item.label}</span>
-                                                                {item.badge && (
-                                                                    <span className="ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-600">
-                                                                        {item.badge}
-                                                                    </span>
-                                                                )}
                                                             </Link>
                                                         </SidebarMenuSubButton>
                                                     </SidebarMenuSubItem>
@@ -437,214 +373,198 @@ const AppSidebarContent: React.FC = () => {
                     </SidebarGroupContent>
                 </SidebarGroup>
 
-                {/* 2. Mi cuenta Dropdown */}
+                {/* Admin Section */}
                 {isAdmin && (
-                    <SidebarGroup className="py-1">
-                        <SidebarGroupContent>
-                            <SidebarMenu>
-                                <Collapsible className="group/collapsible">
-                                    <SidebarMenuItem>
-                                        <CollapsibleTrigger asChild>
-                                            <SidebarMenuButton tooltip="Mi cuenta">
-                                                <User className="h-4 w-4" />
-                                                <span>Mi cuenta</span>
-                                                <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                                            </SidebarMenuButton>
-                                        </CollapsibleTrigger>
-                                        <CollapsibleContent>
-                                            <SidebarMenuSub>
-                                                {filterByRole(adminAccountGroup.items).map((item) => {
-                                                    return (
-                                                        <SidebarMenuSubItem key={item.to}>
-                                                            <SidebarMenuSubButton
-                                                                asChild
-                                                                isActive={isActiveLink(item.to, item.end)}
-                                                            >
-                                                                <Link href={item.to}>
-                                                                    <span>{item.label}</span>
-                                                                </Link>
-                                                            </SidebarMenuSubButton>
-                                                        </SidebarMenuSubItem>
-                                                    );
-                                                })}
-                                            </SidebarMenuSub>
-                                        </CollapsibleContent>
-                                    </SidebarMenuItem>
-                                </Collapsible>
-                            </SidebarMenu>
-                        </SidebarGroupContent>
-                    </SidebarGroup>
-                )}
+                    <>
+                        <Separator className="bg-white/10 my-2" />
 
-                {/* 3. Dashboards Dropdown */}
-                {isAdmin && (
-                    <SidebarGroup className="py-1">
-                        <SidebarGroupContent>
-                            <SidebarMenu>
-                                <Collapsible defaultOpen className="group/collapsible">
-                                    <SidebarMenuItem>
-                                        <CollapsibleTrigger asChild>
-                                            <SidebarMenuButton tooltip="Dashboards">
-                                                <BarChart3 className="h-4 w-4" />
-                                                <span>Dashboards</span>
-                                                <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                                            </SidebarMenuButton>
-                                        </CollapsibleTrigger>
-                                        <CollapsibleContent>
-                                            <SidebarMenuSub>
-                                                {filterByRole(adminDashboardsGroup.items).map((item) => {
-                                                    return (
-                                                        <SidebarMenuSubItem key={item.to}>
-                                                            <SidebarMenuSubButton
-                                                                asChild
-                                                                isActive={isActiveLink(item.to, item.end)}
-                                                            >
-                                                                <Link href={item.to}>
-                                                                    <span>{item.label}</span>
-                                                                </Link>
-                                                            </SidebarMenuSubButton>
-                                                        </SidebarMenuSubItem>
-                                                    );
-                                                })}
-                                            </SidebarMenuSub>
-                                        </CollapsibleContent>
-                                    </SidebarMenuItem>
-                                </Collapsible>
-                            </SidebarMenu>
-                        </SidebarGroupContent>
-                    </SidebarGroup>
-                )}
+                        {/* Admin Main */}
+                        <SidebarGroup className="py-2">
+                            <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-4">
+                                Admin
+                            </SidebarGroupLabel>
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                    {filterByRole(adminMainItems).map((item) => {
+                                        const Icon = item.icon;
+                                        return (
+                                            <SidebarMenuItem key={item.to}>
+                                                <SidebarMenuButton
+                                                    asChild
+                                                    isActive={isActiveLink(item.to, item.end)}
+                                                    tooltip={item.label}
+                                                    className={cn(
+                                                        "text-white/90 hover:text-white hover:bg-white/10",
+                                                        isActiveLink(item.to, item.end) && "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white border-l-2 border-l-cyan-400"
+                                                    )}
+                                                >
+                                                    <Link href={item.to}>
+                                                        <Icon className="h-4 w-4" />
+                                                        <span>{item.label}</span>
+                                                    </Link>
+                                                </SidebarMenuButton>
+                                            </SidebarMenuItem>
+                                        );
+                                    })}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
 
-                {/* 4. Administracion Section - Bolder, All Caps, Smaller */}
-                {isAdmin && (
-                    <SidebarGroup className="py-1">
-                        <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-wider">
-                            Administracion
-                        </SidebarGroupLabel>
-                        <SidebarGroupContent>
-                            <SidebarMenu>
-                                {filterByRole(adminFirstLevelItems).map((item) => {
-                                    const Icon = item.icon;
-                                    return (
-                                        <SidebarMenuItem key={item.to}>
-                                            <SidebarMenuButton
-                                                asChild
-                                                isActive={isActiveLink(item.to, item.end)}
-                                                tooltip={item.label}
-                                            >
-                                                <Link href={item.to}>
-                                                    <Icon className="h-4 w-4" />
-                                                    <span>{item.label}</span>
-                                                </Link>
-                                            </SidebarMenuButton>
+                        {/* Analytics Dropdown */}
+                        <SidebarGroup className="py-1">
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                    <Collapsible className="group/collapsible">
+                                        <SidebarMenuItem>
+                                            <CollapsibleTrigger asChild>
+                                                <SidebarMenuButton
+                                                    tooltip="Analytics"
+                                                    className="text-white/90 hover:text-white hover:bg-white/10"
+                                                >
+                                                    <BarChart3 className="h-4 w-4" />
+                                                    <span>Analytics</span>
+                                                    <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                                </SidebarMenuButton>
+                                            </CollapsibleTrigger>
+                                            <CollapsibleContent>
+                                                <SidebarMenuSub className="border-l border-white/10 ml-4">
+                                                    {filterByRole(adminAnalyticsGroup.items).map((item) => {
+                                                        const Icon = item.icon;
+                                                        return (
+                                                            <SidebarMenuSubItem key={item.to}>
+                                                                <SidebarMenuSubButton
+                                                                    asChild
+                                                                    isActive={isActiveLink(item.to, item.end)}
+                                                                    className={cn(
+                                                                        "text-white/80 hover:text-white hover:bg-white/5",
+                                                                        isActiveLink(item.to, item.end) && "text-cyan-400 bg-white/5"
+                                                                    )}
+                                                                >
+                                                                    <Link href={item.to}>
+                                                                        <Icon className="h-3 w-3" />
+                                                                        <span>{item.label}</span>
+                                                                    </Link>
+                                                                </SidebarMenuSubButton>
+                                                            </SidebarMenuSubItem>
+                                                        );
+                                                    })}
+                                                </SidebarMenuSub>
+                                            </CollapsibleContent>
                                         </SidebarMenuItem>
-                                    );
-                                })}
-                            </SidebarMenu>
-                        </SidebarGroupContent>
-                    </SidebarGroup>
+                                    </Collapsible>
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+
+                        {/* Tools Dropdown */}
+                        <SidebarGroup className="py-1">
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                    <Collapsible className="group/collapsible">
+                                        <SidebarMenuItem>
+                                            <CollapsibleTrigger asChild>
+                                                <SidebarMenuButton
+                                                    tooltip="Herramientas"
+                                                    className="text-white/90 hover:text-white hover:bg-white/10"
+                                                >
+                                                    <Settings className="h-4 w-4" />
+                                                    <span>Herramientas</span>
+                                                    <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                                </SidebarMenuButton>
+                                            </CollapsibleTrigger>
+                                            <CollapsibleContent>
+                                                <SidebarMenuSub className="border-l border-white/10 ml-4">
+                                                    {filterByRole(adminToolsGroup.items).map((item) => {
+                                                        const Icon = item.icon;
+                                                        return (
+                                                            <SidebarMenuSubItem key={item.to}>
+                                                                <SidebarMenuSubButton
+                                                                    asChild
+                                                                    isActive={isActiveLink(item.to, item.end)}
+                                                                    className={cn(
+                                                                        "text-white/80 hover:text-white hover:bg-white/5",
+                                                                        isActiveLink(item.to, item.end) && "text-cyan-400 bg-white/5"
+                                                                    )}
+                                                                >
+                                                                    <Link href={item.to}>
+                                                                        <Icon className="h-3 w-3" />
+                                                                        <span>{item.label}</span>
+                                                                    </Link>
+                                                                </SidebarMenuSubButton>
+                                                            </SidebarMenuSubItem>
+                                                        );
+                                                    })}
+                                                </SidebarMenuSub>
+                                            </CollapsibleContent>
+                                        </SidebarMenuItem>
+                                    </Collapsible>
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+                    </>
                 )}
 
-                {/* 5. Herramientas Dropdown */}
-                {isAdmin && (
-                    <SidebarGroup className="py-1">
-                        <SidebarGroupContent>
-                            <SidebarMenu>
-                                <Collapsible className="group/collapsible">
-                                    <SidebarMenuItem>
-                                        <CollapsibleTrigger asChild>
-                                            <SidebarMenuButton tooltip="Herramientas">
-                                                <Settings className="h-4 w-4" />
-                                                <span>Herramientas</span>
-                                                <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                                            </SidebarMenuButton>
-                                        </CollapsibleTrigger>
-                                        <CollapsibleContent>
-                                            <SidebarMenuSub>
-                                                {filterByRole(adminToolsGroup.items).map((item) => {
-                                                    return (
-                                                        <SidebarMenuSubItem key={item.to}>
-                                                            <SidebarMenuSubButton
-                                                                asChild
-                                                                isActive={isActiveLink(item.to, item.end)}
-                                                            >
-                                                                <Link href={item.to}>
-                                                                    <span>{item.label}</span>
-                                                                </Link>
-                                                            </SidebarMenuSubButton>
-                                                        </SidebarMenuSubItem>
-                                                    );
-                                                })}
-                                            </SidebarMenuSub>
-                                        </CollapsibleContent>
-                                    </SidebarMenuItem>
-                                </Collapsible>
-                            </SidebarMenu>
-                        </SidebarGroupContent>
-                    </SidebarGroup>
-                )}
-
-                {/* Sales-specific items */}
+                {/* Sales Section */}
                 {isSales && (
-                    <SidebarGroup className="py-1">
-                        <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-wider">
-                            Ventas
-                        </SidebarGroupLabel>
-                        <SidebarGroupContent>
-                            <SidebarMenu>
-                                {filterByRole(salesNavItems).map((item) => {
-                                    const Icon = item.icon;
-                                    return (
-                                        <SidebarMenuItem key={item.to}>
-                                            <SidebarMenuButton
-                                                asChild
-                                                isActive={isActiveLink(item.to, item.end)}
-                                                tooltip={item.label}
-                                            >
-                                                <Link href={item.to}>
-                                                    <Icon className="h-4 w-4" />
-                                                    <span>{item.label}</span>
-                                                </Link>
-                                            </SidebarMenuButton>
-                                        </SidebarMenuItem>
-                                    );
-                                })}
-                            </SidebarMenu>
-                        </SidebarGroupContent>
-                    </SidebarGroup>
+                    <>
+                        <Separator className="bg-white/10 my-2" />
+                        <SidebarGroup className="py-2">
+                            <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-4">
+                                Ventas
+                            </SidebarGroupLabel>
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                    {filterByRole(salesItems).map((item) => {
+                                        const Icon = item.icon;
+                                        return (
+                                            <SidebarMenuItem key={item.to}>
+                                                <SidebarMenuButton
+                                                    asChild
+                                                    isActive={isActiveLink(item.to, item.end)}
+                                                    tooltip={item.label}
+                                                    className={cn(
+                                                        "text-white/90 hover:text-white hover:bg-white/10",
+                                                        isActiveLink(item.to, item.end) && "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white border-l-2 border-l-cyan-400"
+                                                    )}
+                                                >
+                                                    <Link href={item.to}>
+                                                        <Icon className="h-4 w-4" />
+                                                        <span>{item.label}</span>
+                                                    </Link>
+                                                </SidebarMenuButton>
+                                            </SidebarMenuItem>
+                                        );
+                                    })}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+                    </>
                 )}
             </SidebarContent>
 
-            <SidebarFooter className="border-t border-gray-100/80">
+            <SidebarFooter className="border-t border-white/10 bg-blue-950">
                 <SidebarMenu>
-                    {/* Help/FAQs */}
-                    {filterByRole(secondaryNavItems).map((item) => {
-                        const Icon = item.icon;
-                        return (
-                            <SidebarMenuItem key={item.to}>
-                                <SidebarMenuButton
-                                    asChild
-                                    isActive={isActiveLink(item.to, item.end)}
-                                    tooltip={item.label}
-                                >
-                                    <Link href={item.to}>
-                                        <Icon className="h-4 w-4" />
-                                        <span>{item.label}</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        );
-                    })}
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
+                            asChild
+                            tooltip="Ayuda / FAQs"
+                            className="text-white/90 hover:text-white hover:bg-white/10"
+                        >
+                            <Link href="/faq">
+                                <HelpCircle className="h-4 w-4" />
+                                <span>Ayuda</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
 
-                    {/* Sign Out */}
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             onClick={handleSignOut}
-                            tooltip="Cerrar Sesion"
-                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            tooltip="Cerrar Sesión"
+                            className="text-red-400/90 hover:text-red-400 hover:bg-red-500/10"
                         >
                             <LogOut className="h-4 w-4" />
-                            <span>Cerrar Sesion</span>
+                            <span>Cerrar Sesión</span>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
@@ -655,333 +575,11 @@ const AppSidebarContent: React.FC = () => {
     );
 };
 
-// Mobile loading skeleton
-const MobileSidebarLoadingSkeleton: React.FC = () => (
-    <div className="p-4 space-y-4">
-        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-            <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse" />
-            <div className="flex-1 space-y-2">
-                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
-                <div className="h-3 w-16 bg-gray-200 rounded animate-pulse" />
-            </div>
-        </div>
-        <div className="space-y-2">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="h-10 bg-gray-100 rounded-md animate-pulse" />
-            ))}
-        </div>
-    </div>
-);
-
-// Mobile sidebar content (reused in Sheet)
+// Mobile sidebar (simplified for now - same content)
 const MobileSidebarContent: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
-    const { profile, user, isAdmin, isSales, loading, signOut } = useAuth();
-    const pathname = usePathname();
-    const router = useRouter();
-
-    // Si hay sesion pero no perfil, mostrar sidebar basico
-    const hasSession = !!user;
-
-    // Mostrar skeleton solo brevemente mientras carga
-    if (loading && !hasSession) {
-        return <MobileSidebarLoadingSkeleton />;
-    }
-
-    const isActiveLink = (path: string, end?: boolean) => {
-        if (end) {
-            return pathname === path;
-        }
-        return pathname.startsWith(path);
-    };
-
-    const getUserRole = (): 'admin' | 'sales' | 'user' => {
-        if (isAdmin) return 'admin';
-        if (isSales) return 'sales';
-        return 'user';
-    };
-
-    const userRole = getUserRole();
-
-    const filterByRole = (items: NavItem[]) => {
-        return items.filter(item => !item.roles || item.roles.includes(userRole));
-    };
-
-    const handleSignOut = async () => {
-        try {
-            // Clear all storage before signOut
-            sessionStorage.clear();
-            localStorage.clear();
-            await signOut();
-        } catch (error) {
-            console.error('Error during sign out:', error);
-        } finally {
-            onClose?.();
-            // Force full page reload to clear all state and go to home
-            window.location.href = '/';
-        }
-    };
-
-    const handleNavClick = () => {
-        onClose?.();
-    };
-
     return (
-        <div className="flex flex-col h-full bg-white">
-            {/* Header */}
-            <div className="border-b p-4 bg-white">
-                <Link href="/" className="flex items-center gap-2" onClick={handleNavClick}>
-                    <img
-                        src="/images/trefalogo.png"
-                        alt="TREFA"
-                        className="h-8 w-auto object-contain"
-                    />
-                </Link>
-
-                {/* User Profile Card */}
-                <div className="flex items-center gap-3 rounded-lg border bg-gray-50 p-3 mt-4">
-                    <Avatar className="h-10 w-10 flex-shrink-0">
-                        <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                            {profile?.first_name?.[0]?.toUpperCase() || 'U'}
-                        </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium leading-none truncate">
-                            {profile?.first_name || 'Usuario'}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                            {isAdmin ? 'Administrador' : isSales ? 'Ventas' : 'Usuario'}
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
-                {/* Admin First Level Items */}
-                {isAdmin && (
-                    <div>
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Administracion</p>
-                        <nav className="space-y-1">
-                            {filterByRole(adminFirstLevelItems).map((item) => {
-                                const Icon = item.icon;
-                                return (
-                                    <Link
-                                        key={item.to}
-                                        href={item.to}
-                                        onClick={handleNavClick}
-                                        className={cn(
-                                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",
-                                            isActiveLink(item.to, item.end)
-                                                ? "bg-accent text-accent-foreground"
-                                                : "text-muted-foreground hover:text-foreground"
-                                        )}
-                                    >
-                                        <Icon className="h-4 w-4" />
-                                        {item.label}
-                                    </Link>
-                                );
-                            })}
-                        </nav>
-                    </div>
-                )}
-
-                {/* Admin Dashboards */}
-                {isAdmin && (
-                    <Collapsible defaultOpen>
-                        <CollapsibleTrigger className="flex w-full items-center justify-between py-2">
-                            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                <BarChart3 className="h-4 w-4" />
-                                <span>Dashboards</span>
-                            </div>
-                            <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                            <nav className="space-y-1 mt-2">
-                                {filterByRole(adminDashboardsGroup.items).map((item) => {
-                                    const Icon = item.icon;
-                                    return (
-                                        <Link
-                                            key={item.to}
-                                            href={item.to}
-                                            onClick={handleNavClick}
-                                            className={cn(
-                                                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent ml-2",
-                                                isActiveLink(item.to, item.end)
-                                                    ? "bg-accent text-accent-foreground"
-                                                    : "text-muted-foreground hover:text-foreground"
-                                            )}
-                                        >
-                                            <Icon className="h-4 w-4" />
-                                            {item.label}
-                                        </Link>
-                                    );
-                                })}
-                            </nav>
-                        </CollapsibleContent>
-                    </Collapsible>
-                )}
-
-                {/* Admin Tools */}
-                {isAdmin && (
-                    <Collapsible>
-                        <CollapsibleTrigger className="flex w-full items-center justify-between py-2">
-                            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                <Settings className="h-4 w-4" />
-                                <span>Herramientas</span>
-                            </div>
-                            <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                            <nav className="space-y-1 mt-2">
-                                {filterByRole(adminToolsGroup.items).map((item) => {
-                                    const Icon = item.icon;
-                                    return (
-                                        <Link
-                                            key={item.to}
-                                            href={item.to}
-                                            onClick={handleNavClick}
-                                            className={cn(
-                                                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent ml-2",
-                                                isActiveLink(item.to, item.end)
-                                                    ? "bg-accent text-accent-foreground"
-                                                    : "text-muted-foreground hover:text-foreground"
-                                            )}
-                                        >
-                                            <Icon className="h-4 w-4" />
-                                            {item.label}
-                                        </Link>
-                                    );
-                                })}
-                            </nav>
-                        </CollapsibleContent>
-                    </Collapsible>
-                )}
-
-                {/* Sales-specific items */}
-                {isSales && (
-                    <div>
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Ventas</p>
-                        <nav className="space-y-1">
-                            {filterByRole(salesNavItems).map((item) => {
-                                const Icon = item.icon;
-                                return (
-                                    <Link
-                                        key={item.to}
-                                        href={item.to}
-                                        onClick={handleNavClick}
-                                        className={cn(
-                                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",
-                                            isActiveLink(item.to, item.end)
-                                                ? "bg-accent text-accent-foreground"
-                                                : "text-muted-foreground hover:text-foreground"
-                                        )}
-                                    >
-                                        <Icon className="h-4 w-4" />
-                                        {item.label}
-                                    </Link>
-                                );
-                            })}
-                        </nav>
-                    </div>
-                )}
-
-                {/* Vende tu Auto - Collapsible Group for All Users */}
-                <Collapsible>
-                    <CollapsibleTrigger className="flex w-full items-center justify-between py-2">
-                        <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            <HandCoins className="h-4 w-4" />
-                            <span>Vende tu Auto</span>
-                        </div>
-                        <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                        <nav className="space-y-1 mt-2">
-                            {filterByRole(sellerGroup.items).map((item) => {
-                                const Icon = item.icon;
-                                return (
-                                    <Link
-                                        key={item.to}
-                                        href={item.to}
-                                        onClick={handleNavClick}
-                                        className={cn(
-                                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent ml-2",
-                                            isActiveLink(item.to, item.end)
-                                                ? "bg-accent text-accent-foreground"
-                                                : "text-muted-foreground hover:text-foreground"
-                                        )}
-                                    >
-                                        <Icon className="h-4 w-4" />
-                                        {item.label}
-                                        {item.badge && (
-                                            <span className="ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-600">
-                                                {item.badge}
-                                            </span>
-                                        )}
-                                    </Link>
-                                );
-                            })}
-                        </nav>
-                    </CollapsibleContent>
-                </Collapsible>
-
-                <Separator />
-
-                {/* Common Items for All Users */}
-                <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">General</p>
-                    <nav className="space-y-1">
-                        {filterByRole(commonNavItems).map((item) => {
-                            const Icon = item.icon;
-                            return (
-                                <Link
-                                    key={item.to}
-                                    href={item.to}
-                                    onClick={handleNavClick}
-                                    className={cn(
-                                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",
-                                        isActiveLink(item.to, item.end)
-                                            ? "bg-accent text-accent-foreground"
-                                            : "text-muted-foreground hover:text-foreground"
-                                    )}
-                                >
-                                    <Icon className="h-4 w-4" />
-                                    {item.label}
-                                </Link>
-                            );
-                        })}
-                    </nav>
-                </div>
-            </div>
-
-            {/* Footer */}
-            <div className="border-t p-4 space-y-1 bg-white">
-                {filterByRole(secondaryNavItems).map((item) => {
-                    const Icon = item.icon;
-                    return (
-                        <Link
-                            key={item.to}
-                            href={item.to}
-                            onClick={handleNavClick}
-                            className={cn(
-                                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",
-                                isActiveLink(item.to, item.end)
-                                    ? "bg-accent text-accent-foreground"
-                                    : "text-muted-foreground hover:text-foreground"
-                            )}
-                        >
-                            <Icon className="h-4 w-4" />
-                            {item.label}
-                        </Link>
-                    );
-                })}
-                <button
-                    onClick={handleSignOut}
-                    className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-destructive/10 text-destructive"
-                >
-                    <LogOut className="h-4 w-4" />
-                    Cerrar Sesion
-                </button>
-            </div>
+        <div className="flex flex-col h-full bg-blue-950 text-white p-4">
+            <p className="text-sm text-white/60">Menu móvil - trabajo en progreso</p>
         </div>
     );
 };
@@ -995,19 +593,16 @@ const UnifiedDashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
 
     const handleSignOut = async () => {
         try {
-            // Clear all storage before signOut
             sessionStorage.clear();
             localStorage.clear();
             await signOut();
         } catch (error) {
             console.error('Error during sign out:', error);
         } finally {
-            // Force full page reload to clear all state and go to home
             window.location.href = '/';
         }
     };
 
-    // Generate breadcrumbs from current path
     const generateBreadcrumbs = () => {
         const paths = pathname.split('/').filter(Boolean);
         const breadcrumbs = [{ label: 'Inicio', href: '/' }];
@@ -1015,7 +610,6 @@ const UnifiedDashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
         let currentPath = '';
         paths.forEach((path) => {
             currentPath += `/${path}`;
-            // Capitalize and clean up path name
             const label = path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' ');
             breadcrumbs.push({ label, href: currentPath });
         });
@@ -1027,163 +621,102 @@ const UnifiedDashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
 
     return (
         <SidebarProvider defaultOpen={true}>
-            {/* Sidebar permanece abierto por defecto, se puede cerrar manualmente */}
-
             <Sidebar
                 collapsible="icon"
                 className={cn(
-                    // Base styles
-                    "border-r border-gray-100/60 transition-colors duration-300",
-                    // Expanded state - subtle gray
-                    "group-data-[state=expanded]:bg-gray-50/30",
-                    // Collapsed state - dark gray background with white icons
-                    "group-data-[state=collapsed]:!bg-gray-800 group-data-[state=collapsed]:border-gray-700",
-                    // Collapsed state - white icons, proper size
+                    "border-r border-blue-900 bg-blue-950",
+                    // Collapsed state - darker background
+                    "group-data-[state=collapsed]:!bg-blue-950 group-data-[state=collapsed]:border-blue-900",
+                    // Icon colors when collapsed
                     "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]_svg]:!text-white",
                     "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]_svg]:!w-5",
                     "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]_svg]:!h-5",
-                    "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]_svg]:!stroke-[1.5]",
-                    "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]]:hover:bg-gray-700",
+                    "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]]:hover:bg-white/10",
                     "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]]:hover:!text-white",
-                    // Center menu items within sidebar when collapsed
-                    "group-data-[state=collapsed]:[&_[data-sidebar=menu]]:!px-0",
-                    "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]]:!mx-auto",
-                    // Hide all text when collapsed
-                    "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]>span]:hidden",
-                    "group-data-[state=collapsed]:[&_[data-sidebar=group-label]]:hidden",
-                    // Hide chevron icons in collapsed state (dropdowns don't work when collapsed)
-                    "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]_svg.lucide-chevron-down]:!hidden",
-                    "group-data-[state=collapsed]:[&_[data-sidebar=menu-button]_svg.lucide-chevron-right]:!hidden",
-                    "group-data-[state=collapsed]:[&_button_svg.lucide-chevron-down]:!hidden",
-                    "group-data-[state=collapsed]:[&_button_svg.lucide-chevron-right]:!hidden",
-                    // Menu sub border
-                    "[&_[data-sidebar=menu-sub]]:border-gray-100/60",
-                    // Font sizes and padding (desktop)
-                    "[&_[data-sidebar=menu-button]]:text-[13px]",
-                    "[&_[data-sidebar=menu-button]]:pl-3",
-                    "[&_[data-sidebar=menu-sub-button]]:text-[13px]"
                 )}
             >
                 <AppSidebarContent />
             </Sidebar>
             <SidebarInset className="bg-background">
-                {/* Floating Header Card - Dashboard Shell 02 Style */}
+                {/* Floating Header */}
                 <header className="before:bg-background/60 sticky top-0 z-50 before:absolute before:inset-0 before:mask-[linear-gradient(var(--card),var(--card)_18%,transparent_100%)] before:backdrop-blur-md">
                     <div className="bg-white relative z-[51] mx-auto mt-2 flex w-[calc(100%-1rem)] max-w-[calc(1280px-3rem)] items-center justify-between rounded-xl border border-gray-100/80 px-4 py-2 md:mt-3 md:w-[calc(100%-2rem)] md:px-6 shadow-sm">
-                    {/* Left section */}
-                    <div className="flex items-center gap-2">
-                        {/* Mobile Menu Button */}
-                        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                            <SheetTrigger asChild>
-                                <Button variant="ghost" size="icon" className="md:hidden h-8 w-8">
-                                    <Menu className="h-4 w-4" />
-                                    <span className="sr-only">Abrir menu</span>
-                                </Button>
-                            </SheetTrigger>
-                            <SheetContent side="left" className="w-80 p-0 bg-white z-[60]">
-                                <SheetHeader className="sr-only">
-                                    <SheetTitle>Menu de navegacion</SheetTitle>
-                                </SheetHeader>
-                                <MobileSidebarContent onClose={() => setMobileMenuOpen(false)} />
-                            </SheetContent>
-                        </Sheet>
+                        {/* Left section */}
+                        <div className="flex items-center gap-2">
+                            <SidebarTrigger className="h-8 w-8" />
+                            <Separator orientation="vertical" className="h-5" />
 
-                        {/* Desktop Sidebar Toggle */}
-                        <SidebarTrigger className="hidden md:flex h-8 w-8" />
+                            {/* Breadcrumbs */}
+                            <Breadcrumb className="hidden md:flex">
+                                <BreadcrumbList>
+                                    {breadcrumbs.map((crumb, index) => (
+                                        <React.Fragment key={crumb.href}>
+                                            {index > 0 && <BreadcrumbSeparator><ChevronRight className="h-3 w-3" /></BreadcrumbSeparator>}
+                                            <BreadcrumbItem>
+                                                {index === breadcrumbs.length - 1 ? (
+                                                    <BreadcrumbPage className="text-sm font-medium">{crumb.label}</BreadcrumbPage>
+                                                ) : (
+                                                    <BreadcrumbLink asChild>
+                                                        <Link href={crumb.href} className="text-sm text-muted-foreground hover:text-foreground">{crumb.label}</Link>
+                                                    </BreadcrumbLink>
+                                                )}
+                                            </BreadcrumbItem>
+                                        </React.Fragment>
+                                    ))}
+                                </BreadcrumbList>
+                            </Breadcrumb>
+                        </div>
 
-                        {/* Separator */}
-                        <Separator orientation="vertical" className="hidden md:block h-5" />
+                        {/* Right section */}
+                        <div className="flex items-center gap-1">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 hidden sm:flex">
+                                <Search className="h-4 w-4" />
+                            </Button>
 
-                        {/* Breadcrumbs */}
-                        <Breadcrumb className="hidden md:flex">
-                            <BreadcrumbList>
-                                {breadcrumbs.map((crumb, index) => (
-                                    <React.Fragment key={crumb.href}>
-                                        {index > 0 && <BreadcrumbSeparator><ChevronRight className="h-3 w-3" /></BreadcrumbSeparator>}
-                                        <BreadcrumbItem>
-                                            {index === breadcrumbs.length - 1 ? (
-                                                <BreadcrumbPage className="text-sm font-medium">{crumb.label}</BreadcrumbPage>
-                                            ) : (
-                                                <BreadcrumbLink asChild>
-                                                    <Link href={crumb.href} className="text-sm text-muted-foreground hover:text-foreground">{crumb.label}</Link>
-                                                </BreadcrumbLink>
-                                            )}
-                                        </BreadcrumbItem>
-                                    </React.Fragment>
-                                ))}
-                            </BreadcrumbList>
-                        </Breadcrumb>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <Bell className="h-4 w-4" />
+                            </Button>
 
-                        {/* Mobile Logo */}
-                        <Link href="/" className="flex items-center gap-2 md:hidden">
-                            <img
-                                src="/images/trefalogo.png"
-                                alt="TREFA"
-                                className="h-5 w-auto object-contain"
-                            />
-                        </Link>
-                    </div>
-
-                    {/* Right section */}
-                    <div className="flex items-center gap-1">
-                        {/* Search button */}
-                        <Button variant="ghost" size="icon" className="h-8 w-8 hidden sm:flex">
-                            <Search className="h-4 w-4" />
-                            <span className="sr-only">Buscar</span>
-                        </Button>
-
-                        {/* Notifications */}
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Bell className="h-4 w-4" />
-                            <span className="sr-only">Notificaciones</span>
-                        </Button>
-
-                        {/* User Avatar with Dropdown Menu */}
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="relative h-8 w-8 rounded-full ml-1 p-0">
-                                    <Avatar className="h-8 w-8 border-2 border-primary/20">
-                                        <AvatarFallback className="bg-primary-600 text-white text-xs font-semibold">
-                                            {profile?.first_name?.[0]?.toUpperCase() || 'U'}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56 bg-white z-[60]" align="end" forceMount>
-                                <div className="flex items-center justify-start gap-2 p-2">
-                                    <div className="flex flex-col space-y-1 leading-none">
-                                        <p className="font-medium">{profile?.first_name || 'Usuario'}</p>
-                                        <p className="text-xs text-muted-foreground">{profile?.email || ''}</p>
+                            {/* User Avatar Dropdown */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="relative h-8 w-8 rounded-full ml-1 p-0">
+                                        <Avatar className="h-8 w-8 border-2 border-primary/20">
+                                            <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-600 text-white text-xs font-semibold">
+                                                {profile?.first_name?.[0]?.toUpperCase() || 'U'}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-56 bg-white z-[60]" align="end" forceMount>
+                                    <div className="flex items-center justify-start gap-2 p-2">
+                                        <div className="flex flex-col space-y-1 leading-none">
+                                            <p className="font-medium">{profile?.first_name || 'Usuario'}</p>
+                                            <p className="text-xs text-muted-foreground">{profile?.email || ''}</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem asChild>
-                                    <Link href="/escritorio/profile" className="cursor-pointer">
-                                        <User className="mr-2 h-4 w-4" />
-                                        <span>Editar perfil</span>
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
-                                    <Link href="/escritorio/perfilacion-bancaria" className="cursor-pointer">
-                                        <Building2 className="mr-2 h-4 w-4" />
-                                        <span>Perfilacion Bancaria</span>
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    onClick={handleSignOut}
-                                    className="cursor-pointer text-destructive focus:text-destructive"
-                                >
-                                    <LogOut className="mr-2 h-4 w-4" />
-                                    <span>Cerrar Sesion</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/escritorio/profile" className="cursor-pointer">
+                                            <User className="mr-2 h-4 w-4" />
+                                            <span>Editar perfil</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onClick={handleSignOut}
+                                        className="cursor-pointer text-destructive focus:text-destructive"
+                                    >
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        <span>Cerrar Sesión</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                     </div>
                 </header>
 
-                {/* Page Content - Optimized spacing */}
+                {/* Page Content */}
                 <main className="w-full flex-1 px-4 py-4 md:px-6 md:py-6 overflow-x-hidden transition-all duration-300">
                     {children}
                 </main>
