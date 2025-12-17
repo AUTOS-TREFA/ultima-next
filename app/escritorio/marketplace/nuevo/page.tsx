@@ -1,7 +1,7 @@
 'use client';
 
-import MarketplaceFormPage from '@/page-components/MarketplaceFormPage';
+import MarketplaceNewListingPage from '@/page-components/MarketplaceNewListingPage';
 
-export default function NewMarketplaceListing() {
-  return <MarketplaceFormPage mode="create" />;
+export default function Page() {
+  return <MarketplaceNewListingPage />;
 }
