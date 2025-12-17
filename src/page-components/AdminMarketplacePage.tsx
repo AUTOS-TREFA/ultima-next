@@ -43,6 +43,8 @@ import {
   AlertTriangle,
   Search,
   Filter,
+  BarChart3,
+  Activity,
 } from 'lucide-react';
 import { formatPrice } from '@/utils/formatters';
 
@@ -284,6 +286,89 @@ const AdminMarketplacePage: React.FC = () => {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {/* Insights Panel */}
+        {!loading && stats && (
+          <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-slate-700" />
+                Insights de Consignación
+              </CardTitle>
+              <CardDescription>
+                Métricas clave del sistema de marketplace
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <DollarSign className="w-4 h-4" />
+                    <span>Precio promedio</span>
+                  </div>
+                  <p className="text-2xl font-bold text-slate-900">
+                    {formatPrice(stats.avg_listing_price)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    De {stats.approved_active} vehículos activos
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <TrendingUp className="w-4 h-4" />
+                    <span>Potencial de ingresos</span>
+                  </div>
+                  <p className="text-2xl font-bold text-slate-900">
+                    {formatPrice(stats.total_revenue_potential)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Inventario total activo
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Activity className="w-4 h-4" />
+                    <span>Tasa de aprobación</span>
+                  </div>
+                  <p className="text-2xl font-bold text-slate-900">
+                    {stats.total_listings > 0
+                      ? Math.round((stats.approved_active / stats.total_listings) * 100)
+                      : 0}%
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {stats.approved_active} aprobados de {stats.total_listings} totales
+                  </p>
+                </div>
+              </div>
+
+              {/* Quick Stats Bar */}
+              <div className="mt-6 pt-6 border-t border-slate-200">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground mb-1">Rechazados</p>
+                    <p className="font-semibold text-red-600">{stats.rejected}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground mb-1">Vendedores únicos</p>
+                    <p className="font-semibold text-blue-600">{stats.total_users_selling}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground mb-1">En inventario público</p>
+                    <p className="font-semibold text-orange-600">{stats.inventory_consignment_count}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground mb-1">Tasa de conversión</p>
+                    <p className="font-semibold text-green-600">
+                      {stats.approved_active > 0
+                        ? Math.round((stats.sold / stats.approved_active) * 100)
+                        : 0}%
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Search and Filters */}
