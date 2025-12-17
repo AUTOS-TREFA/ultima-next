@@ -178,7 +178,7 @@ const SidebarLoadingSkeleton: React.FC = () => (
                 <div className="h-8 w-24 bg-gray-300 rounded animate-pulse" />
             </div>
         </SidebarHeader>
-        <SidebarContent className="bg-white">
+        <SidebarContent className="bg-gray-50">
             <SidebarGroup>
                 <SidebarMenu>
                     {[1, 2, 3, 4, 5].map((i) => (
@@ -216,7 +216,7 @@ const AppSidebarContent: React.FC = () => {
 
     if (!hasSession && loadingTimeout) {
         return (
-            <div className="flex flex-col h-full bg-white text-gray-900">
+            <div className="flex flex-col h-full bg-gray-50 text-gray-900">
                 <SidebarHeader className="border-b border-gray-200 p-4">
                     <div className="flex items-center gap-2">
                         <img src="/images/trefalogo.png" alt="TREFA" className="h-8 w-auto object-contain" />
@@ -294,7 +294,7 @@ const AppSidebarContent: React.FC = () => {
                 </div>
             </SidebarHeader>
 
-            <SidebarContent className="bg-white [&>div]:py-1">
+            <SidebarContent className="bg-gray-50 [&>div]:py-1">
                 {/* Essentials */}
                 <SidebarGroup className="py-2">
                     <SidebarGroupLabel className="text-gray-500 text-xs font-semibold uppercase tracking-wider px-4">
