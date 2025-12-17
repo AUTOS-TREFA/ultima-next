@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MetricsService, type EventTypeMetrics } from '@/services/MetricsService';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 interface SummaryMetrics {
   totalLeads: number;
@@ -30,7 +30,6 @@ interface SummaryMetrics {
 }
 
 const MarketingHubPage: React.FC = () => {
-  const supabase = createClient();
   const [eventStats, setEventStats] = useState<EventTypeMetrics[]>([]);
   const [loading, setLoading] = useState(true);
   const [summaryMetrics, setSummaryMetrics] = useState<SummaryMetrics>({

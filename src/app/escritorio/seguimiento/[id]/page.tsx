@@ -10,7 +10,7 @@ import { APPLICATION_STATUS, type ApplicationStatus } from '@/constants/applicat
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DEFAULT_PLACEHOLDER_IMAGE } from '@/utils/constants';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 const BUCKET_NAME = 'application-documents';
 
@@ -37,7 +37,6 @@ export default function SeguimientoDetailPage() {
   const [copySuccess, setCopySuccess] = useState(false);
   const [uploadLinkVisible, setUploadLinkVisible] = useState(false);
   const [documents, setDocuments] = useState<any[]>([]);
-  const supabase = createClient();
 
   useEffect(() => {
     const loadApplication = async () => {
@@ -432,7 +431,6 @@ const DocumentViewer: React.FC<{ documents: any[] }> = ({ documents }) => {
   const [viewingDoc, setViewingDoc] = useState<any | null>(null);
   const [documentsWithUrls, setDocumentsWithUrls] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
     const loadDocumentUrls = async () => {
