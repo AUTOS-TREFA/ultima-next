@@ -26,6 +26,21 @@ export interface VehicleWithoutPhotos {
   has_gallery: boolean;
 }
 
+export interface VehicleWithPhotos {
+  id: string;
+  ordencompra: string | null;
+  title: string;
+  brand: string | null;
+  model: string | null;
+  year: number | null;
+  feature_image: string | null;
+  r2_feature_image: string | null;
+  r2_gallery: string[] | null;
+  gallery_count: number;
+  thumbnail_url: string | null;
+  ubicacion: string | null;
+}
+
 export interface UploadResult {
   success: boolean;
   uploadedCount: number;
@@ -330,6 +345,298 @@ export const VehiclePhotoService = {
     // For accurate count, we fetch and filter the same way as getVehiclesWithoutPhotos
     const vehicles = await this.getVehiclesWithoutPhotos();
     return vehicles.length;
+  },
+
+  /**
+   * Get vehicles with OrdenStatus='Comprado' that HAVE photos (for photo management)
+   */
+  async getVehiclesWithPhotos(): Promise<VehicleWithPhotos[]> {
+    const { data, error } = await supabase
+      .from('inventario_cache')
+      .select('id, ordencompra, title, titulo, marca, modelo, autoano, feature_image, feature_image_url, r2_feature_image, galeria_exterior, fotos_exterior_url, r2_gallery, ubicacion')
+      .eq('ordenstatus', 'Comprado')
+      .order('ordencompra', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching vehicles with photos:', error);
+      throw new Error('No se pudieron obtener los vehículos con fotos.');
+    }
+
+    // Helper to check if a value is a valid non-empty string
+    const isValidString = (val: unknown): boolean => {
+      return typeof val === 'string' && val.trim() !== '' && val !== 'null' && val !== 'undefined';
+    };
+
+    // Helper to get gallery array
+    const getGalleryArray = (val: unknown): string[] => {
+      if (Array.isArray(val)) {
+        return val.filter(item => isValidString(item));
+      }
+      if (typeof val === 'string' && val.trim() !== '') {
+        try {
+          const parsed = JSON.parse(val);
+          if (Array.isArray(parsed)) {
+            return parsed.filter(item => isValidString(item));
+          }
+        } catch {
+          // Not JSON, treat as comma-separated
+          return val.split(',').map(s => s.trim()).filter(s => s !== '');
+        }
+      }
+      return [];
+    };
+
+    // Filter vehicles that HAVE photos (at least feature image OR gallery)
+    return ((data as InventarioCacheRow[]) || [])
+      .filter(vehicle => {
+        const hasFeatureImage =
+          isValidString(vehicle.feature_image) ||
+          isValidString(vehicle.feature_image_url) ||
+          isValidString(vehicle.r2_feature_image);
+
+        const r2Gallery = getGalleryArray(vehicle.r2_gallery);
+        const exteriorGallery = getGalleryArray(vehicle.galeria_exterior);
+        const fotosUrl = getGalleryArray(vehicle.fotos_exterior_url);
+
+        const hasGallery = r2Gallery.length > 0 || exteriorGallery.length > 0 || fotosUrl.length > 0;
+
+        return hasFeatureImage || hasGallery;
+      })
+      .map(vehicle => {
+        // Get the best thumbnail URL (R2 priority)
+        const thumbnailUrl =
+          (isValidString(vehicle.r2_feature_image) ? vehicle.r2_feature_image : null) ||
+          (isValidString(vehicle.feature_image) ? vehicle.feature_image : null) ||
+          (isValidString(vehicle.feature_image_url) ? vehicle.feature_image_url : null);
+
+        // Count gallery images
+        const r2Gallery = getGalleryArray(vehicle.r2_gallery);
+        const exteriorGallery = getGalleryArray(vehicle.galeria_exterior);
+        const fotosUrl = getGalleryArray(vehicle.fotos_exterior_url);
+
+        // Prefer R2 gallery count, otherwise use the largest gallery
+        const galleryCount = r2Gallery.length > 0
+          ? r2Gallery.length
+          : Math.max(exteriorGallery.length, fotosUrl.length);
+
+        return {
+          id: vehicle.id,
+          ordencompra: vehicle.ordencompra,
+          title: vehicle.title || vehicle.titulo || `${vehicle.marca || ''} ${vehicle.modelo || ''} ${vehicle.autoano || ''}`.trim() || 'Sin título',
+          brand: vehicle.marca,
+          model: vehicle.modelo,
+          year: vehicle.autoano,
+          feature_image: vehicle.feature_image,
+          r2_feature_image: vehicle.r2_feature_image as string | null,
+          r2_gallery: r2Gallery.length > 0 ? r2Gallery : null,
+          gallery_count: galleryCount,
+          thumbnail_url: thumbnailUrl,
+          ubicacion: (vehicle as any).ubicacion || null,
+        };
+      });
+  },
+
+  /**
+   * Get full photo details for a specific vehicle (for editing)
+   */
+  async getVehiclePhotoDetails(vehicleId: string): Promise<{
+    id: string;
+    ordencompra: string | null;
+    title: string;
+    feature_image: string | null;
+    r2_feature_image: string | null;
+    r2_gallery: string[];
+    galeria_exterior: string[];
+    fotos_exterior_url: string[];
+  } | null> {
+    const { data, error } = await supabase
+      .from('inventario_cache')
+      .select('id, ordencompra, title, titulo, marca, modelo, autoano, feature_image, feature_image_url, r2_feature_image, galeria_exterior, fotos_exterior_url, r2_gallery')
+      .eq('id', vehicleId)
+      .single();
+
+    if (error || !data) {
+      console.error('Error fetching vehicle photo details:', error);
+      return null;
+    }
+
+    const vehicle = data as InventarioCacheRow;
+
+    // Helper to get gallery array
+    const getGalleryArray = (val: unknown): string[] => {
+      if (Array.isArray(val)) {
+        return val.filter(item => typeof item === 'string' && item.trim() !== '');
+      }
+      if (typeof val === 'string' && val.trim() !== '') {
+        try {
+          const parsed = JSON.parse(val);
+          if (Array.isArray(parsed)) {
+            return parsed.filter(item => typeof item === 'string' && item.trim() !== '');
+          }
+        } catch {
+          return val.split(',').map(s => s.trim()).filter(s => s !== '');
+        }
+      }
+      return [];
+    };
+
+    return {
+      id: vehicle.id,
+      ordencompra: vehicle.ordencompra,
+      title: vehicle.title || vehicle.titulo || `${vehicle.marca || ''} ${vehicle.modelo || ''} ${vehicle.autoano || ''}`.trim() || 'Sin título',
+      feature_image: vehicle.feature_image,
+      r2_feature_image: vehicle.r2_feature_image as string | null,
+      r2_gallery: getGalleryArray(vehicle.r2_gallery),
+      galeria_exterior: getGalleryArray(vehicle.galeria_exterior),
+      fotos_exterior_url: getGalleryArray(vehicle.fotos_exterior_url),
+    };
+  },
+
+  /**
+   * Update vehicle photos (set featured image and gallery)
+   */
+  async updateVehiclePhotos(
+    vehicleId: string,
+    featuredImage: string | null,
+    gallery: string[]
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const updateData: Record<string, unknown> = {
+        r2_feature_image: featuredImage,
+        r2_gallery: gallery,
+        use_r2_images: true,
+        // Also update legacy fields for backwards compatibility
+        feature_image: featuredImage,
+        feature_image_url: featuredImage,
+        galeria_exterior: gallery,
+        fotos_exterior_url: gallery,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await (supabase
+        .from('inventario_cache') as any)
+        .update(updateData)
+        .eq('id', vehicleId);
+
+      if (error) {
+        console.error('Error updating vehicle photos:', error);
+        return { success: false, error: 'Error al actualizar las fotos del vehículo.' };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error in updateVehiclePhotos:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido.'
+      };
+    }
+  },
+
+  /**
+   * Delete a photo from a vehicle's gallery
+   */
+  async deletePhotoFromGallery(
+    vehicleId: string,
+    photoUrl: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      // Get current vehicle data
+      const { data, error: fetchError } = await supabase
+        .from('inventario_cache')
+        .select('r2_gallery, galeria_exterior, fotos_exterior_url, r2_feature_image, feature_image')
+        .eq('id', vehicleId)
+        .single();
+
+      if (fetchError || !data) {
+        return { success: false, error: 'No se pudo obtener el vehículo.' };
+      }
+
+      const vehicleData = data as any;
+
+      // Helper to filter out the photo from an array
+      const filterPhoto = (arr: unknown): string[] => {
+        if (!Array.isArray(arr)) return [];
+        return arr.filter(url => url !== photoUrl);
+      };
+
+      // Remove from all gallery arrays
+      const newR2Gallery = filterPhoto(vehicleData.r2_gallery);
+      const newGaleriaExterior = filterPhoto(vehicleData.galeria_exterior);
+      const newFotosUrl = filterPhoto(vehicleData.fotos_exterior_url);
+
+      // Check if we're deleting the featured image
+      const isFeatureImage =
+        vehicleData.r2_feature_image === photoUrl ||
+        vehicleData.feature_image === photoUrl;
+
+      const updateData: Record<string, unknown> = {
+        r2_gallery: newR2Gallery,
+        galeria_exterior: newGaleriaExterior,
+        fotos_exterior_url: newFotosUrl,
+        updated_at: new Date().toISOString(),
+      };
+
+      // If deleting featured image, set to first gallery image or null
+      if (isFeatureImage) {
+        const newFeatured = newR2Gallery[0] || newGaleriaExterior[0] || null;
+        updateData.r2_feature_image = newFeatured;
+        updateData.feature_image = newFeatured;
+        updateData.feature_image_url = newFeatured;
+      }
+
+      const { error: updateError } = await (supabase
+        .from('inventario_cache') as any)
+        .update(updateData)
+        .eq('id', vehicleId);
+
+      if (updateError) {
+        return { success: false, error: 'Error al eliminar la foto.' };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error in deletePhotoFromGallery:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido.'
+      };
+    }
+  },
+
+  /**
+   * Set a photo as the featured image
+   */
+  async setFeaturedImage(
+    vehicleId: string,
+    photoUrl: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const updateData = {
+        r2_feature_image: photoUrl,
+        feature_image: photoUrl,
+        feature_image_url: photoUrl,
+        use_r2_images: true,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await (supabase
+        .from('inventario_cache') as any)
+        .update(updateData)
+        .eq('id', vehicleId);
+
+      if (error) {
+        return { success: false, error: 'Error al establecer la foto principal.' };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error in setFeaturedImage:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido.'
+      };
+    }
   },
 };
 

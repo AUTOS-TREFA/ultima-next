@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
+import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Sheet,
   SheetContent,
@@ -14,7 +16,24 @@ import {
   SheetTitle,
   SheetFooter,
 } from '@/components/ui/sheet';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
 import {
   Camera,
   Upload,
@@ -29,45 +48,617 @@ import {
   ChevronUp,
   ChevronDown,
   ImagePlus,
+  Pencil,
+  Trash2,
+  Images,
+  Search,
+  Eye,
+  Plus,
 } from 'lucide-react';
-import { VehiclePhotoService, type VehicleWithoutPhotos } from '@/services/VehiclePhotoService';
+import { VehiclePhotoService, type VehicleWithoutPhotos, type VehicleWithPhotos } from '@/services/VehiclePhotoService';
 
 interface PreviewFile extends File {
   preview: string;
   id: string;
 }
 
-export default function AdminPhotoUploadPage() {
-  const [vehicles, setVehicles] = useState<VehicleWithoutPhotos[]>([]);
+// Photo Manager Dialog Component
+function PhotoManagerDialog({
+  open,
+  onOpenChange,
+  vehicle,
+  onPhotoDeleted,
+  onFeaturedChanged,
+  onPhotosAdded,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  vehicle: VehicleWithPhotos | null;
+  onPhotoDeleted: () => void;
+  onFeaturedChanged: () => void;
+  onPhotosAdded: () => void;
+}) {
   const [loading, setLoading] = useState(true);
+  const [photoDetails, setPhotoDetails] = useState<{
+    id: string;
+    ordencompra: string | null;
+    title: string;
+    feature_image: string | null;
+    r2_feature_image: string | null;
+    r2_gallery: string[];
+    galeria_exterior: string[];
+    fotos_exterior_url: string[];
+  } | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [settingFeatured, setSettingFeatured] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [newFiles, setNewFiles] = useState<PreviewFile[]>([]);
+
+  // Fetch photo details when vehicle changes
+  useEffect(() => {
+    if (vehicle && open) {
+      setLoading(true);
+      VehiclePhotoService.getVehiclePhotoDetails(vehicle.id)
+        .then(details => {
+          setPhotoDetails(details);
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+        });
+    }
+  }, [vehicle, open]);
+
+  // Get all unique photos (prioritize R2, then others)
+  const allPhotos = useMemo(() => {
+    if (!photoDetails) return [];
+    const seen = new Set<string>();
+    const photos: string[] = [];
+
+    // Add R2 gallery first (highest priority)
+    photoDetails.r2_gallery.forEach(url => {
+      if (!seen.has(url)) {
+        seen.add(url);
+        photos.push(url);
+      }
+    });
+
+    // Add galeria_exterior
+    photoDetails.galeria_exterior.forEach(url => {
+      if (!seen.has(url)) {
+        seen.add(url);
+        photos.push(url);
+      }
+    });
+
+    // Add fotos_exterior_url
+    photoDetails.fotos_exterior_url.forEach(url => {
+      if (!seen.has(url)) {
+        seen.add(url);
+        photos.push(url);
+      }
+    });
+
+    return photos;
+  }, [photoDetails]);
+
+  const currentFeatured = photoDetails?.r2_feature_image || photoDetails?.feature_image;
+
+  // Dropzone for adding new photos
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const newPreviewFiles = acceptedFiles.map(file =>
+      Object.assign(file, {
+        preview: URL.createObjectURL(file),
+        id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      })
+    ) as PreviewFile[];
+    setNewFiles(prev => [...prev, ...newPreviewFiles]);
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'image/*': ['.jpeg', '.jpg', '.png', '.webp'],
+    },
+    maxSize: 10 * 1024 * 1024,
+  });
+
+  const removeNewFile = (id: string) => {
+    setNewFiles(prev => {
+      const file = prev.find(f => f.id === id);
+      if (file) URL.revokeObjectURL(file.preview);
+      return prev.filter(f => f.id !== id);
+    });
+  };
+
+  const handleDelete = async (photoUrl: string) => {
+    if (!vehicle) return;
+    setDeleting(photoUrl);
+    const result = await VehiclePhotoService.deletePhotoFromGallery(vehicle.id, photoUrl);
+    setDeleting(null);
+    if (result.success) {
+      // Refresh photo details
+      const details = await VehiclePhotoService.getVehiclePhotoDetails(vehicle.id);
+      setPhotoDetails(details);
+      onPhotoDeleted();
+    }
+  };
+
+  const handleSetFeatured = async (photoUrl: string) => {
+    if (!vehicle) return;
+    setSettingFeatured(photoUrl);
+    const result = await VehiclePhotoService.setFeaturedImage(vehicle.id, photoUrl);
+    setSettingFeatured(null);
+    if (result.success) {
+      // Refresh photo details
+      const details = await VehiclePhotoService.getVehiclePhotoDetails(vehicle.id);
+      setPhotoDetails(details);
+      onFeaturedChanged();
+    }
+  };
+
+  const handleUploadNew = async () => {
+    if (!vehicle || newFiles.length === 0) return;
+    setUploading(true);
+    setUploadProgress(0);
+
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => Math.min(prev + 10, 90));
+    }, 200);
+
+    const result = await VehiclePhotoService.appendPhotosToGallery(
+      vehicle.id,
+      newFiles,
+      false
+    );
+
+    clearInterval(progressInterval);
+    setUploadProgress(100);
+
+    if (result.success) {
+      // Clear new files
+      newFiles.forEach(f => URL.revokeObjectURL(f.preview));
+      setNewFiles([]);
+      // Refresh photo details
+      const details = await VehiclePhotoService.getVehiclePhotoDetails(vehicle.id);
+      setPhotoDetails(details);
+      onPhotosAdded();
+    }
+
+    setUploading(false);
+  };
+
+  const handleClose = () => {
+    newFiles.forEach(f => URL.revokeObjectURL(f.preview));
+    setNewFiles([]);
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Images className="w-5 h-5" />
+            Administrar Fotos
+          </DialogTitle>
+          <DialogDescription>
+            {vehicle && (
+              <div className="flex items-center gap-2 mt-1">
+                <span className="font-mono text-xs bg-muted px-2 py-1 rounded">
+                  {vehicle.ordencompra || 'Sin OC'}
+                </span>
+                <span>{vehicle.title}</span>
+              </div>
+            )}
+          </DialogDescription>
+        </DialogHeader>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Current Photos Grid */}
+            <div>
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <Camera className="w-4 h-4" />
+                Fotos Actuales ({allPhotos.length})
+              </h3>
+
+              {allPhotos.length === 0 ? (
+                <div className="text-center py-8 bg-muted/30 rounded-lg">
+                  <ImageOff className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground text-sm">No hay fotos</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {allPhotos.map((photoUrl, index) => {
+                    const isFeatured = photoUrl === currentFeatured;
+                    const isDeleting = deleting === photoUrl;
+                    const isSettingFeatured = settingFeatured === photoUrl;
+
+                    return (
+                      <div
+                        key={`${photoUrl}-${index}`}
+                        className={`relative group rounded-lg overflow-hidden border-2 transition-all ${
+                          isFeatured ? 'border-amber-500 ring-2 ring-amber-500/20' : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <div className="aspect-square relative">
+                          <Image
+                            src={photoUrl}
+                            alt={`Foto ${index + 1}`}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 50vw, 25vw"
+                          />
+                        </div>
+
+                        {/* Featured Badge */}
+                        {isFeatured && (
+                          <div className="absolute top-2 left-2">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-500 text-white text-xs font-semibold rounded-full shadow-md">
+                              <Star className="w-3 h-3" />
+                              Principal
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Hover Overlay with Actions */}
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          {/* Set as Featured */}
+                          {!isFeatured && (
+                            <Button
+                              size="icon"
+                              variant="secondary"
+                              className="h-8 w-8"
+                              onClick={() => handleSetFeatured(photoUrl)}
+                              disabled={isSettingFeatured || isDeleting}
+                              title="Hacer foto principal"
+                            >
+                              {isSettingFeatured ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Star className="w-4 h-4" />
+                              )}
+                            </Button>
+                          )}
+
+                          {/* Delete */}
+                          <Button
+                            size="icon"
+                            variant="destructive"
+                            className="h-8 w-8"
+                            onClick={() => handleDelete(photoUrl)}
+                            disabled={isDeleting || isSettingFeatured}
+                            title="Eliminar foto"
+                          >
+                            {isDeleting ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Add New Photos Section */}
+            <div className="border-t pt-6">
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                Agregar Nuevas Fotos
+              </h3>
+
+              <div
+                {...getRootProps()}
+                className={`
+                  border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all
+                  ${isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
+                  ${uploading ? 'pointer-events-none opacity-50' : ''}
+                `}
+              >
+                <input {...getInputProps()} />
+                <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                {isDragActive ? (
+                  <p className="text-primary font-medium">Suelta las fotos aquí...</p>
+                ) : (
+                  <>
+                    <p className="text-foreground font-medium">Arrastra fotos aquí</p>
+                    <p className="text-muted-foreground text-sm mt-1">o haz clic para seleccionar</p>
+                  </>
+                )}
+              </div>
+
+              {/* New Files Preview */}
+              {newFiles.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {newFiles.length} foto{newFiles.length > 1 ? 's' : ''} seleccionada{newFiles.length > 1 ? 's' : ''}
+                  </p>
+                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                    {newFiles.map(file => (
+                      <div key={file.id} className="relative group">
+                        <div className="aspect-square rounded-lg overflow-hidden border border-border">
+                          <img
+                            src={file.preview}
+                            alt={file.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeNewFile(file.id)}
+                          className="absolute -top-1 -right-1 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {uploading && (
+                    <div className="mt-3 space-y-2">
+                      <Progress value={uploadProgress} className="h-2" />
+                      <p className="text-sm text-muted-foreground text-center">
+                        Subiendo fotos... {uploadProgress}%
+                      </p>
+                    </div>
+                  )}
+
+                  <Button
+                    onClick={handleUploadNew}
+                    disabled={uploading}
+                    className="mt-3 w-full"
+                  >
+                    {uploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Subiendo...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Subir {newFiles.length} Foto{newFiles.length > 1 ? 's' : ''}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <DialogFooter>
+          <Button variant="outline" onClick={handleClose}>
+            Cerrar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Vehicles With Photos DataTable Component
+function VehiclesWithPhotosTable({
+  vehicles,
+  loading,
+  onRefresh,
+  onEditPhotos,
+}: {
+  vehicles: VehicleWithPhotos[];
+  loading: boolean;
+  onRefresh: () => void;
+  onEditPhotos: (vehicle: VehicleWithPhotos) => void;
+}) {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredVehicles = useMemo(() => {
+    if (!searchTerm.trim()) return vehicles;
+    const search = searchTerm.toLowerCase();
+    return vehicles.filter(v =>
+      v.title.toLowerCase().includes(search) ||
+      v.ordencompra?.toLowerCase().includes(search) ||
+      v.brand?.toLowerCase().includes(search) ||
+      v.model?.toLowerCase().includes(search)
+    );
+  }, [vehicles, searchTerm]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Search */}
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por OC, título, marca..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Button variant="outline" onClick={onRefresh} className="flex items-center gap-2">
+          <RefreshCw className="w-4 h-4" />
+          Actualizar
+        </Button>
+      </div>
+
+      {/* Table */}
+      <div className="border rounded-lg overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50">
+              <TableHead className="w-20">Foto</TableHead>
+              <TableHead>Vehículo</TableHead>
+              <TableHead className="w-24">Galería</TableHead>
+              <TableHead className="w-28">Ubicación</TableHead>
+              <TableHead className="w-32 text-right">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredVehicles.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <ImageOff className="w-8 h-8 text-muted-foreground" />
+                    <p className="text-muted-foreground">
+                      {searchTerm ? 'No se encontraron vehículos' : 'No hay vehículos con fotos'}
+                    </p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredVehicles.map(vehicle => (
+                <TableRow key={vehicle.id} className="hover:bg-muted/30">
+                  {/* Thumbnail */}
+                  <TableCell>
+                    <div className="w-16 h-12 rounded-md overflow-hidden bg-muted relative">
+                      {vehicle.thumbnail_url ? (
+                        <Image
+                          src={vehicle.thumbnail_url}
+                          alt={vehicle.title}
+                          fill
+                          className="object-cover"
+                          sizes="64px"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ImageOff className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+
+                  {/* Vehicle Info */}
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs bg-muted px-2 py-0.5 rounded">
+                          {vehicle.ordencompra || 'Sin OC'}
+                        </span>
+                      </div>
+                      <p className="font-medium text-sm">{vehicle.title}</p>
+                      {vehicle.year && (
+                        <p className="text-xs text-muted-foreground">{vehicle.year}</p>
+                      )}
+                    </div>
+                  </TableCell>
+
+                  {/* Gallery Count */}
+                  <TableCell>
+                    <Badge variant="secondary" className="font-mono">
+                      <Images className="w-3 h-3 mr-1" />
+                      {vehicle.gallery_count}
+                    </Badge>
+                  </TableCell>
+
+                  {/* Location */}
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">
+                      {vehicle.ubicacion || '-'}
+                    </span>
+                  </TableCell>
+
+                  {/* Actions */}
+                  <TableCell className="text-right">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onEditPhotos(vehicle)}
+                      className="gap-2"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      Editar
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Summary */}
+      <p className="text-sm text-muted-foreground">
+        Mostrando {filteredVehicles.length} de {vehicles.length} vehículos
+      </p>
+    </div>
+  );
+}
+
+// Main Component
+export default function AdminPhotoUploadPage() {
+  const [activeTab, setActiveTab] = useState<'sin-fotos' | 'con-fotos'>('sin-fotos');
+
+  // Vehicles without photos state
+  const [vehiclesWithoutPhotos, setVehiclesWithoutPhotos] = useState<VehicleWithoutPhotos[]>([]);
+  const [loadingWithout, setLoadingWithout] = useState(true);
+
+  // Vehicles with photos state
+  const [vehiclesWithPhotos, setVehiclesWithPhotos] = useState<VehicleWithPhotos[]>([]);
+  const [loadingWith, setLoadingWith] = useState(true);
+
+  // Upload sheet state
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleWithoutPhotos | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  // Separate state for featured image and gallery
+  // Photo manager dialog state
+  const [editingVehicle, setEditingVehicle] = useState<VehicleWithPhotos | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Upload state for sheet
   const [featuredImage, setFeaturedImage] = useState<PreviewFile | null>(null);
   const [galleryImages, setGalleryImages] = useState<PreviewFile[]>([]);
-
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
   const [uploadMessage, setUploadMessage] = useState('');
 
   // Fetch vehicles without photos
-  const fetchVehicles = useCallback(async () => {
+  const fetchVehiclesWithoutPhotos = useCallback(async () => {
     try {
-      setLoading(true);
+      setLoadingWithout(true);
       const data = await VehiclePhotoService.getVehiclesWithoutPhotos();
-      setVehicles(data);
+      setVehiclesWithoutPhotos(data);
     } catch (error) {
       console.error('Error fetching vehicles:', error);
     } finally {
-      setLoading(false);
+      setLoadingWithout(false);
+    }
+  }, []);
+
+  // Fetch vehicles with photos
+  const fetchVehiclesWithPhotos = useCallback(async () => {
+    try {
+      setLoadingWith(true);
+      const data = await VehiclePhotoService.getVehiclesWithPhotos();
+      setVehiclesWithPhotos(data);
+    } catch (error) {
+      console.error('Error fetching vehicles with photos:', error);
+    } finally {
+      setLoadingWith(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchVehicles();
-  }, [fetchVehicles]);
+    fetchVehiclesWithoutPhotos();
+    fetchVehiclesWithPhotos();
+  }, [fetchVehiclesWithoutPhotos, fetchVehiclesWithPhotos]);
 
   // Generate unique ID for files
   const generateId = () => `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -76,7 +667,6 @@ export default function AdminPhotoUploadPage() {
   const onDropFeatured = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
-      // Revoke old preview if exists
       if (featuredImage) {
         URL.revokeObjectURL(featuredImage.preview);
       }
@@ -165,7 +755,6 @@ export default function AdminPhotoUploadPage() {
     const imageToPromote = galleryImages.find(f => f.id === id);
     if (!imageToPromote) return;
 
-    // If there's already a featured image, move it to gallery
     if (featuredImage) {
       setGalleryImages(prev => [featuredImage, ...prev.filter(f => f.id !== id)]);
     } else {
@@ -215,14 +804,12 @@ export default function AdminPhotoUploadPage() {
     setUploadProgress(0);
 
     try {
-      // Combine all files - featured first, then gallery
       const allFiles: File[] = [];
       if (featuredImage) {
         allFiles.push(featuredImage);
       }
       allFiles.push(...galleryImages);
 
-      // Simulate progress (R2 doesn't provide upload progress)
       const progressInterval = setInterval(() => {
         setUploadProgress(prev => Math.min(prev + 10, 90));
       }, 200);
@@ -230,7 +817,7 @@ export default function AdminPhotoUploadPage() {
       const result = await VehiclePhotoService.uploadAndLinkPhotos(
         selectedVehicle.id,
         allFiles,
-        !!featuredImage // Set first as featured if we have a featured image
+        !!featuredImage
       );
 
       clearInterval(progressInterval);
@@ -240,10 +827,10 @@ export default function AdminPhotoUploadPage() {
         setUploadStatus('success');
         setUploadMessage(`${result.uploadedCount} foto${result.uploadedCount > 1 ? 's' : ''} subida${result.uploadedCount > 1 ? 's' : ''} y vinculada${result.uploadedCount > 1 ? 's' : ''} exitosamente.`);
 
-        // Remove the vehicle from the list after successful upload
-        setVehicles(prev => prev.filter(v => v.id !== selectedVehicle.id));
+        // Refresh both lists
+        fetchVehiclesWithoutPhotos();
+        fetchVehiclesWithPhotos();
 
-        // Close sheet after 2 seconds
         setTimeout(() => {
           handleCloseSheet();
         }, 2000);
@@ -281,99 +868,146 @@ export default function AdminPhotoUploadPage() {
             <Camera className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Cargar Fotos</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Gestor de Fotos</h1>
             <p className="text-sm text-muted-foreground">
-              Inventario comprado pendiente de fotos
+              Administra las fotos del inventario comprado
             </p>
           </div>
         </div>
-
-        <Button
-          variant="outline"
-          onClick={fetchVehicles}
-          disabled={loading}
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          Actualizar
-        </Button>
       </div>
 
-      {/* Stats Card */}
-      <Card className="bg-card border-border">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-amber-500/10 rounded-full">
-              <ImageOff className="w-6 h-6 text-amber-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{vehicles.length}</p>
-              <p className="text-sm text-muted-foreground">Autos comprados sin fotos</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Vehicle List */}
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      ) : vehicles.length === 0 ? (
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card className="bg-card border-border">
-          <CardContent className="py-12 text-center">
-            <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground">Todos los autos comprados tienen fotos</h3>
-            <p className="text-muted-foreground mt-1">No hay vehículos pendientes de cargar fotos.</p>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-amber-500/10 rounded-full">
+                <ImageOff className="w-6 h-6 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-foreground">{vehiclesWithoutPhotos.length}</p>
+                <p className="text-sm text-muted-foreground">Sin fotos</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
-      ) : (
-        <div className="grid gap-3">
-          {vehicles.map(vehicle => (
-            <Card key={vehicle.id} className="bg-card border-border hover:border-primary/50 transition-colors">
-              <CardContent className="p-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-sm bg-muted px-2 py-1 rounded text-foreground">
-                        {vehicle.ordencompra || 'Sin OC'}
-                      </span>
-                      <h3 className="font-semibold text-foreground">
-                        {vehicle.title || `${vehicle.brand || ''} ${vehicle.model || ''} ${vehicle.year || ''}`.trim() || 'Sin título'}
-                      </h3>
-                    </div>
+        <Card className="bg-card border-border">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-green-500/10 rounded-full">
+                <Images className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-foreground">{vehiclesWithPhotos.length}</p>
+                <p className="text-sm text-muted-foreground">Con fotos</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-                    <div className="flex gap-2 mt-2">
-                      {!vehicle.has_feature_image && (
-                        <Badge variant="destructive" className="text-xs">
-                          <AlertCircle className="w-3 h-3 mr-1" />
-                          Sin foto principal
-                        </Badge>
-                      )}
-                      {!vehicle.has_gallery && (
-                        <Badge variant="secondary" className="text-xs bg-amber-500/10 text-amber-700 border-amber-200">
-                          <ImageOff className="w-3 h-3 mr-1" />
-                          Galería vacía
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'sin-fotos' | 'con-fotos')}>
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="sin-fotos" className="gap-2">
+            <ImageOff className="w-4 h-4" />
+            Sin Fotos ({vehiclesWithoutPhotos.length})
+          </TabsTrigger>
+          <TabsTrigger value="con-fotos" className="gap-2">
+            <Images className="w-4 h-4" />
+            Con Fotos ({vehiclesWithPhotos.length})
+          </TabsTrigger>
+        </TabsList>
 
-                  <Button
-                    onClick={() => handleOpenSheet(vehicle)}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Subir Fotos
-                  </Button>
-                </div>
+        {/* Tab: Vehicles Without Photos */}
+        <TabsContent value="sin-fotos" className="mt-6">
+          {loadingWithout ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : vehiclesWithoutPhotos.length === 0 ? (
+            <Card className="bg-card border-border">
+              <CardContent className="py-12 text-center">
+                <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-foreground">Todos los autos comprados tienen fotos</h3>
+                <p className="text-muted-foreground mt-1">No hay vehículos pendientes de cargar fotos.</p>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
+          ) : (
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  onClick={fetchVehiclesWithoutPhotos}
+                  disabled={loadingWithout}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className={`w-4 h-4 ${loadingWithout ? 'animate-spin' : ''}`} />
+                  Actualizar
+                </Button>
+              </div>
+              <div className="grid gap-3">
+                {vehiclesWithoutPhotos.map(vehicle => (
+                  <Card key={vehicle.id} className="bg-card border-border hover:border-primary/50 transition-colors">
+                    <CardContent className="p-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono text-sm bg-muted px-2 py-1 rounded text-foreground">
+                              {vehicle.ordencompra || 'Sin OC'}
+                            </span>
+                            <h3 className="font-semibold text-foreground">
+                              {vehicle.title || `${vehicle.brand || ''} ${vehicle.model || ''} ${vehicle.year || ''}`.trim() || 'Sin título'}
+                            </h3>
+                          </div>
 
-      {/* Upload Sheet */}
+                          <div className="flex gap-2 mt-2">
+                            {!vehicle.has_feature_image && (
+                              <Badge variant="destructive" className="text-xs">
+                                <AlertCircle className="w-3 h-3 mr-1" />
+                                Sin foto principal
+                              </Badge>
+                            )}
+                            {!vehicle.has_gallery && (
+                              <Badge variant="secondary" className="text-xs bg-amber-500/10 text-amber-700 border-amber-200">
+                                <ImageOff className="w-3 h-3 mr-1" />
+                                Galería vacía
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <Button
+                          onClick={() => handleOpenSheet(vehicle)}
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Subir Fotos
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Tab: Vehicles With Photos */}
+        <TabsContent value="con-fotos" className="mt-6">
+          <VehiclesWithPhotosTable
+            vehicles={vehiclesWithPhotos}
+            loading={loadingWith}
+            onRefresh={fetchVehiclesWithPhotos}
+            onEditPhotos={(vehicle) => {
+              setEditingVehicle(vehicle);
+              setDialogOpen(true);
+            }}
+          />
+        </TabsContent>
+      </Tabs>
+
+      {/* Upload Sheet (for vehicles without photos) */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent className="w-full sm:max-w-xl overflow-y-auto bg-card">
           <SheetHeader>
@@ -429,14 +1063,12 @@ export default function AdminPhotoUploadPage() {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  {/* Principal Badge - Pill Style */}
                   <div className="absolute top-3 left-3">
                     <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-500 text-white text-xs font-semibold rounded-full shadow-md">
                       <Star className="w-3 h-3" />
                       Principal
                     </span>
                   </div>
-                  {/* Remove Button */}
                   {!uploading && (
                     <button
                       type="button"
@@ -450,7 +1082,6 @@ export default function AdminPhotoUploadPage() {
               )}
             </div>
 
-            {/* Divider */}
             <div className="border-t border-border" />
 
             {/* SECTION 2: Gallery Images */}
@@ -481,7 +1112,6 @@ export default function AdminPhotoUploadPage() {
                 )}
               </div>
 
-              {/* Gallery Dropzone */}
               <div
                 {...getGalleryRootProps()}
                 className={`
@@ -502,7 +1132,6 @@ export default function AdminPhotoUploadPage() {
                 )}
               </div>
 
-              {/* Gallery Previews with Reorder Controls */}
               {galleryImages.length > 0 && (
                 <div className="space-y-2">
                   {galleryImages.map((file, index) => (
@@ -510,12 +1139,9 @@ export default function AdminPhotoUploadPage() {
                       key={file.id}
                       className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg border border-border"
                     >
-                      {/* Grip Icon */}
                       <div className="text-muted-foreground">
                         <GripVertical className="w-4 h-4" />
                       </div>
-
-                      {/* Thumbnail */}
                       <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
                         <img
                           src={file.preview}
@@ -523,19 +1149,12 @@ export default function AdminPhotoUploadPage() {
                           className="w-full h-full object-cover"
                         />
                       </div>
-
-                      {/* File Info */}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{file.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Posición: {index + 1}
-                        </p>
+                        <p className="text-xs text-muted-foreground">Posición: {index + 1}</p>
                       </div>
-
-                      {/* Controls */}
                       {!uploading && (
                         <div className="flex items-center gap-1">
-                          {/* Move Up */}
                           <Button
                             variant="ghost"
                             size="icon"
@@ -545,8 +1164,6 @@ export default function AdminPhotoUploadPage() {
                           >
                             <ChevronUp className="w-4 h-4" />
                           </Button>
-
-                          {/* Move Down */}
                           <Button
                             variant="ghost"
                             size="icon"
@@ -556,8 +1173,6 @@ export default function AdminPhotoUploadPage() {
                           >
                             <ChevronDown className="w-4 h-4" />
                           </Button>
-
-                          {/* Promote to Featured */}
                           <Button
                             variant="ghost"
                             size="icon"
@@ -567,8 +1182,6 @@ export default function AdminPhotoUploadPage() {
                           >
                             <Star className="w-4 h-4" />
                           </Button>
-
-                          {/* Remove */}
                           <Button
                             variant="ghost"
                             size="icon"
@@ -585,7 +1198,6 @@ export default function AdminPhotoUploadPage() {
               )}
             </div>
 
-            {/* Upload Progress */}
             {uploadStatus === 'uploading' && (
               <div className="space-y-2">
                 <Progress value={uploadProgress} className="h-2" />
@@ -595,7 +1207,6 @@ export default function AdminPhotoUploadPage() {
               </div>
             )}
 
-            {/* Status Messages */}
             {uploadStatus === 'success' && (
               <Alert className="bg-green-500/10 border-green-500/20">
                 <CheckCircle2 className="h-4 w-4 text-green-600" />
@@ -641,6 +1252,23 @@ export default function AdminPhotoUploadPage() {
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      {/* Photo Manager Dialog (for vehicles with photos) */}
+      <PhotoManagerDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        vehicle={editingVehicle}
+        onPhotoDeleted={() => {
+          fetchVehiclesWithPhotos();
+          fetchVehiclesWithoutPhotos();
+        }}
+        onFeaturedChanged={() => {
+          fetchVehiclesWithPhotos();
+        }}
+        onPhotosAdded={() => {
+          fetchVehiclesWithPhotos();
+        }}
+      />
     </div>
   );
 }

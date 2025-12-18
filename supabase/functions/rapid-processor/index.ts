@@ -240,6 +240,25 @@ function buildPublicUrl(bucket, path) {
 
   const recordId = row.record_id ?? airtableData.record_id ?? null;
 
+  // === R2 IMAGE FIELDS (HIGHEST PRIORITY) ===
+  // Check for R2 images first - these are uploaded via the admin Cargar Fotos panel
+  const r2FeatureImage = row.r2_feature_image || null;
+  const r2GalleryRaw = row.r2_gallery;
+  let r2Gallery: string[] = [];
+  if (Array.isArray(r2GalleryRaw)) {
+    r2Gallery = r2GalleryRaw.filter(url => typeof url === 'string' && url.trim() !== '');
+  } else if (typeof r2GalleryRaw === 'string' && r2GalleryRaw.trim() !== '') {
+    try {
+      const parsed = JSON.parse(r2GalleryRaw);
+      if (Array.isArray(parsed)) {
+        r2Gallery = parsed.filter(url => typeof url === 'string' && url.trim() !== '');
+      }
+    } catch {
+      // If not JSON, treat as comma-separated
+      r2Gallery = r2GalleryRaw.split(',').map(s => s.trim()).filter(s => s !== '');
+    }
+  }
+
   // Get image fields from row or airtableData
   // Check multiple possible field names for feature image with priority order
   // Airtable field names may vary: fotos_exterior, Fotos Exterior, fotos_exterior_archivos, etc.
@@ -302,13 +321,37 @@ function buildPublicUrl(bucket, path) {
 
   // Build public URLs for all images and convert to CDN URLs
   const featureImagePath = extractFeatureImage(featureRaw);
-  let feature_public = featureImagePath ? convertToCdnUrl(buildPublicUrl(BUCKET, featureImagePath)) : null;
-  const galeriaExterior = fotosExterior.map((p)=>convertToCdnUrl(buildPublicUrl(BUCKET, p))).filter(Boolean);
+  const legacyFeatureImage = featureImagePath ? convertToCdnUrl(buildPublicUrl(BUCKET, featureImagePath)) : null;
+  const legacyGaleriaExterior = fotosExterior.map((p)=>convertToCdnUrl(buildPublicUrl(BUCKET, p))).filter(Boolean);
   const galeriaInterior = fotosInterior.map((p)=>convertToCdnUrl(buildPublicUrl(BUCKET, p))).filter(Boolean);
 
-  // If no feature_image, try to use first exterior image
-  if (!feature_public && galeriaExterior.length > 0) {
-    feature_public = galeriaExterior[0];
+  // === DETERMINE FINAL IMAGE (R2 has highest priority) ===
+  // Priority order: R2 feature image > R2 gallery first image > Legacy feature image > Legacy gallery first image > Placeholder
+  let feature_public: string | null = null;
+  let galeriaExterior: string[] = [];
+
+  // Check R2 images first (highest priority - uploaded via admin panel)
+  if (r2FeatureImage && typeof r2FeatureImage === 'string' && r2FeatureImage.trim() !== '') {
+    feature_public = r2FeatureImage;
+  } else if (r2Gallery.length > 0) {
+    feature_public = r2Gallery[0];
+  }
+
+  // Use R2 gallery if available, otherwise legacy gallery
+  if (r2Gallery.length > 0) {
+    galeriaExterior = r2Gallery;
+  } else {
+    galeriaExterior = legacyGaleriaExterior;
+  }
+
+  // If no R2 image, fall back to legacy feature image
+  if (!feature_public && legacyFeatureImage) {
+    feature_public = legacyFeatureImage;
+  }
+
+  // If still no feature_image, try to use first exterior image from legacy
+  if (!feature_public && legacyGaleriaExterior.length > 0) {
+    feature_public = legacyGaleriaExterior[0];
   }
 
   // If still no image, use placeholder based on carroceria/clasificacionid
@@ -388,7 +431,11 @@ function buildPublicUrl(bucket, path) {
     },
     thumbnail: feature_public,
     galeriaExterior,
-    galeriaInterior
+    galeriaInterior,
+    // R2 image fields (highest priority for display)
+    r2_feature_image: r2FeatureImage,
+    r2_gallery: r2Gallery,
+    use_r2_images: !!(r2FeatureImage || r2Gallery.length > 0)
   };
 }
 /* ================================
