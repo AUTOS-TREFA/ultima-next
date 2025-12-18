@@ -576,7 +576,7 @@ const DashboardSidebarPage: React.FC = () => {
           {assignedAgent && (
             <Card className="border-0 shadow-md bg-gradient-to-br from-slate-900 to-slate-800 text-white">
               <CardContent className="p-6 text-center">
-                <p className="text-xs text-slate-400 uppercase tracking-wide mb-4">Tu Asesor Asignado</p>
+                <p className="text-xs text-slate-300 uppercase tracking-wide mb-4">Tu Asesor Asignado</p>
                 {/* Prominent Avatar */}
                 <div className="relative mx-auto mb-4">
                   {assignedAgent.picture_url ? (
@@ -594,8 +594,8 @@ const DashboardSidebarPage: React.FC = () => {
                     <CheckCircle className="w-3 h-3 text-white" />
                   </div>
                 </div>
-                <p className="font-bold text-lg">{assignedAgent.full_name || assignedAgent.name}</p>
-                <p className="text-sm text-slate-400 mb-4">{assignedAgent.phone}</p>
+                <p className="font-bold text-lg text-white">{assignedAgent.full_name || assignedAgent.name}</p>
+                <p className="text-sm text-slate-300 mb-4">{assignedAgent.phone}</p>
                 <a
                   href={`https://wa.me/${assignedAgent.phone.replace(/\D/g, '')}?text=Hola,%20necesito%20ayuda%20con%20mi%20solicitud`}
                   target="_blank"
@@ -664,18 +664,40 @@ const DashboardSidebarPage: React.FC = () => {
                   <QRCodeSVG value={publicUploadLink} size={120} level="H" includeMargin={false} />
                 </div>
 
-                {/* Copy Link */}
-                <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-lg">
-                  <input
-                    type="text"
-                    value={publicUploadLink}
-                    readOnly
-                    className="flex-1 text-xs text-slate-600 bg-transparent outline-none truncate"
-                  />
-                  <Button size="sm" variant="secondary" onClick={copyToClipboard} className="h-7 px-2 text-xs">
-                    <Copy className="w-3 h-3 mr-1" />
-                    Copiar
-                  </Button>
+                {/* Copy Link Section */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-lg">
+                    <input
+                      type="text"
+                      value={publicUploadLink}
+                      readOnly
+                      className="flex-1 text-xs text-slate-600 bg-transparent outline-none truncate font-mono"
+                    />
+                    <Button size="sm" variant="secondary" onClick={copyToClipboard} className="h-7 px-2 text-xs">
+                      <Copy className="w-3 h-3 mr-1" />
+                      Copiar
+                    </Button>
+                  </div>
+
+                  {/* Instructions */}
+                  <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-left">
+                    <p className="text-xs font-medium text-blue-900 mb-1">Cómo subir documentos:</p>
+                    <ul className="text-xs text-blue-700 space-y-0.5">
+                      <li>• Arrastra archivos a esta área</li>
+                      <li>• O copia la liga y ábrela en tu celular</li>
+                      <li>• Formatos: JPG, PNG, PDF</li>
+                    </ul>
+                  </div>
+
+                  {/* Link to Seguimiento */}
+                  <Link
+                    href={`/escritorio/seguimiento/${latestApplication.id}`}
+                    className="inline-flex items-center justify-center gap-2 w-full px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-medium text-slate-700 transition-colors"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    Ver solicitud y documentos
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
                 </div>
               </CardContent>
             </Card>
