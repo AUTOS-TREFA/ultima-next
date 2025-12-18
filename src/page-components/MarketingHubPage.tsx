@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Users, TrendingUp, BookOpen, Settings, Briefcase,
-  BarChart3, FileText, Database, LayoutDashboard, Activity, Home, Camera, ClipboardCheck,
-  Eye, ArrowUp, ArrowDown, Minus, ArrowRight
+  Users, TrendingUp, BarChart3, FileText, LayoutDashboard,
+  Eye, ArrowUp, ArrowDown, Minus, Camera, Settings, LineChart,
+  ClipboardList, Car, UserCircle, ChevronRight
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -172,44 +172,65 @@ const MarketingHubPage: React.FC = () => {
     }
   };
 
-  // Gradient color combinations for the cards
-  const gradients = [
-    'from-blue-600 to-blue-800',
-    'from-emerald-600 to-emerald-800',
-    'from-violet-600 to-violet-800',
-    'from-orange-500 to-orange-700',
-    'from-rose-600 to-rose-800',
-    'from-cyan-600 to-cyan-800',
-    'from-amber-500 to-amber-700',
-    'from-indigo-600 to-indigo-800',
-    'from-teal-600 to-teal-800',
-    'from-pink-600 to-pink-800',
-    'from-slate-600 to-slate-800',
-    'from-fuchsia-600 to-fuchsia-800',
-  ];
-
-  const mainTools = [
-    { title: 'CRM', link: '/escritorio/admin/crm' },
-    { title: 'Asesores', link: '/escritorio/admin/usuarios' },
-    { title: 'Intel', link: '/intel' },
-    { title: 'Dashboard', link: '/escritorio/dashboard' },
-    { title: 'Tracking', link: '/escritorio/admin/marketing-config' },
-    { title: 'Vacantes', link: '/escritorio/admin/vacantes' },
-    { title: 'Solicitudes', link: '/escritorio/admin/solicitudes' },
-    { title: 'Changelog', link: '/changelog' },
-    { title: 'Marketing', link: '/escritorio/admin/marketing-analytics' },
-    { title: 'Homepage', link: '/escritorio/marketing/homepage-editor' },
-    { title: 'Car Studio', link: '/escritorio/car-studio' },
-    { title: 'Inspecciones', link: '/escritorio/admin/inspecciones' },
+  // Admin menu items with icons - TREFA themed
+  const adminMenuItems = [
+    {
+      title: 'Resumen del Sitio',
+      description: 'Vista general del dashboard',
+      link: '/escritorio/dashboard',
+      icon: LayoutDashboard
+    },
+    {
+      title: 'Leads',
+      description: 'Gestión de leads y contactos',
+      link: '/escritorio/admin/crm',
+      icon: Users
+    },
+    {
+      title: 'Usuarios',
+      description: 'Administrar asesores y usuarios',
+      link: '/escritorio/admin/usuarios',
+      icon: UserCircle
+    },
+    {
+      title: 'Reporte de Solicitudes',
+      description: 'Ver todas las solicitudes',
+      link: '/escritorio/admin/solicitudes',
+      icon: ClipboardList
+    },
+    {
+      title: 'Tráfico y Conversión',
+      description: 'Análisis de marketing',
+      link: '/escritorio/admin/marketing-analytics',
+      icon: LineChart
+    },
+    {
+      title: 'Estadísticas de Autos',
+      description: 'Análisis del inventario',
+      link: '/escritorio/admin/business-analytics',
+      icon: Car
+    },
+    {
+      title: 'Cargar Fotos',
+      description: 'Subir fotos a vehículos',
+      link: '/escritorio/admin/cargar-fotos',
+      icon: Camera
+    },
+    {
+      title: 'Configuración Tracking',
+      description: 'Configurar eventos y píxeles',
+      link: '/escritorio/admin/marketing-config',
+      icon: Settings
+    },
   ];
 
   return (
     <div className="flex-1 w-full max-w-[1400px] mx-auto space-y-2 sm:space-y-3 p-2 sm:p-3 md:p-4 overflow-x-hidden">
       {/* Header */}
-      <div>
-        <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">Dashboard General</h2>
-        <p className="text-xs text-muted-foreground">
-          Centro de herramientas de marketing, ventas y análisis
+      <div className="pb-2">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-foreground">Panel de Administración</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          Centro de control y análisis del sitio
         </p>
       </div>
 
@@ -337,21 +358,35 @@ const MarketingHubPage: React.FC = () => {
         </Card>
       </div>
 
-      {/* Main Tools Grid - Gradient Cards */}
-      <div className="grid gap-2 sm:gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-        {mainTools.map((tool, index) => (
-          <Link key={tool.title} href={tool.link}>
-            <div className={`group relative h-16 sm:h-20 rounded-xl bg-gradient-to-br ${gradients[index % gradients.length]} cursor-pointer overflow-hidden transition-all hover:scale-[1.02] hover:shadow-lg`}>
-              {/* Shine effect on hover */}
-              <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all" />
-              {/* Content */}
-              <div className="relative h-full flex items-center justify-between px-3 sm:px-4">
-                <span className="font-semibold text-white text-xs sm:text-sm truncate">{tool.title}</span>
-                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white/60 group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-1" />
+      {/* Admin Menu Grid - TREFA Themed */}
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        {adminMenuItems.map((item) => {
+          const IconComponent = item.icon;
+          return (
+            <Link key={item.title} href={item.link}>
+              <div className="group relative bg-card hover:bg-accent border border-border rounded-xl p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary/30">
+                <div className="flex items-start gap-3">
+                  {/* Icon container */}
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-accent flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                    <IconComponent className="w-5 h-5 text-primary" />
+                  </div>
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="font-semibold text-card-foreground text-sm truncate">
+                        {item.title}
+                      </h3>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </div>
 
       {/* Events Section */}
