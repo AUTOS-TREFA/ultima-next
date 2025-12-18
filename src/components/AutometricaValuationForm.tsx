@@ -351,12 +351,12 @@ export function AutometricaValuationForm({
     loadCatalog();
   }, []);
 
-  // If user is already logged in, skip verification step
+  // If user is already logged in AND has verified phone, skip verification step
   useEffect(() => {
-    if (step === 'verify_to_reveal' && user) {
+    if (step === 'verify_to_reveal' && user && profile?.phone_verified === true) {
       setStep('success');
     }
-  }, [step, user]);
+  }, [step, user, profile?.phone_verified]);
 
   // Reset downstream selections when brand changes
   useEffect(() => {
@@ -484,14 +484,27 @@ export function AutometricaValuationForm({
 
       setValuation(valuationResult);
 
-      // If user is already logged in, go directly to success (no verification needed)
-      if (user) {
+      // If user is already logged in AND has phone verified, go directly to success
+      // Otherwise, require phone verification (even for logged-in users without phone_verified)
+      if (user && profile?.phone_verified === true) {
         await saveValuationData(valuationResult, kmValue);
         setStep('success');
       } else {
-        // Show verification modal to reveal offer (only for unauthenticated users)
+        // Show verification modal to reveal offer
+        // - For unauthenticated users: will create account + verify phone
+        // - For authenticated users without phone_verified: will verify phone only
         setShowVerificationModal(true);
         setStep('verify_to_reveal');
+
+        // Pre-fill phone/email for logged-in users without verification
+        if (user && profile) {
+          if (profile.phone && !phoneInput) {
+            setPhoneInput(profile.phone);
+          }
+          if (profile.email && !emailInput) {
+            setEmailInput(profile.email);
+          }
+        }
       }
 
       if (onComplete) {
@@ -560,7 +573,8 @@ export function AutometricaValuationForm({
       return;
     }
 
-    if (!emailInput || !emailInput.includes('@')) {
+    // Email is only required for new users (not logged in)
+    if (!user && (!emailInput || !emailInput.includes('@'))) {
       setVerificationError('Ingresa un correo electrónico válido');
       return;
     }
@@ -572,42 +586,91 @@ export function AutometricaValuationForm({
       // Clean phone number
       const cleanPhone = phoneInput.replace(/\D/g, '').slice(-10);
 
-      // Check if email already exists
-      const { data: existingEmail } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', emailInput)
-        .single();
+      // If user is already logged in, skip email/phone existence checks
+      // They're just verifying their own phone number
+      if (!user) {
+        // Check if email already exists (only for new users)
+        const { data: existingEmail } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', emailInput)
+          .single();
 
-      if (existingEmail) {
-        setVerificationError('Este correo ya está registrado. Inicia sesión en lugar de registrarte.');
-        setVerificationLoading(false);
-        return;
-      }
+        if (existingEmail) {
+          setVerificationError('Este correo ya está registrado. Inicia sesión en lugar de registrarte.');
+          setVerificationLoading(false);
+          return;
+        }
 
-      // Check if phone already exists
-      const { data: existingPhone } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('phone', cleanPhone)
-        .single();
+        // Check if phone already exists AND is verified (optimization to avoid unnecessary SMS)
+        const { data: existingPhone } = await supabase
+          .from('profiles')
+          .select('id, phone_verified, email')
+          .eq('phone', cleanPhone)
+          .maybeSingle();
 
-      if (existingPhone) {
-        setVerificationError('Este teléfono ya está registrado. Inicia sesión en lugar de registrarte.');
-        setVerificationLoading(false);
-        return;
+        if (existingPhone) {
+          if (existingPhone.phone_verified) {
+            // Phone is already verified - suggest login instead
+            const maskedEmail = existingPhone.email
+              ? existingPhone.email.replace(/(.{2})(.*)(@.*)/, '$1***$3')
+              : '';
+            setVerificationError(
+              `Este teléfono ya está verificado${maskedEmail ? ` con ${maskedEmail}` : ''}. Inicia sesión en lugar de registrarte.`
+            );
+          } else {
+            // Phone exists but not verified - still suggest login
+            setVerificationError('Este teléfono ya está registrado. Inicia sesión en lugar de registrarte.');
+          }
+          setVerificationLoading(false);
+          return;
+        }
+      } else {
+        // Logged-in user: check if phone is used by ANOTHER account
+        const { data: existingPhone } = await supabase
+          .from('profiles')
+          .select('id, phone_verified, email')
+          .eq('phone', cleanPhone)
+          .neq('id', user.id)
+          .maybeSingle();
+
+        if (existingPhone?.phone_verified) {
+          const maskedEmail = existingPhone.email
+            ? existingPhone.email.replace(/(.{2})(.*)(@.*)/, '$1***$3')
+            : '';
+          setVerificationError(
+            `Este teléfono ya está verificado con otra cuenta${maskedEmail ? ` (${maskedEmail})` : ''}.`
+          );
+          setVerificationLoading(false);
+          return;
+        }
       }
 
       // Format phone for Mexico
       const formattedPhone = `+52${cleanPhone}`;
 
-      // Call Twilio Verify edge function (same as RegisterPage)
+      // Call Twilio Verify edge function
+      // Pass userId if logged in to allow re-verification
       const { data, error } = await supabase.functions.invoke('send-sms-otp', {
-        body: { phone: formattedPhone, email: emailInput }
+        body: {
+          phone: formattedPhone,
+          email: user ? undefined : emailInput, // Only send email for new users
+          userId: user?.id || undefined, // Pass userId to skip "already verified" check for same user
+        }
       });
 
       if (data?.error === 'email_exists') {
         setVerificationError('Este correo ya está registrado. Inicia sesión en lugar de registrarte.');
+        setVerificationLoading(false);
+        return;
+      }
+
+      // Handle phone_already_verified error from Edge Function (backup check)
+      if (data?.error === 'phone_already_verified') {
+        const maskedEmail = data?.existingEmail || '';
+        setVerificationError(
+          `Este teléfono ya está verificado${maskedEmail ? ` con ${maskedEmail}` : ''}. Inicia sesión en lugar de registrarte.`
+        );
         setVerificationLoading(false);
         return;
       }
@@ -659,83 +722,118 @@ export function AutometricaValuationForm({
 
       console.log('✅ Código SMS verificado via Twilio');
 
-      // Create user account (same pattern as RegisterPage)
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: emailInput,
-        password: Math.random().toString(36).slice(-16), // Random temporary password
-        options: {
-          data: {
+      // Different flow for logged-in users vs new users
+      if (user) {
+        // =====================================================================
+        // LOGGED-IN USER: Just update their profile with phone_verified
+        // =====================================================================
+        console.log('✅ Usuario existente verificando teléfono:', user.id);
+
+        await supabase
+          .from('profiles')
+          .update({
             phone: cleanPhone,
-            source: 'vender-mi-auto'
-          },
-          emailRedirectTo: `${getSiteUrl()}/auth/callback?redirect=/vender-mi-auto`,
-        }
-      });
+            phone_verified: true,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id);
 
-      if (signUpError) {
-        if (signUpError.message.includes('already registered')) {
-          throw new Error('Este correo ya está registrado. Inicia sesión.');
-        }
-        throw signUpError;
-      }
-
-      if (!authData.user) {
-        throw new Error('No se pudo crear la cuenta');
-      }
-
-      console.log('✅ Usuario creado:', authData.user.id);
-
-      // Wait for session
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Determine lead source (same logic as RegisterPageNew)
-      let leadSource = 'vender-mi-auto';
-      if (urlTrackingData.utm_source) {
-        leadSource = `vender-mi-auto-${urlTrackingData.utm_source}`;
-        if (urlTrackingData.utm_medium) leadSource += `-${urlTrackingData.utm_medium}`;
-      } else if (urlTrackingData.fbclid) {
-        leadSource = 'vender-mi-auto-facebook';
-      } else if (urlTrackingData.rfdm) {
-        leadSource = `vender-mi-auto-rfdm-${urlTrackingData.rfdm}`;
-      }
-
-      // Update profile with phone_verified, valuation source, AND tracking data
-      await supabase
-        .from('profiles')
-        .upsert({
-          id: authData.user.id,
-          phone: cleanPhone,
-          phone_verified: true,
-          email: emailInput,
-          lead_source: leadSource,
-          source: urlTrackingData.source || leadSource,
-          // URL tracking params
-          utm_source: urlTrackingData.utm_source || null,
-          utm_medium: urlTrackingData.utm_medium || null,
-          utm_campaign: urlTrackingData.utm_campaign || null,
-          utm_term: urlTrackingData.utm_term || null,
-          utm_content: urlTrackingData.utm_content || null,
-          fbclid: urlTrackingData.fbclid || null,
-          rfdm: urlTrackingData.rfdm || null,
-          referrer: urlTrackingData.referrer || null,
-          landing_page: urlTrackingData.landing_page || null,
-          first_visit_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+        // Track phone verification for existing user
+        conversionTracking.trackAuth.otpVerified(user.id, {
+          email: profile?.email || user.email,
+          source: 'vender-mi-auto-phone-verification',
+          vehicleId: `${selectedBrand}-${selectedSubbrand}-${selectedYear}`
         });
 
-      // Track conversion event (same as RegisterPageNew)
-      conversionTracking.trackAuth.otpVerified(authData.user.id, {
-        email: emailInput,
-        source: leadSource,
-        vehicleId: `${selectedBrand}-${selectedSubbrand}-${selectedYear}`
-      });
+        // Reload profile and save valuation
+        await reloadProfile();
 
-      // Reload profile and save valuation
-      await reloadProfile();
+        const kmValue = parseInt(kilometraje.replace(/[^0-9]/g, ''), 10);
+        if (valuation) {
+          await saveValuationData(valuation, kmValue);
+        }
 
-      const kmValue = parseInt(kilometraje.replace(/[^0-9]/g, ''), 10);
-      if (valuation) {
-        await saveValuationData(valuation, kmValue);
+      } else {
+        // =====================================================================
+        // NEW USER: Create account (same pattern as RegisterPage)
+        // =====================================================================
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
+          email: emailInput,
+          password: Math.random().toString(36).slice(-16), // Random temporary password
+          options: {
+            data: {
+              phone: cleanPhone,
+              source: 'vender-mi-auto'
+            },
+            emailRedirectTo: `${getSiteUrl()}/auth/callback?redirect=/vender-mi-auto`,
+          }
+        });
+
+        if (signUpError) {
+          if (signUpError.message.includes('already registered')) {
+            throw new Error('Este correo ya está registrado. Inicia sesión.');
+          }
+          throw signUpError;
+        }
+
+        if (!authData.user) {
+          throw new Error('No se pudo crear la cuenta');
+        }
+
+        console.log('✅ Usuario creado:', authData.user.id);
+
+        // Wait for session
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Determine lead source (same logic as RegisterPageNew)
+        let leadSource = 'vender-mi-auto';
+        if (urlTrackingData.utm_source) {
+          leadSource = `vender-mi-auto-${urlTrackingData.utm_source}`;
+          if (urlTrackingData.utm_medium) leadSource += `-${urlTrackingData.utm_medium}`;
+        } else if (urlTrackingData.fbclid) {
+          leadSource = 'vender-mi-auto-facebook';
+        } else if (urlTrackingData.rfdm) {
+          leadSource = `vender-mi-auto-rfdm-${urlTrackingData.rfdm}`;
+        }
+
+        // Update profile with phone_verified, valuation source, AND tracking data
+        await supabase
+          .from('profiles')
+          .upsert({
+            id: authData.user.id,
+            phone: cleanPhone,
+            phone_verified: true,
+            email: emailInput,
+            lead_source: leadSource,
+            source: urlTrackingData.source || leadSource,
+            // URL tracking params
+            utm_source: urlTrackingData.utm_source || null,
+            utm_medium: urlTrackingData.utm_medium || null,
+            utm_campaign: urlTrackingData.utm_campaign || null,
+            utm_term: urlTrackingData.utm_term || null,
+            utm_content: urlTrackingData.utm_content || null,
+            fbclid: urlTrackingData.fbclid || null,
+            rfdm: urlTrackingData.rfdm || null,
+            referrer: urlTrackingData.referrer || null,
+            landing_page: urlTrackingData.landing_page || null,
+            first_visit_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        // Track conversion event (same as RegisterPageNew)
+        conversionTracking.trackAuth.otpVerified(authData.user.id, {
+          email: emailInput,
+          source: leadSource,
+          vehicleId: `${selectedBrand}-${selectedSubbrand}-${selectedYear}`
+        });
+
+        // Reload profile and save valuation
+        await reloadProfile();
+
+        const kmValue = parseInt(kilometraje.replace(/[^0-9]/g, ''), 10);
+        if (valuation) {
+          await saveValuationData(valuation, kmValue);
+        }
       }
 
       setShowVerificationModal(false);

@@ -76,9 +76,21 @@ export const PhoneVerification: React.FC<PhoneVerificationProps> = ({
 
       const formattedPhone = formatPhone(phone);
 
+      // Pass userId to allow re-verification for the same user
       const { data, error: smsError } = await supabase.functions.invoke('send-sms-otp', {
-        body: { phone: formattedPhone }
+        body: {
+          phone: formattedPhone,
+          userId: userId // Pass userId to skip "already verified" check for same user
+        }
       });
+
+      // Handle phone_already_verified error (phone verified with different account)
+      if (data?.error === 'phone_already_verified') {
+        const maskedEmail = data?.existingEmail || '';
+        throw new Error(
+          `Este teléfono ya está verificado con otra cuenta${maskedEmail ? ` (${maskedEmail})` : ''}.`
+        );
+      }
 
       if (smsError) {
         const errorMsg = (smsError as any).message || 'Error al enviar código';

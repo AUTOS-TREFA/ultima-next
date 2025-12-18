@@ -106,9 +106,21 @@ const ValuationVerificationPage: React.FC<ValuationVerificationPageProps> = ({
       const formattedPhone = formatPhone(phone);
 
       // Use Twilio via Edge Function
+      // Pass userId if user is logged in to allow re-verification
       const { data, error: smsError } = await supabase.functions.invoke('send-sms-otp', {
-        body: { phone: formattedPhone },
+        body: {
+          phone: formattedPhone,
+          userId: user?.id || undefined
+        },
       });
+
+      // Handle phone_already_verified error
+      if (data?.error === 'phone_already_verified') {
+        const maskedEmail = data?.existingEmail || '';
+        throw new Error(
+          `Este teléfono ya está verificado${maskedEmail ? ` con ${maskedEmail}` : ''}. Inicia sesión en lugar de registrarte.`
+        );
+      }
 
       if (smsError) {
         const errorMsg = (smsError as any).message || 'Error al enviar código';

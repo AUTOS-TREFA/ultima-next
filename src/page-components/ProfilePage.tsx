@@ -574,6 +574,16 @@ const ProfilePage: React.FC = () => {
     setValue('phone', phoneForVerification);
     await reloadProfile();
     toast.success('¡Teléfono verificado! Continúa completando tu perfil.');
+
+    // Check if there's a pending redirect after phone verification (from OAuth flow)
+    const pendingRedirect = sessionStorage.getItem('postPhoneVerificationRedirect');
+    if (pendingRedirect) {
+      sessionStorage.removeItem('postPhoneVerificationRedirect');
+      // Small delay to ensure profile is updated
+      setTimeout(() => {
+        router.push(pendingRedirect);
+      }, 500);
+    }
   };
 
   // Loading state

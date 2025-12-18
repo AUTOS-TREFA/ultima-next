@@ -175,6 +175,13 @@ const RegisterPageNew: React.FC = () => {
         return;
       }
 
+      // Handle phone_already_verified error from Edge Function
+      if (data?.error === 'phone_already_verified') {
+        setError('account_exists_phone');
+        setLoading(false);
+        return;
+      }
+
       if (smsError || !data?.success) {
         const errMsg = data?.error || 'Error al enviar SMS';
         if (errMsg.includes('phone number') || errMsg.includes('Invalid')) {

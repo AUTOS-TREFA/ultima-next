@@ -63,6 +63,26 @@ const AuthHandler: React.FC = () => {
       setTimeout(() => {
         localStorage.removeItem('loginRedirect');
 
+        // Check if OAuth user needs phone verification
+        // Skip this check for admin users who may not need phone verification
+        const isOAuthUser = session.user?.app_metadata?.provider === 'google' ||
+                            session.user?.app_metadata?.providers?.includes('google');
+        const needsPhoneVerification = isOAuthUser &&
+                                       profile.phone_verified !== true &&
+                                       profile.role !== 'admin' &&
+                                       profile.role !== 'sales' &&
+                                       !checkIsAdmin(session.user?.email);
+
+        if (needsPhoneVerification) {
+          console.log('📱 OAuth user needs phone verification - redirecting to profile');
+          // Store original redirect path so we can redirect after verification
+          if (redirectPath && redirectPath !== '/escritorio/profile') {
+            sessionStorage.setItem('postPhoneVerificationRedirect', redirectPath);
+          }
+          router.replace('/escritorio/profile');
+          return;
+        }
+
         // If the user was trying to get to the application page, check if their profile is complete first.
         if (redirectPath?.startsWith('/escritorio/aplicacion')) {
           if (!checkApplicationProfileCompleteness(profile)) {

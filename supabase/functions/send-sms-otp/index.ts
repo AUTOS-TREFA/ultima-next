@@ -8,6 +8,8 @@ const TWILIO_VERIFY_SERVICE_SID = Deno.env.get("TWILIO_VERIFY_SERVICE_SID") || "
 interface RequestBody {
   phone: string;
   email?: string; // Optional: if provided, check if email exists in auth.users before sending SMS
+  skipPhoneVerifiedCheck?: boolean; // Optional: skip the phone_verified check (for re-verification flows)
+  userId?: string; // Optional: current user ID to exclude from phone check
 }
 
 Deno.serve(async (req: Request) => {
@@ -39,7 +41,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Parse request body
-    const { phone, email }: RequestBody = await req.json();
+    const { phone, email, skipPhoneVerifiedCheck, userId }: RequestBody = await req.json();
 
     // Validar entrada
     if (!phone) {
@@ -101,6 +103,61 @@ Deno.serve(async (req: Request) => {
     }
 
     // Formatear número de teléfono (asegurar que tenga +52 para México)
+    // Necesitamos el cleanPhone para verificar en la DB
+    const cleanPhone = phone.replace(/\D/g, "").slice(-10); // Últimos 10 dígitos
+
+    // =========================================================================
+    // VERIFICACIÓN DE TELÉFONO YA VERIFICADO (OPTIMIZACIÓN DE COSTOS SMS)
+    // =========================================================================
+    // Verificar si el teléfono ya está verificado en alguna cuenta ANTES de enviar SMS
+    // Esto evita enviar SMS innecesarios a teléfonos que ya pasaron por verificación
+    if (!skipPhoneVerifiedCheck) {
+      console.log(`📱 Verificando si el teléfono ya está verificado: ${cleanPhone}`);
+
+      try {
+        // Buscar si existe una cuenta con este teléfono ya verificado
+        let phoneQuery = supabase
+          .from('profiles')
+          .select('id, phone, phone_verified, email')
+          .eq('phone', cleanPhone)
+          .eq('phone_verified', true);
+
+        // Si hay un userId, excluirlo de la búsqueda (para permitir re-verificación del mismo usuario)
+        if (userId) {
+          phoneQuery = phoneQuery.neq('id', userId);
+        }
+
+        const { data: existingVerifiedPhone, error: phoneCheckError } = await phoneQuery.maybeSingle();
+
+        if (phoneCheckError) {
+          console.error("❌ Error verificando teléfono en profiles:", phoneCheckError);
+          // Don't block on error, continue with SMS
+        } else if (existingVerifiedPhone) {
+          console.log(`⚠️ Teléfono ya verificado en otra cuenta: ${cleanPhone} (email: ${existingVerifiedPhone.email})`);
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: "phone_already_verified",
+              message: "Este teléfono ya está verificado con otra cuenta. Inicia sesión con tu correo.",
+              existingEmail: existingVerifiedPhone.email ?
+                existingVerifiedPhone.email.replace(/(.{2})(.*)(@.*)/, '$1***$3') : null, // Ocultar parte del email
+            }),
+            {
+              status: 409, // Conflict
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            }
+          );
+        }
+        console.log(`✅ Teléfono disponible o no verificado aún: ${cleanPhone}`);
+      } catch (phoneCheckError) {
+        console.error("❌ Error al verificar teléfono:", phoneCheckError);
+        // Don't block on error, continue with SMS
+      }
+    } else {
+      console.log(`⏭️ Saltando verificación de teléfono (skipPhoneVerifiedCheck=true)`);
+    }
+
+    // Formatear para envío a Twilio
     let formattedPhone = phone.replace(/\D/g, ""); // Remover caracteres no numéricos
     if (formattedPhone.length === 10) {
       formattedPhone = `+52${formattedPhone}`;
