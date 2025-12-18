@@ -19,6 +19,8 @@ export interface VehicleWithoutPhotos {
   year: number | null;
   feature_image: string | null;
   galeria_exterior: string[] | null;
+  r2_feature_image: string | null;
+  r2_gallery: string[] | null;
   has_feature_image: boolean;
   has_gallery: boolean;
 }
@@ -41,17 +43,22 @@ interface InventarioCacheRow {
   autoano: number | null;
   feature_image: string | null;
   galeria_exterior: string[] | null;
+  r2_feature_image: string | null;
+  r2_gallery: string[] | null;
+  use_r2_images: boolean | null;
 }
 
 export const VehiclePhotoService = {
   /**
-   * Get all vehicles that are missing photos (no feature_image or empty galleries)
+   * Get vehicles with OrdenStatus='Comprado' that are missing photos
+   * Checks both legacy fields (feature_image, galeria_exterior) and R2 fields (r2_feature_image, r2_gallery)
    */
   async getVehiclesWithoutPhotos(): Promise<VehicleWithoutPhotos[]> {
+    // Only fetch vehicles that are "Comprado" (purchased inventory ready for photos)
     const { data, error } = await supabase
       .from('inventario_cache')
-      .select('id, ordencompra, title, titulo, marca, modelo, autoano, feature_image, galeria_exterior')
-      .or('feature_image.is.null,galeria_exterior.is.null,galeria_exterior.eq.[]')
+      .select('id, ordencompra, title, titulo, marca, modelo, autoano, feature_image, galeria_exterior, r2_feature_image, r2_gallery, use_r2_images')
+      .eq('ordenstatus', 'Comprado')
       .order('ordencompra', { ascending: false });
 
     if (error) {
@@ -59,24 +66,54 @@ export const VehiclePhotoService = {
       throw new Error('No se pudieron obtener los vehículos sin fotos.');
     }
 
-    // Map and add computed flags
-    return ((data as InventarioCacheRow[]) || []).map(vehicle => {
-      const featureImage = vehicle.feature_image;
-      const galeriaExterior = vehicle.galeria_exterior;
+    // Filter vehicles that don't have photos (checking both legacy and R2 fields)
+    // and map to the expected format
+    return ((data as InventarioCacheRow[]) || [])
+      .filter(vehicle => {
+        // Check if vehicle has any feature image (legacy or R2)
+        const hasFeatureImage =
+          (vehicle.feature_image && vehicle.feature_image.trim() !== '') ||
+          (vehicle.r2_feature_image && vehicle.r2_feature_image.trim() !== '');
 
-      return {
-        id: vehicle.id,
-        ordencompra: vehicle.ordencompra,
-        title: vehicle.title || vehicle.titulo || `${vehicle.marca || ''} ${vehicle.modelo || ''} ${vehicle.autoano || ''}`.trim() || 'Sin título',
-        brand: vehicle.marca,
-        model: vehicle.modelo,
-        year: vehicle.autoano,
-        feature_image: featureImage,
-        galeria_exterior: galeriaExterior,
-        has_feature_image: !!featureImage && featureImage.trim() !== '',
-        has_gallery: Array.isArray(galeriaExterior) && galeriaExterior.length > 0,
-      };
-    });
+        // Check if vehicle has any gallery images (legacy or R2)
+        const hasGallery =
+          (Array.isArray(vehicle.galeria_exterior) && vehicle.galeria_exterior.length > 0) ||
+          (Array.isArray(vehicle.r2_gallery) && vehicle.r2_gallery.length > 0);
+
+        // Only include vehicles missing BOTH feature image AND gallery
+        return !hasFeatureImage || !hasGallery;
+      })
+      .map(vehicle => {
+        const featureImage = vehicle.feature_image;
+        const galeriaExterior = vehicle.galeria_exterior;
+        const r2FeatureImage = vehicle.r2_feature_image;
+        const r2Gallery = vehicle.r2_gallery;
+
+        // Check for any feature image
+        const hasFeatureImage =
+          (featureImage && featureImage.trim() !== '') ||
+          (r2FeatureImage && r2FeatureImage.trim() !== '');
+
+        // Check for any gallery
+        const hasGallery =
+          (Array.isArray(galeriaExterior) && galeriaExterior.length > 0) ||
+          (Array.isArray(r2Gallery) && r2Gallery.length > 0);
+
+        return {
+          id: vehicle.id,
+          ordencompra: vehicle.ordencompra,
+          title: vehicle.title || vehicle.titulo || `${vehicle.marca || ''} ${vehicle.modelo || ''} ${vehicle.autoano || ''}`.trim() || 'Sin título',
+          brand: vehicle.marca,
+          model: vehicle.modelo,
+          year: vehicle.autoano,
+          feature_image: featureImage,
+          galeria_exterior: galeriaExterior,
+          r2_feature_image: r2FeatureImage,
+          r2_gallery: r2Gallery,
+          has_feature_image: hasFeatureImage,
+          has_gallery: hasGallery,
+        };
+      });
   },
 
   /**
@@ -258,20 +295,14 @@ export const VehiclePhotoService = {
   },
 
   /**
-   * Get count of vehicles without photos
+   * Get count of vehicles without photos (only 'Comprado' status)
+   * Note: This is a simplified count - the actual filtering logic in getVehiclesWithoutPhotos
+   * checks both legacy and R2 fields, so the count here may be slightly different.
    */
   async getVehiclesWithoutPhotosCount(): Promise<number> {
-    const { count, error } = await supabase
-      .from('inventario_cache')
-      .select('id', { count: 'exact', head: true })
-      .or('feature_image.is.null,galeria_exterior.is.null,galeria_exterior.eq.[]');
-
-    if (error) {
-      console.error('Error getting count:', error);
-      return 0;
-    }
-
-    return count || 0;
+    // For accurate count, we fetch and filter the same way as getVehiclesWithoutPhotos
+    const vehicles = await this.getVehiclesWithoutPhotos();
+    return vehicles.length;
   },
 };
 

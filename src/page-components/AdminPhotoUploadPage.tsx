@@ -172,17 +172,17 @@ export default function AdminPhotoUploadPage() {
   }, [files]);
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <Camera className="w-6 h-6 text-blue-600" />
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <Camera className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Cargar Fotos</h1>
-            <p className="text-sm text-gray-600">
-              Sube fotos a vehículos sin imágenes
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Cargar Fotos</h1>
+            <p className="text-sm text-muted-foreground">
+              Inventario comprado pendiente de fotos
             </p>
           </div>
         </div>
@@ -199,15 +199,15 @@ export default function AdminPhotoUploadPage() {
       </div>
 
       {/* Stats Card */}
-      <Card>
+      <Card className="bg-card border-border">
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-orange-100 rounded-full">
-              <ImageOff className="w-6 h-6 text-orange-600" />
+            <div className="p-3 bg-amber-500/10 rounded-full">
+              <ImageOff className="w-6 h-6 text-amber-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{vehicles.length}</p>
-              <p className="text-sm text-gray-600">Vehículos sin fotos</p>
+              <p className="text-2xl font-bold text-foreground">{vehicles.length}</p>
+              <p className="text-sm text-muted-foreground">Autos comprados sin fotos</p>
             </div>
           </div>
         </CardContent>
@@ -216,28 +216,28 @@ export default function AdminPhotoUploadPage() {
       {/* Vehicle List */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : vehicles.length === 0 ? (
-        <Card>
+        <Card className="bg-card border-border">
           <CardContent className="py-12 text-center">
             <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900">Todos los vehículos tienen fotos</h3>
-            <p className="text-gray-600 mt-1">No hay vehículos pendientes de cargar fotos.</p>
+            <h3 className="text-lg font-semibold text-foreground">Todos los autos comprados tienen fotos</h3>
+            <p className="text-muted-foreground mt-1">No hay vehículos pendientes de cargar fotos.</p>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           {vehicles.map(vehicle => (
-            <Card key={vehicle.id} className="hover:shadow-md transition-shadow">
+            <Card key={vehicle.id} className="bg-card border-border hover:border-primary/50 transition-colors">
               <CardContent className="p-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                      <span className="font-mono text-sm bg-muted px-2 py-1 rounded text-foreground">
                         {vehicle.ordencompra || 'Sin OC'}
                       </span>
-                      <h3 className="font-semibold text-gray-900">
+                      <h3 className="font-semibold text-foreground">
                         {vehicle.title || `${vehicle.brand || ''} ${vehicle.model || ''} ${vehicle.year || ''}`.trim() || 'Sin título'}
                       </h3>
                     </div>
@@ -250,7 +250,7 @@ export default function AdminPhotoUploadPage() {
                         </Badge>
                       )}
                       {!vehicle.has_gallery && (
-                        <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700">
+                        <Badge variant="secondary" className="text-xs bg-amber-500/10 text-amber-700 border-amber-200">
                           <ImageOff className="w-3 h-3 mr-1" />
                           Galería vacía
                         </Badge>
@@ -260,7 +260,7 @@ export default function AdminPhotoUploadPage() {
 
                   <Button
                     onClick={() => handleOpenSheet(vehicle)}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-primary hover:bg-primary/90"
                   >
                     <Upload className="w-4 h-4 mr-2" />
                     Subir Fotos
@@ -274,17 +274,19 @@ export default function AdminPhotoUploadPage() {
 
       {/* Upload Sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+        <SheetContent className="w-full sm:max-w-lg overflow-y-auto bg-card">
           <SheetHeader>
-            <SheetTitle>Subir Fotos</SheetTitle>
+            <SheetTitle className="text-foreground">Subir Fotos</SheetTitle>
             <SheetDescription>
               {selectedVehicle && (
-                <>
-                  <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded mr-2">
+                <div className="flex items-center gap-2 flex-wrap mt-1">
+                  <span className="font-mono text-xs bg-muted px-2 py-1 rounded">
                     {selectedVehicle.ordencompra || 'Sin OC'}
                   </span>
-                  {selectedVehicle.title || `${selectedVehicle.brand || ''} ${selectedVehicle.model || ''} ${selectedVehicle.year || ''}`.trim()}
-                </>
+                  <span className="text-foreground">
+                    {selectedVehicle.title || `${selectedVehicle.brand || ''} ${selectedVehicle.model || ''} ${selectedVehicle.year || ''}`.trim()}
+                  </span>
+                </div>
               )}
             </SheetDescription>
           </SheetHeader>
@@ -295,28 +297,28 @@ export default function AdminPhotoUploadPage() {
               {...getRootProps()}
               className={`
                 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-                ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-400'}
+                ${isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
                 ${uploading ? 'pointer-events-none opacity-50' : ''}
               `}
             >
               <input {...getInputProps()} />
-              <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+              <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
               {isDragActive ? (
-                <p className="text-blue-600 font-medium">Suelta las fotos aquí...</p>
+                <p className="text-primary font-medium">Suelta las fotos aquí...</p>
               ) : (
                 <>
-                  <p className="text-gray-600 font-medium">Arrastra fotos aquí</p>
-                  <p className="text-gray-400 text-sm mt-1">o haz clic para seleccionar</p>
+                  <p className="text-foreground font-medium">Arrastra fotos aquí</p>
+                  <p className="text-muted-foreground text-sm mt-1">o haz clic para seleccionar</p>
                 </>
               )}
-              <p className="text-xs text-gray-400 mt-2">JPG, PNG, WebP - Max 10MB cada una</p>
+              <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WebP - Max 10MB cada una</p>
             </div>
 
             {/* File Previews */}
             {files.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-gray-700">
+                  <p className="text-sm font-medium text-foreground">
                     {files.length} foto{files.length > 1 ? 's' : ''} seleccionada{files.length > 1 ? 's' : ''}
                   </p>
                   <Button
@@ -324,7 +326,7 @@ export default function AdminPhotoUploadPage() {
                     size="sm"
                     onClick={clearFiles}
                     disabled={uploading}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
                   >
                     Limpiar todo
                   </Button>
@@ -332,7 +334,7 @@ export default function AdminPhotoUploadPage() {
 
                 <div className="grid grid-cols-3 gap-2">
                   {files.map((file, index) => (
-                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-muted">
                       <img
                         src={file.preview}
                         alt={`Preview ${index + 1}`}
@@ -342,13 +344,13 @@ export default function AdminPhotoUploadPage() {
                         <button
                           type="button"
                           onClick={() => removeFile(index)}
-                          className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                          className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90 transition-colors"
                         >
                           <X className="w-3 h-3" />
                         </button>
                       )}
                       {index === 0 && setFirstAsFeatured && (
-                        <div className="absolute bottom-1 left-1 px-2 py-0.5 bg-blue-600 text-white text-xs rounded">
+                        <div className="absolute bottom-1 left-1 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded">
                           Principal
                         </div>
                       )}
@@ -369,7 +371,7 @@ export default function AdminPhotoUploadPage() {
                 />
                 <label
                   htmlFor="setFeatured"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  className="text-sm font-medium leading-none text-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                   Usar primera foto como imagen principal
                 </label>
@@ -380,7 +382,7 @@ export default function AdminPhotoUploadPage() {
             {uploadStatus === 'uploading' && (
               <div className="space-y-2">
                 <Progress value={uploadProgress} className="h-2" />
-                <p className="text-sm text-gray-600 text-center">
+                <p className="text-sm text-muted-foreground text-center">
                   Subiendo fotos... {uploadProgress}%
                 </p>
               </div>
@@ -388,9 +390,9 @@ export default function AdminPhotoUploadPage() {
 
             {/* Status Messages */}
             {uploadStatus === 'success' && (
-              <Alert className="bg-green-50 border-green-200">
+              <Alert className="bg-green-500/10 border-green-500/20">
                 <CheckCircle2 className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-800">
+                <AlertDescription className="text-green-700">
                   {uploadMessage}
                 </AlertDescription>
               </Alert>
@@ -415,7 +417,7 @@ export default function AdminPhotoUploadPage() {
             <Button
               onClick={handleUpload}
               disabled={files.length === 0 || uploading || uploadStatus === 'success'}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90"
             >
               {uploading ? (
                 <>
