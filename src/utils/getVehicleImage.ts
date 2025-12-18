@@ -62,7 +62,9 @@ export function getVehicleImage(vehicle: Partial<Vehicle & WordPressVehicle>): s
         trimmed === 'undefined' ||
         trimmed === 'N/A' ||
         trimmed === 'n/a' ||
-        trimmed === '-'
+        trimmed === '-' ||
+        trimmed.includes('#ERROR!') || // Catches JSON like {"error": "#ERROR!"}
+        trimmed.startsWith('{') // Skip any JSON objects
       ) {
         continue;
       }
