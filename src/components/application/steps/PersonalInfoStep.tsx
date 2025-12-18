@@ -73,7 +73,7 @@ const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({
   }, [profile, setValue, useDifferentAddress, trigger]);
 
   return (
-    <CardContent className="col-span-5 flex flex-col gap-4 sm:gap-6 p-3 sm:p-4 md:p-6 md:col-span-3">
+    <CardContent className="col-span-6 flex flex-col gap-4 p-4 sm:p-5 md:col-span-4">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">Información Personal</h2>
         <p className="text-xs sm:text-sm text-gray-600">Confirma que tu información personal esté correcta y actualizada.</p>

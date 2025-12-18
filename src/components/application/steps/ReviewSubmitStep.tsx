@@ -49,7 +49,7 @@ const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
   const amountToFinance = vehiclePrice - downPayment;
 
   return (
-    <CardContent className="col-span-5 flex flex-col gap-6 p-6 md:col-span-3">
+    <CardContent className="col-span-6 flex flex-col gap-4 p-4 sm:p-5 md:col-span-4">
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Revisa y Envía tu Solicitud</h2>
         <p className="text-sm text-gray-600">Verifica que toda la información sea correcta antes de enviar.</p>

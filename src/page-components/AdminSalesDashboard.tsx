@@ -123,10 +123,10 @@ export default function AdminSalesDashboard() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-50">
+            <div className="flex items-center justify-center min-h-screen bg-background">
                 <div className="text-center">
-                    <RefreshCw className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-                    <p className="text-gray-600">Cargando dashboard...</p>
+                    <RefreshCw className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+                    <p className="text-muted-foreground">Cargando dashboard...</p>
                 </div>
             </div>
         );
@@ -134,12 +134,12 @@ export default function AdminSalesDashboard() {
 
     if (!metrics) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-50">
+            <div className="flex items-center justify-center min-h-screen bg-background">
                 <div className="text-center">
-                    <p className="text-gray-600">No se pudieron cargar los datos del dashboard</p>
+                    <p className="text-muted-foreground">No se pudieron cargar los datos del dashboard</p>
                     <button
                         onClick={handleManualRefresh}
-                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
                     >
                         Reintentar
                     </button>
@@ -149,30 +149,30 @@ export default function AdminSalesDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-12 overflow-x-hidden">
+        <div className="min-h-screen bg-background pb-12 overflow-x-hidden">
             {/* Header */}
-            <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+            <div className="bg-card border-b border-border sticky top-0 z-10 shadow-sm">
                 <div className="w-full max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
                     <div className="flex items-center justify-between gap-2">
                         <div className="min-w-0 flex-1">
-                            <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
+                            <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">
                                 Dashboard {isAdmin ? 'Administrativo' : 'de Ventas'}
                             </h1>
-                            <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1 truncate">
+                            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
                                 Bienvenido, {userName}
                             </p>
                         </div>
                         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
                             <div className="text-right hidden sm:block">
-                                <p className="text-xs text-gray-500">Última actualización</p>
-                                <p className="text-sm font-medium text-gray-700">
+                                <p className="text-xs text-muted-foreground">Última actualización</p>
+                                <p className="text-sm font-medium text-foreground">
                                     {lastUpdated.toLocaleTimeString('es-MX')}
                                 </p>
                             </div>
                             <button
                                 onClick={handleManualRefresh}
                                 disabled={refreshing}
-                                className="p-1.5 sm:p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 disabled:opacity-50"
+                                className="p-1.5 sm:p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50"
                                 title="Actualizar datos"
                             >
                                 <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 ${refreshing ? 'animate-spin' : ''}`} />
@@ -396,11 +396,11 @@ export default function AdminSalesDashboard() {
                 </div>
 
                 {/* Source Attribution */}
-                <div className="bg-white rounded-xl sm:rounded-2xl shadow-md p-3 sm:p-4 md:p-6 lg:p-8 border-2 border-gray-200 mb-6 sm:mb-8 lg:mb-10 hover:border-gray-300 hover:shadow-lg transition-all overflow-hidden">
+                <div className="bg-card rounded-xl sm:rounded-2xl shadow-md p-3 sm:p-4 md:p-6 lg:p-8 border-2 border-border mb-6 sm:mb-8 lg:mb-10 hover:border-primary/30 hover:shadow-lg transition-all overflow-hidden">
                     <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8 gap-2">
-                        <h3 className="text-sm sm:text-base font-bold text-gray-900">Atribución por Fuente</h3>
-                        <div className="px-2 sm:px-3 py-1 bg-gray-100 rounded-lg flex-shrink-0">
-                            <span className="text-xs sm:text-sm font-semibold text-gray-600">{metrics.totalLeads} Total</span>
+                        <h3 className="text-sm sm:text-base font-bold text-foreground">Atribución por Fuente</h3>
+                        <div className="px-2 sm:px-3 py-1 bg-muted rounded-lg flex-shrink-0">
+                            <span className="text-xs sm:text-sm font-semibold text-muted-foreground">{metrics.totalLeads} Total</span>
                         </div>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
@@ -443,15 +443,15 @@ export default function AdminSalesDashboard() {
                 </div>
 
                 {/* Tabs for Charts, Recent Activity, and Email History */}
-                <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border-2 border-gray-200 mb-6 sm:mb-8 overflow-hidden">
+                <div className="bg-card rounded-xl sm:rounded-2xl shadow-md border-2 border-border mb-6 sm:mb-8 overflow-hidden">
                     {/* Tab Headers */}
-                    <div className="flex border-b-2 border-gray-100 px-1 sm:px-2 pt-1 sm:pt-2 overflow-x-auto scrollbar-hide">
+                    <div className="flex border-b-2 border-border/50 px-1 sm:px-2 pt-1 sm:pt-2 overflow-x-auto scrollbar-hide">
                         <button
                             onClick={() => setActiveTab('charts')}
                             className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-all rounded-t-lg sm:rounded-t-xl whitespace-nowrap ${
                                 activeTab === 'charts'
-                                    ? 'bg-orange-50 border-b-4 border-orange-600 text-orange-700'
-                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                    ? 'bg-primary/10 border-b-4 border-primary text-primary'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                             }`}
                         >
                             📈 Gráficas
@@ -460,8 +460,8 @@ export default function AdminSalesDashboard() {
                             onClick={() => setActiveTab('activity')}
                             className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-all rounded-t-lg sm:rounded-t-xl whitespace-nowrap ${
                                 activeTab === 'activity'
-                                    ? 'bg-orange-50 border-b-4 border-orange-600 text-orange-700'
-                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                    ? 'bg-primary/10 border-b-4 border-primary text-primary'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                             }`}
                         >
                             🔄 Actividad
@@ -470,8 +470,8 @@ export default function AdminSalesDashboard() {
                             onClick={() => setActiveTab('emails')}
                             className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-all rounded-t-lg sm:rounded-t-xl whitespace-nowrap ${
                                 activeTab === 'emails'
-                                    ? 'bg-orange-50 border-b-4 border-orange-600 text-orange-700'
-                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                    ? 'bg-primary/10 border-b-4 border-primary text-primary'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                             }`}
                         >
                             📧 Emails
@@ -485,13 +485,13 @@ export default function AdminSalesDashboard() {
                             <div className="space-y-6 sm:space-y-8">
                                 {/* 30-Day Trends Chart */}
                                 <div className="overflow-hidden">
-                                    <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-3 sm:mb-4">Tendencia de 30 Días</h3>
+                                    <h3 className="text-sm sm:text-base font-bold text-foreground mb-3 sm:mb-4">Tendencia de 30 Días</h3>
                                     {timeSeriesData.length > 0 ? (
-                                        <div className="w-full -mx-2 sm:mx-0" style={{ height: '240px', minHeight: '240px' }}>
-                                            <TrendLineChart data={timeSeriesData} height={240} />
+                                        <div className="w-full -mx-2 sm:mx-0" style={{ height: '280px', minHeight: '280px' }}>
+                                            <TrendLineChart data={timeSeriesData} height={280} />
                                         </div>
                                     ) : (
-                                        <div className="flex items-center justify-center h-48 sm:h-64 text-gray-400">
+                                        <div className="flex items-center justify-center h-48 sm:h-64 text-muted-foreground">
                                             <p className="text-sm">Cargando datos de tendencias...</p>
                                         </div>
                                     )}
@@ -499,15 +499,15 @@ export default function AdminSalesDashboard() {
 
                                 {/* Enhanced Source Attribution with Pie Chart */}
                                 <div className="overflow-hidden">
-                                    <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-3 sm:mb-4">Distribución de Fuentes</h3>
-                                    <div className="w-full -mx-2 sm:mx-0">
-                                        <SourcePieChart data={metrics.sourceBreakdown} height={240} />
+                                    <h3 className="text-sm sm:text-base font-bold text-foreground mb-3 sm:mb-4">Distribución de Fuentes</h3>
+                                    <div className="w-full -mx-2 sm:mx-0" style={{ height: '300px', minHeight: '300px' }}>
+                                        <SourcePieChart data={metrics.sourceBreakdown} height={300} />
                                     </div>
                                 </div>
 
                                 {/* Conversion Funnel */}
                                 <div className="overflow-x-auto -mx-3 sm:mx-0">
-                                    <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-3 sm:mb-4 px-3 sm:px-0">Pipeline de Conversión</h3>
+                                    <h3 className="text-sm sm:text-base font-bold text-foreground mb-3 sm:mb-4 px-3 sm:px-0">Pipeline de Conversión</h3>
                                     <ConversionFunnel metrics={{
                                         totalLeads: metrics.totalLeads,
                                         contactedLeads: metrics.contactedLeads,
@@ -693,51 +693,51 @@ export default function AdminSalesDashboard() {
 
                 {/* Tasks and Actions */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
-                    <div className="bg-white rounded-lg sm:rounded-xl shadow-sm p-4 sm:p-6 border-2 border-gray-200">
+                    <div className="bg-card rounded-lg sm:rounded-xl shadow-sm p-4 sm:p-6 border-2 border-border">
                         <div className="flex items-center justify-between mb-3 sm:mb-4">
-                            <h3 className="text-sm sm:text-base font-bold text-gray-900">Tareas y Recordatorios</h3>
-                            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
+                            <h3 className="text-sm sm:text-base font-bold text-foreground">Tareas y Recordatorios</h3>
+                            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
                         </div>
                         <div className="space-y-3 sm:space-y-4">
-                            <div className="flex items-center justify-between py-2 sm:py-3 border-b border-gray-100">
-                                <span className="text-sm sm:text-base text-gray-600">Recordatorios pendientes</span>
-                                <span className="text-xl sm:text-2xl font-bold text-orange-600">{metrics.pendingReminders}</span>
+                            <div className="flex items-center justify-between py-2 sm:py-3 border-b border-border">
+                                <span className="text-sm sm:text-base text-muted-foreground">Recordatorios pendientes</span>
+                                <span className="text-xl sm:text-2xl font-bold text-primary">{metrics.pendingReminders}</span>
                             </div>
                             <div className="flex items-center justify-between py-2 sm:py-3">
-                                <span className="text-sm sm:text-base text-gray-600">Tareas para hoy</span>
-                                <span className="text-xl sm:text-2xl font-bold text-gray-700">{metrics.tasksToday}</span>
+                                <span className="text-sm sm:text-base text-muted-foreground">Tareas para hoy</span>
+                                <span className="text-xl sm:text-2xl font-bold text-foreground">{metrics.tasksToday}</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Quick Actions */}
-                    <div className="bg-white rounded-lg sm:rounded-xl shadow-sm p-4 sm:p-6 border-2 border-gray-200">
-                        <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-3 sm:mb-4">Acciones Rápidas</h3>
+                    <div className="bg-card rounded-lg sm:rounded-xl shadow-sm p-4 sm:p-6 border-2 border-border">
+                        <h3 className="text-sm sm:text-base font-bold text-foreground mb-3 sm:mb-4">Acciones Rápidas</h3>
                         <div className="grid grid-cols-2 gap-2 sm:gap-3">
                             <button
                                 onClick={() => router.push(isAdmin ? '/escritorio/admin/crm' : '/escritorio/ventas/crm')}
-                                className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
+                                className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
                             >
                                 <Users className="w-4 h-4" />
                                 <span className="text-xs sm:text-sm font-medium">Leads</span>
                             </button>
                             <button
                                 onClick={() => router.push('/escritorio/mis-aplicaciones')}
-                                className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
+                                className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
                             >
                                 <FileText className="w-4 h-4" />
                                 <span className="text-xs sm:text-sm font-medium">Solicitudes</span>
                             </button>
                             <button
                                 onClick={() => router.push('/escritorio/seguimiento')}
-                                className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                                className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-colors"
                             >
                                 <BarChart3 className="w-4 h-4" />
                                 <span className="text-xs sm:text-sm font-medium">Tracking</span>
                             </button>
                             <button
                                 onClick={() => router.push('/escritorio/autos')}
-                                className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                                className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-colors"
                             >
                                 <FileText className="w-4 h-4" />
                                 <span className="text-xs sm:text-sm font-medium">Inventario</span>
@@ -799,32 +799,32 @@ interface MetricCardProps {
 
 function MetricCard({ title, value, icon, color, subtitle, urgent, onClick, trendPercent }: MetricCardProps) {
     const textColorClasses = {
-        blue: 'text-orange-600',
-        green: 'text-orange-600',
-        yellow: 'text-orange-600',
-        red: 'text-orange-600',
-        purple: 'text-gray-700',
-        indigo: 'text-gray-700'
+        blue: 'text-primary',
+        green: 'text-primary',
+        yellow: 'text-primary',
+        red: 'text-primary',
+        purple: 'text-foreground',
+        indigo: 'text-foreground'
     };
 
     const bgColorClasses = {
-        blue: 'bg-orange-50',
-        green: 'bg-orange-50',
-        yellow: 'bg-orange-100',
-        red: 'bg-orange-100',
-        purple: 'bg-gray-50',
-        indigo: 'bg-gray-100'
+        blue: 'bg-primary/5',
+        green: 'bg-primary/5',
+        yellow: 'bg-primary/10',
+        red: 'bg-primary/10',
+        purple: 'bg-muted/50',
+        indigo: 'bg-muted'
     };
 
     return (
         <div
             onClick={onClick}
             className={`${bgColorClasses[color]} rounded-lg sm:rounded-xl shadow-sm p-4 sm:p-6 lg:p-8 border-2 ${
-                urgent ? 'border-orange-400 ring-2 ring-orange-200' : 'border-gray-200'
-            } ${onClick ? 'cursor-pointer hover:shadow-md transition-all duration-200' : ''} hover:border-orange-300`}
+                urgent ? 'border-primary ring-2 ring-primary/20' : 'border-border'
+            } ${onClick ? 'cursor-pointer hover:shadow-md transition-all duration-200' : ''} hover:border-primary/30`}
         >
             <div className="flex items-start justify-between mb-3 sm:mb-4 lg:mb-6 gap-2">
-                <h3 className="text-sm sm:text-base lg:text-lg font-bold text-gray-900 leading-tight">{title}</h3>
+                <h3 className="text-sm sm:text-base lg:text-lg font-bold text-foreground leading-tight">{title}</h3>
                 {trendPercent !== undefined && trendPercent !== 0 && (
                     <div className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg flex-shrink-0 ${trendPercent > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                         {trendPercent > 0 ? <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" /> : <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4" />}
@@ -835,7 +835,7 @@ function MetricCard({ title, value, icon, color, subtitle, urgent, onClick, tren
                 )}
             </div>
             <p className={`text-3xl sm:text-4xl lg:text-5xl font-black ${textColorClasses[color]} mb-2 sm:mb-3`}>{value}</p>
-            {subtitle && <p className="text-xs sm:text-sm lg:text-base font-medium text-gray-600">{subtitle}</p>}
+            {subtitle && <p className="text-xs sm:text-sm lg:text-base font-medium text-muted-foreground">{subtitle}</p>}
         </div>
     );
 }
@@ -852,19 +852,19 @@ function SourceCard({ name, count, total, icon, color }: SourceCardProps) {
     const percentage = total > 0 ? ((count / total) * 100).toFixed(0) : 0;
 
     const colorClasses = {
-        blue: 'bg-orange-100 text-orange-600 border-orange-200',
-        red: 'bg-orange-200 text-orange-700 border-orange-300',
-        green: 'bg-orange-100 text-orange-600 border-orange-200',
-        purple: 'bg-gray-100 text-gray-600 border-gray-200',
-        gray: 'bg-gray-100 text-gray-600 border-gray-200'
+        blue: 'bg-primary/10 text-primary border-primary/20',
+        red: 'bg-primary/20 text-primary border-primary/30',
+        green: 'bg-primary/10 text-primary border-primary/20',
+        purple: 'bg-muted text-muted-foreground border-border',
+        gray: 'bg-muted text-muted-foreground border-border'
     };
 
     const bgClasses = {
-        blue: 'bg-orange-50',
-        red: 'bg-orange-100',
-        green: 'bg-orange-50',
-        purple: 'bg-gray-50',
-        gray: 'bg-gray-100'
+        blue: 'bg-primary/5',
+        red: 'bg-primary/10',
+        green: 'bg-primary/5',
+        purple: 'bg-muted/50',
+        gray: 'bg-muted'
     };
 
     return (
@@ -872,10 +872,10 @@ function SourceCard({ name, count, total, icon, color }: SourceCardProps) {
             <div className={`inline-flex p-2 sm:p-3 lg:p-4 rounded-lg sm:rounded-xl ${colorClasses[color].split(' ').slice(0, 2).join(' ')} mb-2 sm:mb-3 lg:mb-4 shadow-sm`}>
                 {icon}
             </div>
-            <p className="text-2xl sm:text-3xl font-black text-gray-900 mb-1 sm:mb-2">{count}</p>
-            <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-2 sm:mb-3 truncate" title={name}>{name}</p>
-            <div className="inline-block px-2 sm:px-3 py-1 sm:py-1.5 bg-white rounded-full shadow-sm border border-gray-200">
-                <p className="text-xs font-bold text-gray-700">{percentage}%</p>
+            <p className="text-2xl sm:text-3xl font-black text-foreground mb-1 sm:mb-2">{count}</p>
+            <p className="text-xs sm:text-sm font-semibold text-muted-foreground mb-2 sm:mb-3 truncate" title={name}>{name}</p>
+            <div className="inline-block px-2 sm:px-3 py-1 sm:py-1.5 bg-card rounded-full shadow-sm border border-border">
+                <p className="text-xs font-bold text-foreground">{percentage}%</p>
             </div>
         </div>
     );

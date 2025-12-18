@@ -11,7 +11,7 @@ interface CompletedStepProps {
 
 const CompletedStep: React.FC<CompletedStepProps> = ({ vehicleInfo, applicationId }) => {
   return (
-    <CardContent className="col-span-5 flex flex-col items-center justify-center gap-6 p-6 md:col-span-3 min-h-[600px]">
+    <CardContent className="col-span-6 flex flex-col items-center justify-center gap-6 p-4 sm:p-5 md:col-span-4 min-h-[500px]">
       {/* Success Icon */}
       <div className="inline-flex items-center justify-center w-24 h-24 bg-green-100 rounded-full mb-4">
         <CheckCircle className="w-16 h-16 text-green-600" />

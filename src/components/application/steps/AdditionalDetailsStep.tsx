@@ -20,7 +20,7 @@ const AdditionalDetailsStep: React.FC<AdditionalDetailsStepProps> = ({
   onNext
 }) => {
   return (
-    <CardContent className="col-span-5 flex flex-col gap-6 p-6 md:col-span-3">
+    <CardContent className="col-span-6 flex flex-col gap-4 p-4 sm:p-5 md:col-span-4">
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Historial Complementario</h2>
         <p className="text-sm text-gray-600">Información complementaria para evaluar tu solicitud.</p>

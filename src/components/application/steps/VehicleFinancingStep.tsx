@@ -138,10 +138,10 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
   };
 
   return (
-    <CardContent className="col-span-5 flex flex-col gap-6 p-6 md:col-span-3">
+    <CardContent className="col-span-6 flex flex-col gap-4 p-4 sm:p-5 md:col-span-4 bg-gray-50/50">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-          <Car className="w-6 h-6 text-primary-600" />
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 flex items-center gap-2">
+          <Car className="w-5 h-5 sm:w-6 sm:h-6 text-primary-600" />
           {showCalculator ? 'Auto y Financiamiento' : 'Selecciona tu Auto'}
         </h2>
         <p className="text-sm text-gray-600">
@@ -317,42 +317,46 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
         </div>
       )}
 
-      {/* Vehicles Grid */}
+      {/* Vehicles Grid - Clean, borderless design with prominent images */}
       {!loading && !showCalculator && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto pr-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
           {filteredVehicles.length > 0 ? (
             filteredVehicles.map((vehicle) => (
               <button
                 key={vehicle.ordencompra}
                 type="button"
                 onClick={() => handleVehicleClick(vehicle)}
-                className="group relative bg-white border-2 border-gray-200 rounded-lg p-3 hover:border-primary-500 hover:shadow-lg transition-all text-left"
+                className="group relative text-left transition-all hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
               >
-                <div className="aspect-video w-full mb-3 overflow-hidden rounded-md bg-gray-100">
+                {/* Image container - no padding, prominent */}
+                <div className="aspect-[4/3] w-full overflow-hidden rounded-lg bg-gray-100 shadow-sm group-hover:shadow-md transition-shadow">
                   <img
                     src={getVehicleImage(vehicle)}
                     alt={vehicle.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = DEFAULT_PLACEHOLDER_IMAGE;
                     }}
                   />
+                  {/* Price overlay on image */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6">
+                    <p className="text-white font-bold text-sm sm:text-base drop-shadow-sm">
+                      {formatCurrency(vehicle.precio)}
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <h3 className="font-bold text-sm text-gray-900 line-clamp-2 group-hover:text-primary-600">
+                {/* Minimal info below image */}
+                <div className="mt-2 px-0.5">
+                  <h3 className="font-semibold text-xs sm:text-sm text-gray-900 line-clamp-1 group-hover:text-primary-600 transition-colors">
                     {vehicle.title}
                   </h3>
-                  <p className="text-lg font-bold text-primary-600">
-                    {formatCurrency(vehicle.precio)}
-                  </p>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
+                  <div className="flex items-center gap-2 text-[10px] sm:text-xs text-gray-500 mt-0.5">
                     <span>{vehicle.autoano}</span>
+                    <span className="text-gray-300">•</span>
                     <span>{vehicle.kilometraje?.toLocaleString('es-MX')} km</span>
                   </div>
                 </div>
-
-                <div className="absolute inset-0 bg-primary-600/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg pointer-events-none" />
               </button>
             ))
           ) : (
@@ -367,16 +371,14 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
       )}
 
       {/* Navigation */}
-      <div className="flex justify-between gap-4 mt-6 pt-6 border-t">
+      <div className="flex justify-between gap-4 mt-4 pt-4 border-t border-gray-200">
         <Button
           variant="secondary"
-          size="lg"
           onClick={() => window.location.href = '/escritorio'}
         >
           Cancelar
         </Button>
         <Button
-          size="lg"
           onClick={handleContinue}
           disabled={!selectedVehicle || !showCalculator}
           className="text-white"
@@ -386,11 +388,11 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
         </Button>
       </div>
 
-      {/* Helper Text */}
+      {/* Helper Text - Compact */}
       {!showCalculator && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
-          <p><strong>Consejo:</strong> Puedes buscar por marca, modelo o año. Selecciona el auto que más te guste para continuar.</p>
-        </div>
+        <p className="text-xs text-gray-500 text-center">
+          💡 Busca por marca, modelo o año. Haz clic en un auto para continuar.
+        </p>
       )}
     </CardContent>
   );

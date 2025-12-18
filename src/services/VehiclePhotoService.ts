@@ -109,8 +109,13 @@ export const VehiclePhotoService = {
       }
 
       // Build the update data
+      // Store in dedicated R2 fields for priority over Airtable/Supabase images
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateData: any = {
+        // Store in R2-specific fields (highest priority)
+        r2_gallery: uploadedUrls,
+        use_r2_images: true,
+        // Also update regular fields for backwards compatibility
         galeria_exterior: uploadedUrls,
         fotos_exterior_url: uploadedUrls,
         updated_at: new Date().toISOString(),
@@ -118,6 +123,7 @@ export const VehiclePhotoService = {
 
       // Set first image as featured if requested and we have images
       if (setFirstAsFeatured && uploadedUrls.length > 0) {
+        updateData.r2_feature_image = uploadedUrls[0]; // R2 priority field
         updateData.feature_image = uploadedUrls[0];
         updateData.feature_image_url = uploadedUrls[0];
       }
@@ -168,10 +174,10 @@ export const VehiclePhotoService = {
     }
 
     try {
-      // First, get existing gallery
+      // First, get existing gallery (including R2 fields)
       const { data: vehicle, error: fetchError } = await supabase
         .from('inventario_cache')
-        .select('galeria_exterior, feature_image')
+        .select('galeria_exterior, feature_image, r2_gallery, r2_feature_image')
         .eq('id', vehicleId)
         .single();
 
@@ -195,12 +201,23 @@ export const VehiclePhotoService = {
         uploadedUrls.push(publicUrl);
       }
 
+      // Get existing R2 gallery if any
+      const existingR2Gallery = Array.isArray(vehicleData?.r2_gallery)
+        ? vehicleData.r2_gallery
+        : [];
+
       // Combine galleries
       const combinedGallery = [...existingGallery, ...uploadedUrls];
+      const combinedR2Gallery = [...existingR2Gallery, ...uploadedUrls];
 
       // Build update data
+      // Store in dedicated R2 fields for priority over Airtable/Supabase images
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateData: any = {
+        // Store in R2-specific fields (highest priority)
+        r2_gallery: combinedR2Gallery,
+        use_r2_images: true,
+        // Also update regular fields for backwards compatibility
         galeria_exterior: combinedGallery,
         fotos_exterior_url: combinedGallery,
         updated_at: new Date().toISOString(),
@@ -208,6 +225,7 @@ export const VehiclePhotoService = {
 
       // Set featured image if requested and vehicle doesn't have one
       if (setFirstAsFeatured && !vehicleData?.feature_image && uploadedUrls.length > 0) {
+        updateData.r2_feature_image = uploadedUrls[0]; // R2 priority field
         updateData.feature_image = uploadedUrls[0];
         updateData.feature_image_url = uploadedUrls[0];
       }

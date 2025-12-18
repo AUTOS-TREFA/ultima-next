@@ -36,6 +36,7 @@ import {
     DollarSign,
     Sparkles,
     Rocket,
+    ImagePlus,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '@/lib/utils';
@@ -134,6 +135,8 @@ const adminMainItems: NavItem[] = [
     { to: '/escritorio/admin/marketing', label: 'Dashboard General', icon: LayoutDashboard, roles: ['admin'] },
     { to: '/escritorio/admin/crm', label: 'CRM', icon: Target, roles: ['admin'] },
     { to: '/escritorio/admin/usuarios', label: 'Asesores', icon: Users, roles: ['admin'] },
+    { to: '/escritorio/admin/marketplace', label: 'Marketplace Admin', icon: Store, roles: ['admin'] },
+    { to: '/escritorio/admin/cargar-fotos', label: 'Cargar Fotos', icon: ImagePlus, roles: ['admin'] },
 ];
 
 // Admin Analytics Group
@@ -155,7 +158,6 @@ const adminToolsGroup: NavGroup = {
     icon: Settings,
     roles: ['admin'],
     items: [
-        { to: '/escritorio/admin/marketplace', label: 'Marketplace Admin', icon: Store, roles: ['admin'] },
         { to: '/escritorio/admin/bancos', label: 'Portal Bancario', icon: Building2, roles: ['admin'] },
         { to: '/escritorio/admin/compras', label: 'Compras', icon: ShoppingCart, roles: ['admin'] },
         { to: '/escritorio/admin/vacantes', label: 'Vacantes', icon: Briefcase, roles: ['admin'] },
