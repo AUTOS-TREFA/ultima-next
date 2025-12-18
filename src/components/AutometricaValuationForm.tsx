@@ -349,12 +349,12 @@ export function AutometricaValuationForm({
     loadCatalog();
   }, []);
 
-  // If user is already logged in and verified, skip verification step
+  // If user is already logged in, skip verification step
   useEffect(() => {
-    if (step === 'verify_to_reveal' && user && profile?.phone_verified) {
+    if (step === 'verify_to_reveal' && user) {
       setStep('success');
     }
-  }, [step, user, profile]);
+  }, [step, user]);
 
   // Reset downstream selections when brand changes
   useEffect(() => {
@@ -482,12 +482,12 @@ export function AutometricaValuationForm({
 
       setValuation(valuationResult);
 
-      // If user is already logged in and verified, go directly to success
-      if (user && profile?.phone_verified) {
+      // If user is already logged in, go directly to success (no verification needed)
+      if (user) {
         await saveValuationData(valuationResult, kmValue);
         setStep('success');
       } else {
-        // Show verification modal to reveal offer
+        // Show verification modal to reveal offer (only for unauthenticated users)
         setShowVerificationModal(true);
         setStep('verify_to_reveal');
       }
