@@ -1,7 +1,13 @@
 // Supabase Edge Function: Airtable Webhook → inventario_cache Sync
 // This function receives a single record update from Airtable webhooks
 // and syncs all vehicle data to Supabase inventario_cache table.
-// Image URLs are read from Airtable text fields (populated by airtable-image-upload-optimized.js)
+//
+// IMAGE HANDLING (Updated 2025-12):
+// - Images are now managed via the "Cargar Fotos" admin page which uploads directly to R2
+// - When a vehicle has use_r2_images=true, we preserve R2 images and skip Airtable image URLs
+// - The airtable-image-upload-optimized.js automation should be DISABLED in Airtable
+// - This reduces API calls and prevents unnecessary image re-processing
+//
 // Deploy with: supabase functions deploy airtable-sync
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
@@ -225,30 +231,60 @@ serve(async (req: Request) => {
 
     const ordenCompra = fields.OrdenCompra || record.id;
 
-    // Read R2 image URLs directly from Airtable text fields
-    // These URLs are populated by the airtable-image-upload-optimized.js automation
-    // which handles uploading attachments to R2 and saving URLs back to Airtable
-    console.log(`🖼️  Reading image URLs for ${ordenCompra}...`);
+    // --- IMAGE HANDLING ---
+    // Check if this vehicle already has R2 images uploaded via "Cargar Fotos" admin page
+    // If use_r2_images=true, preserve R2 images and skip Airtable image URLs
+    console.log(`🖼️  Checking image handling for ${ordenCompra}...`);
 
-    const exteriorImages = getImageUrls(fields.fotos_exterior_url).join(', ') || '';
-    const interiorImages = getImageUrls(fields.fotos_interior_url).join(', ') || '';
+    let exteriorImages = '';
+    let interiorImages = '';
+    let featureImage: string | null = null;
+    let useR2Images = false;
+    let r2FeatureImage: string | null = null;
+    let r2Gallery: string[] = [];
 
-    // Check multiple possible field names for feature image (Airtable attachment or URL string)
-    const featureImageArray = getImageUrls(fields.feature_image) || [];
-    const featuredImageUrlArray = getImageUrls(fields.featured_image_url) || [];
-    const featureImageUrlArray = getImageUrls(fields.feature_image_url) || [];
+    // Check existing record for R2 images
+    const { data: existingRecord } = await supabase
+      .from('inventario_cache')
+      .select('use_r2_images, r2_feature_image, r2_gallery, feature_image, fotos_exterior_url, fotos_interior_url')
+      .eq('ordencompra', ordenCompra)
+      .single();
 
-    // Use feature_image if available, then featured_image_url, then feature_image_url, then first exterior image
-    let featureImage = featureImageArray.length > 0 ? featureImageArray[0] :
-                       featuredImageUrlArray.length > 0 ? featuredImageUrlArray[0] :
-                       featureImageUrlArray.length > 0 ? featureImageUrlArray[0] : null;
+    if (existingRecord?.use_r2_images) {
+      // PRESERVE R2 IMAGES - Don't overwrite with Airtable URLs
+      console.log(`✅ Vehicle has R2 images (use_r2_images=true) - preserving existing images`);
+      useR2Images = true;
+      r2FeatureImage = existingRecord.r2_feature_image || null;
+      r2Gallery = existingRecord.r2_gallery || [];
+      featureImage = existingRecord.feature_image || r2FeatureImage;
+      exteriorImages = existingRecord.fotos_exterior_url || '';
+      interiorImages = existingRecord.fotos_interior_url || '';
+      console.log(`📷 Preserved: feature=${featureImage ? '1' : '0'}, gallery=${r2Gallery.length} images`);
+    } else {
+      // FALLBACK: Read image URLs from Airtable text fields (legacy behavior)
+      // Note: airtable-image-upload-optimized.js automation should be DISABLED
+      console.log(`📥 No R2 images - reading from Airtable fields (legacy mode)`);
 
-    if (!featureImage && exteriorImages) {
-      const exteriorArray = exteriorImages.split(',').map(url => url.trim()).filter(Boolean);
-      featureImage = exteriorArray[0] || null;
+      exteriorImages = getImageUrls(fields.fotos_exterior_url).join(', ') || '';
+      interiorImages = getImageUrls(fields.fotos_interior_url).join(', ') || '';
+
+      // Check multiple possible field names for feature image
+      const featureImageArray = getImageUrls(fields.feature_image) || [];
+      const featuredImageUrlArray = getImageUrls(fields.featured_image_url) || [];
+      const featureImageUrlArray = getImageUrls(fields.feature_image_url) || [];
+
+      // Use feature_image if available, then featured_image_url, then feature_image_url, then first exterior image
+      featureImage = featureImageArray.length > 0 ? featureImageArray[0] :
+                         featuredImageUrlArray.length > 0 ? featuredImageUrlArray[0] :
+                         featureImageUrlArray.length > 0 ? featureImageUrlArray[0] : null;
+
+      if (!featureImage && exteriorImages) {
+        const exteriorArray = exteriorImages.split(',').map(url => url.trim()).filter(Boolean);
+        featureImage = exteriorArray[0] || null;
+      }
+
+      console.log(`✅ Found ${exteriorImages.split(',').filter(Boolean).length} exterior, ${interiorImages.split(',').filter(Boolean).length} interior, ${featureImage ? 1 : 0} feature image URLs from Airtable`);
     }
-
-    console.log(`✅ Found ${exteriorImages.split(',').filter(Boolean).length} exterior, ${interiorImages.split(',').filter(Boolean).length} interior, ${featureImage ? 1 : 0} feature image URLs`);
 
     // Normalize combustible field - convert to plain text (first element)
     const combustibleArray = getArrayField(fields.autocombustible || fields.combustible);
@@ -336,6 +372,12 @@ serve(async (req: Request) => {
       feature_image_url: featureImage, // Store in both columns for compatibility
       fotos_exterior_url: exteriorImages,
       fotos_interior_url: interiorImages,
+      // Preserve R2 image fields if they exist
+      ...(useR2Images && {
+        use_r2_images: true,
+        r2_feature_image: r2FeatureImage,
+        r2_gallery: r2Gallery,
+      }),
       ordencompra: fields.OrdenCompra || '',
       ordenstatus: currentOrdenStatus,
       separado: !!(fields.separado || fields.Separado), // Convert any truthy value to boolean
