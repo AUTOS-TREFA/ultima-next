@@ -432,18 +432,29 @@ const FinanciamientosPage: React.FC = () => {
 
       console.log('✅ Usuario nuevo confirmado, procediendo con SMS...');
 
-      // SEGUNDO: Verificar si el teléfono ya está registrado
+      // SEGUNDO: Verificar si el teléfono ya está registrado Y verificado
+      // Optimización: No enviar SMS si el teléfono ya está verificado con otra cuenta
       const cleanPhone = data.phone.replace(/\D/g, '');
       const { data: existingPhoneProfile, error: phoneError } = await supabase
         .from('profiles')
-        .select('id, email, phone')
+        .select('id, email, phone, phone_verified')
         .eq('phone', cleanPhone)
-        .single();
+        .maybeSingle();
 
       if (existingPhoneProfile && !phoneError) {
         console.log('⚠️ Usuario ya existe con este teléfono:', existingPhoneProfile);
         setErrorType('account_exists_phone'); // Set error type for blue styling
-        setErrorMessage('Este número de celular ya está en uso, por favor inicia sesión aquí.');
+
+        // Si el teléfono ya está verificado, mostrar email parcial
+        if (existingPhoneProfile.phone_verified) {
+          const maskedEmail = existingPhoneProfile.email
+            ? existingPhoneProfile.email.replace(/(.{2})(.*)(@.*)/, '$1***$3')
+            : '';
+          setErrorMessage(`Este número ya está verificado${maskedEmail ? ` con ${maskedEmail}` : ''}. Por favor inicia sesión.`);
+        } else {
+          setErrorMessage('Este número de celular ya está en uso, por favor inicia sesión aquí.');
+        }
+
         setSubmissionStatus('error');
         // Navigate to /acceder after showing message, preserving URL params
         const redirectUrl = `/acceder${urlParams ? `?${urlParams}` : ''}`;
@@ -467,6 +478,18 @@ const FinanciamientosPage: React.FC = () => {
           phone: formattedPhone
         }
       });
+
+      // Handle phone_already_verified error from Edge Function (backup check)
+      if (smsData?.error === 'phone_already_verified') {
+        console.log('⚠️ Teléfono ya verificado (desde Edge Function)');
+        setErrorType('account_exists_phone');
+        const maskedEmail = smsData?.existingEmail || '';
+        setErrorMessage(`Este número ya está verificado${maskedEmail ? ` con ${maskedEmail}` : ''}. Por favor inicia sesión.`);
+        setSubmissionStatus('error');
+        const redirectUrl = `/acceder${urlParams ? `?${urlParams}` : ''}`;
+        setTimeout(() => router.push(redirectUrl), 2500);
+        return;
+      }
 
       if (smsError) {
         console.error('❌ Error al enviar SMS:', smsError);
@@ -678,6 +701,7 @@ const FinanciamientosPage: React.FC = () => {
         mother_last_name: motherLastName,
         email: formDataCache.email,
         phone: cleanPhone, // Only save 10 digits without country code
+        phone_verified: true, // Phone verified via SMS OTP
         // Tracking data
         ordencompra: ordencompra,
         utm_source: utmSource,
@@ -797,6 +821,9 @@ const FinanciamientosPage: React.FC = () => {
 
       reset();
       setFormDataCache(null);
+
+      // Clear cached profile so AuthContext fetches fresh data with the new profile info
+      sessionStorage.removeItem('userProfile');
 
       // Redirect to profile page immediately with URL parameters preserved
       const redirectPath = `/escritorio/profile${urlParams ? `?${urlParams}` : ''}`;
