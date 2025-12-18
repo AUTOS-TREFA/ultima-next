@@ -18,8 +18,10 @@ export interface VehicleWithoutPhotos {
   model: string | null;
   year: number | null;
   feature_image: string | null;
-  galeria_exterior: string[] | null;
+  feature_image_url: string | null;
   r2_feature_image: string | null;
+  galeria_exterior: string[] | null;
+  fotos_exterior_url: string[] | string | null;
   r2_gallery: string[] | null;
   has_feature_image: boolean;
   has_gallery: boolean;
@@ -42,8 +44,10 @@ interface InventarioCacheRow {
   modelo: string | null;
   autoano: number | null;
   feature_image: string | null;
-  galeria_exterior: string[] | null;
+  feature_image_url: string | null;
   r2_feature_image: string | null;
+  galeria_exterior: string[] | null;
+  fotos_exterior_url: string[] | string | null;
   r2_gallery: string[] | null;
   use_r2_images: boolean | null;
 }
@@ -51,13 +55,14 @@ interface InventarioCacheRow {
 export const VehiclePhotoService = {
   /**
    * Get vehicles with OrdenStatus='Comprado' that are missing photos
-   * Checks both legacy fields (feature_image, galeria_exterior) and R2 fields (r2_feature_image, r2_gallery)
+   * Checks all image fields: feature_image, feature_image_url, r2_feature_image, fotos_exterior_url
+   * Only shows vehicles that are missing at least one of these image sources
    */
   async getVehiclesWithoutPhotos(): Promise<VehicleWithoutPhotos[]> {
     // Only fetch vehicles that are "Comprado" (purchased inventory ready for photos)
     const { data, error } = await supabase
       .from('inventario_cache')
-      .select('id, ordencompra, title, titulo, marca, modelo, autoano, feature_image, galeria_exterior, r2_feature_image, r2_gallery, use_r2_images')
+      .select('id, ordencompra, title, titulo, marca, modelo, autoano, feature_image, feature_image_url, r2_feature_image, galeria_exterior, fotos_exterior_url, r2_gallery, use_r2_images')
       .eq('ordenstatus', 'Comprado')
       .order('ordencompra', { ascending: false });
 
@@ -66,38 +71,55 @@ export const VehiclePhotoService = {
       throw new Error('No se pudieron obtener los vehículos sin fotos.');
     }
 
-    // Filter vehicles that don't have photos (checking both legacy and R2 fields)
-    // and map to the expected format
+    // Helper to check if a value is a valid non-empty string
+    const isValidString = (val: any): boolean => {
+      return typeof val === 'string' && val.trim() !== '' && val !== 'null' && val !== 'undefined';
+    };
+
+    // Helper to check if a value is a valid non-empty array or non-empty string
+    const hasGalleryContent = (val: any): boolean => {
+      if (Array.isArray(val) && val.length > 0) {
+        // Check if array has at least one valid URL
+        return val.some(item => isValidString(item));
+      }
+      if (typeof val === 'string' && val.trim() !== '') {
+        // Could be a comma-separated string or JSON
+        return true;
+      }
+      return false;
+    };
+
+    // Filter vehicles that don't have ALL required images
+    // A vehicle needs BOTH a feature image AND gallery content to be considered complete
     return ((data as InventarioCacheRow[]) || [])
       .filter(vehicle => {
-        // Check if vehicle has any feature image (legacy or R2)
+        // Check if vehicle has any feature image from ANY of these fields
         const hasFeatureImage =
-          (vehicle.feature_image && vehicle.feature_image.trim() !== '') ||
-          (vehicle.r2_feature_image && vehicle.r2_feature_image.trim() !== '');
+          isValidString(vehicle.feature_image) ||
+          isValidString(vehicle.feature_image_url) ||
+          isValidString(vehicle.r2_feature_image);
 
-        // Check if vehicle has any gallery images (legacy or R2)
+        // Check if vehicle has any gallery images
         const hasGallery =
-          (Array.isArray(vehicle.galeria_exterior) && vehicle.galeria_exterior.length > 0) ||
-          (Array.isArray(vehicle.r2_gallery) && vehicle.r2_gallery.length > 0);
+          hasGalleryContent(vehicle.galeria_exterior) ||
+          hasGalleryContent(vehicle.fotos_exterior_url) ||
+          hasGalleryContent(vehicle.r2_gallery);
 
-        // Only include vehicles missing BOTH feature image AND gallery
+        // Only include vehicles that are MISSING feature image OR gallery
         return !hasFeatureImage || !hasGallery;
       })
       .map(vehicle => {
-        const featureImage = vehicle.feature_image;
-        const galeriaExterior = vehicle.galeria_exterior;
-        const r2FeatureImage = vehicle.r2_feature_image;
-        const r2Gallery = vehicle.r2_gallery;
-
         // Check for any feature image
         const hasFeatureImage =
-          (featureImage && featureImage.trim() !== '') ||
-          (r2FeatureImage && r2FeatureImage.trim() !== '');
+          isValidString(vehicle.feature_image) ||
+          isValidString(vehicle.feature_image_url) ||
+          isValidString(vehicle.r2_feature_image);
 
         // Check for any gallery
         const hasGallery =
-          (Array.isArray(galeriaExterior) && galeriaExterior.length > 0) ||
-          (Array.isArray(r2Gallery) && r2Gallery.length > 0);
+          hasGalleryContent(vehicle.galeria_exterior) ||
+          hasGalleryContent(vehicle.fotos_exterior_url) ||
+          hasGalleryContent(vehicle.r2_gallery);
 
         return {
           id: vehicle.id,
@@ -106,10 +128,12 @@ export const VehiclePhotoService = {
           brand: vehicle.marca,
           model: vehicle.modelo,
           year: vehicle.autoano,
-          feature_image: featureImage,
-          galeria_exterior: galeriaExterior,
-          r2_feature_image: r2FeatureImage,
-          r2_gallery: r2Gallery,
+          feature_image: vehicle.feature_image,
+          feature_image_url: vehicle.feature_image_url,
+          r2_feature_image: vehicle.r2_feature_image,
+          galeria_exterior: vehicle.galeria_exterior,
+          fotos_exterior_url: vehicle.fotos_exterior_url,
+          r2_gallery: vehicle.r2_gallery,
           has_feature_image: hasFeatureImage,
           has_gallery: hasGallery,
         };
