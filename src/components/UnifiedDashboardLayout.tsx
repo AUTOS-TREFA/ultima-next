@@ -115,6 +115,8 @@ interface NavGroup {
 const essentialItems: NavItem[] = [
     { to: '/escritorio', label: 'Mi Escritorio', icon: Home, roles: ['admin', 'sales', 'user'], end: true },
     { to: '/escritorio/aplicacion', label: 'Nueva Solicitud', icon: Plus, roles: ['admin', 'sales', 'user'] },
+    { to: '/escritorio/seguimiento', label: 'Mis Solicitudes', icon: FileText, roles: ['admin', 'sales', 'user'] },
+    { to: '/escritorio/perfilacion-bancaria', label: 'Perfilamiento Bancario', icon: Building2, roles: ['admin', 'sales', 'user'] },
 ];
 
 // Sell Your Car Group
@@ -132,9 +134,10 @@ const sellCarGroup: NavGroup = {
 // Admin Main Items (Simplified - only most used)
 const adminMainItems: NavItem[] = [
     { to: '/escritorio/admin/marketing', label: 'Dashboard General', icon: LayoutDashboard, roles: ['admin'] },
-    { to: '/escritorio/admin/crm', label: 'CRM', icon: Target, roles: ['admin'] },
+    { to: '/escritorio/admin/crm', label: 'Leads', icon: Target, roles: ['admin'] },
     { to: '/escritorio/admin/usuarios', label: 'Asesores', icon: Users, roles: ['admin'] },
     { to: '/escritorio/admin/marketplace', label: 'Marketplace Admin', icon: Store, roles: ['admin'] },
+    { to: '/escritorio/admin/compras', label: 'Compras', icon: ShoppingCart, roles: ['admin'] },
     { to: '/escritorio/admin/cargar-fotos', label: 'Cargar Fotos', icon: ImagePlus, roles: ['admin'] },
 ];
 
@@ -148,6 +151,7 @@ const adminAnalyticsGroup: NavGroup = {
         { to: '/escritorio/admin/business-analytics', label: 'Inventario', icon: Car, roles: ['admin'] },
         { to: '/escritorio/dashboard', label: 'Ventas', icon: DollarSign, roles: ['admin'] },
         { to: '/escritorio/admin/solicitudes', label: 'Solicitudes', icon: FileText, roles: ['admin'] },
+        { to: '/escritorio/admin/documentos-analytics', label: 'Documentos', icon: ClipboardCheck, roles: ['admin'] },
     ],
 };
 
@@ -158,7 +162,6 @@ const adminToolsGroup: NavGroup = {
     roles: ['admin'],
     items: [
         { to: '/escritorio/admin/bancos', label: 'Portal Bancario', icon: Building2, roles: ['admin'] },
-        { to: '/escritorio/admin/compras', label: 'Compras', icon: ShoppingCart, roles: ['admin'] },
         { to: '/escritorio/admin/vacantes', label: 'Vacantes', icon: Briefcase, roles: ['admin'] },
         { to: '/escritorio/admin/marketing-config', label: 'Integraciones', icon: Settings, roles: ['admin'] },
     ],
@@ -297,12 +300,12 @@ const AppSidebarContent: React.FC = () => {
 
             <SidebarContent className="bg-gray-50 px-3">
                 {/* Essentials */}
-                <SidebarGroup className="py-3">
-                    <SidebarGroupLabel className="text-gray-400 text-[10px] font-semibold uppercase tracking-widest mb-2 px-3">
+                <SidebarGroup className="py-1">
+                    <SidebarGroupLabel className="text-gray-400 text-[10px] font-semibold uppercase tracking-widest mb-1 px-3">
                         Esenciales
                     </SidebarGroupLabel>
                     <SidebarGroupContent>
-                        <SidebarMenu className="space-y-1">
+                        <SidebarMenu className="space-y-0.5">
                             {filterByRole(essentialItems).map((item) => {
                                 const Icon = item.icon;
                                 const isActive = isActiveLink(item.to, item.end);
@@ -331,9 +334,9 @@ const AppSidebarContent: React.FC = () => {
                 </SidebarGroup>
 
                 {/* Vende tu Auto */}
-                <SidebarGroup className="py-2">
+                <SidebarGroup className="py-1">
                     <SidebarGroupContent>
-                        <SidebarMenu className="space-y-1">
+                        <SidebarMenu className="space-y-0.5">
                             <Collapsible className="group/collapsible">
                                 <SidebarMenuItem>
                                     <CollapsibleTrigger asChild>
@@ -380,15 +383,15 @@ const AppSidebarContent: React.FC = () => {
                 {/* Admin Section */}
                 {isAdmin && (
                     <>
-                        <Separator className="bg-gray-200 my-3" />
+                        <Separator className="bg-gray-200 my-2" />
 
                         {/* Admin Main */}
-                        <SidebarGroup className="py-2">
-                            <SidebarGroupLabel className="text-gray-400 text-[10px] font-semibold uppercase tracking-widest mb-2 px-3">
+                        <SidebarGroup className="py-1">
+                            <SidebarGroupLabel className="text-gray-400 text-[10px] font-semibold uppercase tracking-widest mb-1 px-3">
                                 Admin
                             </SidebarGroupLabel>
                             <SidebarGroupContent>
-                                <SidebarMenu className="space-y-1">
+                                <SidebarMenu className="space-y-0.5">
                                     {filterByRole(adminMainItems).map((item) => {
                                         const Icon = item.icon;
                                         const isActive = isActiveLink(item.to, item.end);
@@ -417,9 +420,9 @@ const AppSidebarContent: React.FC = () => {
                         </SidebarGroup>
 
                         {/* Analytics Dropdown */}
-                        <SidebarGroup className="py-1">
+                        <SidebarGroup className="py-0.5">
                             <SidebarGroupContent>
-                                <SidebarMenu className="space-y-1">
+                                <SidebarMenu className="space-y-0.5">
                                     <Collapsible className="group/collapsible">
                                         <SidebarMenuItem>
                                             <CollapsibleTrigger asChild>
@@ -464,9 +467,9 @@ const AppSidebarContent: React.FC = () => {
                         </SidebarGroup>
 
                         {/* Tools Dropdown */}
-                        <SidebarGroup className="py-1">
+                        <SidebarGroup className="py-0.5">
                             <SidebarGroupContent>
-                                <SidebarMenu className="space-y-1">
+                                <SidebarMenu className="space-y-0.5">
                                     <Collapsible className="group/collapsible">
                                         <SidebarMenuItem>
                                             <CollapsibleTrigger asChild>
@@ -515,13 +518,13 @@ const AppSidebarContent: React.FC = () => {
                 {/* Sales Section */}
                 {isSales && (
                     <>
-                        <Separator className="bg-gray-200 my-3" />
-                        <SidebarGroup className="py-2">
-                            <SidebarGroupLabel className="text-gray-400 text-[10px] font-semibold uppercase tracking-widest mb-2 px-3">
+                        <Separator className="bg-gray-200 my-2" />
+                        <SidebarGroup className="py-1">
+                            <SidebarGroupLabel className="text-gray-400 text-[10px] font-semibold uppercase tracking-widest mb-1 px-3">
                                 Ventas
                             </SidebarGroupLabel>
                             <SidebarGroupContent>
-                                <SidebarMenu className="space-y-1">
+                                <SidebarMenu className="space-y-0.5">
                                     {filterByRole(salesItems).map((item) => {
                                         const Icon = item.icon;
                                         const isActive = isActiveLink(item.to, item.end);
@@ -552,8 +555,8 @@ const AppSidebarContent: React.FC = () => {
                 )}
             </SidebarContent>
 
-            <SidebarFooter className="border-t border-gray-200 bg-gray-50 px-3 py-3">
-                <SidebarMenu className="space-y-1">
+            <SidebarFooter className="border-t border-gray-200 bg-gray-50 px-3 py-2">
+                <SidebarMenu className="space-y-0.5">
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             asChild

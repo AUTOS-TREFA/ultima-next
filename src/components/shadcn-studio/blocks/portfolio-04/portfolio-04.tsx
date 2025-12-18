@@ -552,56 +552,56 @@ const Portfolio = ({
           {renderMobileMosaic()}
         </div>
 
-        {/* Desktop Mosaic - 2x1 blocks for vehicles, 1x1 blocks for brands */}
+        {/* Desktop Mosaic - 2x1 vehicle blocks + brand + carroceria filters */}
         <div className='hidden sm:flex flex-col gap-4'>
           {(() => {
             const elements: JSX.Element[] = []
             let vehicleIdx = 0
             const baseDelay = 0.5
 
-            // Row 1: Large vehicle (2 cols) + Nissan brand + Kia brand
+            // Row 1: Large vehicle (2 cols) + Nissan brand + SUVs carroceria
             if (vehicles[vehicleIdx]) {
               elements.push(
                 <div key="row1" className="grid grid-cols-4 gap-4">
                   <VehicleCard vehicle={vehicles[vehicleIdx]} delay={baseDelay} className="col-span-2" aspectClass="aspect-[16/9]" />
                   <FilterCard filter={brandFilters[0]} delay={baseDelay + 0.05} aspectClass="aspect-[4/3]" />
-                  <FilterCard filter={brandFilters[1]} delay={baseDelay + 0.1} aspectClass="aspect-[4/3]" />
+                  <FilterCard filter={filterShortcuts[0]} delay={baseDelay + 0.1} aspectClass="aspect-[4/3]" />
                 </div>
               )
               vehicleIdx += 1
             }
 
-            // Row 2: Volkswagen brand + Toyota brand + Large vehicle (2 cols)
+            // Row 2: Honda brand + Sedanes carroceria + Large vehicle (2 cols)
             if (vehicles[vehicleIdx]) {
               elements.push(
                 <div key="row2" className="grid grid-cols-4 gap-4">
-                  <FilterCard filter={brandFilters[2]} delay={baseDelay + 0.15} aspectClass="aspect-[4/3]" />
-                  <FilterCard filter={filterShortcuts[3]} delay={baseDelay + 0.2} aspectClass="aspect-[4/3]" />
+                  <FilterCard filter={brandFilters[1]} delay={baseDelay + 0.15} aspectClass="aspect-[4/3]" />
+                  <FilterCard filter={filterShortcuts[1]} delay={baseDelay + 0.2} aspectClass="aspect-[4/3]" />
                   <VehicleCard vehicle={vehicles[vehicleIdx]} delay={baseDelay + 0.25} className="col-span-2" aspectClass="aspect-[16/9]" />
                 </div>
               )
               vehicleIdx += 1
             }
 
-            // Row 3: Large vehicle (2 cols) + SUVs + Sedanes
+            // Row 3: Large vehicle (2 cols) + Volkswagen brand + Mazda brand
             if (vehicles[vehicleIdx]) {
               elements.push(
                 <div key="row3" className="grid grid-cols-4 gap-4">
                   <VehicleCard vehicle={vehicles[vehicleIdx]} delay={baseDelay + 0.3} className="col-span-2" aspectClass="aspect-[16/9]" />
-                  <FilterCard filter={filterShortcuts[0]} delay={baseDelay + 0.35} aspectClass="aspect-[4/3]" />
-                  <FilterCard filter={filterShortcuts[1]} delay={baseDelay + 0.4} aspectClass="aspect-[4/3]" />
+                  <FilterCard filter={brandFilters[2]} delay={baseDelay + 0.35} aspectClass="aspect-[4/3]" />
+                  <FilterCard filter={filterShortcuts[2]} delay={baseDelay + 0.4} aspectClass="aspect-[4/3]" />
                 </div>
               )
               vehicleIdx += 1
             }
 
-            // Row 4: Budget filter + Newest filter + Large vehicle (2 cols)
+            // Row 4: Toyota brand + Large vehicle (2 cols) + Budget filter
             if (vehicles[vehicleIdx]) {
               elements.push(
                 <div key="row4" className="grid grid-cols-4 gap-4">
-                  <FilterCard filter={filterShortcuts[4]} delay={baseDelay + 0.45} aspectClass="aspect-[4/3]" />
-                  <FilterCard filter={filterShortcuts[5]} delay={baseDelay + 0.5} aspectClass="aspect-[4/3]" />
-                  <VehicleCard vehicle={vehicles[vehicleIdx]} delay={baseDelay + 0.55} className="col-span-2" aspectClass="aspect-[16/9]" />
+                  <FilterCard filter={filterShortcuts[3]} delay={baseDelay + 0.45} aspectClass="aspect-[4/3]" />
+                  <VehicleCard vehicle={vehicles[vehicleIdx]} delay={baseDelay + 0.5} className="col-span-2" aspectClass="aspect-[16/9]" />
+                  <FilterCard filter={filterShortcuts[4]} delay={baseDelay + 0.55} aspectClass="aspect-[4/3]" />
                 </div>
               )
               vehicleIdx += 1
