@@ -7,6 +7,7 @@ import { supabase } from '../../supabaseClient';
 import { CheckCircleIcon, ArrowLeftIcon } from '../components/icons';
 import { proxyImage } from '../utils/proxyImage';
 import { conversionTracking } from '../services/ConversionTrackingService';
+import { getSiteUrl } from '@/config';
 
 type RegisterStep = 'form' | 'verify_sms' | 'complete';
 
@@ -331,7 +332,7 @@ const RegisterPage: React.FC = () => {
             phone: cleanPhone,
             source: 'registro-directo'
           },
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback?redirect=/escritorio`,
+          emailRedirectTo: `${getSiteUrl()}/auth/callback?redirect=/escritorio`,
         }
       });
 

@@ -25,6 +25,7 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '../../supabaseClient';
 import { GoogleIcon } from '@/components/icons';
 import { conversionTracking } from '@/services/ConversionTrackingService';
+import { getSiteUrl } from '@/config';
 import { proxyImage } from '@/utils/proxyImage';
 
 type RegisterStep = 'form' | 'verify_sms' | 'complete';
@@ -240,7 +241,7 @@ const RegisterPageNew: React.FC = () => {
             phone: cleanPhone,
             source: 'registro-directo'
           },
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback?redirect=/escritorio`,
+          emailRedirectTo: `${getSiteUrl()}/auth/callback?redirect=/escritorio`,
         }
       });
 
@@ -322,9 +323,8 @@ const RegisterPageNew: React.FC = () => {
 
     try {
       await supabase.auth.signOut();
-      // Usar NEXT_PUBLIC_SITE_URL para producción, fallback a window.location.origin
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-      const redirectUrl = `${siteUrl}/auth/callback?redirect=/escritorio/profile`;
+      // Usar getSiteUrl() para garantizar URL correcta (nunca 0.0.0.0)
+      const redirectUrl = `${getSiteUrl()}/auth/callback?redirect=/escritorio/profile`;
 
       conversionTracking.trackButtonClick('Google Sign Up Initiated', {
         page: 'register',

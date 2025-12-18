@@ -25,6 +25,7 @@ import { supabase } from '@/lib/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { GoogleIcon } from '@/components/icons';
 import { conversionTracking } from '@/services/ConversionTrackingService';
+import { getSiteUrl } from '@/config';
 import { checkBasicProfileCompleteness } from '@/components/AuthHandler';
 import { checkIsAdmin } from '@/constants/adminEmails';
 import VehicleService from '@/services/VehicleService';
@@ -280,9 +281,8 @@ const LoginPage: React.FC = () => {
       // Limpiar cualquier sesión anterior para evitar conflictos
       await supabase.auth.signOut();
 
-      // Usar NEXT_PUBLIC_SITE_URL para producción, fallback a window.location.origin
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-      const redirectUrl = `${siteUrl}/auth/callback?redirect=/escritorio`;
+      // Usar getSiteUrl() para garantizar URL correcta (nunca 0.0.0.0)
+      const redirectUrl = `${getSiteUrl()}/auth/callback?redirect=/escritorio`;
 
       console.log('[OAuth] Iniciando Google Sign In con redirect:', redirectUrl);
 
