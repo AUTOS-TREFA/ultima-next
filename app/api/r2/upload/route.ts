@@ -44,16 +44,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user has admin role
+    // Check if user has admin or marketing role
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
 
-    if (!profile || profile.role !== 'admin') {
+    const allowedRoles = ['admin', 'marketing'];
+    if (!profile || !allowedRoles.includes(profile.role)) {
       return NextResponse.json(
-        { error: 'Solo administradores pueden subir fotos' },
+        { error: 'Solo administradores y marketing pueden subir fotos' },
         { status: 403 }
       );
     }
