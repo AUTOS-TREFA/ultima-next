@@ -647,9 +647,9 @@ const SellerDashboardPage: React.FC = () => {
 
         {/* NEW VALUATION TAB */}
         <TabsContent value="valuate" className="mt-6">
-          <div className="grid lg:grid-cols-2 gap-6">
-            {/* Valuation Form - Clean layout without bounding box */}
-            <div>
+          <div className="grid lg:grid-cols-5 gap-6">
+            {/* Valuation Form - Wider layout (3/5 columns) */}
+            <div className="lg:col-span-3">
               <div className="mb-4">
                 <h2 className="flex items-center gap-2 text-xl font-bold">
                   <Zap className="w-5 h-5 text-primary" />
@@ -664,12 +664,11 @@ const SellerDashboardPage: React.FC = () => {
                   loadListings();
                   setActiveTab('history');
                 }}
-                compact
               />
             </div>
 
-            {/* Benefits */}
-            <div className="space-y-4">
+            {/* Benefits - 2/5 columns */}
+            <div className="lg:col-span-2 space-y-4">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">¿Por qué vender con nosotros?</CardTitle>

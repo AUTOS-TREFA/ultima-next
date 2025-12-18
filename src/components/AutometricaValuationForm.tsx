@@ -14,6 +14,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '../../supabaseClient';
 
@@ -49,7 +50,9 @@ import type { UserVehicleForSale } from '@/types/types';
 import Confetti from '@/Valuation/components/Confetti';
 import AnimatedNumber from '@/Valuation/components/AnimatedNumber';
 
-// UI components - Dialog removed, using inline verification flow
+// UI components
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // ============================================================================
 // BRAND FILTER CONFIGURATION
@@ -230,6 +233,10 @@ export function AutometricaValuationForm({
 
   // UI state
   const [copied, setCopied] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+
+  // Duplicate quote prevention state
+  const [existingQuote, setExistingQuote] = useState<{ id: string; created_at: string; price: number } | null>(null);
 
   // Currency formatter
   const currencyFormatter = new Intl.NumberFormat('es-MX', {
@@ -308,6 +315,7 @@ export function AutometricaValuationForm({
       setSelectedSubbrand('');
       setSelectedYear('');
       setSelectedVersion('');
+      setExistingQuote(null); // Clear any existing quote warning
       setTimeout(() => modelRef.current?.focus({ preventScroll: true }), 50);
     }
   }, [selectedBrand]);
@@ -350,6 +358,41 @@ export function AutometricaValuationForm({
   // HANDLERS
   // ============================================================================
 
+  // Check for existing quote for same vehicle within 30 days
+  const checkExistingQuote = async () => {
+    if (!user) return null;
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const { data, error } = await supabase
+      .from('user_vehicles_for_sale')
+      .select('id, created_at, valuation_data')
+      .eq('user_id', user.id)
+      .gte('created_at', thirtyDaysAgo.toISOString())
+      .order('created_at', { ascending: false });
+
+    if (error || !data) return null;
+
+    // Find a quote for the same brand+subbrand+year
+    for (const quote of data) {
+      const valData = quote.valuation_data as any;
+      if (
+        valData?.vehicle?.brand?.toLowerCase() === selectedBrand.toLowerCase() &&
+        valData?.vehicle?.subbrand?.toLowerCase() === selectedSubbrand.toLowerCase() &&
+        valData?.vehicle?.year?.toString() === selectedYear
+      ) {
+        return {
+          id: quote.id,
+          created_at: quote.created_at,
+          price: valData?.purchasePrice || 0
+        };
+      }
+    }
+
+    return null;
+  };
+
   const handleGetValuation = async () => {
     if (!selectedBrand || !selectedSubbrand || !selectedYear || !selectedVersion) {
       setError('Por favor, completa todos los campos del auto');
@@ -369,6 +412,17 @@ export function AutometricaValuationForm({
     setError(null);
 
     try {
+      // Check for duplicate quote if user is logged in
+      if (user) {
+        const existing = await checkExistingQuote();
+        if (existing) {
+          setExistingQuote(existing);
+          setStep('vehicle');
+          setIsQueryInProgress(false);
+          return;
+        }
+      }
+
       const valuationResult = await AutometricaService.getValuation(
         {
           year: parseInt(selectedYear),
@@ -386,7 +440,8 @@ export function AutometricaValuationForm({
         await saveValuationData(valuationResult, kmValue);
         setStep('success');
       } else {
-        // Show verification step to reveal offer
+        // Show verification modal to reveal offer
+        setShowVerificationModal(true);
         setStep('verify_to_reveal');
       }
 
@@ -603,6 +658,7 @@ export function AutometricaValuationForm({
         await saveValuationData(valuation, kmValue);
       }
 
+      setShowVerificationModal(false);
       setStep('success');
     } catch (err: any) {
       console.error('Verification error:', err);
@@ -662,6 +718,8 @@ export function AutometricaValuationForm({
     setEmailInput('');
     setIsLoginMode(false);
     setLoginPassword('');
+    setShowVerificationModal(false);
+    setExistingQuote(null);
   };
 
   const handleCopy = () => {
@@ -723,228 +781,210 @@ export function AutometricaValuationForm({
   }
 
   // ============================================================================
-  // RENDER - VERIFY TO REVEAL (inline flow, modern design)
+  // RENDER - VERIFICATION MODAL (modern modal design)
   // ============================================================================
 
-  if (step === 'verify_to_reveal' && valuation) {
-    return (
-      <div className={containerClass}>
-        <div className={embedded ? '' : cardClass}>
-          <div className={embedded ? 'space-y-4' : 'p-6 space-y-4'}>
-            {/* Modern Offer Card - Glass morphism style */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
-              {/* Decorative elements */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary-500/20 to-transparent rounded-full blur-2xl" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-green-500/20 to-transparent rounded-full blur-2xl" />
+  const renderVerificationModal = () => (
+    <Dialog open={showVerificationModal} onOpenChange={(open) => {
+      if (!open) {
+        setShowVerificationModal(false);
+        // Reset verification state but keep valuation
+        setOtpSent(false);
+        setOtpCode('');
+        setVerificationError(null);
+      }
+    }}>
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-green-600" />
+            </div>
+            ¡Tu oferta está lista!
+          </DialogTitle>
+          <DialogDescription>
+            {selectedBrand} {selectedSubbrand} {selectedYear}
+          </DialogDescription>
+        </DialogHeader>
 
-              {/* Content */}
-              <div className="relative">
-                {/* Header */}
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-green-400" />
-                  </div>
-                  <span className="text-green-400 font-semibold text-sm">¡Oferta lista!</span>
+        <div className="space-y-4 py-2">
+          {/* Blurred offer preview */}
+          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl p-4">
+            <p className="text-white/50 text-xs uppercase tracking-wider mb-1">Oferta TREFA</p>
+            <div className="flex items-center gap-3">
+              <p className="text-2xl font-black text-white blur-md select-none">
+                {valuation ? currencyFormatter.format(valuation.purchasePrice) : '$---,---'}
+              </p>
+              <Lock className="w-5 h-5 text-white/40" />
+            </div>
+            <p className="text-white/40 text-xs mt-2">
+              Verifica tu identidad para ver tu oferta completa
+            </p>
+          </div>
+
+          {/* Tab toggle - only show if OTP not sent */}
+          {!otpSent && (
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => { setIsLoginMode(false); setVerificationError(null); }}
+                className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${!isLoginMode ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                Nuevo usuario
+              </button>
+              <button
+                onClick={() => { setIsLoginMode(true); setVerificationError(null); }}
+                className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${isLoginMode ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                Ya tengo cuenta
+              </button>
+            </div>
+          )}
+
+          {/* Error message */}
+          {verificationError && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-700">{verificationError}</p>
+            </div>
+          )}
+
+          {isLoginMode ? (
+            /* LOGIN MODE - Existing users */
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-gray-700">Correo electrónico</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="email"
+                    placeholder="tu@email.com"
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    className="w-full bg-white border border-gray-200 rounded-lg py-3 px-3 pl-10 text-sm text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  />
                 </div>
-
-                {/* Vehicle info */}
-                <p className="text-white/60 text-sm mb-1">Tu auto</p>
-                <h3 className="text-white font-bold text-lg mb-4">
-                  {selectedBrand} {selectedSubbrand} {selectedYear}
-                </h3>
-
-                {/* Blurred offer value - more prominent */}
-                <div className="bg-white/5 backdrop-blur rounded-xl p-4 border border-white/10">
-                  <p className="text-white/50 text-xs uppercase tracking-wider mb-1">Oferta TREFA</p>
-                  <div className="flex items-center gap-3">
-                    <p className="text-3xl font-black text-white blur-md select-none">
-                      {currencyFormatter.format(valuation.purchasePrice)}
-                    </p>
-                    <Lock className="w-5 h-5 text-white/40" />
+              </div>
+              <button
+                onClick={handleLogin}
+                disabled={verificationLoading || !emailInput}
+                className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-primary-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {verificationLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Enviar enlace de acceso <Mail className="w-4 h-4" /></>}
+              </button>
+              <p className="text-xs text-gray-500 text-center">Te enviaremos un enlace mágico a tu correo</p>
+            </div>
+          ) : !otpSent ? (
+            /* REGISTER MODE - New users - phone + email */
+            <div className="space-y-3">
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-gray-700">Correo electrónico</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="email"
+                      placeholder="tu@email.com"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      className="w-full bg-white border border-gray-200 rounded-lg py-3 px-3 pl-10 text-sm text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    />
                   </div>
                 </div>
-
-                {/* Unlock hint */}
-                <p className="text-white/40 text-xs mt-3 text-center">
-                  Verifica tu identidad para desbloquear tu oferta
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-gray-700">Celular (10 dígitos)</label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="tel"
+                      placeholder="8112345678"
+                      value={phoneInput}
+                      onChange={(e) => setPhoneInput(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      className="w-full bg-white border border-gray-200 rounded-lg py-3 px-3 pl-10 text-sm text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    />
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={handleSendOtp}
+                disabled={verificationLoading || !phoneInput || phoneInput.length < 10 || !emailInput}
+                className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-primary-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {verificationLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Enviar código SMS <ArrowRight className="w-4 h-4" /></>}
+              </button>
+              <p className="text-xs text-gray-500 text-center">Recibirás un código de 6 dígitos por SMS</p>
+            </div>
+          ) : (
+            /* OTP VERIFICATION - 6-digit input */
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className="w-12 h-12 mx-auto rounded-full bg-green-100 flex items-center justify-center mb-3">
+                  <Phone className="w-6 h-6 text-green-600" />
+                </div>
+                <p className="font-semibold text-gray-900">Código enviado</p>
+                <p className="text-sm text-gray-500">
+                  Ingresa el código enviado a <span className="font-medium">{phoneInput}</span>
                 </p>
               </div>
+
+              {/* 6-digit OTP input boxes */}
+              <div className="flex justify-center gap-2">
+                {[0, 1, 2, 3, 4, 5].map((index) => (
+                  <input
+                    key={index}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={otpCode[index] || ''}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      const newOtp = otpCode.split('');
+                      newOtp[index] = value;
+                      setOtpCode(newOtp.join('').slice(0, 6));
+                      // Auto-focus next input
+                      if (value && index < 5) {
+                        const nextInput = e.target.nextElementSibling as HTMLInputElement;
+                        nextInput?.focus();
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      // Handle backspace to go to previous input
+                      if (e.key === 'Backspace' && !otpCode[index] && index > 0) {
+                        const prevInput = (e.target as HTMLElement).previousElementSibling as HTMLInputElement;
+                        prevInput?.focus();
+                      }
+                    }}
+                    className="w-10 h-12 text-center text-lg font-bold border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all"
+                  />
+                ))}
+              </div>
+
+              <button
+                onClick={handleVerifyOtp}
+                disabled={verificationLoading || otpCode.length < 6}
+                className="w-full flex items-center justify-center gap-2 bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {verificationLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Verificar y ver oferta <Eye className="w-4 h-4" /></>}
+              </button>
+
+              <div className="flex items-center justify-center gap-4 text-sm">
+                <button onClick={() => setOtpSent(false)} className="text-gray-500 hover:text-gray-700">
+                  Cambiar número
+                </button>
+                <span className="text-gray-300">|</span>
+                <button onClick={handleSendOtp} disabled={verificationLoading} className="text-primary-600 hover:text-primary-700 font-medium">
+                  Reenviar código
+                </button>
+              </div>
             </div>
+          )}
 
-            {/* Inline Verification Form */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
-              {/* Tab toggle - only show if OTP not sent */}
-              {!otpSent && (
-                <div className="flex bg-gray-100 rounded-lg p-1">
-                  <button
-                    onClick={() => { setIsLoginMode(false); setVerificationError(null); }}
-                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${!isLoginMode ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                  >
-                    Nuevo usuario
-                  </button>
-                  <button
-                    onClick={() => { setIsLoginMode(true); setVerificationError(null); }}
-                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${isLoginMode ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                  >
-                    Ya tengo cuenta
-                  </button>
-                </div>
-              )}
-
-              {/* Error message */}
-              {verificationError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-700">{verificationError}</p>
-                </div>
-              )}
-
-              {isLoginMode ? (
-                /* LOGIN MODE - Existing users */
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <label className="block text-sm font-medium text-gray-700">Correo electrónico</label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input
-                        type="email"
-                        placeholder="tu@email.com"
-                        value={emailInput}
-                        onChange={(e) => setEmailInput(e.target.value)}
-                        className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-3 pl-10 text-sm text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                      />
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleLogin}
-                    disabled={verificationLoading || !emailInput}
-                    className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-primary-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {verificationLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Enviar enlace de acceso <Mail className="w-4 h-4" /></>}
-                  </button>
-                  <p className="text-xs text-gray-500 text-center">Te enviaremos un enlace mágico a tu correo</p>
-                </div>
-              ) : !otpSent ? (
-                /* REGISTER MODE - New users - phone + email */
-                <div className="space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="block text-sm font-medium text-gray-700">Correo</label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                          type="email"
-                          placeholder="tu@email.com"
-                          value={emailInput}
-                          onChange={(e) => setEmailInput(e.target.value)}
-                          className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-3 pl-10 text-sm text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="block text-sm font-medium text-gray-700">Celular</label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                          type="tel"
-                          placeholder="10 dígitos"
-                          value={phoneInput}
-                          onChange={(e) => setPhoneInput(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                          className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-3 pl-10 text-sm text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleSendOtp}
-                    disabled={verificationLoading || !phoneInput || !emailInput}
-                    className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-primary-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {verificationLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Enviar código SMS <ArrowRight className="w-4 h-4" /></>}
-                  </button>
-                  <p className="text-xs text-gray-500 text-center">Recibirás un código de 6 dígitos por SMS</p>
-                </div>
-              ) : (
-                /* OTP VERIFICATION - inline 6-digit input */
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <div className="w-12 h-12 mx-auto rounded-full bg-green-100 flex items-center justify-center mb-3">
-                      <Phone className="w-6 h-6 text-green-600" />
-                    </div>
-                    <p className="font-semibold text-gray-900">Código enviado</p>
-                    <p className="text-sm text-gray-500">Ingresa el código de 6 dígitos enviado a <span className="font-medium">{phoneInput}</span></p>
-                  </div>
-
-                  {/* 6-digit OTP input boxes */}
-                  <div className="flex justify-center gap-2">
-                    {[0, 1, 2, 3, 4, 5].map((index) => (
-                      <input
-                        key={index}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={1}
-                        value={otpCode[index] || ''}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, '');
-                          const newOtp = otpCode.split('');
-                          newOtp[index] = value;
-                          setOtpCode(newOtp.join('').slice(0, 6));
-                          // Auto-focus next input
-                          if (value && index < 5) {
-                            const nextInput = e.target.nextElementSibling as HTMLInputElement;
-                            nextInput?.focus();
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          // Handle backspace to go to previous input
-                          if (e.key === 'Backspace' && !otpCode[index] && index > 0) {
-                            const prevInput = (e.target as HTMLElement).previousElementSibling as HTMLInputElement;
-                            prevInput?.focus();
-                          }
-                        }}
-                        className="w-11 h-14 text-center text-xl font-bold border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all"
-                      />
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={handleVerifyOtp}
-                    disabled={verificationLoading || otpCode.length < 6}
-                    className="w-full flex items-center justify-center gap-2 bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {verificationLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Verificar y ver oferta <Eye className="w-4 h-4" /></>}
-                  </button>
-
-                  <div className="flex items-center justify-center gap-4 text-sm">
-                    <button onClick={() => setOtpSent(false)} className="text-gray-500 hover:text-gray-700">
-                      Cambiar número
-                    </button>
-                    <span className="text-gray-300">|</span>
-                    <button onClick={handleSendOtp} disabled={verificationLoading} className="text-primary-600 hover:text-primary-700 font-medium">
-                      Reenviar código
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <p className="text-center text-xs text-gray-400">
-                Al continuar, aceptas nuestros términos y condiciones
-              </p>
-            </div>
-
-            {/* Reset link */}
-            <button
-              onClick={handleReset}
-              className="text-xs text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1 mx-auto"
-            >
-              <RefreshCw className="w-3 h-3" />
-              Cotizar otro auto
-            </button>
-          </div>
+          <p className="text-center text-xs text-gray-400">
+            Al continuar, aceptas nuestros términos y condiciones
+          </p>
         </div>
-      </div>
-    );
-  }
+      </DialogContent>
+    </Dialog>
+  );
 
   // ============================================================================
   // RENDER - SUCCESS (compact inline)
@@ -1048,6 +1088,27 @@ export function AutometricaValuationForm({
               <AlertTriangle className={`${iconSize} text-red-500 flex-shrink-0 mt-0.5`} />
               <p className={`${labelText} text-red-700`}>{error}</p>
             </div>
+          )}
+
+          {/* Existing Quote Alert */}
+          {existingQuote && (
+            <Alert className="bg-amber-50 border-amber-200">
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-800">
+                <p className="font-medium mb-1">Ya tienes una oferta para este auto</p>
+                <p className="text-sm mb-2">
+                  Cotizaste tu {selectedBrand} {selectedSubbrand} {selectedYear} el{' '}
+                  {new Date(existingQuote.created_at).toLocaleDateString('es-MX')} por{' '}
+                  <span className="font-semibold">{currencyFormatter.format(existingQuote.price)}</span>
+                </p>
+                <Link
+                  href="/escritorio/vende-tu-auto"
+                  className="inline-flex items-center gap-1 text-amber-700 hover:text-amber-900 font-medium text-sm underline"
+                >
+                  Ver mis cotizaciones <ArrowRight className="w-3 h-3" />
+                </Link>
+              </AlertDescription>
+            </Alert>
           )}
 
           {catalogLoading ? (
@@ -1203,6 +1264,9 @@ export function AutometricaValuationForm({
           )}
         </div>
       </div>
+
+      {/* Verification Modal */}
+      {renderVerificationModal()}
     </div>
   );
 }

@@ -161,11 +161,11 @@ const MarketingCategoryPage: React.FC<MarketingCategoryPageProps> = ({ marca, ca
             <div className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 py-12 sm:py-16 lg:py-20">
                 <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10"></div>
                 <div className="relative max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-white space-y-4">
-                        <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold leading-tight">
+                    <div className="space-y-4">
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold leading-tight text-white">
                             {seoContent.title}
                         </h1>
-                        <p className="text-sm sm:text-base lg:text-lg max-w-2xl opacity-90">
+                        <p className="text-sm sm:text-base lg:text-lg max-w-2xl text-white">
                             {seoContent.description}
                         </p>
 

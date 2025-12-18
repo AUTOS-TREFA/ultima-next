@@ -18,13 +18,15 @@ import {
   CreditCard,
   ArrowRight,
   Clock,
-  ChevronRight
+  ChevronRight,
+  FileCheck,
+  Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import { Progress } from '@/components/ui/progress';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { getSupabaseClient } from '../../supabaseClient';
@@ -43,8 +45,6 @@ const SALES_AGENTS = [
   { id: 'a4165ce3-e52b-4f8d-9123-327c0179f73c', name: 'Israel Ramírez', phone: '+52 81 8704 9079' },
   { id: '4c8c43bb-c936-44a2-ab82-f40326387770', name: 'Ramón Araujo', phone: '+52 81 8704 9079' },
 ];
-
-const REQUIRED_DOCUMENTS = ['ine_front', 'ine_back', 'proof_address', 'proof_income'];
 
 const getMotivationalMessage = (progress: number): string => {
   if (progress === 0) return '¡Comienza tu proceso de financiamiento hoy!';
@@ -366,9 +366,9 @@ const DashboardSidebarPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-bold text-slate-900">Mi Dashboard</h1>
           <p className="text-sm text-slate-600">{getMotivationalMessage(stats.progreso)}</p>
@@ -380,285 +380,326 @@ const DashboardSidebarPage: React.FC = () => {
         )}
       </div>
 
-      {/* Progress Card */}
-      <Card className="border-0 shadow-sm bg-gradient-to-r from-slate-50 to-white">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-slate-700">Progreso del proceso</span>
-            <span className="text-sm font-bold text-slate-900">{stats.progreso}%</span>
+      {/* Main Layout: Content + Right Sidebar */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Main Content - 2/3 */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Progress Card */}
+          <Card className="border-0 shadow-sm bg-gradient-to-r from-slate-50 to-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-slate-700">Progreso del proceso</span>
+                <span className="text-sm font-bold text-slate-900">{stats.progreso}%</span>
+              </div>
+              <Progress value={stats.progreso} className="h-2" />
+            </CardContent>
+          </Card>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Link href="/escritorio/seguimiento">
+              <Card className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-slate-900">{stats.enviadas}</div>
+                  <div className="text-xs text-slate-600">Solicitudes</div>
+                </CardContent>
+              </Card>
+            </Link>
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-slate-900">{stats.borradores}</div>
+                <div className="text-xs text-slate-600">Borradores</div>
+              </CardContent>
+            </Card>
+            <Card className={`border-0 shadow-sm ${docsComplete ? 'bg-green-50' : ''}`}>
+              <CardContent className="p-4 text-center">
+                <div className={`text-2xl font-bold ${docsComplete ? 'text-green-600' : 'text-slate-900'}`}>
+                  {docsComplete ? <CheckCircle className="w-6 h-6 mx-auto" /> : stats.documentosPendientes}
+                </div>
+                <div className="text-xs text-slate-600">Docs. Pendientes</div>
+              </CardContent>
+            </Card>
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-slate-900">
+                  {selectedVehicle ? '1' : '0'}
+                </div>
+                <div className="text-xs text-slate-600">Auto Seleccionado</div>
+              </CardContent>
+            </Card>
           </div>
-          <Progress value={stats.progreso} className="h-2" />
-        </CardContent>
-      </Card>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Link href="/escritorio/seguimiento">
-          <Card className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-slate-900">{stats.enviadas}</div>
-              <div className="text-xs text-slate-600">Solicitudes</div>
-            </CardContent>
-          </Card>
-        </Link>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-slate-900">{stats.borradores}</div>
-            <div className="text-xs text-slate-600">Borradores</div>
-          </CardContent>
-        </Card>
-        <Card className={`border-0 shadow-sm ${docsComplete ? 'bg-green-50' : ''}`}>
-          <CardContent className="p-4 text-center">
-            <div className={`text-2xl font-bold ${docsComplete ? 'text-green-600' : 'text-slate-900'}`}>
-              {docsComplete ? <CheckCircle className="w-6 h-6 mx-auto" /> : stats.documentosPendientes}
-            </div>
-            <div className="text-xs text-slate-600">Docs. Pendientes</div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-slate-900">
-              {selectedVehicle ? '1' : '0'}
-            </div>
-            <div className="text-xs text-slate-600">Auto Seleccionado</div>
-          </CardContent>
-        </Card>
-      </div>
+          {/* Quick Actions */}
+          <div className="grid sm:grid-cols-2 gap-3">
+            <Link href="/escritorio/profile">
+              <Card className={`border-0 shadow-sm hover:shadow-md transition-all cursor-pointer ${stats.profileComplete ? 'ring-1 ring-green-200' : ''}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${stats.profileComplete ? 'bg-green-100' : 'bg-slate-100'}`}>
+                      <User className={`w-5 h-5 ${stats.profileComplete ? 'text-green-600' : 'text-slate-600'}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-slate-900">Mi Perfil</p>
+                      <p className="text-xs text-slate-500">{stats.profileComplete ? 'Completado' : 'Completar información'}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
 
-      {/* Quick Actions */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <Link href="/escritorio/profile">
-          <Card className={`border-0 shadow-sm hover:shadow-md transition-all cursor-pointer ${stats.profileComplete ? 'ring-1 ring-green-200' : ''}`}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${stats.profileComplete ? 'bg-green-100' : 'bg-slate-100'}`}>
-                  <User className={`w-5 h-5 ${stats.profileComplete ? 'text-green-600' : 'text-slate-600'}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm text-slate-900">Mi Perfil</p>
-                  <p className="text-xs text-slate-500">{stats.profileComplete ? 'Completado' : 'Completar información'}</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+            <Link href="/escritorio/perfilacion-bancaria">
+              <Card className={`border-0 shadow-sm hover:shadow-md transition-all cursor-pointer ${stats.bankProfileComplete ? 'ring-1 ring-green-200' : ''}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${stats.bankProfileComplete ? 'bg-green-100' : 'bg-slate-100'}`}>
+                      <CreditCard className={`w-5 h-5 ${stats.bankProfileComplete ? 'text-green-600' : 'text-slate-600'}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-slate-900">Perfilación Bancaria</p>
+                      <p className="text-xs text-slate-500">{stats.bankProfileComplete ? 'Completado' : 'Completar perfil'}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
 
-        <Link href="/escritorio/perfilacion-bancaria">
-          <Card className={`border-0 shadow-sm hover:shadow-md transition-all cursor-pointer ${stats.bankProfileComplete ? 'ring-1 ring-green-200' : ''}`}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${stats.bankProfileComplete ? 'bg-green-100' : 'bg-slate-100'}`}>
-                  <CreditCard className={`w-5 h-5 ${stats.bankProfileComplete ? 'text-green-600' : 'text-slate-600'}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm text-slate-900">Perfilación Bancaria</p>
-                  <p className="text-xs text-slate-500">{stats.bankProfileComplete ? 'Completado' : 'Completar perfil'}</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+            {selectedVehicle ? (
+              <Link href={`/autos/${selectedVehicle.slug || selectedVehicle.id}`}>
+                <Card className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      {selectedVehicle.feature_image || selectedVehicle.fotos_exterior_url?.[0] ? (
+                        <img
+                          src={selectedVehicle.feature_image || selectedVehicle.fotos_exterior_url?.[0]}
+                          alt={selectedVehicle.title}
+                          className="w-12 h-12 object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="p-2 bg-slate-100 rounded-lg">
+                          <Car className="w-5 h-5 text-slate-600" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-slate-900 truncate">{selectedVehicle.title || 'Tu Auto'}</p>
+                        <p className="text-xs text-slate-500">Ver detalles</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ) : (
+              <Link href="/autos">
+                <Card className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer border-dashed border-2">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-slate-100 rounded-lg">
+                        <Car className="w-5 h-5 text-slate-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-slate-600">Selecciona un Auto</p>
+                        <p className="text-xs text-slate-400">Explorar inventario</p>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-slate-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            )}
 
-        {selectedVehicle ? (
-          <Link href={`/autos/${selectedVehicle.slug || selectedVehicle.id}`}>
-            <Card className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  {selectedVehicle.feature_image || selectedVehicle.fotos_exterior_url?.[0] ? (
+            <Link href="/escritorio/seguimiento">
+              <Card className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <FileText className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-slate-900">Mis Solicitudes</p>
+                      <p className="text-xs text-slate-500">Ver historial</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+
+          {/* Vehicles Section */}
+          {sidebarVehicles.length > 0 && (
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  {vehiclesLabel === 'Tus Favoritos' && <Heart className="w-4 h-4 text-red-500 fill-red-500" />}
+                  {vehiclesLabel === 'Vistos Recientemente' && <Clock className="w-4 h-4 text-blue-500" />}
+                  {vehiclesLabel === 'Sugerencias' && <Sparkles className="w-4 h-4 text-amber-500" />}
+                  <CardTitle className="text-sm font-semibold text-slate-600">{vehiclesLabel}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="grid sm:grid-cols-3 gap-3">
+                  {sidebarVehicles.map((vehicle) => {
+                    const imageUrl = vehicle.feature_image || vehicle.fotos_exterior_url?.[0] || vehicle.galeria_exterior?.[0];
+                    return (
+                      <Link
+                        key={vehicle.id}
+                        href={`/autos/${vehicle.slug || vehicle.id}`}
+                        className="group"
+                      >
+                        <div className="rounded-lg overflow-hidden border border-slate-100 hover:border-slate-200 hover:shadow-md transition-all">
+                          {imageUrl ? (
+                            <img src={imageUrl} alt={vehicle.title} className="w-full h-24 object-cover" />
+                          ) : (
+                            <div className="w-full h-24 bg-slate-100 flex items-center justify-center">
+                              <Car className="w-8 h-8 text-slate-300" />
+                            </div>
+                          )}
+                          <div className="p-2">
+                            <p className="text-xs font-medium text-slate-900 truncate">{vehicle.title}</p>
+                            <p className="text-xs font-bold text-primary">${vehicle.precio?.toLocaleString()}</p>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Right Sidebar - 1/3 */}
+        <div className="space-y-6">
+          {/* Assigned Agent Card - Prominent */}
+          {assignedAgent && (
+            <Card className="border-0 shadow-md bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+              <CardContent className="p-6 text-center">
+                <p className="text-xs text-slate-400 uppercase tracking-wide mb-4">Tu Asesor Asignado</p>
+                {/* Prominent Avatar */}
+                <div className="relative mx-auto mb-4">
+                  {assignedAgent.picture_url ? (
                     <img
-                      src={selectedVehicle.feature_image || selectedVehicle.fotos_exterior_url?.[0]}
-                      alt={selectedVehicle.title}
-                      className="w-12 h-12 object-cover rounded-lg"
+                      src={assignedAgent.picture_url}
+                      alt={assignedAgent.full_name || assignedAgent.name}
+                      className="w-24 h-24 rounded-full object-cover mx-auto ring-4 ring-white/20"
                     />
                   ) : (
-                    <div className="p-2 bg-slate-100 rounded-lg">
-                      <Car className="w-5 h-5 text-slate-600" />
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold text-3xl mx-auto ring-4 ring-white/20">
+                      {(assignedAgent.full_name || assignedAgent.name).charAt(0)}
                     </div>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-slate-900 truncate">{selectedVehicle.title || 'Tu Auto'}</p>
-                    <p className="text-xs text-slate-500">Ver detalles</p>
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-slate-900 flex items-center justify-center">
+                    <CheckCircle className="w-3 h-3 text-white" />
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
                 </div>
+                <p className="font-bold text-lg">{assignedAgent.full_name || assignedAgent.name}</p>
+                <p className="text-sm text-slate-400 mb-4">{assignedAgent.phone}</p>
+                <a
+                  href={`https://wa.me/${assignedAgent.phone.replace(/\D/g, '')}?text=Hola,%20necesito%20ayuda%20con%20mi%20solicitud`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                >
+                  <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Enviar WhatsApp
+                  </Button>
+                </a>
               </CardContent>
             </Card>
-          </Link>
-        ) : (
-          <Link href="/autos">
-            <Card className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer border-dashed border-2">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-slate-100 rounded-lg">
-                    <Car className="w-5 h-5 text-slate-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-slate-600">Selecciona un Auto</p>
-                    <p className="text-xs text-slate-400">Explorar inventario</p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-slate-400" />
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        )}
-      </div>
+          )}
 
-      {/* Document Upload Section */}
-      {publicUploadLink && latestApplication && (
-        <Card
-          ref={dropzoneRef}
-          className={`border-0 shadow-sm transition-all ${isDragging ? 'ring-2 ring-primary bg-primary/5' : ''}`}
-          onDragEnter={handleDragEnter}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
-          <CardContent className="p-4">
-            {isDragging && (
-              <div className="absolute inset-0 flex items-center justify-center bg-primary/10 rounded-lg z-10">
-                <div className="text-center">
-                  <FileUp className="w-10 h-10 text-primary mx-auto mb-2 animate-bounce" />
-                  <p className="font-semibold text-primary">Suelta tus documentos aquí</p>
+          {/* Document Dropzone */}
+          {publicUploadLink && latestApplication && (
+            <Card
+              ref={dropzoneRef}
+              className={`border-2 border-dashed transition-all ${isDragging ? 'border-primary bg-primary/5' : 'border-slate-200 hover:border-slate-300'}`}
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <CardContent className="p-6 text-center relative">
+                {isDragging && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-primary/10 rounded-lg z-10">
+                    <div className="text-center">
+                      <FileUp className="w-12 h-12 text-primary mx-auto mb-2 animate-bounce" />
+                      <p className="font-semibold text-primary">Suelta aquí</p>
+                    </div>
+                  </div>
+                )}
+                {isUploading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/90 rounded-lg z-10">
+                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                  </div>
+                )}
+
+                <div className="mb-4">
+                  <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-slate-100 flex items-center justify-center">
+                    <FileUp className="w-8 h-8 text-slate-400" />
+                  </div>
+                  <h3 className="font-semibold text-slate-900 mb-1">Sube tus documentos</h3>
+                  <p className="text-xs text-slate-500 mb-3">Arrastra archivos aquí o usa el código QR</p>
+
+                  {/* Status */}
+                  <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${docsComplete ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                    {docsComplete ? (
+                      <>
+                        <FileCheck className="w-3.5 h-3.5" />
+                        Documentos completos
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        Faltan {stats.documentosPendientes} documento(s)
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
-            {isUploading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/90 rounded-lg z-10">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
-              </div>
-            )}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-shrink-0 flex justify-center">
-                <div className="bg-white p-3 rounded-lg shadow-sm border">
-                  <QRCodeSVG value={publicUploadLink} size={80} level="H" includeMargin={false} />
+
+                {/* QR Code */}
+                <div className="bg-white p-4 rounded-xl shadow-sm border inline-block mb-4">
+                  <QRCodeSVG value={publicUploadLink} size={120} level="H" includeMargin={false} />
                 </div>
-              </div>
-              <div className="flex-1 space-y-3">
-                <div>
-                  <h3 className="font-semibold text-sm text-slate-900">Sube tus documentos</h3>
-                  <p className="text-xs text-slate-600">Arrastra archivos aquí o comparte el link</p>
-                </div>
+
+                {/* Copy Link */}
                 <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-lg">
                   <input
                     type="text"
                     value={publicUploadLink}
                     readOnly
-                    className="flex-1 text-xs text-slate-700 bg-transparent outline-none truncate"
+                    className="flex-1 text-xs text-slate-600 bg-transparent outline-none truncate"
                   />
-                  <Button size="sm" variant="secondary" onClick={copyToClipboard} className="h-7 px-2">
+                  <Button size="sm" variant="secondary" onClick={copyToClipboard} className="h-7 px-2 text-xs">
                     <Copy className="w-3 h-3 mr-1" />
                     Copiar
                   </Button>
                 </div>
-                <p className="text-xs text-slate-500">
-                  {docsComplete ? '✓ Todos los documentos recibidos' : `Faltan ${stats.documentosPendientes} documento(s)`}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              </CardContent>
+            </Card>
+          )}
 
-      {/* Assigned Agent & Vehicles */}
-      <div className="grid sm:grid-cols-2 gap-4">
-        {/* Assigned Agent */}
-        {assignedAgent && (
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-4">
-              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Tu Asesor</h3>
-              <div className="flex items-center gap-3 mb-3">
-                {assignedAgent.picture_url ? (
-                  <img
-                    src={assignedAgent.picture_url}
-                    alt={assignedAgent.full_name || assignedAgent.name}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-bold text-lg">
-                    {(assignedAgent.full_name || assignedAgent.name).charAt(0)}
-                  </div>
-                )}
-                <div>
-                  <p className="font-semibold text-sm text-slate-900">{assignedAgent.full_name || assignedAgent.name}</p>
-                  <p className="text-xs text-slate-500">{assignedAgent.phone}</p>
-                </div>
-              </div>
+          {/* Help Card */}
+          <Card className="border-0 shadow-sm bg-slate-50">
+            <CardContent className="p-4 text-center">
+              <h3 className="font-semibold text-sm text-slate-900 mb-1">¿Necesitas ayuda?</h3>
+              <p className="text-xs text-slate-600 mb-3">Nuestro equipo está listo para asistirte</p>
               <a
-                href={`https://wa.me/${assignedAgent.phone.replace(/\D/g, '')}?text=Hola,%20necesito%20ayuda`}
+                href="https://wa.me/5218187049079?text=Hola,%20necesito%20ayuda%20con%20mi%20financiamiento"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Button className="w-full bg-green-600 hover:bg-green-700 text-white text-sm h-9">
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  WhatsApp
+                <Button variant="outline" size="sm" className="w-full">
+                  <MessageCircle className="w-4 h-4 mr-2 text-green-600" />
+                  Contactar Soporte
                 </Button>
               </a>
             </CardContent>
           </Card>
-        )}
-
-        {/* Vehicles */}
-        {sidebarVehicles.length > 0 && (
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                {vehiclesLabel === 'Tus Favoritos' && <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" />}
-                {vehiclesLabel === 'Vistos Recientemente' && <Clock className="w-3.5 h-3.5 text-blue-500" />}
-                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{vehiclesLabel}</h3>
-              </div>
-              <div className="space-y-2">
-                {sidebarVehicles.map((vehicle) => {
-                  const imageUrl = vehicle.feature_image || vehicle.fotos_exterior_url?.[0] || vehicle.galeria_exterior?.[0];
-                  return (
-                    <Link
-                      key={vehicle.id}
-                      href={`/autos/${vehicle.slug || vehicle.id}`}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors"
-                    >
-                      {imageUrl ? (
-                        <img src={imageUrl} alt={vehicle.title} className="w-16 h-12 object-cover rounded" />
-                      ) : (
-                        <div className="w-16 h-12 bg-slate-100 rounded flex items-center justify-center">
-                          <Car className="w-5 h-5 text-slate-400" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 truncate">{vehicle.title}</p>
-                        <p className="text-xs font-semibold text-primary">${vehicle.precio?.toLocaleString()}</p>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        </div>
       </div>
-
-      {/* Help Section */}
-      <Card className="border-0 shadow-sm bg-slate-50">
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-            <div className="flex-1">
-              <h3 className="font-semibold text-sm text-slate-900">¿Necesitas ayuda?</h3>
-              <p className="text-xs text-slate-600">Nuestro equipo está listo para asistirte</p>
-            </div>
-            <a
-              href="https://wa.me/5218187049079?text=Hola,%20necesito%20ayuda%20con%20mi%20financiamiento"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button variant="outline" size="sm" className="h-8">
-                <MessageCircle className="w-4 h-4 mr-2 text-green-600" />
-                Soporte
-              </Button>
-            </a>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
