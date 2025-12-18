@@ -156,15 +156,14 @@ export const adminFirstLevelItems: NavItem[] = [
     },
     {
         to: '/escritorio/admin/marketplace',
-        label: 'Marketplace',
+        label: 'Marketplace Admin',
         icon: Store,
-        roles: ['admin'],
-        badge: 'Nuevo'
+        roles: ['admin']
     },
     {
-        to: '/changelog',
-        label: 'Changelog',
-        icon: Scroll,
+        to: '/escritorio/admin/cargar-fotos',
+        label: 'Cargar Fotos',
+        icon: ImagePlus,
         roles: ['admin']
     },
 ];
@@ -284,12 +283,6 @@ export const adminToolsGroup: NavGroup = {
             to: '/escritorio/car-studio',
             label: 'Car Studio API',
             icon: Camera,
-            roles: ['admin']
-        },
-        {
-            to: '/escritorio/admin/cargar-fotos',
-            label: 'Cargar Fotos',
-            icon: ImagePlus,
             roles: ['admin']
         },
         {
