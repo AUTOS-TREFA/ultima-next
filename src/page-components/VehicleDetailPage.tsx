@@ -675,16 +675,27 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
 
     const mediaItems = useMemo<MediaItem[]>(() => {
         if (!vehicle) return [];
-        console.log('Vehicle data for gallery:', vehicle); // DEBUG LOG
         const items: MediaItem[] = [];
         const mainImage = getVehicleImage(vehicle);
 
+        // Cast to any to access R2 fields
+        const vehicleData = vehicle as any;
+
+        // Prioritize R2 gallery if available, then fall back to regular galleries
+        const r2Gallery = Array.isArray(vehicleData.r2_gallery) ? vehicleData.r2_gallery.filter(Boolean) : [];
+        const exteriorGallery = Array.isArray(vehicle.galeria_exterior) ? vehicle.galeria_exterior : [];
+        const interiorGallery = Array.isArray(vehicle.galeria_interior) ? vehicle.galeria_interior : [];
+
+        // R2 images take priority - use them if available
+        const galleryImages = r2Gallery.length > 0
+            ? r2Gallery
+            : [...exteriorGallery, ...interiorGallery];
+
         const imageUrls = [
             mainImage,
-            ...(vehicle.galeria_exterior || []),
-            ...(vehicle.galeria_interior || [])
+            ...galleryImages
         ];
-        console.log('Image URLs for gallery:', imageUrls); // DEBUG LOG
+
         [...new Set(imageUrls.filter(Boolean))].forEach(url => items.push({ type: 'image', src: url, thumbnail: url }));
 
         const videoUrl = vehicle.video_reel;

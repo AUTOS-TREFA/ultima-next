@@ -9,19 +9,21 @@ export function getVehicleImage(vehicle: Partial<Vehicle & WordPressVehicle>): s
     return [];
   };
 
-  // Check if we should use R2 images (uploaded via Cargar Fotos admin page)
-  const useR2Images = (vehicle as any).use_r2_images === true;
-
   // Build potential images array, handling both strings and arrays
   const buildImagesList = () => {
     const images = [];
 
-    // 0. HIGHEST PRIORITY: R2 images if flag is enabled
-    // These are images uploaded directly to Cloudflare R2 via admin panel
-    if (useR2Images) {
-      const r2FeatureImage = (vehicle as any).r2_feature_image;
-      if (r2FeatureImage) images.push(r2FeatureImage);
-      images.push(...parseStringOrArray((vehicle as any).r2_gallery));
+    // 0. HIGHEST PRIORITY: R2 images (uploaded via Cargar Fotos admin panel)
+    // Always check R2 fields first - they take precedence over any other source
+    const r2FeatureImage = (vehicle as any).r2_feature_image;
+    if (r2FeatureImage && typeof r2FeatureImage === 'string' && r2FeatureImage.trim()) {
+      images.push(r2FeatureImage);
+    }
+
+    // Add R2 gallery images
+    const r2Gallery = parseStringOrArray((vehicle as any).r2_gallery);
+    if (r2Gallery.length > 0) {
+      images.push(...r2Gallery);
     }
 
     // 1. Prioritize explicit feature images and their variants

@@ -151,6 +151,11 @@ class VehicleService {
                 ingreso_inventario: item.ingreso_inventario || null,
                 rezago: !!item.rezago,
 
+                // R2 Image Fields (highest priority for images)
+                r2_feature_image: item.r2_feature_image || null,
+                r2_gallery: parseArrayField(item.r2_gallery),
+                use_r2_images: !!item.use_r2_images,
+
                 // Legacy aliases
                 title: title,
                 price: safeParseFloat(item.precio),
@@ -1022,6 +1027,11 @@ private static normalizeVehicleData(rawData: any[]): Vehicle[] {
 
             ingreso_inventario: getValue('ingreso_inventario', 'IngresoInventario') || null,
             rezago: !!getValue('rezago', 'Rezago'),
+
+            // --- R2 Image Fields (highest priority for images) ---
+            r2_feature_image: item.r2_feature_image || null,
+            r2_gallery: parseGalleryField(item.r2_gallery),
+            use_r2_images: !!item.use_r2_images,
 
             // --- Compatibility Aliases ---
             price: precio,
