@@ -2,11 +2,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Sheet,
   SheetContent,
@@ -24,13 +23,18 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  Image as ImageIcon,
   RefreshCw,
+  Star,
+  GripVertical,
+  ChevronUp,
+  ChevronDown,
+  ImagePlus,
 } from 'lucide-react';
 import { VehiclePhotoService, type VehicleWithoutPhotos } from '@/services/VehiclePhotoService';
 
 interface PreviewFile extends File {
   preview: string;
+  id: string;
 }
 
 export default function AdminPhotoUploadPage() {
@@ -38,12 +42,15 @@ export default function AdminPhotoUploadPage() {
   const [loading, setLoading] = useState(true);
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleWithoutPhotos | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [files, setFiles] = useState<PreviewFile[]>([]);
+
+  // Separate state for featured image and gallery
+  const [featuredImage, setFeaturedImage] = useState<PreviewFile | null>(null);
+  const [galleryImages, setGalleryImages] = useState<PreviewFile[]>([]);
+
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
   const [uploadMessage, setUploadMessage] = useState('');
-  const [setFirstAsFeatured, setSetFirstAsFeatured] = useState(true);
 
   // Fetch vehicles without photos
   const fetchVehicles = useCallback(async () => {
@@ -62,56 +69,135 @@ export default function AdminPhotoUploadPage() {
     fetchVehicles();
   }, [fetchVehicles]);
 
-  // Dropzone config
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  // Generate unique ID for files
+  const generateId = () => `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+  // Dropzone for featured image
+  const onDropFeatured = useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) {
+      const file = acceptedFiles[0];
+      // Revoke old preview if exists
+      if (featuredImage) {
+        URL.revokeObjectURL(featuredImage.preview);
+      }
+      const previewFile = Object.assign(file, {
+        preview: URL.createObjectURL(file),
+        id: generateId(),
+      }) as PreviewFile;
+      setFeaturedImage(previewFile);
+    }
+    setUploadStatus('idle');
+    setUploadMessage('');
+  }, [featuredImage]);
+
+  const { getRootProps: getFeaturedRootProps, getInputProps: getFeaturedInputProps, isDragActive: isFeaturedDragActive } = useDropzone({
+    onDrop: onDropFeatured,
+    accept: {
+      'image/*': ['.jpeg', '.jpg', '.png', '.webp'],
+    },
+    maxSize: 10 * 1024 * 1024,
+    maxFiles: 1,
+  });
+
+  // Dropzone for gallery images
+  const onDropGallery = useCallback((acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.map(file =>
       Object.assign(file, {
         preview: URL.createObjectURL(file),
+        id: generateId(),
       })
     ) as PreviewFile[];
-    setFiles(prev => [...prev, ...newFiles]);
+    setGalleryImages(prev => [...prev, ...newFiles]);
     setUploadStatus('idle');
     setUploadMessage('');
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
+  const { getRootProps: getGalleryRootProps, getInputProps: getGalleryInputProps, isDragActive: isGalleryDragActive } = useDropzone({
+    onDrop: onDropGallery,
     accept: {
       'image/*': ['.jpeg', '.jpg', '.png', '.webp'],
     },
-    maxSize: 10 * 1024 * 1024, // 10MB
+    maxSize: 10 * 1024 * 1024,
   });
 
-  // Remove a file from the list
-  const removeFile = (index: number) => {
-    setFiles(prev => {
+  // Remove featured image
+  const removeFeatured = () => {
+    if (featuredImage) {
+      URL.revokeObjectURL(featuredImage.preview);
+      setFeaturedImage(null);
+    }
+  };
+
+  // Remove a gallery image
+  const removeGalleryImage = (id: string) => {
+    setGalleryImages(prev => {
+      const index = prev.findIndex(f => f.id === id);
+      if (index !== -1) {
+        URL.revokeObjectURL(prev[index].preview);
+        return prev.filter(f => f.id !== id);
+      }
+      return prev;
+    });
+  };
+
+  // Move gallery image up
+  const moveImageUp = (index: number) => {
+    if (index <= 0) return;
+    setGalleryImages(prev => {
       const updated = [...prev];
-      URL.revokeObjectURL(updated[index].preview);
-      updated.splice(index, 1);
+      [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
       return updated;
     });
   };
 
+  // Move gallery image down
+  const moveImageDown = (index: number) => {
+    if (index >= galleryImages.length - 1) return;
+    setGalleryImages(prev => {
+      const updated = [...prev];
+      [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
+      return updated;
+    });
+  };
+
+  // Promote gallery image to featured
+  const promoteToFeatured = (id: string) => {
+    const imageToPromote = galleryImages.find(f => f.id === id);
+    if (!imageToPromote) return;
+
+    // If there's already a featured image, move it to gallery
+    if (featuredImage) {
+      setGalleryImages(prev => [featuredImage, ...prev.filter(f => f.id !== id)]);
+    } else {
+      setGalleryImages(prev => prev.filter(f => f.id !== id));
+    }
+    setFeaturedImage(imageToPromote);
+  };
+
   // Clear all files
-  const clearFiles = () => {
-    files.forEach(file => URL.revokeObjectURL(file.preview));
-    setFiles([]);
+  const clearAllFiles = () => {
+    if (featuredImage) {
+      URL.revokeObjectURL(featuredImage.preview);
+    }
+    galleryImages.forEach(file => URL.revokeObjectURL(file.preview));
+    setFeaturedImage(null);
+    setGalleryImages([]);
   };
 
   // Open sheet for a vehicle
   const handleOpenSheet = (vehicle: VehicleWithoutPhotos) => {
     setSelectedVehicle(vehicle);
     setSheetOpen(true);
-    setFiles([]);
+    setFeaturedImage(null);
+    setGalleryImages([]);
     setUploadStatus('idle');
     setUploadMessage('');
-    setSetFirstAsFeatured(true);
   };
 
   // Close sheet
   const handleCloseSheet = () => {
     setSheetOpen(false);
-    clearFiles();
+    clearAllFiles();
     setSelectedVehicle(null);
     setUploadStatus('idle');
     setUploadMessage('');
@@ -119,13 +205,23 @@ export default function AdminPhotoUploadPage() {
 
   // Upload photos
   const handleUpload = async () => {
-    if (!selectedVehicle || files.length === 0) return;
+    if (!selectedVehicle) return;
+
+    const hasFiles = featuredImage || galleryImages.length > 0;
+    if (!hasFiles) return;
 
     setUploading(true);
     setUploadStatus('uploading');
     setUploadProgress(0);
 
     try {
+      // Combine all files - featured first, then gallery
+      const allFiles: File[] = [];
+      if (featuredImage) {
+        allFiles.push(featuredImage);
+      }
+      allFiles.push(...galleryImages);
+
       // Simulate progress (R2 doesn't provide upload progress)
       const progressInterval = setInterval(() => {
         setUploadProgress(prev => Math.min(prev + 10, 90));
@@ -133,8 +229,8 @@ export default function AdminPhotoUploadPage() {
 
       const result = await VehiclePhotoService.uploadAndLinkPhotos(
         selectedVehicle.id,
-        files,
-        setFirstAsFeatured
+        allFiles,
+        !!featuredImage // Set first as featured if we have a featured image
       );
 
       clearInterval(progressInterval);
@@ -167,9 +263,14 @@ export default function AdminPhotoUploadPage() {
   // Cleanup previews on unmount
   useEffect(() => {
     return () => {
-      files.forEach(file => URL.revokeObjectURL(file.preview));
+      if (featuredImage) {
+        URL.revokeObjectURL(featuredImage.preview);
+      }
+      galleryImages.forEach(file => URL.revokeObjectURL(file.preview));
     };
-  }, [files]);
+  }, []);
+
+  const totalPhotos = (featuredImage ? 1 : 0) + galleryImages.length;
 
   return (
     <div className="space-y-6">
@@ -274,7 +375,7 @@ export default function AdminPhotoUploadPage() {
 
       {/* Upload Sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto bg-card">
+        <SheetContent className="w-full sm:max-w-xl overflow-y-auto bg-card">
           <SheetHeader>
             <SheetTitle className="text-foreground">Subir Fotos</SheetTitle>
             <SheetDescription>
@@ -291,92 +392,198 @@ export default function AdminPhotoUploadPage() {
             </SheetDescription>
           </SheetHeader>
 
-          <div className="py-6 space-y-4">
-            {/* Dropzone */}
-            <div
-              {...getRootProps()}
-              className={`
-                border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-                ${isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
-                ${uploading ? 'pointer-events-none opacity-50' : ''}
-              `}
-            >
-              <input {...getInputProps()} />
-              <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              {isDragActive ? (
-                <p className="text-primary font-medium">Suelta las fotos aquí...</p>
+          <div className="py-6 space-y-6">
+            {/* SECTION 1: Featured Image */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Star className="w-4 h-4 text-amber-500" />
+                <h3 className="font-semibold text-foreground">Foto Principal</h3>
+              </div>
+
+              {!featuredImage ? (
+                <div
+                  {...getFeaturedRootProps()}
+                  className={`
+                    border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all
+                    ${isFeaturedDragActive ? 'border-amber-500 bg-amber-500/5' : 'border-amber-300 hover:border-amber-400 bg-amber-50/50'}
+                    ${uploading ? 'pointer-events-none opacity-50' : ''}
+                  `}
+                >
+                  <input {...getFeaturedInputProps()} />
+                  <Star className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+                  {isFeaturedDragActive ? (
+                    <p className="text-amber-600 font-medium">Suelta la foto aquí...</p>
+                  ) : (
+                    <>
+                      <p className="text-foreground font-medium">Arrastra la foto principal</p>
+                      <p className="text-muted-foreground text-sm mt-1">o haz clic para seleccionar</p>
+                    </>
+                  )}
+                </div>
               ) : (
-                <>
-                  <p className="text-foreground font-medium">Arrastra fotos aquí</p>
-                  <p className="text-muted-foreground text-sm mt-1">o haz clic para seleccionar</p>
-                </>
+                <div className="relative rounded-xl overflow-hidden border-2 border-amber-300 bg-amber-50/30">
+                  <div className="aspect-video w-full">
+                    <img
+                      src={featuredImage.preview}
+                      alt="Foto principal"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  {/* Principal Badge - Pill Style */}
+                  <div className="absolute top-3 left-3">
+                    <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-500 text-white text-xs font-semibold rounded-full shadow-md">
+                      <Star className="w-3 h-3" />
+                      Principal
+                    </span>
+                  </div>
+                  {/* Remove Button */}
+                  {!uploading && (
+                    <button
+                      type="button"
+                      onClick={removeFeatured}
+                      className="absolute top-3 right-3 p-2 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90 transition-colors shadow-md"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               )}
-              <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WebP - Max 10MB cada una</p>
             </div>
 
-            {/* File Previews */}
-            {files.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-foreground">
-                    {files.length} foto{files.length > 1 ? 's' : ''} seleccionada{files.length > 1 ? 's' : ''}
-                  </p>
+            {/* Divider */}
+            <div className="border-t border-border" />
+
+            {/* SECTION 2: Gallery Images */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ImagePlus className="w-4 h-4 text-primary" />
+                  <h3 className="font-semibold text-foreground">Galería Exterior</h3>
+                  {galleryImages.length > 0 && (
+                    <Badge variant="secondary" className="text-xs">
+                      {galleryImages.length} foto{galleryImages.length > 1 ? 's' : ''}
+                    </Badge>
+                  )}
+                </div>
+                {galleryImages.length > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={clearFiles}
+                    onClick={() => {
+                      galleryImages.forEach(file => URL.revokeObjectURL(file.preview));
+                      setGalleryImages([]);
+                    }}
                     disabled={uploading}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs"
                   >
-                    Limpiar todo
+                    Limpiar galería
                   </Button>
-                </div>
+                )}
+              </div>
 
-                <div className="grid grid-cols-3 gap-2">
-                  {files.map((file, index) => (
-                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-muted">
-                      <img
-                        src={file.preview}
-                        alt={`Preview ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+              {/* Gallery Dropzone */}
+              <div
+                {...getGalleryRootProps()}
+                className={`
+                  border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all
+                  ${isGalleryDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
+                  ${uploading ? 'pointer-events-none opacity-50' : ''}
+                `}
+              >
+                <input {...getGalleryInputProps()} />
+                <Upload className="w-7 h-7 text-muted-foreground mx-auto mb-2" />
+                {isGalleryDragActive ? (
+                  <p className="text-primary font-medium">Suelta las fotos aquí...</p>
+                ) : (
+                  <>
+                    <p className="text-foreground font-medium text-sm">Arrastra fotos de la galería</p>
+                    <p className="text-muted-foreground text-xs mt-1">Puedes subir múltiples fotos</p>
+                  </>
+                )}
+              </div>
+
+              {/* Gallery Previews with Reorder Controls */}
+              {galleryImages.length > 0 && (
+                <div className="space-y-2">
+                  {galleryImages.map((file, index) => (
+                    <div
+                      key={file.id}
+                      className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg border border-border"
+                    >
+                      {/* Grip Icon */}
+                      <div className="text-muted-foreground">
+                        <GripVertical className="w-4 h-4" />
+                      </div>
+
+                      {/* Thumbnail */}
+                      <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+                        <img
+                          src={file.preview}
+                          alt={`Galería ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+
+                      {/* File Info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{file.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Posición: {index + 1}
+                        </p>
+                      </div>
+
+                      {/* Controls */}
                       {!uploading && (
-                        <button
-                          type="button"
-                          onClick={() => removeFile(index)}
-                          className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90 transition-colors"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      )}
-                      {index === 0 && setFirstAsFeatured && (
-                        <div className="absolute bottom-1 left-1 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded">
-                          Principal
+                        <div className="flex items-center gap-1">
+                          {/* Move Up */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => moveImageUp(index)}
+                            disabled={index === 0}
+                          >
+                            <ChevronUp className="w-4 h-4" />
+                          </Button>
+
+                          {/* Move Down */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => moveImageDown(index)}
+                            disabled={index === galleryImages.length - 1}
+                          >
+                            <ChevronDown className="w-4 h-4" />
+                          </Button>
+
+                          {/* Promote to Featured */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-amber-500 hover:text-amber-600 hover:bg-amber-50"
+                            onClick={() => promoteToFeatured(file.id)}
+                            title="Hacer foto principal"
+                          >
+                            <Star className="w-4 h-4" />
+                          </Button>
+
+                          {/* Remove */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => removeGalleryImage(file.id)}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
                         </div>
                       )}
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* Set as Featured Option */}
-            {files.length > 0 && (
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="setFeatured"
-                  checked={setFirstAsFeatured}
-                  onCheckedChange={(checked) => setSetFirstAsFeatured(checked as boolean)}
-                  disabled={uploading}
-                />
-                <label
-                  htmlFor="setFeatured"
-                  className="text-sm font-medium leading-none text-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Usar primera foto como imagen principal
-                </label>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Upload Progress */}
             {uploadStatus === 'uploading' && (
@@ -416,7 +623,7 @@ export default function AdminPhotoUploadPage() {
             </Button>
             <Button
               onClick={handleUpload}
-              disabled={files.length === 0 || uploading || uploadStatus === 'success'}
+              disabled={totalPhotos === 0 || uploading || uploadStatus === 'success'}
               className="bg-primary hover:bg-primary/90"
             >
               {uploading ? (
@@ -427,7 +634,7 @@ export default function AdminPhotoUploadPage() {
               ) : (
                 <>
                   <Upload className="w-4 h-4 mr-2" />
-                  Subir {files.length} Foto{files.length > 1 ? 's' : ''}
+                  Subir {totalPhotos} Foto{totalPhotos > 1 ? 's' : ''}
                 </>
               )}
             </Button>

@@ -127,12 +127,21 @@ const SeguimientoDetailPage: React.FC = () => {
 
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { text: string; color: string; bgColor: string }> = {
+      // New Spanish statuses
       [APPLICATION_STATUS.DRAFT]: { text: 'Borrador', color: 'text-gray-700', bgColor: 'bg-gray-100' },
       [APPLICATION_STATUS.FALTAN_DOCUMENTOS]: { text: 'Faltan Documentos', color: 'text-yellow-900', bgColor: 'bg-yellow-400' },
       [APPLICATION_STATUS.COMPLETA]: { text: 'Completa', color: 'text-green-700', bgColor: 'bg-green-100' },
       [APPLICATION_STATUS.EN_REVISION]: { text: 'En Revisión', color: 'text-indigo-700', bgColor: 'bg-indigo-100' },
       [APPLICATION_STATUS.APROBADA]: { text: 'Aprobada', color: 'text-green-700', bgColor: 'bg-green-100' },
       [APPLICATION_STATUS.RECHAZADA]: { text: 'Rechazada', color: 'text-red-700', bgColor: 'bg-red-100' },
+      // Legacy English statuses (for backward compatibility)
+      [APPLICATION_STATUS.SUBMITTED]: { text: 'Enviada', color: 'text-blue-700', bgColor: 'bg-blue-100' },
+      [APPLICATION_STATUS.REVIEWING]: { text: 'En Revisión', color: 'text-indigo-700', bgColor: 'bg-indigo-100' },
+      [APPLICATION_STATUS.APPROVED]: { text: 'Aprobada', color: 'text-green-700', bgColor: 'bg-green-100' },
+      [APPLICATION_STATUS.PENDING_DOCS]: { text: 'Faltan Documentos', color: 'text-yellow-900', bgColor: 'bg-yellow-400' },
+      [APPLICATION_STATUS.IN_REVIEW]: { text: 'En Revisión', color: 'text-indigo-700', bgColor: 'bg-indigo-100' },
+      // Handle 'rejected' directly (not in constants but in DB)
+      'rejected': { text: 'Rechazada', color: 'text-red-700', bgColor: 'bg-red-100' },
     };
     return configs[status] || configs[APPLICATION_STATUS.DRAFT];
   };

@@ -305,6 +305,8 @@ const Portfolio = ({
                 precio: vehicle.precio || 0
               }
             })
+            // Filter out vehicles with placeholder images
+            .filter(item => item.image && item.image !== DEFAULT_PLACEHOLDER_IMAGE)
             .slice(0, maxVehicles)
 
           setVehicles(portfolioItems)

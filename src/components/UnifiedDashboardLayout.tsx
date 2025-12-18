@@ -111,10 +111,9 @@ interface NavGroup {
 
 // ========== SIMPLIFIED NAVIGATION CONFIGURATION ==========
 
-// Main essentials for all users
+// Main essentials for all users (Inventario moved to header button)
 const essentialItems: NavItem[] = [
     { to: '/escritorio', label: 'Mi Escritorio', icon: Home, roles: ['admin', 'sales', 'user'], end: true },
-    { to: '/autos', label: 'Ver Inventario', icon: Car, roles: ['admin', 'sales', 'user'] },
     { to: '/escritorio/aplicacion', label: 'Nueva Solicitud', icon: Plus, roles: ['admin', 'sales', 'user'] },
 ];
 
@@ -296,29 +295,31 @@ const AppSidebarContent: React.FC = () => {
                 </div>
             </SidebarHeader>
 
-            <SidebarContent className="bg-gray-50 [&>div]:py-1">
+            <SidebarContent className="bg-gray-50 px-3">
                 {/* Essentials */}
-                <SidebarGroup className="py-2">
-                    <SidebarGroupLabel className="text-gray-500 text-xs font-semibold uppercase tracking-wider px-4">
+                <SidebarGroup className="py-3">
+                    <SidebarGroupLabel className="text-gray-400 text-[10px] font-semibold uppercase tracking-widest mb-2 px-3">
                         Esenciales
                     </SidebarGroupLabel>
                     <SidebarGroupContent>
-                        <SidebarMenu>
+                        <SidebarMenu className="space-y-1">
                             {filterByRole(essentialItems).map((item) => {
                                 const Icon = item.icon;
+                                const isActive = isActiveLink(item.to, item.end);
                                 return (
                                     <SidebarMenuItem key={item.to}>
                                         <SidebarMenuButton
                                             asChild
-                                            isActive={isActiveLink(item.to, item.end)}
+                                            isActive={isActive}
                                             tooltip={item.label}
                                             className={cn(
-                                                "text-gray-700 hover:text-gray-900 hover:bg-gray-100",
-                                                isActiveLink(item.to, item.end) && "bg-primary/10 text-primary font-medium border-l-2 border-l-primary"
+                                                "h-10 px-3 rounded-lg transition-all duration-150",
+                                                "text-gray-600 hover:text-gray-900 hover:bg-gray-100/80",
+                                                isActive && "bg-primary/10 text-primary font-medium shadow-sm border border-primary/20"
                                             )}
                                         >
                                             <Link href={item.to}>
-                                                <Icon className="h-4 w-4" />
+                                                <Icon className={cn("h-4 w-4", isActive && "text-primary")} />
                                                 <span>{item.label}</span>
                                             </Link>
                                         </SidebarMenuButton>
@@ -332,13 +333,13 @@ const AppSidebarContent: React.FC = () => {
                 {/* Vende tu Auto */}
                 <SidebarGroup className="py-2">
                     <SidebarGroupContent>
-                        <SidebarMenu>
+                        <SidebarMenu className="space-y-1">
                             <Collapsible className="group/collapsible">
                                 <SidebarMenuItem>
                                     <CollapsibleTrigger asChild>
                                         <SidebarMenuButton
                                             tooltip={sellCarGroup.label}
-                                            className="text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                                            className="h-10 px-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 transition-all duration-150"
                                         >
                                             <HandCoins className="h-4 w-4" />
                                             <span>{sellCarGroup.label}</span>
@@ -346,21 +347,22 @@ const AppSidebarContent: React.FC = () => {
                                         </SidebarMenuButton>
                                     </CollapsibleTrigger>
                                     <CollapsibleContent>
-                                        <SidebarMenuSub className="border-l border-gray-200 ml-4">
+                                        <SidebarMenuSub className="border-l-2 border-gray-200 ml-5 mt-1 space-y-0.5">
                                             {filterByRole(sellCarGroup.items).map((item) => {
                                                 const Icon = item.icon;
+                                                const isActive = isActiveLink(item.to, item.end);
                                                 return (
                                                     <SidebarMenuSubItem key={item.to}>
                                                         <SidebarMenuSubButton
                                                             asChild
-                                                            isActive={isActiveLink(item.to, item.end)}
+                                                            isActive={isActive}
                                                             className={cn(
-                                                                "text-gray-600 hover:text-gray-900 hover:bg-gray-50",
-                                                                isActiveLink(item.to, item.end) && "text-cyan-400 bg-white/5"
+                                                                "h-9 px-3 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100/60 transition-all duration-150",
+                                                                isActive && "text-primary bg-primary/5 font-medium"
                                                             )}
                                                         >
                                                             <Link href={item.to} className="flex items-center gap-2">
-                                                                <Icon className="h-3 w-3" />
+                                                                <Icon className={cn("h-3.5 w-3.5", isActive && "text-primary")} />
                                                                 <span>{item.label}</span>
                                                             </Link>
                                                         </SidebarMenuSubButton>
@@ -378,30 +380,32 @@ const AppSidebarContent: React.FC = () => {
                 {/* Admin Section */}
                 {isAdmin && (
                     <>
-                        <Separator className="bg-white/10 my-2" />
+                        <Separator className="bg-gray-200 my-3" />
 
                         {/* Admin Main */}
                         <SidebarGroup className="py-2">
-                            <SidebarGroupLabel className="text-gray-500 text-xs font-semibold uppercase tracking-wider px-4">
+                            <SidebarGroupLabel className="text-gray-400 text-[10px] font-semibold uppercase tracking-widest mb-2 px-3">
                                 Admin
                             </SidebarGroupLabel>
                             <SidebarGroupContent>
-                                <SidebarMenu>
+                                <SidebarMenu className="space-y-1">
                                     {filterByRole(adminMainItems).map((item) => {
                                         const Icon = item.icon;
+                                        const isActive = isActiveLink(item.to, item.end);
                                         return (
                                             <SidebarMenuItem key={item.to}>
                                                 <SidebarMenuButton
                                                     asChild
-                                                    isActive={isActiveLink(item.to, item.end)}
+                                                    isActive={isActive}
                                                     tooltip={item.label}
                                                     className={cn(
-                                                        "text-gray-700 hover:text-gray-900 hover:bg-gray-100",
-                                                        isActiveLink(item.to, item.end) && "bg-primary/10 text-primary font-medium border-l-2 border-l-primary"
+                                                        "h-10 px-3 rounded-lg transition-all duration-150",
+                                                        "text-gray-600 hover:text-gray-900 hover:bg-gray-100/80",
+                                                        isActive && "bg-primary/10 text-primary font-medium shadow-sm border border-primary/20"
                                                     )}
                                                 >
                                                     <Link href={item.to}>
-                                                        <Icon className="h-4 w-4" />
+                                                        <Icon className={cn("h-4 w-4", isActive && "text-primary")} />
                                                         <span>{item.label}</span>
                                                     </Link>
                                                 </SidebarMenuButton>
@@ -415,13 +419,13 @@ const AppSidebarContent: React.FC = () => {
                         {/* Analytics Dropdown */}
                         <SidebarGroup className="py-1">
                             <SidebarGroupContent>
-                                <SidebarMenu>
+                                <SidebarMenu className="space-y-1">
                                     <Collapsible className="group/collapsible">
                                         <SidebarMenuItem>
                                             <CollapsibleTrigger asChild>
                                                 <SidebarMenuButton
                                                     tooltip="Analytics"
-                                                    className="text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                                                    className="h-10 px-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 transition-all duration-150"
                                                 >
                                                     <BarChart3 className="h-4 w-4" />
                                                     <span>Analytics</span>
@@ -429,21 +433,22 @@ const AppSidebarContent: React.FC = () => {
                                                 </SidebarMenuButton>
                                             </CollapsibleTrigger>
                                             <CollapsibleContent>
-                                                <SidebarMenuSub className="border-l border-gray-200 ml-4">
+                                                <SidebarMenuSub className="border-l-2 border-gray-200 ml-5 mt-1 space-y-0.5">
                                                     {filterByRole(adminAnalyticsGroup.items).map((item) => {
                                                         const Icon = item.icon;
+                                                        const isActive = isActiveLink(item.to, item.end);
                                                         return (
                                                             <SidebarMenuSubItem key={item.to}>
                                                                 <SidebarMenuSubButton
                                                                     asChild
-                                                                    isActive={isActiveLink(item.to, item.end)}
+                                                                    isActive={isActive}
                                                                     className={cn(
-                                                                        "text-gray-600 hover:text-gray-900 hover:bg-gray-50",
-                                                                        isActiveLink(item.to, item.end) && "text-cyan-400 bg-white/5"
+                                                                        "h-9 px-3 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100/60 transition-all duration-150",
+                                                                        isActive && "text-primary bg-primary/5 font-medium"
                                                                     )}
                                                                 >
                                                                     <Link href={item.to}>
-                                                                        <Icon className="h-3 w-3" />
+                                                                        <Icon className={cn("h-3.5 w-3.5", isActive && "text-primary")} />
                                                                         <span>{item.label}</span>
                                                                     </Link>
                                                                 </SidebarMenuSubButton>
@@ -461,13 +466,13 @@ const AppSidebarContent: React.FC = () => {
                         {/* Tools Dropdown */}
                         <SidebarGroup className="py-1">
                             <SidebarGroupContent>
-                                <SidebarMenu>
+                                <SidebarMenu className="space-y-1">
                                     <Collapsible className="group/collapsible">
                                         <SidebarMenuItem>
                                             <CollapsibleTrigger asChild>
                                                 <SidebarMenuButton
                                                     tooltip="Herramientas"
-                                                    className="text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                                                    className="h-10 px-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 transition-all duration-150"
                                                 >
                                                     <Settings className="h-4 w-4" />
                                                     <span>Herramientas</span>
@@ -475,21 +480,22 @@ const AppSidebarContent: React.FC = () => {
                                                 </SidebarMenuButton>
                                             </CollapsibleTrigger>
                                             <CollapsibleContent>
-                                                <SidebarMenuSub className="border-l border-gray-200 ml-4">
+                                                <SidebarMenuSub className="border-l-2 border-gray-200 ml-5 mt-1 space-y-0.5">
                                                     {filterByRole(adminToolsGroup.items).map((item) => {
                                                         const Icon = item.icon;
+                                                        const isActive = isActiveLink(item.to, item.end);
                                                         return (
                                                             <SidebarMenuSubItem key={item.to}>
                                                                 <SidebarMenuSubButton
                                                                     asChild
-                                                                    isActive={isActiveLink(item.to, item.end)}
+                                                                    isActive={isActive}
                                                                     className={cn(
-                                                                        "text-gray-600 hover:text-gray-900 hover:bg-gray-50",
-                                                                        isActiveLink(item.to, item.end) && "text-cyan-400 bg-white/5"
+                                                                        "h-9 px-3 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100/60 transition-all duration-150",
+                                                                        isActive && "text-primary bg-primary/5 font-medium"
                                                                     )}
                                                                 >
                                                                     <Link href={item.to}>
-                                                                        <Icon className="h-3 w-3" />
+                                                                        <Icon className={cn("h-3.5 w-3.5", isActive && "text-primary")} />
                                                                         <span>{item.label}</span>
                                                                     </Link>
                                                                 </SidebarMenuSubButton>
@@ -509,28 +515,30 @@ const AppSidebarContent: React.FC = () => {
                 {/* Sales Section */}
                 {isSales && (
                     <>
-                        <Separator className="bg-white/10 my-2" />
+                        <Separator className="bg-gray-200 my-3" />
                         <SidebarGroup className="py-2">
-                            <SidebarGroupLabel className="text-gray-500 text-xs font-semibold uppercase tracking-wider px-4">
+                            <SidebarGroupLabel className="text-gray-400 text-[10px] font-semibold uppercase tracking-widest mb-2 px-3">
                                 Ventas
                             </SidebarGroupLabel>
                             <SidebarGroupContent>
-                                <SidebarMenu>
+                                <SidebarMenu className="space-y-1">
                                     {filterByRole(salesItems).map((item) => {
                                         const Icon = item.icon;
+                                        const isActive = isActiveLink(item.to, item.end);
                                         return (
                                             <SidebarMenuItem key={item.to}>
                                                 <SidebarMenuButton
                                                     asChild
-                                                    isActive={isActiveLink(item.to, item.end)}
+                                                    isActive={isActive}
                                                     tooltip={item.label}
                                                     className={cn(
-                                                        "text-gray-700 hover:text-gray-900 hover:bg-gray-100",
-                                                        isActiveLink(item.to, item.end) && "bg-primary/10 text-primary font-medium border-l-2 border-l-primary"
+                                                        "h-10 px-3 rounded-lg transition-all duration-150",
+                                                        "text-gray-600 hover:text-gray-900 hover:bg-gray-100/80",
+                                                        isActive && "bg-primary/10 text-primary font-medium shadow-sm border border-primary/20"
                                                     )}
                                                 >
                                                     <Link href={item.to}>
-                                                        <Icon className="h-4 w-4" />
+                                                        <Icon className={cn("h-4 w-4", isActive && "text-primary")} />
                                                         <span>{item.label}</span>
                                                     </Link>
                                                 </SidebarMenuButton>
@@ -544,13 +552,13 @@ const AppSidebarContent: React.FC = () => {
                 )}
             </SidebarContent>
 
-            <SidebarFooter className="border-t border-gray-200 bg-gray-50">
-                <SidebarMenu>
+            <SidebarFooter className="border-t border-gray-200 bg-gray-50 px-3 py-3">
+                <SidebarMenu className="space-y-1">
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             asChild
                             tooltip="Ayuda / FAQs"
-                            className="text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                            className="h-10 px-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 transition-all duration-150"
                         >
                             <Link href="/faq">
                                 <HelpCircle className="h-4 w-4" />
@@ -563,7 +571,7 @@ const AppSidebarContent: React.FC = () => {
                         <SidebarMenuButton
                             onClick={handleSignOut}
                             tooltip="Cerrar Sesión"
-                            className="text-red-400/90 hover:text-red-400 hover:bg-red-500/10"
+                            className="h-10 px-3 rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 transition-all duration-150"
                         >
                             <LogOut className="h-4 w-4" />
                             <span>Cerrar Sesión</span>
@@ -670,7 +678,17 @@ const UnifiedDashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
                         </div>
 
                         {/* Right section */}
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2">
+                            {/* Inventario Button */}
+                            <Link href="/autos">
+                                <Button variant="outline" size="sm" className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/50">
+                                    <Car className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Ver Inventario</span>
+                                </Button>
+                            </Link>
+
+                            <Separator orientation="vertical" className="h-5 hidden sm:block" />
+
                             <Button variant="ghost" size="icon" className="h-8 w-8 hidden sm:flex">
                                 <Search className="h-4 w-4" />
                             </Button>

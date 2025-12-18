@@ -8,7 +8,6 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
-import { r2Storage } from './R2StorageService';
 
 export interface VehicleWithoutPhotos {
   id: string;
@@ -141,31 +140,44 @@ export const VehiclePhotoService = {
   },
 
   /**
+   * Upload a single file to R2 via API route (server-side to avoid CORS)
+   */
+  async uploadFileToR2(file: File, vehicleId: string): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', 'vehicles');
+    formData.append('vehicleId', vehicleId);
+
+    const response = await fetch('/api/r2/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }));
+      throw new Error(errorData.error || `Error al subir: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.url;
+  },
+
+  /**
    * Upload multiple photos to R2 and link them to a vehicle
+   * Uses server-side API route to avoid CORS issues
    */
   async uploadAndLinkPhotos(
     vehicleId: string,
     files: File[],
     setFirstAsFeatured: boolean = true
   ): Promise<UploadResult> {
-    if (!r2Storage.isAvailable()) {
-      return {
-        success: false,
-        uploadedCount: 0,
-        urls: [],
-        error: 'El almacenamiento R2 no está configurado.',
-      };
-    }
-
     const uploadedUrls: string[] = [];
 
     try {
-      // Upload each file to R2
+      // Upload each file to R2 via API route
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const path = r2Storage.generatePath(`vehicles/${vehicleId}`, file.name);
-
-        const publicUrl = await r2Storage.uploadFile(file, path, file.type);
+        const publicUrl = await this.uploadFileToR2(file, vehicleId);
         uploadedUrls.push(publicUrl);
       }
 
@@ -219,21 +231,13 @@ export const VehiclePhotoService = {
 
   /**
    * Add photos to an existing gallery (append, don't replace)
+   * Uses server-side API route to avoid CORS issues
    */
   async appendPhotosToGallery(
     vehicleId: string,
     files: File[],
     setFirstAsFeatured: boolean = false
   ): Promise<UploadResult> {
-    if (!r2Storage.isAvailable()) {
-      return {
-        success: false,
-        uploadedCount: 0,
-        urls: [],
-        error: 'El almacenamiento R2 no está configurado.',
-      };
-    }
-
     try {
       // First, get existing gallery (including R2 fields)
       const { data: vehicle, error: fetchError } = await supabase
@@ -253,12 +257,11 @@ export const VehiclePhotoService = {
         ? vehicleData.galeria_exterior
         : [];
 
-      // Upload new files
+      // Upload new files via API route
       const uploadedUrls: string[] = [];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const path = r2Storage.generatePath(`vehicles/${vehicleId}`, file.name);
-        const publicUrl = await r2Storage.uploadFile(file, path, file.type);
+        const publicUrl = await this.uploadFileToR2(file, vehicleId);
         uploadedUrls.push(publicUrl);
       }
 

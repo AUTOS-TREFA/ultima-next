@@ -103,9 +103,10 @@ const Header: React.FC = () => {
                       </Link>
                       <button
                         onClick={handleSignOut}
-                        className="text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+                        className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                        title="Salir"
                       >
-                        Salir
+                        <LogOutIcon className="w-4 h-4" />
                       </button>
                     </>
                   ) : (
