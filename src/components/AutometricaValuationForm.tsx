@@ -39,6 +39,8 @@ import {
   Share2,
   Scale,
   ExternalLink,
+  Calendar,
+  MapPin,
 } from 'lucide-react';
 import { WhatsAppIcon } from './icons';
 
@@ -882,7 +884,34 @@ export function AutometricaValuationForm({
   };
 
   const handleGoToDashboard = () => {
-    router.push('/escritorio/admin/compras');
+    router.push('/escritorio/vende-tu-auto');
+  };
+
+  // Handle send email with offer
+  const handleSendEmail = async () => {
+    if (!user?.email || !valuation) return;
+
+    try {
+      // Create a simple email with the offer details
+      const vehicleLabel = `${selectedBrand} ${selectedSubbrand} ${selectedYear}`;
+      const offerAmount = currencyFormatter.format(valuation.purchasePrice);
+      const marketValue = currencyFormatter.format(valuation.salePrice);
+
+      // Use mailto as fallback
+      const subject = encodeURIComponent(`Tu oferta TREFA: ${vehicleLabel}`);
+      const body = encodeURIComponent(
+        `¡Hola!\n\nAquí está tu oferta de TREFA para tu ${vehicleLabel}:\n\n` +
+        `💰 Oferta: ${offerAmount}\n` +
+        `📊 Valor de mercado: ${marketValue}\n` +
+        `🚗 Kilometraje: ${kilometraje} km\n\n` +
+        `Para continuar con la venta, visita:\n${getSiteUrl()}/escritorio/vende-tu-auto\n\n` +
+        `¡Gracias por confiar en TREFA!`
+      );
+
+      window.open(`mailto:${user.email}?subject=${subject}&body=${body}`, '_blank');
+    } catch (error) {
+      console.error('Error sending email:', error);
+    }
   };
 
   // WhatsApp URL
@@ -1241,26 +1270,41 @@ export function AutometricaValuationForm({
               </div>
             </div>
 
-            {/* Primary action - Continue online */}
+            {/* Primary CTA - Continue online */}
             <button
               onClick={handleGoToDashboard}
-              className="w-full flex items-center justify-center gap-2 bg-[#003161] text-white font-semibold py-3.5 px-4 rounded-lg hover:bg-[#002850] transition-all text-sm shadow-md"
+              className="w-full flex items-center justify-center gap-2 bg-[#003161] text-white font-semibold py-3.5 px-4 rounded-xl hover:bg-[#002850] transition-all text-sm shadow-md"
             >
-              Continuar en línea
               <ArrowRight className="w-4 h-4" />
+              Continuar con la venta en línea
             </button>
 
-            {/* Secondary actions grid */}
+            {/* Secondary CTA - Schedule inspection */}
+            <button
+              onClick={handleGoToDashboard}
+              className="w-full flex items-center justify-center gap-2 bg-white text-[#003161] font-semibold py-3 px-4 rounded-xl border-2 border-[#003161] hover:bg-[#003161]/5 transition-all text-sm"
+            >
+              <Calendar className="w-4 h-4" />
+              Programar cita de inspección
+            </button>
+
+            {/* Branches info */}
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin className="w-4 h-4 text-gray-500" />
+                <p className="text-xs font-medium text-gray-600">Sucursales disponibles:</p>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {['Las Américas', 'Saltillo', 'Monterrey', 'Guadalupe', 'Reynosa'].map((branch) => (
+                  <span key={branch} className="px-2 py-0.5 bg-white rounded text-xs text-gray-600 border border-gray-200">
+                    {branch}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Share & Email actions */}
             <div className="grid grid-cols-2 gap-2">
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 bg-green-600 text-white font-medium py-2.5 px-3 rounded-lg hover:bg-green-700 transition-all text-sm"
-              >
-                <WhatsAppIcon className="w-4 h-4" />
-                WhatsApp
-              </a>
               <button
                 onClick={handleCopy}
                 className="flex items-center justify-center gap-2 text-gray-700 font-medium py-2.5 px-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all text-sm"
@@ -1268,23 +1312,34 @@ export function AutometricaValuationForm({
                 {copied ? <Check className="w-4 h-4 text-green-500" /> : <Share2 className="w-4 h-4" />}
                 {copied ? 'Copiado' : 'Compartir'}
               </button>
+              <button
+                onClick={handleSendEmail}
+                className="flex items-center justify-center gap-2 text-gray-700 font-medium py-2.5 px-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all text-sm"
+              >
+                <Mail className="w-4 h-4" />
+                Enviar por correo
+              </button>
             </div>
 
-            {/* Tertiary actions */}
-            <div className="flex gap-2 pt-1">
-              <Link
-                href="/autos"
-                className="flex-1 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 py-2 px-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-xs"
-              >
-                <Scale className="w-3.5 h-3.5" />
-                Comparar precios
-              </Link>
+            {/* WhatsApp contact */}
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-2 bg-green-600 text-white font-medium py-2.5 px-3 rounded-lg hover:bg-green-700 transition-all text-sm"
+            >
+              <WhatsAppIcon className="w-4 h-4" />
+              Contactar por WhatsApp
+            </a>
+
+            {/* Tertiary action - New quote */}
+            <div className="pt-1 text-center">
               <button
                 onClick={handleReset}
-                className="flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 py-2 px-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-xs"
+                className="inline-flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 py-2 px-3 transition-all text-xs"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                Nueva cotización
+                Cotizar otro vehículo
               </button>
             </div>
           </div>

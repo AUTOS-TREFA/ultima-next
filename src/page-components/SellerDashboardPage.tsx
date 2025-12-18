@@ -61,7 +61,7 @@ const MEXICAN_STATES = [
   'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas',
 ];
 
-const BRANCHES = ['Monterrey', 'Guadalupe', 'Tampico', 'Coahuila'];
+const BRANCHES = ['Las Américas', 'Saltillo', 'Monterrey', 'Guadalupe', 'Reynosa'];
 
 // ============================================================================
 // FORM SCHEMA
