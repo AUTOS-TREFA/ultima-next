@@ -326,9 +326,9 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
                 key={vehicle.ordencompra}
                 type="button"
                 onClick={() => handleVehicleClick(vehicle)}
-                className="group relative text-left transition-all hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
+                className="group text-left transition-all hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
               >
-                {/* Image container - no padding, prominent */}
+                {/* Image container - clean, no overlay */}
                 <div className="aspect-[4/3] w-full overflow-hidden rounded-lg bg-gray-100 shadow-sm group-hover:shadow-md transition-shadow">
                   <img
                     src={getVehicleImage(vehicle)}
@@ -339,18 +339,15 @@ const VehicleFinancingStep: React.FC<VehicleFinancingStepProps> = ({
                       target.src = DEFAULT_PLACEHOLDER_IMAGE;
                     }}
                   />
-                  {/* Price overlay on image */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6">
-                    <p className="text-white font-bold text-sm sm:text-base drop-shadow-sm">
-                      {formatCurrency(vehicle.precio)}
-                    </p>
-                  </div>
                 </div>
-                {/* Minimal info below image */}
+                {/* Vehicle info below image */}
                 <div className="mt-2 px-0.5">
                   <h3 className="font-semibold text-xs sm:text-sm text-gray-900 line-clamp-1 group-hover:text-primary-600 transition-colors">
                     {vehicle.title}
                   </h3>
+                  <p className="text-xs sm:text-sm font-bold text-primary-600 mt-0.5">
+                    {formatCurrency(vehicle.precio)}
+                  </p>
                   <div className="flex items-center gap-2 text-[10px] sm:text-xs text-gray-500 mt-0.5">
                     <span>{vehicle.autoano}</span>
                     <span className="text-gray-300">•</span>
