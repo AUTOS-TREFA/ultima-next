@@ -36,6 +36,7 @@ import {
     Package,
     DollarSign,
     Eye,
+    ImagePlus,
     type LucideIcon,
 } from 'lucide-react';
 
@@ -283,6 +284,12 @@ export const adminToolsGroup: NavGroup = {
             to: '/escritorio/car-studio',
             label: 'Car Studio API',
             icon: Camera,
+            roles: ['admin']
+        },
+        {
+            to: '/escritorio/admin/cargar-fotos',
+            label: 'Cargar Fotos',
+            icon: ImagePlus,
             roles: ['admin']
         },
         {

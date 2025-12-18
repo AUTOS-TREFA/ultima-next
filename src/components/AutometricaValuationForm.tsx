@@ -35,6 +35,10 @@ import {
   Eye,
   Lock,
   Sparkles,
+  Download,
+  Share2,
+  Scale,
+  ExternalLink,
 } from 'lucide-react';
 import { WhatsAppIcon } from './icons';
 
@@ -42,6 +46,8 @@ import { WhatsAppIcon } from './icons';
 import { AutometricaService, AutometricaCatalogVehicle, AutometricaValuation } from '@/services/AutometricaService';
 import { SellCarService } from '@/services/SellCarService';
 import { BrevoEmailService } from '@/services/BrevoEmailService';
+import { conversionTracking } from '@/services/ConversionTrackingService';
+import { getSiteUrl } from '@/config';
 
 // Types
 import type { UserVehicleForSale } from '@/types/types';
@@ -225,11 +231,26 @@ export function AutometricaValuationForm({
   const [phoneInput, setPhoneInput] = useState('');
   const [emailInput, setEmailInput] = useState('');
   const [otpSent, setOtpSent] = useState(false);
+  const [emailOtpSent, setEmailOtpSent] = useState(false); // For email OTP (login mode)
   const [otpCode, setOtpCode] = useState('');
   const [verificationLoading, setVerificationLoading] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [isLoginMode, setIsLoginMode] = useState(false); // Toggle between login and register
   const [loginPassword, setLoginPassword] = useState('');
+
+  // URL Tracking data (UTM, fbclid, etc.)
+  const [urlTrackingData, setUrlTrackingData] = useState<{
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    utm_term?: string;
+    utm_content?: string;
+    fbclid?: string;
+    rfdm?: string;
+    referrer?: string;
+    landing_page?: string;
+    source?: string;
+  }>({});
 
   // UI state
   const [copied, setCopied] = useState(false);
@@ -249,7 +270,7 @@ export function AutometricaValuationForm({
   // EFFECTS
   // ============================================================================
 
-  // Store URL parameters for redirect after verification
+  // Store URL parameters for redirect after verification and capture tracking data
   useEffect(() => {
     const redirect = searchParams?.get('redirect');
     const ordencompra = searchParams?.get('ordencompra');
@@ -258,6 +279,32 @@ export function AutometricaValuationForm({
     }
     if (ordencompra) {
       localStorage.setItem('ordencompra', ordencompra);
+    }
+
+    // Capture URL tracking parameters (like RegisterPageNew)
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    const trackingData: typeof urlTrackingData = {};
+
+    if (params.get('utm_source')) trackingData.utm_source = params.get('utm_source')!;
+    if (params.get('utm_medium')) trackingData.utm_medium = params.get('utm_medium')!;
+    if (params.get('utm_campaign')) trackingData.utm_campaign = params.get('utm_campaign')!;
+    if (params.get('utm_term')) trackingData.utm_term = params.get('utm_term')!;
+    if (params.get('utm_content')) trackingData.utm_content = params.get('utm_content')!;
+    if (params.get('fbclid')) trackingData.fbclid = params.get('fbclid')!;
+    if (params.get('rfdm')) trackingData.rfdm = params.get('rfdm')!;
+    if (params.get('source')) trackingData.source = params.get('source')!;
+
+    trackingData.referrer = typeof document !== 'undefined' ? document.referrer : undefined;
+    trackingData.landing_page = typeof window !== 'undefined' ? window.location.href : undefined;
+
+    setUrlTrackingData(trackingData);
+
+    // Store in sessionStorage for later use
+    if (Object.keys(trackingData).length > 0) {
+      sessionStorage.setItem('leadSourceData', JSON.stringify({
+        ...trackingData,
+        first_visit_at: new Date().toISOString()
+      }));
     }
   }, [searchParams]);
 
@@ -619,7 +666,7 @@ export function AutometricaValuationForm({
             phone: cleanPhone,
             source: 'vender-mi-auto'
           },
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback?redirect=/vender-mi-auto`,
+          emailRedirectTo: `${getSiteUrl()}/auth/callback?redirect=/vender-mi-auto`,
         }
       });
 
@@ -639,16 +686,47 @@ export function AutometricaValuationForm({
       // Wait for session
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Update profile with phone_verified and valuation source
+      // Determine lead source (same logic as RegisterPageNew)
+      let leadSource = 'vender-mi-auto';
+      if (urlTrackingData.utm_source) {
+        leadSource = `vender-mi-auto-${urlTrackingData.utm_source}`;
+        if (urlTrackingData.utm_medium) leadSource += `-${urlTrackingData.utm_medium}`;
+      } else if (urlTrackingData.fbclid) {
+        leadSource = 'vender-mi-auto-facebook';
+      } else if (urlTrackingData.rfdm) {
+        leadSource = `vender-mi-auto-rfdm-${urlTrackingData.rfdm}`;
+      }
+
+      // Update profile with phone_verified, valuation source, AND tracking data
       await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: authData.user.id,
           phone: cleanPhone,
           phone_verified: true,
           email: emailInput,
-          lead_source: 'vender-mi-auto',
-        })
-        .eq('id', authData.user.id);
+          lead_source: leadSource,
+          source: urlTrackingData.source || leadSource,
+          // URL tracking params
+          utm_source: urlTrackingData.utm_source || null,
+          utm_medium: urlTrackingData.utm_medium || null,
+          utm_campaign: urlTrackingData.utm_campaign || null,
+          utm_term: urlTrackingData.utm_term || null,
+          utm_content: urlTrackingData.utm_content || null,
+          fbclid: urlTrackingData.fbclid || null,
+          rfdm: urlTrackingData.rfdm || null,
+          referrer: urlTrackingData.referrer || null,
+          landing_page: urlTrackingData.landing_page || null,
+          first_visit_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+
+      // Track conversion event (same as RegisterPageNew)
+      conversionTracking.trackAuth.otpVerified(authData.user.id, {
+        email: emailInput,
+        source: leadSource,
+        vehicleId: `${selectedBrand}-${selectedSubbrand}-${selectedYear}`
+      });
 
       // Reload profile and save valuation
       await reloadProfile();
@@ -669,7 +747,7 @@ export function AutometricaValuationForm({
     }
   };
 
-  // Handle login for existing users
+  // Handle login for existing users - send email OTP
   const handleLogin = async () => {
     if (!emailInput || !emailInput.includes('@')) {
       setVerificationError('Ingresa un correo electrónico válido');
@@ -680,11 +758,24 @@ export function AutometricaValuationForm({
     setVerificationError(null);
 
     try {
-      // Sign in with email magic link (passwordless)
+      // Check if email exists in profiles
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', emailInput)
+        .single();
+
+      if (!existingProfile) {
+        setVerificationError('Este correo no está registrado. Usa "Nuevo usuario" para crear una cuenta.');
+        setVerificationLoading(false);
+        return;
+      }
+
+      // Sign in with email OTP (6-digit code)
       const { error: signInError } = await supabase.auth.signInWithOtp({
         email: emailInput,
         options: {
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback?redirect=/vender-mi-auto`,
+          shouldCreateUser: false, // Don't create new user, only login existing
         }
       });
 
@@ -692,12 +783,70 @@ export function AutometricaValuationForm({
         throw signInError;
       }
 
-      setVerificationError(null);
-      // Show success message
-      alert('Te enviamos un enlace de acceso a tu correo. Revisa tu bandeja de entrada.');
+      console.log('Email OTP enviado exitosamente');
+      setEmailOtpSent(true);
     } catch (err: any) {
       console.error('Login error:', err);
-      setVerificationError(err.message || 'Error al iniciar sesión');
+      setVerificationError(err.message || 'Error al enviar el código');
+    } finally {
+      setVerificationLoading(false);
+    }
+  };
+
+  // Verify email OTP for existing users
+  const handleVerifyEmailOtp = async () => {
+    if (!otpCode || otpCode.length < 6) {
+      setVerificationError('Ingresa el código de 6 dígitos');
+      return;
+    }
+
+    setVerificationLoading(true);
+    setVerificationError(null);
+    setStep('verifying');
+
+    try {
+      // Verify email OTP
+      const { data: authData, error: verifyError } = await supabase.auth.verifyOtp({
+        email: emailInput,
+        token: otpCode,
+        type: 'email',
+      });
+
+      if (verifyError) {
+        const errorMsg = verifyError.message || '';
+        if (errorMsg.includes('expired') || errorMsg.includes('expirado')) {
+          throw new Error('El código ha expirado. Solicita uno nuevo.');
+        }
+        throw new Error('El código es incorrecto. Verifica e intenta de nuevo.');
+      }
+
+      if (!authData.user) {
+        throw new Error('No se pudo verificar la sesión');
+      }
+
+      console.log('✅ Email OTP verificado:', authData.user.id);
+
+      // Track login event
+      conversionTracking.trackAuth.otpVerified(authData.user.id, {
+        email: emailInput,
+        source: 'vender-mi-auto-login',
+        vehicleId: `${selectedBrand}-${selectedSubbrand}-${selectedYear}`
+      });
+
+      // Reload profile and save valuation
+      await reloadProfile();
+
+      const kmValue = parseInt(kilometraje.replace(/[^0-9]/g, ''), 10);
+      if (valuation) {
+        await saveValuationData(valuation, kmValue);
+      }
+
+      setShowVerificationModal(false);
+      setStep('success');
+    } catch (err: any) {
+      console.error('Email OTP verification error:', err);
+      setVerificationError(err.message || 'Código incorrecto');
+      setStep('verify_to_reveal');
     } finally {
       setVerificationLoading(false);
     }
@@ -713,6 +862,7 @@ export function AutometricaValuationForm({
     setKilometraje('');
     setValuation(null);
     setOtpSent(false);
+    setEmailOtpSent(false);
     setOtpCode('');
     setPhoneInput('');
     setEmailInput('');
@@ -790,6 +940,7 @@ export function AutometricaValuationForm({
         setShowVerificationModal(false);
         // Reset verification state but keep valuation
         setOtpSent(false);
+        setEmailOtpSent(false);
         setOtpCode('');
         setVerificationError(null);
       }
@@ -823,7 +974,7 @@ export function AutometricaValuationForm({
           </div>
 
           {/* Tab toggle - only show if OTP not sent */}
-          {!otpSent && (
+          {!otpSent && !emailOtpSent && (
             <div className="flex bg-gray-100 rounded-lg p-1">
               <button
                 onClick={() => { setIsLoginMode(false); setVerificationError(null); }}
@@ -848,8 +999,8 @@ export function AutometricaValuationForm({
             </div>
           )}
 
-          {isLoginMode ? (
-            /* LOGIN MODE - Existing users */
+          {isLoginMode && !emailOtpSent ? (
+            /* LOGIN MODE - Existing users - email input */
             <div className="space-y-3">
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-gray-700">Correo electrónico</label>
@@ -869,9 +1020,72 @@ export function AutometricaValuationForm({
                 disabled={verificationLoading || !emailInput}
                 className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-primary-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {verificationLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Enviar enlace de acceso <Mail className="w-4 h-4" /></>}
+                {verificationLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Enviar código <Mail className="w-4 h-4" /></>}
               </button>
-              <p className="text-xs text-gray-500 text-center">Te enviaremos un enlace mágico a tu correo</p>
+              <p className="text-xs text-gray-500 text-center">Te enviaremos un código de 6 dígitos a tu correo</p>
+            </div>
+          ) : isLoginMode && emailOtpSent ? (
+            /* LOGIN MODE - Email OTP verification */
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className="w-12 h-12 mx-auto rounded-full bg-blue-100 flex items-center justify-center mb-3">
+                  <Mail className="w-6 h-6 text-blue-600" />
+                </div>
+                <p className="font-semibold text-gray-900">Código enviado por email</p>
+                <p className="text-sm text-gray-500">
+                  Ingresa el código enviado a <span className="font-medium">{emailInput}</span>
+                </p>
+              </div>
+
+              {/* 6-digit OTP input boxes */}
+              <div className="flex justify-center gap-2">
+                {[0, 1, 2, 3, 4, 5].map((index) => (
+                  <input
+                    key={index}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={otpCode[index] || ''}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      const newOtp = otpCode.split('');
+                      newOtp[index] = value;
+                      setOtpCode(newOtp.join('').slice(0, 6));
+                      // Auto-focus next input
+                      if (value && index < 5) {
+                        const nextInput = e.target.nextElementSibling as HTMLInputElement;
+                        nextInput?.focus();
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      // Handle backspace to go to previous input
+                      if (e.key === 'Backspace' && !otpCode[index] && index > 0) {
+                        const prevInput = (e.target as HTMLElement).previousElementSibling as HTMLInputElement;
+                        prevInput?.focus();
+                      }
+                    }}
+                    className="w-10 h-12 text-center text-lg font-bold border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all"
+                  />
+                ))}
+              </div>
+
+              <button
+                onClick={handleVerifyEmailOtp}
+                disabled={verificationLoading || otpCode.length < 6}
+                className="w-full flex items-center justify-center gap-2 bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {verificationLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Verificar y ver oferta <Eye className="w-4 h-4" /></>}
+              </button>
+
+              <div className="flex items-center justify-center gap-4 text-sm">
+                <button onClick={() => { setEmailOtpSent(false); setOtpCode(''); }} className="text-gray-500 hover:text-gray-700">
+                  Cambiar correo
+                </button>
+                <span className="text-gray-300">|</span>
+                <button onClick={handleLogin} disabled={verificationLoading} className="text-primary-600 hover:text-primary-700 font-medium">
+                  Reenviar código
+                </button>
+              </div>
             </div>
           ) : !otpSent ? (
             /* REGISTER MODE - New users - phone + email */
@@ -1027,34 +1241,50 @@ export function AutometricaValuationForm({
               </div>
             </div>
 
-            {/* Compact actions */}
-            <div className="flex gap-2">
-              <button
-                onClick={handleGoToDashboard}
-                className="flex-1 flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-primary-700 transition-all text-sm"
-              >
-                Continuar
-                <ArrowRight className="w-4 h-4" />
-              </button>
+            {/* Primary action - Continue online */}
+            <button
+              onClick={handleGoToDashboard}
+              className="w-full flex items-center justify-center gap-2 bg-[#003161] text-white font-semibold py-3.5 px-4 rounded-lg hover:bg-[#002850] transition-all text-sm shadow-md"
+            >
+              Continuar en línea
+              <ArrowRight className="w-4 h-4" />
+            </button>
+
+            {/* Secondary actions grid */}
+            <div className="grid grid-cols-2 gap-2">
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700 transition-all text-sm"
+                className="flex items-center justify-center gap-2 bg-green-600 text-white font-medium py-2.5 px-3 rounded-lg hover:bg-green-700 transition-all text-sm"
               >
                 <WhatsAppIcon className="w-4 h-4" />
+                WhatsApp
               </a>
               <button
                 onClick={handleCopy}
-                className="flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 py-3 px-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-all"
+                className="flex items-center justify-center gap-2 text-gray-700 font-medium py-2.5 px-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all text-sm"
               >
-                {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                {copied ? <Check className="w-4 h-4 text-green-500" /> : <Share2 className="w-4 h-4" />}
+                {copied ? 'Copiado' : 'Compartir'}
               </button>
+            </div>
+
+            {/* Tertiary actions */}
+            <div className="flex gap-2 pt-1">
+              <Link
+                href="/autos"
+                className="flex-1 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 py-2 px-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-xs"
+              >
+                <Scale className="w-3.5 h-3.5" />
+                Comparar precios
+              </Link>
               <button
                 onClick={handleReset}
-                className="flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 py-3 px-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-all"
+                className="flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 py-2 px-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-xs"
               >
-                <RefreshCw className="w-4 h-4" />
+                <RefreshCw className="w-3.5 h-3.5" />
+                Nueva cotización
               </button>
             </div>
           </div>
