@@ -15,7 +15,9 @@ import {
     User,
     FileCheck,
     Loader2,
-    AlertTriangle
+    AlertTriangle,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -58,6 +60,8 @@ interface OverallAnalytics {
     applications_by_status: Record<string, number>;
 }
 
+const ITEMS_PER_PAGE = 25;
+
 const ApplicationAnalyticsPanel: React.FC = () => {
     const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
     const [completionFilter, setCompletionFilter] = useState<'all' | 'complete' | 'incomplete'>('all');
@@ -67,6 +71,7 @@ const ApplicationAnalyticsPanel: React.FC = () => {
         endDate: null,
         preset: 'allTime'
     });
+    const [currentPage, setCurrentPage] = useState(1);
 
     // Fetch overall analytics
     const { data: overallAnalytics, isLoading: loadingOverall } = useQuery<OverallAnalytics[]>({
@@ -114,6 +119,19 @@ const ApplicationAnalyticsPanel: React.FC = () => {
             return appDate >= dateRange.startDate! && appDate <= dateRange.endDate!;
         });
     }, [detailedApplications, dateRange]);
+
+    // Pagination calculations
+    const totalPages = Math.ceil((filteredApplications?.length || 0) / ITEMS_PER_PAGE);
+    const paginatedApplications = useMemo(() => {
+        if (!filteredApplications) return [];
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredApplications.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [filteredApplications, currentPage]);
+
+    // Reset page when filters change
+    React.useEffect(() => {
+        setCurrentPage(1);
+    }, [selectedAgent, completionFilter, statusFilter, dateRange]);
 
     // Recalculate analytics based on filtered applications
     const filteredAnalytics = useMemo(() => {
@@ -465,66 +483,123 @@ const ApplicationAnalyticsPanel: React.FC = () => {
                         <div className="flex justify-center items-center p-8">
                             <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
                         </div>
-                    ) : filteredApplications && filteredApplications.length > 0 ? (
-                        <table className="w-full">
-                            <thead className="bg-gray-50 border-b">
-                                <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lead</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Asesor</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Completa</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Documentos</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vehículo</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {filteredApplications.map((app) => (
-                                    <tr key={app.application_id} className="hover:bg-gray-50">
-                                        <td className="px-4 py-3">
-                                            <div>
-                                                <p className="font-medium text-gray-900">{app.lead_name}</p>
-                                                <p className="text-sm text-gray-500">{app.lead_email}</p>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-900">
-                                            {app.sales_agent_name || 'Sin asignar'}
-                                        </td>
-                                        <td className="px-4 py-3">{getStatusBadge(app.application_status)}</td>
-                                        <td className="px-4 py-3">
-                                            {app.is_complete ? (
-                                                <CheckCircle2 className="w-5 h-5 text-green-600" />
-                                            ) : (
-                                                <XCircle className="w-5 h-5 text-orange-600" />
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700">
-                                                {app.document_count} docs
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-900">
-                                            {app.car_info?._vehicleTitle || 'N/A'}
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-500">
-                                            {new Date(app.application_created_at).toLocaleDateString('es-MX')}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center gap-2">
-                                                <Link
-                                                    href={`/escritorio/admin/cliente/${app.lead_id}`}
-                                                    className="inline-flex items-center text-primary-600 hover:text-primary-700 text-sm"
-                                                >
-                                                    <User className="w-4 h-4 mr-1" />
-                                                    Perfil
-                                                </Link>
-                                            </div>
-                                        </td>
+                    ) : paginatedApplications && paginatedApplications.length > 0 ? (
+                        <>
+                            <table className="w-full">
+                                <thead className="bg-gray-50 border-b">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lead</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Asesor</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Completa</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Documentos</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vehículo</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {paginatedApplications.map((app) => (
+                                        <tr key={app.application_id} className="hover:bg-gray-50">
+                                            <td className="px-4 py-3">
+                                                <div>
+                                                    <p className="font-medium text-gray-900">{app.lead_name}</p>
+                                                    <p className="text-sm text-gray-500">{app.lead_email}</p>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-900">
+                                                {app.sales_agent_name || 'Sin asignar'}
+                                            </td>
+                                            <td className="px-4 py-3">{getStatusBadge(app.application_status)}</td>
+                                            <td className="px-4 py-3">
+                                                {app.is_complete ? (
+                                                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                                                ) : (
+                                                    <XCircle className="w-5 h-5 text-orange-600" />
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700">
+                                                    {app.document_count} docs
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-900">
+                                                {app.car_info?._vehicleTitle || 'N/A'}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-500">
+                                                {new Date(app.application_created_at).toLocaleDateString('es-MX')}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <div className="flex items-center gap-2">
+                                                    <Link
+                                                        href={`/escritorio/admin/cliente/${app.lead_id}`}
+                                                        className="inline-flex items-center text-primary-600 hover:text-primary-700 text-sm"
+                                                    >
+                                                        <User className="w-4 h-4 mr-1" />
+                                                        Perfil
+                                                    </Link>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50">
+                                    <div className="flex items-center text-sm text-gray-600">
+                                        <span>
+                                            Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredApplications?.length || 0)} de {filteredApplications?.length || 0}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                            className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            <ChevronLeft className="w-4 h-4 mr-1" />
+                                            Anterior
+                                        </button>
+                                        <div className="flex items-center gap-1">
+                                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                                let pageNum: number;
+                                                if (totalPages <= 5) {
+                                                    pageNum = i + 1;
+                                                } else if (currentPage <= 3) {
+                                                    pageNum = i + 1;
+                                                } else if (currentPage >= totalPages - 2) {
+                                                    pageNum = totalPages - 4 + i;
+                                                } else {
+                                                    pageNum = currentPage - 2 + i;
+                                                }
+                                                return (
+                                                    <button
+                                                        key={pageNum}
+                                                        onClick={() => setCurrentPage(pageNum)}
+                                                        className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                                                            currentPage === pageNum
+                                                                ? 'bg-primary text-white'
+                                                                : 'bg-white border border-gray-300 hover:bg-gray-50'
+                                                        }`}
+                                                    >
+                                                        {pageNum}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            Siguiente
+                                            <ChevronRight className="w-4 h-4 ml-1" />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     ) : (
                         <div className="flex flex-col items-center justify-center p-8 text-gray-500">
                             <AlertTriangle className="w-12 h-12 mb-2" />
