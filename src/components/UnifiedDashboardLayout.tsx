@@ -92,12 +92,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 // Types for navigation items
+type UserRole = 'admin' | 'sales' | 'user' | 'marketing';
+
 interface NavItem {
     to: string;
     label: string;
     icon: React.ElementType;
     end?: boolean;
-    roles?: ('admin' | 'sales' | 'user')[];
+    roles?: UserRole[];
     badge?: string;
 }
 
@@ -105,7 +107,7 @@ interface NavGroup {
     label: string;
     icon: React.ElementType;
     items: NavItem[];
-    roles?: ('admin' | 'sales' | 'user')[];
+    roles?: UserRole[];
     defaultOpen?: boolean;
 }
 
@@ -174,6 +176,34 @@ const salesItems: NavItem[] = [
     { to: '/escritorio/ventas/performance', label: 'Mi Desempeño', icon: TrendingUp, roles: ['sales'] },
 ];
 
+// Marketing items - NO access to CRM, leads, or sensitive data
+const marketingMainItems: NavItem[] = [
+    { to: '/escritorio/marketing', label: 'Marketing Hub', icon: BarChart3, roles: ['marketing'] },
+    { to: '/escritorio/admin/cargar-fotos', label: 'Cargar Fotos', icon: ImagePlus, roles: ['marketing'] },
+];
+
+// Marketing Analytics Group
+const marketingAnalyticsGroup: NavGroup = {
+    label: 'Analytics',
+    icon: BarChart3,
+    roles: ['marketing'],
+    items: [
+        { to: '/escritorio/admin/marketing-analytics', label: 'Marketing', icon: TrendingUp, roles: ['marketing'] },
+        { to: '/escritorio/admin/business-analytics', label: 'Inventario', icon: Car, roles: ['marketing'] },
+    ],
+};
+
+// Marketing Tools Group
+const marketingToolsGroup: NavGroup = {
+    label: 'Herramientas',
+    icon: Settings,
+    roles: ['marketing'],
+    items: [
+        { to: '/escritorio/marketing/constructor', label: 'Landing Pages', icon: Scroll, roles: ['marketing'] },
+        { to: '/escritorio/admin/vacantes', label: 'Vacantes', icon: Briefcase, roles: ['marketing'] },
+    ],
+};
+
 // Loading skeleton component
 const SidebarLoadingSkeleton: React.FC = () => (
     <>
@@ -198,7 +228,7 @@ const SidebarLoadingSkeleton: React.FC = () => (
 
 // Sidebar content component
 const AppSidebarContent: React.FC = () => {
-    const { profile, user, isAdmin, isSales, loading, signOut } = useAuth();
+    const { profile, user, isAdmin, isSales, isMarketing, loading, signOut } = useAuth();
     const pathname = usePathname();
 
     const [loadingTimeout, setLoadingTimeout] = React.useState(false);
@@ -240,9 +270,10 @@ const AppSidebarContent: React.FC = () => {
         return pathname.startsWith(path);
     };
 
-    const getUserRole = (): 'admin' | 'sales' | 'user' => {
+    const getUserRole = (): UserRole => {
         if (isAdmin) return 'admin';
         if (isSales) return 'sales';
+        if (isMarketing) return 'marketing';
         return 'user';
     };
 
@@ -292,7 +323,8 @@ const AppSidebarContent: React.FC = () => {
                         <p className="text-xs text-gray-600 truncate flex items-center gap-1">
                             {isAdmin && <><Sparkles className="w-3 h-3" /> Admin</>}
                             {isSales && <><Rocket className="w-3 h-3" /> Ventas</>}
-                            {!isAdmin && !isSales && <User className="w-3 h-3" />}
+                            {isMarketing && <><TrendingUp className="w-3 h-3" /> Marketing</>}
+                            {!isAdmin && !isSales && !isMarketing && <User className="w-3 h-3" />}
                         </p>
                     </div>
                 </div>
@@ -548,6 +580,141 @@ const AppSidebarContent: React.FC = () => {
                                             </SidebarMenuItem>
                                         );
                                     })}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+                    </>
+                )}
+
+                {/* Marketing Section */}
+                {isMarketing && (
+                    <>
+                        <Separator className="bg-gray-200 my-2" />
+
+                        {/* Marketing Main */}
+                        <SidebarGroup className="py-1">
+                            <SidebarGroupLabel className="text-gray-400 text-[10px] font-semibold uppercase tracking-widest mb-1 px-3">
+                                Marketing
+                            </SidebarGroupLabel>
+                            <SidebarGroupContent>
+                                <SidebarMenu className="space-y-0.5">
+                                    {filterByRole(marketingMainItems).map((item) => {
+                                        const Icon = item.icon;
+                                        const isActive = isActiveLink(item.to, item.end);
+                                        return (
+                                            <SidebarMenuItem key={item.to}>
+                                                <SidebarMenuButton
+                                                    asChild
+                                                    isActive={isActive}
+                                                    tooltip={item.label}
+                                                    className={cn(
+                                                        "h-10 px-3 rounded-lg transition-all duration-150",
+                                                        "text-gray-600 hover:text-gray-900 hover:bg-gray-100/80",
+                                                        isActive && "bg-primary/10 text-primary font-medium shadow-sm border border-primary/20"
+                                                    )}
+                                                >
+                                                    <Link href={item.to}>
+                                                        <Icon className={cn("h-4 w-4", isActive && "text-primary")} />
+                                                        <span>{item.label}</span>
+                                                    </Link>
+                                                </SidebarMenuButton>
+                                            </SidebarMenuItem>
+                                        );
+                                    })}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+
+                        {/* Marketing Analytics Dropdown */}
+                        <SidebarGroup className="py-0.5">
+                            <SidebarGroupContent>
+                                <SidebarMenu className="space-y-0.5">
+                                    <Collapsible className="group/collapsible">
+                                        <SidebarMenuItem>
+                                            <CollapsibleTrigger asChild>
+                                                <SidebarMenuButton
+                                                    tooltip="Analytics"
+                                                    className="h-10 px-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 transition-all duration-150"
+                                                >
+                                                    <BarChart3 className="h-4 w-4" />
+                                                    <span>Analytics</span>
+                                                    <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                                </SidebarMenuButton>
+                                            </CollapsibleTrigger>
+                                            <CollapsibleContent>
+                                                <SidebarMenuSub className="border-l-2 border-gray-200 ml-5 mt-1 space-y-0.5">
+                                                    {filterByRole(marketingAnalyticsGroup.items).map((item) => {
+                                                        const Icon = item.icon;
+                                                        const isActive = isActiveLink(item.to, item.end);
+                                                        return (
+                                                            <SidebarMenuSubItem key={item.to}>
+                                                                <SidebarMenuSubButton
+                                                                    asChild
+                                                                    isActive={isActive}
+                                                                    className={cn(
+                                                                        "h-9 px-3 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100/60 transition-all duration-150",
+                                                                        isActive && "text-primary bg-primary/5 font-medium"
+                                                                    )}
+                                                                >
+                                                                    <Link href={item.to}>
+                                                                        <Icon className={cn("h-3.5 w-3.5", isActive && "text-primary")} />
+                                                                        <span>{item.label}</span>
+                                                                    </Link>
+                                                                </SidebarMenuSubButton>
+                                                            </SidebarMenuSubItem>
+                                                        );
+                                                    })}
+                                                </SidebarMenuSub>
+                                            </CollapsibleContent>
+                                        </SidebarMenuItem>
+                                    </Collapsible>
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+
+                        {/* Marketing Tools Dropdown */}
+                        <SidebarGroup className="py-0.5">
+                            <SidebarGroupContent>
+                                <SidebarMenu className="space-y-0.5">
+                                    <Collapsible className="group/collapsible">
+                                        <SidebarMenuItem>
+                                            <CollapsibleTrigger asChild>
+                                                <SidebarMenuButton
+                                                    tooltip="Herramientas"
+                                                    className="h-10 px-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 transition-all duration-150"
+                                                >
+                                                    <Settings className="h-4 w-4" />
+                                                    <span>Herramientas</span>
+                                                    <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                                </SidebarMenuButton>
+                                            </CollapsibleTrigger>
+                                            <CollapsibleContent>
+                                                <SidebarMenuSub className="border-l-2 border-gray-200 ml-5 mt-1 space-y-0.5">
+                                                    {filterByRole(marketingToolsGroup.items).map((item) => {
+                                                        const Icon = item.icon;
+                                                        const isActive = isActiveLink(item.to, item.end);
+                                                        return (
+                                                            <SidebarMenuSubItem key={item.to}>
+                                                                <SidebarMenuSubButton
+                                                                    asChild
+                                                                    isActive={isActive}
+                                                                    className={cn(
+                                                                        "h-9 px-3 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100/60 transition-all duration-150",
+                                                                        isActive && "text-primary bg-primary/5 font-medium"
+                                                                    )}
+                                                                >
+                                                                    <Link href={item.to}>
+                                                                        <Icon className={cn("h-3.5 w-3.5", isActive && "text-primary")} />
+                                                                        <span>{item.label}</span>
+                                                                    </Link>
+                                                                </SidebarMenuSubButton>
+                                                            </SidebarMenuSubItem>
+                                                        );
+                                                    })}
+                                                </SidebarMenuSub>
+                                            </CollapsibleContent>
+                                        </SidebarMenuItem>
+                                    </Collapsible>
                                 </SidebarMenu>
                             </SidebarGroupContent>
                         </SidebarGroup>
