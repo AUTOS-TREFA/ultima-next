@@ -128,11 +128,16 @@ const Lightbox = ({
     }
   }, [onClose, onPrev, onNext])
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLImageElement>) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const { left, top, width, height } = e.currentTarget.getBoundingClientRect()
-    const x = ((e.pageX - left) / width) * 100
-    const y = ((e.pageY - top) / height) * 100
-    setMousePosition({ x, y })
+    // Use clientX/Y (viewport-relative) since getBoundingClientRect() returns viewport-relative coordinates
+    const x = ((e.clientX - left) / width) * 100
+    const y = ((e.clientY - top) / height) * 100
+    // Clamp values between 0 and 100
+    setMousePosition({
+      x: Math.max(0, Math.min(100, x)),
+      y: Math.max(0, Math.min(100, y))
+    })
   }
 
   const currentItem = media[currentIndex]
@@ -140,11 +145,22 @@ const Lightbox = ({
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/98">
-      {/* Top bar with close button - Always visible, with safe area for mobile notch */}
+      {/* Close button - Always visible on desktop, part of controls on mobile */}
+      <button
+        onClick={onClose}
+        className="fixed top-4 right-4 sm:top-6 sm:right-6 z-[10002] flex items-center gap-2 px-4 py-2.5 bg-white text-foreground font-semibold rounded-full shadow-2xl hover:bg-muted hover:scale-105 transition-all active:scale-95"
+        style={{ top: 'max(1rem, env(safe-area-inset-top))' }}
+        aria-label="Cerrar galería"
+      >
+        <XIcon className="w-5 h-5" />
+        <span className="hidden sm:inline">Cerrar</span>
+      </button>
+
+      {/* Top bar with counter and zoom hint */}
       <div
         className={cn(
-          "fixed top-0 left-0 right-0 z-[10001] flex items-center justify-between px-4 py-4 sm:px-6 sm:py-5 bg-gradient-to-b from-black/80 via-black/40 to-transparent transition-opacity duration-300",
-          showControls ? 'opacity-100' : 'opacity-0 pointer-events-none sm:opacity-100 sm:pointer-events-auto'
+          "fixed top-0 left-0 right-0 z-[10001] flex items-center px-4 py-4 sm:px-6 sm:py-5 bg-gradient-to-b from-black/80 via-black/40 to-transparent transition-opacity duration-300",
+          showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
         )}
         style={{ paddingTop: 'max(1.25rem, env(safe-area-inset-top))' }}
       >
@@ -160,17 +176,6 @@ const Lightbox = ({
             <span>Pasa el mouse para zoom</span>
           </div>
         </div>
-
-        {/* Right side - Close button */}
-        <button
-          onClick={onClose}
-          className="flex items-center gap-2 px-4 py-2.5 bg-white text-black font-bold rounded-full shadow-2xl hover:bg-gray-100 hover:scale-105 transition-all active:scale-95"
-          aria-label="Cerrar galería"
-        >
-          <XIcon className="w-5 h-5" />
-          <span className="hidden sm:inline">Cerrar</span>
-          <span className="sm:hidden text-xs">ESC</span>
-        </button>
       </div>
 
       {/* Navigation arrows - Enhanced visibility */}
@@ -440,7 +445,7 @@ const VehicleProductOverview = ({
 
   return (
     <>
-      <div className="bg-gray-50 min-h-screen">
+      <div className="bg-muted/30 min-h-screen">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
           {/* Main Grid: Content + Sticky Sidebar */}
           <div className="lg:grid lg:grid-cols-12 lg:gap-8">
@@ -449,10 +454,10 @@ const VehicleProductOverview = ({
             <div className="lg:col-span-8 space-y-6">
 
               {/* Image Gallery Section */}
-              <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+              <div className="bg-card rounded-xl overflow-hidden shadow-sm border border-border">
                 {/* Main Image with Navigation Arrows - Swipeable */}
                 <motion.div
-                  className="relative overflow-hidden aspect-[16/10] cursor-grab active:cursor-grabbing group bg-gray-100"
+                  className="relative overflow-hidden aspect-[16/10] cursor-grab active:cursor-grabbing group bg-muted"
                   drag="x"
                   dragConstraints={{ left: 0, right: 0 }}
                   dragElastic={0.1}
@@ -489,14 +494,14 @@ const VehicleProductOverview = ({
                     <>
                       <button
                         onClick={(e) => { e.stopPropagation(); goToPrevImage() }}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 rounded-full p-3 shadow-lg transition-all hover:scale-105 opacity-0 group-hover:opacity-100 z-20"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-foreground rounded-full p-3 shadow-lg transition-all hover:scale-105 opacity-0 group-hover:opacity-100 z-20"
                         aria-label="Imagen anterior"
                       >
                         <ChevronLeftIcon className="w-6 h-6" />
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); goToNextImage() }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 rounded-full p-3 shadow-lg transition-all hover:scale-105 opacity-0 group-hover:opacity-100 z-20"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-foreground rounded-full p-3 shadow-lg transition-all hover:scale-105 opacity-0 group-hover:opacity-100 z-20"
                         aria-label="Siguiente imagen"
                       >
                         <ChevronRightIcon className="w-6 h-6" />
@@ -519,7 +524,7 @@ const VehicleProductOverview = ({
                 {allImages.length > 1 && (
                   <div
                     ref={thumbnailContainerRef}
-                    className="flex gap-2 p-3 overflow-x-auto scroll-smooth snap-x snap-mandatory bg-gray-50"
+                    className="flex gap-2 p-3 overflow-x-auto scroll-smooth snap-x snap-mandatory bg-muted/50"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                   >
                     {allImages.map((img, idx) => (
@@ -530,7 +535,7 @@ const VehicleProductOverview = ({
                           'shrink-0 w-20 sm:w-24 aspect-[16/10] rounded-lg overflow-hidden border-2 transition-all snap-start',
                           currentImageIndex === idx
                             ? 'border-orange-500 ring-2 ring-orange-200 scale-105'
-                            : 'border-transparent hover:border-gray-300 opacity-70 hover:opacity-100'
+                            : 'border-transparent hover:border-border opacity-70 hover:opacity-100'
                         )}
                       >
                         <img
@@ -547,7 +552,7 @@ const VehicleProductOverview = ({
               {/* Vehicle Title & Key Info - Mobile Only */}
               <div className="lg:hidden space-y-4">
                 {/* Title */}
-                <div className="bg-white rounded-2xl p-5 shadow-sm">
+                <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -557,7 +562,7 @@ const VehicleProductOverview = ({
                             Promoción
                           </Badge>
                         )}
-                        <h1 className="text-2xl font-black text-gray-900 leading-tight">
+                        <h1 className="text-2xl font-black text-foreground leading-tight">
                           {vehicle.autoano || vehicle.year} {vehicle.marca} {vehicle.modelo}
                         </h1>
                         <p className="text-base text-muted-foreground font-medium mt-1">
@@ -570,7 +575,7 @@ const VehicleProductOverview = ({
                           'p-2.5 rounded-full border-2 transition-all',
                           isFavorite
                             ? 'bg-red-50 border-red-200 text-red-500'
-                            : 'bg-gray-50 border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200'
+                            : 'bg-muted border-border text-muted-foreground hover:text-red-500 hover:border-red-200'
                         )}
                       >
                         <HeartIcon className={cn('w-6 h-6', isFavorite && 'fill-current')} />
@@ -590,7 +595,7 @@ const VehicleProductOverview = ({
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Desde <span className="font-bold text-gray-900">{formatPrice(financeData.monthlyPayment)}</span>/mes con financiamiento
+                        Desde <span className="font-bold text-foreground">{formatPrice(financeData.monthlyPayment)}</span>/mes con financiamiento
                       </p>
                     </div>
                   </div>
@@ -617,8 +622,8 @@ const VehicleProductOverview = ({
               </div>
 
               {/* Key Highlights Grid */}
-              <div className="bg-white rounded-2xl p-5 shadow-sm">
-                <h2 className="text-base font-semibold text-gray-900 mb-4">Datos Clave</h2>
+              <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
+                <h2 className="text-base font-semibold text-foreground mb-4">Datos Clave</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 divide-y sm:divide-y-0">
                   {vehicle.kilometraje && (
                     <KeyHighlight
@@ -666,20 +671,20 @@ const VehicleProductOverview = ({
               </div>
 
               {/* Purchase Options Cards */}
-              <div className="bg-white rounded-2xl p-5 shadow-sm">
-                <h2 className="text-base font-semibold text-gray-900 mb-4">Opciones de Compra</h2>
+              <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
+                <h2 className="text-base font-semibold text-foreground mb-4">Opciones de Compra</h2>
                 <div className="grid gap-3 sm:grid-cols-3">
                   {/* Cash */}
                   <button
                     onClick={onWhatsAppClick}
-                    className="group text-left p-4 rounded-xl border-2 border-gray-200 hover:border-green-400 hover:bg-green-50 transition-all"
+                    className="group text-left p-4 rounded-xl border-2 border-border hover:border-green-400 hover:bg-green-50 transition-all"
                   >
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
                         <BanknoteIcon className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-sm text-gray-900">Contado</h3>
+                        <h3 className="font-semibold text-sm text-foreground">Contado</h3>
                         <p className="text-xs text-muted-foreground">Asesoría profesional</p>
                       </div>
                     </div>
@@ -691,14 +696,14 @@ const VehicleProductOverview = ({
                   {/* Finance */}
                   <button
                     onClick={onFinancingClick}
-                    className="group text-left p-4 rounded-xl border-2 border-gray-200 hover:border-orange-400 hover:bg-orange-50 transition-all"
+                    className="group text-left p-4 rounded-xl border-2 border-border hover:border-orange-400 hover:bg-orange-50 transition-all"
                   >
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
                         <CreditCardIcon className="w-5 h-5 text-orange-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-sm text-gray-900">Crédito</h3>
+                        <h3 className="font-semibold text-sm text-foreground">Crédito</h3>
                         <p className="text-xs text-muted-foreground">100% en línea</p>
                       </div>
                     </div>
@@ -710,14 +715,14 @@ const VehicleProductOverview = ({
                   {/* Branch */}
                   <button
                     onClick={onWhatsAppClick}
-                    className="group text-left p-4 rounded-xl border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all"
+                    className="group text-left p-4 rounded-xl border-2 border-border hover:border-blue-400 hover:bg-blue-50 transition-all"
                   >
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                         <BuildingIcon className="w-5 h-5 text-blue-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-sm text-gray-900">Sucursal</h3>
+                        <h3 className="font-semibold text-sm text-foreground">Sucursal</h3>
                         <p className="text-xs text-muted-foreground">{sucursal}</p>
                       </div>
                     </div>
@@ -729,16 +734,16 @@ const VehicleProductOverview = ({
               </div>
 
               {/* Accordion Sections */}
-              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div className="bg-card rounded-xl shadow-sm overflow-hidden border border-border">
                 <Accordion type="single" collapsible className="w-full" defaultValue="specs">
                   {/* Specifications */}
                   <AccordionItem value="specs" className="border-b">
-                    <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-gray-50">
+                    <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-muted/50">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                          <CarIcon className="w-4 h-4 text-gray-600" />
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                          <CarIcon className="w-4 h-4 text-muted-foreground" />
                         </div>
-                        <span className="font-bold text-gray-900">Especificaciones</span>
+                        <span className="font-bold text-foreground">Especificaciones</span>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-5 pb-5">
@@ -746,73 +751,73 @@ const VehicleProductOverview = ({
                         {vehicle.marca && (
                           <div className="space-y-1">
                             <dt className="text-xs text-muted-foreground uppercase tracking-wide">Marca</dt>
-                            <dd className="font-semibold text-gray-900">{vehicle.marca}</dd>
+                            <dd className="font-semibold text-foreground">{vehicle.marca}</dd>
                           </div>
                         )}
                         {vehicle.modelo && (
                           <div className="space-y-1">
                             <dt className="text-xs text-muted-foreground uppercase tracking-wide">Modelo</dt>
-                            <dd className="font-semibold text-gray-900">{vehicle.modelo}</dd>
+                            <dd className="font-semibold text-foreground">{vehicle.modelo}</dd>
                           </div>
                         )}
                         {vehicle.autoano && (
                           <div className="space-y-1">
                             <dt className="text-xs text-muted-foreground uppercase tracking-wide">Año</dt>
-                            <dd className="font-semibold text-gray-900">{vehicle.autoano}</dd>
+                            <dd className="font-semibold text-foreground">{vehicle.autoano}</dd>
                           </div>
                         )}
                         {vehicle.kilometraje && (
                           <div className="space-y-1">
                             <dt className="text-xs text-muted-foreground uppercase tracking-wide">Kilometraje</dt>
-                            <dd className="font-semibold text-gray-900">{formatMileage(vehicle.kilometraje)}</dd>
+                            <dd className="font-semibold text-foreground">{formatMileage(vehicle.kilometraje)}</dd>
                           </div>
                         )}
                         {vehicle.transmision && (
                           <div className="space-y-1">
                             <dt className="text-xs text-muted-foreground uppercase tracking-wide">Transmisión</dt>
-                            <dd className="font-semibold text-gray-900">{vehicle.transmision}</dd>
+                            <dd className="font-semibold text-foreground">{vehicle.transmision}</dd>
                           </div>
                         )}
                         {vehicle.combustible && (
                           <div className="space-y-1">
                             <dt className="text-xs text-muted-foreground uppercase tracking-wide">Combustible</dt>
-                            <dd className="font-semibold text-gray-900">{vehicle.combustible}</dd>
+                            <dd className="font-semibold text-foreground">{vehicle.combustible}</dd>
                           </div>
                         )}
                         {(vehicle.motor || vehicle.automotor) && (
                           <div className="space-y-1">
                             <dt className="text-xs text-muted-foreground uppercase tracking-wide">Motor</dt>
-                            <dd className="font-semibold text-gray-900">{vehicle.motor || vehicle.automotor}</dd>
+                            <dd className="font-semibold text-foreground">{vehicle.motor || vehicle.automotor}</dd>
                           </div>
                         )}
                         {(vehicle.cilindros || vehicle.autocilindros) && (
                           <div className="space-y-1">
                             <dt className="text-xs text-muted-foreground uppercase tracking-wide">Cilindros</dt>
-                            <dd className="font-semibold text-gray-900">{vehicle.cilindros || vehicle.autocilindros}</dd>
+                            <dd className="font-semibold text-foreground">{vehicle.cilindros || vehicle.autocilindros}</dd>
                           </div>
                         )}
                         {vehicle.color_exterior && (
                           <div className="space-y-1">
                             <dt className="text-xs text-muted-foreground uppercase tracking-wide">Color Exterior</dt>
-                            <dd className="font-semibold text-gray-900">{vehicle.color_exterior}</dd>
+                            <dd className="font-semibold text-foreground">{vehicle.color_exterior}</dd>
                           </div>
                         )}
                         {vehicle.color_interior && (
                           <div className="space-y-1">
                             <dt className="text-xs text-muted-foreground uppercase tracking-wide">Color Interior</dt>
-                            <dd className="font-semibold text-gray-900">{vehicle.color_interior}</dd>
+                            <dd className="font-semibold text-foreground">{vehicle.color_interior}</dd>
                           </div>
                         )}
                         {vehicle.clasificacionid?.[0] && (
                           <div className="space-y-1">
                             <dt className="text-xs text-muted-foreground uppercase tracking-wide">Carrocería</dt>
-                            <dd className="font-semibold text-gray-900">{vehicle.clasificacionid[0]}</dd>
+                            <dd className="font-semibold text-foreground">{vehicle.clasificacionid[0]}</dd>
                           </div>
                         )}
                         {vehicle.nosiniestros && (
                           <div className="space-y-1">
                             <dt className="text-xs text-muted-foreground uppercase tracking-wide">Siniestros</dt>
-                            <dd className="font-semibold text-gray-900">{vehicle.nosiniestros}</dd>
+                            <dd className="font-semibold text-foreground">{vehicle.nosiniestros}</dd>
                           </div>
                         )}
                       </dl>
@@ -821,19 +826,19 @@ const VehicleProductOverview = ({
 
                   {/* Payment Calculator */}
                   <AccordionItem value="calculator" className="border-b">
-                    <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-gray-50">
+                    <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-muted/50">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
                           <WalletIcon className="w-4 h-4 text-orange-600" />
                         </div>
-                        <span className="font-bold text-gray-900">Calculadora de Pagos</span>
+                        <span className="font-bold text-foreground">Calculadora de Pagos</span>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-5 pb-5">
                       <div className="space-y-6">
                         <div>
                           <div className="flex justify-between items-center mb-3">
-                            <label htmlFor="downPayment" className="text-sm font-semibold text-gray-700">
+                            <label htmlFor="downPayment" className="text-sm font-semibold text-foreground">
                               Enganche
                             </label>
                             <span className="text-lg font-black text-orange-600">{formatPrice(downPayment)}</span>
@@ -849,7 +854,7 @@ const VehicleProductOverview = ({
                               setDownPayment(Number(e.target.value))
                               handleCalculatorChange()
                             }}
-                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
                           />
                           <div className="flex justify-between text-xs text-muted-foreground mt-2">
                             <span>{formatPrice(financeData.minDownPayment)} (25%)</span>
@@ -858,7 +863,7 @@ const VehicleProductOverview = ({
                         </div>
 
                         <div>
-                          <label className="text-sm font-semibold text-gray-700 block mb-3">
+                          <label className="text-sm font-semibold text-foreground block mb-3">
                             Plazo (meses)
                           </label>
                           <div className="grid grid-cols-4 gap-2">
@@ -873,7 +878,7 @@ const VehicleProductOverview = ({
                                   'px-3 py-2.5 text-sm font-bold rounded-lg transition-all',
                                   loanTerm === term
                                     ? 'bg-orange-500 text-white shadow-lg shadow-orange-200'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
                                 )}
                               >
                                 {term} meses
@@ -901,12 +906,12 @@ const VehicleProductOverview = ({
 
                   {/* Vehicle History/Inspection */}
                   <AccordionItem value="inspection" className="border-b-0">
-                    <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-gray-50">
+                    <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-muted/50">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
                           <ShieldCheckIcon className="w-4 h-4 text-green-600" />
                         </div>
-                        <span className="font-bold text-gray-900">Inspección y Garantía</span>
+                        <span className="font-bold text-foreground">Inspección y Garantía</span>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-5 pb-5">
@@ -945,18 +950,18 @@ const VehicleProductOverview = ({
                           {/* Inspection Points */}
                           {inspectionPoints.length > 0 ? (
                             <div className="space-y-3">
-                              <h4 className="font-semibold text-sm text-gray-900">Puntos de Inspección</h4>
+                              <h4 className="font-semibold text-sm text-foreground">Puntos de Inspección</h4>
                               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {inspectionPoints.slice(0, 8).map((point, i) => (
                                   <li key={i} className="flex items-start gap-2 text-sm">
                                     <CheckIcon className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                                    <span className="text-gray-700">{point}</span>
+                                    <span className="text-foreground">{point}</span>
                                   </li>
                                 ))}
                               </ul>
                             </div>
                           ) : (
-                            <div className="text-center py-4 bg-gray-50 rounded-lg">
+                            <div className="text-center py-4 bg-muted/50 rounded-lg">
                               <p className="text-sm text-muted-foreground">
                                 Reporte de inspección detallado no disponible.
                               </p>
@@ -966,7 +971,7 @@ const VehicleProductOverview = ({
                           {/* Owner History */}
                           <div className="flex items-center gap-3 pt-3 border-t">
                             <UsersIcon className="w-5 h-5 text-blue-500" />
-                            <span className="text-sm text-gray-700">
+                            <span className="text-sm text-foreground">
                               <span className="font-bold">{inspectionData?.past_owners || 1} dueño{(inspectionData?.past_owners || 1) > 1 ? 's' : ''}</span> anterior{(inspectionData?.past_owners || 1) > 1 ? 'es' : ''}
                             </span>
                           </div>
@@ -979,10 +984,10 @@ const VehicleProductOverview = ({
 
               {/* Description */}
               {description && (
-                <div className="bg-white rounded-2xl p-5 shadow-sm">
-                  <h2 className="text-base font-semibold text-gray-900 mb-3">Descripción</h2>
+                <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
+                  <h2 className="text-base font-semibold text-foreground mb-3">Descripción</h2>
                   <div
-                    className="prose prose-xs max-w-none text-gray-600 text-sm prose-headings:text-sm prose-headings:font-semibold prose-headings:text-gray-900 prose-strong:text-gray-900 prose-p:leading-relaxed prose-p:text-sm"
+                    className="prose prose-xs max-w-none text-muted-foreground text-sm prose-headings:text-sm prose-headings:font-semibold prose-headings:text-foreground prose-strong:text-foreground prose-p:leading-relaxed prose-p:text-sm"
                     dangerouslySetInnerHTML={{ __html: description }}
                   />
                 </div>
@@ -993,7 +998,7 @@ const VehicleProductOverview = ({
             <div className="hidden lg:block lg:col-span-4">
               <div className="sticky top-24 space-y-4">
                 {/* Price & Title Card */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
                   <div className="space-y-4">
                     {/* Badges */}
                     <div className="flex flex-wrap gap-2">
@@ -1003,7 +1008,7 @@ const VehicleProductOverview = ({
                           Promoción
                         </Badge>
                       )}
-                      <Badge variant="outline" className="border-gray-200 text-gray-600 px-3 py-1">
+                      <Badge variant="outline" className="border-border text-muted-foreground px-3 py-1">
                         <MapPinIcon className="w-3 h-3 mr-1" />
                         {sucursal}
                       </Badge>
@@ -1011,7 +1016,7 @@ const VehicleProductOverview = ({
 
                     {/* Title */}
                     <div>
-                      <h1 className="text-2xl font-black text-gray-900 leading-tight">
+                      <h1 className="text-2xl font-black text-foreground leading-tight">
                         {vehicle.autoano || vehicle.year} {vehicle.marca} {vehicle.modelo}
                       </h1>
                       <p className="text-base text-muted-foreground font-medium mt-1">
@@ -1032,7 +1037,7 @@ const VehicleProductOverview = ({
                         </span>
                       )}
                       <p className="text-sm text-muted-foreground mt-2">
-                        Desde <span className="font-bold text-gray-900">{formatPrice(financeData.monthlyPayment)}</span>/mes
+                        Desde <span className="font-bold text-foreground">{formatPrice(financeData.monthlyPayment)}</span>/mes
                       </p>
                     </div>
 
@@ -1051,7 +1056,7 @@ const VehicleProductOverview = ({
                 </div>
 
                 {/* CTA Buttons Card */}
-                <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-3">
+                <div className="bg-card rounded-xl p-5 shadow-sm border border-border space-y-3">
                   <Button
                     className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-14 text-base shadow-lg shadow-orange-200"
                     onClick={onFinancingClick}
@@ -1070,7 +1075,7 @@ const VehicleProductOverview = ({
                   </Button>
                   <Button
                     variant="outline"
-                    className="w-full border-2 border-gray-200 hover:border-gray-300 font-bold h-12"
+                    className="w-full border-2 border-border hover:border-border/80 font-bold h-12"
                     onClick={onFavoriteClick}
                     data-gtm-id="detail-page-favorite"
                   >
@@ -1080,8 +1085,8 @@ const VehicleProductOverview = ({
                 </div>
 
                 {/* Trust Badges Card */}
-                <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-5 border border-orange-100">
-                  <h3 className="font-semibold text-sm text-gray-900 mb-3 flex items-center gap-2">
+                <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-5 border border-orange-100">
+                  <h3 className="font-semibold text-sm text-foreground mb-3 flex items-center gap-2">
                     <ShieldCheckIcon className="w-4 h-4 text-orange-500" />
                     ¿Por qué TREFA?
                   </h3>
@@ -1112,13 +1117,13 @@ const VehicleProductOverview = ({
                 </div>
 
                 {/* Branch/Schedule Card */}
-                <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                       <BuildingIcon className="w-5 h-5 text-blue-600" />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-sm text-gray-900">Sucursal {sucursal}</h4>
+                      <h4 className="font-semibold text-sm text-foreground">Sucursal {sucursal}</h4>
                       <p className="text-sm text-muted-foreground mt-1">
                         Agenda una cita para ver este auto en persona
                       </p>
@@ -1152,10 +1157,9 @@ const VehicleProductOverview = ({
         />
       )}
 
-      {/* Mobile Sticky CTA Footer - Kavak/CarMax style */}
+      {/* Mobile Sticky CTA Footer - Kavak/CarMax style - positioned above BottomNav */}
       <div
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]"
-        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+        className="lg:hidden fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.08)]"
       >
         <div className="px-4 py-3">
           {/* Price summary */}
@@ -1193,7 +1197,7 @@ const VehicleProductOverview = ({
             </Button>
             <Button
               variant="outline"
-              className="border-2 border-gray-200 hover:border-gray-300 font-bold h-12 px-4"
+              className="border-2 border-border hover:border-border/80 font-bold h-12 px-4"
               onClick={onFavoriteClick}
               aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
             >
@@ -1203,8 +1207,8 @@ const VehicleProductOverview = ({
         </div>
       </div>
 
-      {/* Spacer for mobile sticky footer */}
-      <div className="lg:hidden h-32" />
+      {/* Spacer for mobile sticky footer + BottomNav (CTA ~120px + Nav 64px = ~184px) */}
+      <div className="lg:hidden h-48" />
     </>
   )
 }
