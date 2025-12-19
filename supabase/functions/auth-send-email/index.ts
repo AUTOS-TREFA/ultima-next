@@ -2,7 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 
 const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY');
 const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
-const SUPABASE_URL = 'https://pemgwyymodlwabaexxrb.supabase.co';
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || 'https://mhlztgilrmgebkyqowxz.supabase.co';
 
 interface AuthEmailPayload {
   user: {

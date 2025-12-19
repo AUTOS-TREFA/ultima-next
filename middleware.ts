@@ -27,8 +27,8 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
 
   // Explicitly provide Supabase credentials to avoid environment variable issues
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://pemgwyymodlwabaexxrb.supabase.co';
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlbWd3eXltb2Rsd2FiYWV4eHJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5OTE1MTYsImV4cCI6MjA3ODU2NzUxNn0.wfwBKfCuDYmBX_Hi5KvqtNmLLpbgQllPnUaPfoDrYok';
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mhlztgilrmgebkyqowxz.supabase.co';
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1obHp0Z2lscm1nZWJreXFvd3h6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYxMjI5MjAsImV4cCI6MjA4MTY5ODkyMH0.jdLFYjqoEnFQBAVd8zuZI0oq5NAo9uIy73fiRjgmSwI';
 
   const supabase = createMiddlewareClient({ req, res }, { supabaseUrl, supabaseKey });
 

@@ -726,7 +726,7 @@ const CTACardsSection: React.FC<{ content: CTACardsContent | null }> = ({ conten
         description: "Recibe una oferta por tu auto en un proceso rápido y transparente.",
         buttonText: "Recibir una oferta",
         buttonLink: "/vender-mi-auto",
-        image: "https://pemgwyymodlwabaexxrb.supabase.co/storage/v1/object/public/fotos_airtable/app/klipartz.com.png"
+        image: "https://images.trefa.mx/fotos_airtable/app/klipartz.com.png"
       },
       {
         type: 'advisor',
@@ -742,7 +742,7 @@ const CTACardsSection: React.FC<{ content: CTACardsContent | null }> = ({ conten
         description: "Nuevo portal de financiamiento con respuesta en 24 horas o menos.",
         buttonText: "Ver autos elegibles",
         buttonLink: "/escritorio/aplicacion",
-        image: "https://pemgwyymodlwabaexxrb.supabase.co/storage/v1/object/public/fotos_airtable/app/financiamiento.png"
+        image: "https://images.trefa.mx/fotos_airtable/app/financiamiento.png"
       }
     ]
   };

@@ -10,7 +10,7 @@ const ResourceHints: React.FC = () => {
   useEffect(() => {
     // Preconnect to critical third-party origins
     const origins = [
-      'https://pemgwyymodlwabaexxrb.supabase.co',
+      'https://mhlztgilrmgebkyqowxz.supabase.co',
       'https://images.trefa.mx',
       'https://fonts.googleapis.com',
       'https://fonts.gstatic.com',

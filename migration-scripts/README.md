@@ -1,311 +1,399 @@
-# Guía de Migración de Datos de Supabase
+# Scripts de Migración - Producción a Desarrollo
 
-Esta guía te ayudará a migrar todos los datos de tu base de datos de producción a tu nueva base de datos de desarrollo.
-
-## 📋 Contexto
-
-- **Base de datos de producción**: `jjepfehmuybpctdzipnu.supabase.co` (activa con usuarios)
-- **Base de datos de desarrollo**: `pemgwyymodlwabaexxrb.supabase.co` (nueva con columnas adicionales)
-
-## 🎯 Objetivo
-
-Transferir todos los datos de usuarios, solicitudes, documentos y datos relacionados de producción a la nueva base de datos, preservando la integridad referencial.
-
-## 📊 Tablas a Migrar
-
-### Tablas Principales
-1. `profiles` - Perfiles de usuarios
-2. `financing_applications` - Solicitudes de financiamiento
-3. `bank_profiles` - Perfiles bancarios
-4. `uploaded_documents` - Documentos subidos
-
-### Tablas Relacionadas
-5. `application_status_history` - Historial de estados
-6. `bank_assignments` - Asignaciones bancarias
-7. `bank_feedback` - Retroalimentación
-8. `document_upload_analytics` - Analytics de documentos
-9. `lead_bank_assignments` - Asignaciones de leads
-10. `lead_reminders` - Recordatorios
-11. `lead_tag_associations` - Etiquetas
-12. `user_email_notifications` - Notificaciones
-13. `consignment_listings` - Listados de consignación
-14. `consignment_listing_views` - Vistas de listados
-15. `user_vehicles_for_sale` - Vehículos en venta
-16. `messages` - Mensajes
-17. `tracking_events` - Eventos de tracking
-18. `user_favorites` - Favoritos
-19. `user_search_history` - Historial de búsqueda
-20. `vehicle_price_watches` - Alertas de precios
-
-## 🛠️ Métodos de Migración
-
-### Opción 1: Usando pg_dump (Recomendado) ⭐
-
-Este método es el más confiable y usa herramientas nativas de PostgreSQL.
-
-**Requisitos:**
-- Tener instalado PostgreSQL (para usar `pg_dump` y `psql`)
-- Acceso a terminal/bash
-
-**Pasos:**
-
-1. Hacer el script ejecutable:
-```bash
-chmod +x migration-scripts/migrate-with-pg-dump.sh
-```
-
-2. Ejecutar el script:
-```bash
-./migration-scripts/migrate-with-pg-dump.sh
-```
-
-3. Ingresar el password cuando se solicite
-
-**Ventajas:**
-- ✅ Maneja automáticamente conflictos
-- ✅ Más rápido para grandes volúmenes
-- ✅ Genera backups locales
-- ✅ Verificación automática de datos
+**Versión:** 1.0
+**Fecha:** 18 Diciembre 2024
+**Proyecto:** Ultima NextJS - Autostrefa
 
 ---
 
-### Opción 2: Usando Node.js
+## 📋 Resumen
 
-Este método te da más control sobre el proceso de migración.
+Este directorio contiene todos los scripts automatizados necesarios para migrar los 4,082 usuarios de producción a desarrollo y aplicar las 104 migraciones SQL del nuevo esquema NextJS.
 
-**Requisitos:**
-- Node.js instalado
-- Service Role Key de Supabase
+## 📂 Archivos Incluidos
 
-**Pasos:**
+### Scripts Ejecutables
 
-1. Instalar dependencias:
-```bash
-npm install @supabase/supabase-js
-```
+1. **`apply-migrations.sh`** - Aplica las 104 migraciones SQL en 3 fases
+2. **`deploy-edge-functions.sh`** - Despliega las 29 Edge Functions por prioridad
+3. **`rollback.sh`** - Rollback de emergencia si algo falla
 
-2. Obtener tu Service Role Key:
-   - Ve a tu proyecto en Supabase Dashboard
-   - Settings → API
-   - Copia el "service_role" key (¡NO el anon key!)
+### Scripts SQL
 
-3. Configurar el Service Role Key:
-```bash
-export SUPABASE_SERVICE_ROLE_KEY="tu-service-role-key-aqui"
-```
+4. **`verificar-migracion.sql`** - Verifica que la migración fue exitosa
 
-O edita el archivo `migrate-data.js` y reemplaza `TU_SERVICE_ROLE_KEY_AQUI` con tu key.
+### Documentación
 
-4. Ejecutar migración:
-```bash
-node migration-scripts/migrate-data.js
-```
-
-**Ventajas:**
-- ✅ Control granular del proceso
-- ✅ Logs detallados
-- ✅ Puede modificarse fácilmente
+5. **`MIGRATION_REPORT.md`** - Template para documentar la ejecución
 
 ---
 
-### Opción 3: Migración Manual con SQL
+## ⚙️ Pre-requisitos
 
-Si prefieres más control manual, puedes usar los archivos SQL generados.
-
-**Pasos:**
-
-1. Conectarte a producción:
-```bash
-psql -h db.jjepfehmuybpctdzipnu.supabase.co -U postgres -d postgres
-```
-
-2. Ejecutar el script de exportación:
-```sql
-\i migration-scripts/export-production-data.sql
-```
-
-3. Conectarte a desarrollo:
-```bash
-psql -h db.pemgwyymodlwabaexxrb.supabase.co -U postgres -d postgres
-```
-
-4. Importar cada archivo JSON manualmente
-
----
-
-## 🔍 Verificación Post-Migración
-
-Después de la migración, verifica que todo esté correcto:
-
-### 1. Verificar conteos de registros
-
-```sql
--- En producción
-SELECT
-  'profiles' as tabla, COUNT(*) as total FROM profiles
-UNION ALL
-SELECT 'financing_applications', COUNT(*) FROM financing_applications
-UNION ALL
-SELECT 'bank_profiles', COUNT(*) FROM bank_profiles
-UNION ALL
-SELECT 'uploaded_documents', COUNT(*) FROM uploaded_documents;
-```
-
-Ejecuta la misma query en desarrollo y compara los números.
-
-### 2. Verificar integridad referencial
-
-```sql
--- Verificar que todas las aplicaciones tienen un usuario válido
-SELECT COUNT(*)
-FROM financing_applications fa
-LEFT JOIN profiles p ON fa.user_id = p.id
-WHERE p.id IS NULL;
--- Debería retornar 0
-
--- Verificar que todos los documentos tienen una aplicación válida
-SELECT COUNT(*)
-FROM uploaded_documents ud
-LEFT JOIN financing_applications fa ON ud.application_id = fa.id
-WHERE fa.id IS NULL;
--- Debería retornar 0
-```
-
-### 3. Verificar datos de muestra
-
-```sql
--- Revisar algunos perfiles específicos
-SELECT id, email, first_name, last_name, created_at
-FROM profiles
-ORDER BY created_at DESC
-LIMIT 10;
-```
-
----
-
-## ⚠️ Consideraciones Importantes
-
-### Antes de Migrar
-
-1. **Backup**: Aunque estás migrando DE producción A desarrollo, es buena práctica tener un backup
-2. **Tiempo**: La migración puede tomar varios minutos dependiendo del volumen de datos
-3. **Duplicados**: Los scripts manejan automáticamente registros duplicados (los omite)
-4. **Service Role Key**: Nunca compartas o commits la service role key
-
-### Durante la Migración
-
-1. **No interrumpir**: Deja que el proceso termine completamente
-2. **Monitorear**: Observa los logs para detectar errores
-3. **Red**: Asegúrate de tener conexión estable a internet
-
-### Después de Migrar
-
-1. **Verificar**: Usa las queries de verificación arriba
-2. **Probar**: Haz pruebas de funcionalidad en desarrollo
-3. **Storage**: Si tienes archivos en Supabase Storage, también necesitarás migrarlos
-
----
-
-## 🗄️ Migración de Storage (Archivos)
-
-Los archivos almacenados en Supabase Storage NO se migran con estos scripts. Para migrar archivos:
-
-### Opción 1: Usar Supabase CLI
+### Software Requerido
 
 ```bash
-# Instalar Supabase CLI
+# PostgreSQL client (psql, pg_dump)
+brew install postgresql@15
+
+# Supabase CLI
 npm install -g supabase
 
-# Descargar archivos de producción
-supabase storage download bucket-name --project-ref jjepfehmuybpctdzipnu
-
-# Subir a desarrollo
-supabase storage upload bucket-name ./downloaded-files --project-ref pemgwyymodlwabaexxrb
+# Bash 4.0+
+bash --version
 ```
 
-### Opción 2: Script personalizado
+### Variables de Entorno
 
-Si necesitas migrar storage, puedo crear un script específico para eso.
+Las credenciales se obtienen de:
+- `.env.local` (raíz del proyecto)
+- `.env` (raíz del proyecto)
+- Variables de entorno del sistema
 
----
+**Variables Críticas Requeridas:**
 
-## 🔐 Seguridad
-
-- ✅ Usa variables de entorno para passwords y keys
-- ✅ No hagas commit de credenciales al repositorio
-- ✅ Después de migrar, regenera las API keys si las compartiste
-- ✅ Los backups locales contienen datos sensibles - elimínalos cuando no los necesites
-
----
-
-## 🆘 Troubleshooting
-
-### Error: "psql: command not found"
-
-Necesitas instalar PostgreSQL:
-- **Mac**: `brew install postgresql`
-- **Linux**: `sudo apt-get install postgresql-client`
-- **Windows**: Descargar de [postgresql.org](https://www.postgresql.org/download/)
-
-### Error: "permission denied"
-
-El script necesita permisos de ejecución:
 ```bash
-chmod +x migration-scripts/migrate-with-pg-dump.sh
+# Airtable
+AIRTABLE_API_KEY=
+AIRTABLE_BASE_ID=
+AIRTABLE_TABLE_ID=
+AIRTABLE_VALUATION_API_KEY=
+AIRTABLE_VALUATION_BASE_ID=
+
+# Twilio (SMS)
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_VERIFY_SERVICE_SID=
+
+# Brevo (Email)
+BREVO_API_KEY=
+
+# Cloudflare R2
+CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_R2_ACCESS_KEY_ID=
+CLOUDFLARE_R2_SECRET_ACCESS_KEY=
+
+# Supabase
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_ANON_KEY=
+
+# Otros
+PUBLIC_SITE_URL=
+SERVICE_ACCESS_TOKEN=
 ```
 
-### Error: "FATAL: password authentication failed"
+### Credenciales de Base de Datos
 
-Verifica que estás usando el password correcto de Supabase.
+**Producción:**
+- Project Ref: `jjepfehmuybpctdzipnu`
+- Host: `db.jjepfehmuybpctdzipnu.supabase.co`
+- Port: `5432` (Session Mode)
+- User: `postgres`
+- Password: `Lifeintechnicolor2!`
+- Connection String: `postgresql://postgres:Lifeintechnicolor2!@db.jjepfehmuybpctdzipnu.supabase.co:5432/postgres`
 
-### Error: "duplicate key value violates unique constraint"
-
-Esto es normal si ya existen algunos registros en desarrollo. Los scripts continúan con el siguiente registro.
-
-### Migración muy lenta
-
-Para grandes volúmenes de datos, considera:
-1. Hacer la migración en horarios de bajo tráfico
-2. Aumentar el `batchSize` en `migrate-data.js`
-3. Migrar tabla por tabla manualmente
-
----
-
-## 📞 Soporte
-
-Si encuentras problemas durante la migración:
-
-1. Revisa los logs detalladamente
-2. Verifica la conectividad a las bases de datos
-3. Asegúrate de que tienes los permisos necesarios
-4. Consulta la documentación de Supabase
+**Desarrollo:**
+- Project Ref: `pemgwyymodlwabaexxrb`
+- Host: `db.pemgwyymodlwabaexxrb.supabase.co`
+- Port: `5432` (Session Mode)
+- User: `postgres`
+- Password: `Lifeintechnicolor2!`
+- Connection String: `postgresql://postgres:Lifeintechnicolor2!@db.pemgwyymodlwabaexxrb.supabase.co:5432/postgres`
 
 ---
 
-## ✅ Checklist de Migración
+## 🚀 Orden de Ejecución
 
-- [ ] He hecho backup de ambas bases de datos
-- [ ] He probado la conexión a ambas bases de datos
-- [ ] He elegido mi método de migración
-- [ ] He ejecutado el script de migración
-- [ ] He verificado los conteos de registros
-- [ ] He verificado la integridad referencial
-- [ ] He probado la funcionalidad en desarrollo
-- [ ] He migrado archivos de storage (si aplica)
-- [ ] He actualizado las variables de entorno de mi app
-- [ ] He comunicado el cambio a mi equipo
+### FASE 0: Preparación (ANTES de empezar)
+
+#### 1. Crear Backup de Desarrollo
+
+```bash
+# Guardar estado actual de desarrollo (por seguridad)
+pg_dump "postgresql://postgres:Lifeintechnicolor2!@db.pemgwyymodlwabaexxrb.supabase.co:5432/postgres" \
+  --clean --if-exists --no-owner --no-acl \
+  -f ../backups/backup_desarrollo_$(date +%Y%m%d_%H%M%S).sql
+
+# Verificar que el backup se creó
+ls -lh ../backups/backup_desarrollo_*.sql
+```
+
+#### 2. Crear Backup de Producción
+
+```bash
+# Este es el backup que se restaurará en desarrollo
+pg_dump "postgresql://postgres:Lifeintechnicolor2!@db.jjepfehmuybpctdzipnu.supabase.co:5432/postgres" \
+  --clean --if-exists --no-owner --no-acl \
+  -f ../backups/produccion_backup_$(date +%Y%m%d_%H%M%S).sql
+
+# Verificar que el backup se creó (debe ser >100 MB)
+ls -lh ../backups/produccion_backup_*.sql
+```
+
+#### 3. Restaurar Producción en Desarrollo
+
+```bash
+# ADVERTENCIA: Esto ELIMINARÁ todos los datos actuales de desarrollo
+# Asegúrate de tener el backup de desarrollo guardado
+
+psql "postgresql://postgres:Lifeintechnicolor2!@db.pemgwyymodlwabaexxrb.supabase.co:5432/postgres" \
+  -f ../backups/produccion_backup_YYYYMMDD_HHMMSS.sql
+
+# Verificar restauración
+psql "postgresql://postgres:Lifeintechnicolor2!@db.pemgwyymodlwabaexxrb.supabase.co:5432/postgres" \
+  -c "SELECT COUNT(*) FROM profiles;"  # Debe mostrar 4082
+```
+
+### FASE 1: Aplicar Migraciones SQL
+
+```bash
+# Ejecutar script de migraciones
+cd /Users/marianomorales/Downloads/ultima-next/ultima-next/migration-scripts
+chmod +x apply-migrations.sh
+./apply-migrations.sh
+
+# El script generará:
+# - migration_log_YYYYMMDD_HHMMSS.txt  (log completo)
+# - migration_progress.txt              (progreso por migración)
+```
+
+**Duración estimada:** 30-45 minutos
+
+**Errores esperados (se pueden ignorar):**
+- `column already exists` - La columna ya existía
+- `relation already exists` - La tabla ya existía
+- `function already exists` - Las funciones usan CREATE OR REPLACE
+- `index already exists` - Los índices usan IF NOT EXISTS
+
+### FASE 2: Desplegar Edge Functions
+
+```bash
+# Ejecutar script de deploy
+cd /Users/marianomorales/Downloads/ultima-next/ultima-next/migration-scripts
+chmod +x deploy-edge-functions.sh
+./deploy-edge-functions.sh
+
+# El script generará:
+# - deploy_log_YYYYMMDD_HHMMSS.txt  (log completo)
+# - deploy_progress.txt              (progreso por función)
+```
+
+**Duración estimada:** 15-20 minutos
+
+**Notas:**
+- Las funciones CRÍTICAS detendrán el deploy si fallan
+- Las funciones IMPORTANTES y AUXILIARES continuarán aunque fallen
+- El script verificará que todos los secrets estén configurados
+
+### FASE 3: Verificar Migración
+
+```bash
+# Ejecutar script de verificación
+psql "postgresql://postgres:Lifeintechnicolor2!@db.pemgwyymodlwabaexxrb.supabase.co:5432/postgres" \
+  -f verificar-migracion.sql
+
+# Deberías ver:
+# ✅ Profiles: 4,082
+# ✅ Auth users: 4,082
+# ✅ Applications: 2,092
+# ✅ Todas las tablas nuevas
+# ✅ Todas las funciones RPC
+# ✅ Todos los triggers
+# ✅ Todos los índices
+```
+
+### FASE 4: Pruebas Funcionales
+
+**Checklist de pruebas:**
+
+- [ ] Login con SMS OTP funciona
+- [ ] Dashboard admin muestra leads (`/dashboard/admin`)
+- [ ] Búsqueda de vehículos funciona (`/catalogo`)
+- [ ] Envío de solicitud funciona (`/apply`)
+- [ ] Portal bancario funciona (`/dashboard/bank`)
+- [ ] Edge Function `rapid-processor` responde
+- [ ] Webhook `airtable-sync` funciona
 
 ---
 
-## 🎉 Post-Migración
+## 🔄 Rollback de Emergencia
 
-Una vez completada la migración exitosamente:
+**Si algo sale MAL durante la migración:**
 
-1. **Actualiza tu app** para apuntar a la nueva base de datos
-2. **Monitorea** la aplicación en las primeras horas
-3. **Mantén** la base de datos antigua por un tiempo como backup
-4. **Documenta** cualquier cambio específico de tu migración
+```bash
+# Ejecutar script de rollback
+cd /Users/marianomorales/Downloads/ultima-next/ultima-next/migration-scripts
+chmod +x rollback.sh
+./rollback.sh
+
+# El script:
+# 1. Te mostrará todos los backups disponibles
+# 2. Te pedirá seleccionar uno
+# 3. Creará backup de emergencia del estado actual
+# 4. Restaurará el backup seleccionado
+# 5. Verificará la restauración
+```
+
+**Duración estimada:** 15-20 minutos
+
+**IMPORTANTE:** Los Edge Functions NO se revierten automáticamente
 
 ---
 
-**Última actualización**: 2025-12-18
+## 📝 Logs y Troubleshooting
+
+### Archivos de Log Generados
+
+```
+migration-scripts/
+├── migration_log_YYYYMMDD_HHMMSS.txt   # Log de migraciones SQL
+├── migration_progress.txt               # Progreso de migraciones
+├── deploy_log_YYYYMMDD_HHMMSS.txt      # Log de deploy de Edge Functions
+├── deploy_progress.txt                  # Progreso de deploy
+└── rollback_log_YYYYMMDD_HHMMSS.txt    # Log de rollback (si se ejecuta)
+```
+
+### Problemas Comunes
+
+#### 1. Error: "psql: command not found"
+
+```bash
+# Instalar PostgreSQL client
+brew install postgresql@15
+
+# Agregar a PATH
+echo 'export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+#### 2. Error: "password authentication failed"
+
+Verificar que la contraseña sea correcta:
+- Producción: `Lifeintechnicolor2!`
+- Desarrollo: `Lifeintechnicolor2!`
+
+#### 3. Error: "connection timed out"
+
+Verificar que tu IP esté en la whitelist de Supabase:
+- Dashboard → Settings → Database → Connection Pooling
+- Agregar tu IP a "Allowed IP Addresses"
+
+#### 4. Error: "function already exists"
+
+Este error es NORMAL y se puede ignorar. Las funciones usan `CREATE OR REPLACE FUNCTION`.
+
+#### 5. Migraciones fallan con errores de RLS
+
+Ejecutar como superusuario:
+```bash
+# Usar connection string con privilegios de superusuario
+psql "postgresql://postgres:Lifeintechnicolor2!@db.pemgwyymodlwabaexxrb.supabase.co:5432/postgres"
+```
+
+#### 6. Edge Functions fallan al deployar
+
+Verificar secrets:
+```bash
+supabase secrets list --project-ref pemgwyymodlwabaexxrb
+
+# Si falta alguno:
+supabase secrets set NOMBRE_SECRET="valor" --project-ref pemgwyymodlwabaexxrb
+```
+
+---
+
+## 🔧 Comandos Útiles
+
+### Verificar Conteos
+
+```bash
+# Profiles
+psql "postgresql://postgres:Lifeintechnicolor2!@db.pemgwyymodlwabaexxrb.supabase.co:5432/postgres" \
+  -c "SELECT COUNT(*) FROM profiles;"
+
+# Auth users
+psql "postgresql://postgres:Lifeintechnicolor2!@db.pemgwyymodlwabaexxrb.supabase.co:5432/postgres" \
+  -c "SELECT COUNT(*) FROM auth.users;"
+
+# Applications
+psql "postgresql://postgres:Lifeintechnicolor2!@db.pemgwyymodlwabaexxrb.supabase.co:5432/postgres" \
+  -c "SELECT COUNT(*) FROM financing_applications;"
+```
+
+### Ver Migraciones Aplicadas
+
+```bash
+supabase migration list --project-ref pemgwyymodlwabaexxrb
+```
+
+### Ver Edge Functions Desplegadas
+
+```bash
+supabase functions list --project-ref pemgwyymodlwabaexxrb
+```
+
+### Ver Logs de Edge Functions
+
+```bash
+# Logs en tiempo real
+supabase functions serve
+
+# Logs específicos de una función
+supabase functions logs rapid-processor --project-ref pemgwyymodlwabaexxrb
+```
+
+---
+
+## 📞 Contacto y Soporte
+
+**Ejecutado por:** Mariano Morales
+**Proyecto:** Ultima NextJS - Autostrefa
+**Fecha del plan:** 18 Diciembre 2024
+
+**En caso de problemas:**
+1. Revisar logs en `/migration-scripts/`
+2. Ejecutar `verificar-migracion.sql` para diagnóstico
+3. Si es crítico, ejecutar `rollback.sh` inmediatamente
+4. Documentar el error en `MIGRATION_REPORT.md`
+
+---
+
+## ✅ Checklist Pre-Ejecución
+
+Antes de iniciar la migración, verifica:
+
+- [ ] Backups creados (desarrollo y producción)
+- [ ] Scripts tienen permisos de ejecución (`chmod +x`)
+- [ ] PostgreSQL client instalado (`psql --version`)
+- [ ] Supabase CLI instalado (`supabase --version`)
+- [ ] Contraseñas verificadas
+- [ ] Variables de entorno configuradas
+- [ ] Modo mantenimiento activado en frontend
+- [ ] Stakeholders notificados
+- [ ] Plan de rollback entendido
+- [ ] Ventana de mantenimiento confirmada
+
+---
+
+## 🎯 Criterios de Éxito
+
+La migración es exitosa si:
+
+- ✅ Profiles = 4,082
+- ✅ Auth.users = 4,082
+- ✅ Financing applications ≥ 2,092
+- ✅ Todas las tablas nuevas existen (7 tablas)
+- ✅ Todas las funciones RPC críticas existen (30+)
+- ✅ Todas las Edge Functions críticas desplegadas (6)
+- ✅ Login funciona (SMS OTP)
+- ✅ Búsqueda de vehículos funciona
+- ✅ Dashboard admin muestra datos
+- ✅ Downtime < 45 minutos
+- ✅ Tickets de soporte < 5 en primeras 24h
+
+**Si algún criterio falla → ejecutar rollback inmediatamente**
+
+---
+
+**¡Buena suerte con la migración! 🚀**
