@@ -29,7 +29,7 @@ serve(async (req: Request) => {
   try {
     // --- 1. Get Environment Variables ---
     const airtableApiKey = Deno.env.get('AIRTABLE_API_KEY');
-    const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID') || 'appbOPKYqQRW2HgyB';
+    const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID') || 'appLnI8wa41TtcZN1';
     const airtableTableId = Deno.env.get('AIRTABLE_TABLE_ID') || 'tblOjECDJDZlNv8At';
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
