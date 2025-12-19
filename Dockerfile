@@ -25,6 +25,8 @@ COPY . .
 # Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+# Increase memory for build to prevent QEMU crashes
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 # Accept build arguments for Next.js public environment variables
 ARG NEXT_PUBLIC_SUPABASE_URL
