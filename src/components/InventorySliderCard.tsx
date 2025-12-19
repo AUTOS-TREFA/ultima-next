@@ -5,7 +5,7 @@ import Link from 'next/link';
 import type { WordPressVehicle } from '../types/types';
 import { formatPrice } from '../utils/formatters';
 import LazyImage from './LazyImage';
-import { DEFAULT_PLACEHOLDER_IMAGE } from '../utils/constants';
+import { getVehicleImage } from '../utils/getVehicleImage';
 
 interface InventorySliderCardProps {
     vehicle: WordPressVehicle;
@@ -13,15 +13,7 @@ interface InventorySliderCardProps {
 
 const InventorySliderCard: React.FC<InventorySliderCardProps> = ({ vehicle }) => {
     const hasSlug = vehicle.slug && vehicle.slug.trim() !== '';
-
-    // Handle array image properties safely
-    const getFirstImageOrDefault = (value: string | string[] | undefined): string => {
-        if (!value) return '';
-        if (Array.isArray(value)) return value[0] || '';
-        return value;
-    };
-
-    const imageSrc = getFirstImageOrDefault(vehicle.feature_image) || DEFAULT_PLACEHOLDER_IMAGE;
+    const imageSrc = getVehicleImage(vehicle);
     
     const CardContent = () => (
         <div className="flex flex-col h-full bg-white rounded-xl shadow-md overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1">

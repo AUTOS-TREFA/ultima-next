@@ -4,7 +4,7 @@ import type { WordPressVehicle } from '../types/types';
 import { formatPrice } from '../utils/formatters';
 import { UsersIcon, CheckCircleIcon, StarIcon } from './icons';
 import LazyImage from './LazyImage';
-import { DEFAULT_PLACEHOLDER_IMAGE } from '../utils/constants';
+import { getVehicleImage } from '../utils/getVehicleImage';
 import { Cog } from 'lucide-react';
 
 interface VehicleListCardBProps {
@@ -12,7 +12,7 @@ interface VehicleListCardBProps {
 }
 
 const VehicleListCardB: React.FC<VehicleListCardBProps> = ({ vehicle }) => {
-  const imageSrc = vehicle.thumbnail || vehicle.feature_image || DEFAULT_PLACEHOLDER_IMAGE;
+  const imageSrc = getVehicleImage(vehicle);
 
   const Feature: React.FC<{ icon: React.ElementType, text: string }> = ({ icon: Icon, text }) => (
     <div className="flex items-center gap-2 text-gray-600">

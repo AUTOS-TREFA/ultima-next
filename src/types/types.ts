@@ -36,10 +36,17 @@ export interface Vehicle {
   plazomax: number;
   
   // ========== IMÁGENES ==========
+  // R2 images (highest priority - uploaded via admin panel)
+  r2_feature_image?: string;
+  r2_gallery?: string[];
+  use_r2_images?: boolean;
+  // Legacy image fields
   feature_image: string[];
+  feature_image_url?: string;
   galeria_exterior: string[];
   fotos_exterior_url?: string[];
   galeria_interior: string[];
+  fotos_interior_url?: string[];
   
   // ========== UBICACIÓN ==========
   ubicacion: string[];

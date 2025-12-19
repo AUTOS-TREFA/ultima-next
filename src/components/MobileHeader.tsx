@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { useVehicles } from '../context/VehicleContext';
 import type { WordPressVehicle } from '../types/types';
 import { formatPrice } from '../utils/formatters';
+import { getVehicleImage } from '../utils/getVehicleImage';
 
 // Use absolute URL to ensure logo loads correctly across all domains
 const LOGO_URL = 'https://trefa.mx/images/trefalogo.png';
@@ -184,7 +185,7 @@ const MobileHeader: React.FC = () => {
                                         className="w-full text-left flex items-center gap-3 p-3 hover:bg-gray-50 active:bg-gray-100 transition-colors"
                                     >
                                         <img
-                                            src={vehicle.feature_image?.[0] || '/placeholder-vehicle.webp'}
+                                            src={getVehicleImage(vehicle)}
                                             alt={vehicle.title}
                                             className="w-20 h-16 object-cover rounded-lg flex-shrink-0"
                                         />

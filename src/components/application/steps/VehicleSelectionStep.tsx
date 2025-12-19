@@ -7,6 +7,7 @@ import { Label } from '../../ui/label';
 import { useVehicles } from '../../../context/VehicleContext';
 import { WordPressVehicle } from '../../../types/types';
 import { DEFAULT_PLACEHOLDER_IMAGE } from '../../../utils/constants';
+import { getVehicleImage } from '../../../utils/getVehicleImage';
 import type { StepperType } from '../EnhancedApplication';
 
 interface VehicleSelectionStepProps {
@@ -104,7 +105,7 @@ const VehicleSelectionStep: React.FC<VehicleSelectionStepProps> = ({
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
               <img
-                src={selectedVehicle.thumbnail_webp || selectedVehicle.thumbnail || selectedVehicle.feature_image_webp || selectedVehicle.feature_image?.[0] || DEFAULT_PLACEHOLDER_IMAGE}
+                src={getVehicleImage(selectedVehicle)}
                 alt={selectedVehicle.title}
                 className="w-20 h-14 object-cover rounded flex-shrink-0"
                 onError={(e) => {
@@ -184,7 +185,7 @@ const VehicleSelectionStep: React.FC<VehicleSelectionStepProps> = ({
               >
                 <div className="aspect-video w-full mb-3 overflow-hidden rounded-md bg-gray-100">
                   <img
-                    src={vehicle.thumbnail_webp || vehicle.thumbnail || vehicle.feature_image_webp || vehicle.feature_image?.[0] || DEFAULT_PLACEHOLDER_IMAGE}
+                    src={getVehicleImage(vehicle)}
                     alt={vehicle.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     onError={(e) => {

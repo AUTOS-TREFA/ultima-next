@@ -8,7 +8,7 @@ import LazyImage from './LazyImage';
 import { formatPrice } from '../utils/formatters';
 import { EyeIcon } from './icons';
 import { useVehicles } from '../context/VehicleContext';
-import { DEFAULT_PLACEHOLDER_IMAGE } from '../utils/constants';
+import { getVehicleImage } from '../utils/getVehicleImage';
 
 interface VehicleSelectorProps {
   isOpen: boolean;
@@ -76,9 +76,8 @@ const VehicleSelector: React.FC<VehicleSelectorProps> = ({ isOpen, onClose, onSe
           ) : (
             <div className="space-y-3">
             {filteredVehicles.map(vehicle => {
-              const imageSrc = vehicle.thumbnail_webp || vehicle.thumbnail || vehicle.feature_image_webp || vehicle.feature_image || DEFAULT_PLACEHOLDER_IMAGE;
+              const imageSrc = getVehicleImage(vehicle);
               return (
-                // FIX: Corrected property access from `ligawp` to `slug`
                 <div
                   key={vehicle.slug}
                   className="w-full flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200"

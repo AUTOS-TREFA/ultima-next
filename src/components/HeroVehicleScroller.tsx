@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { WordPressVehicle } from '../types/types';
 import { useVehicles } from '../context/VehicleContext';
+import { getVehicleImage } from '../utils/getVehicleImage';
 import Link from 'next/link';
 
 const HeroVehicleScroller: React.FC = () => {
@@ -10,7 +11,7 @@ const HeroVehicleScroller: React.FC = () => {
     const [vehicles, setVehicles] = useState<WordPressVehicle[]>([]);
 
     const availableVehicles = useMemo(() =>
-        allVehicles.filter(v => !v.separado && !v.vendido && v.feature_image && v.feature_image.length > 0),
+        allVehicles.filter(v => !v.separado && !v.vendido && getVehicleImage(v)),
     [allVehicles]);
 
     useEffect(() => {
@@ -51,11 +52,11 @@ const HeroVehicleScroller: React.FC = () => {
 
 const VehicleImage: React.FC<{vehicle: WordPressVehicle}> = ({ vehicle }) => {
     const [isLoaded, setIsLoaded] = useState(false);
+    const imageSrc = getVehicleImage(vehicle);
     return (
-        // FIX: Corrected property access from `ligawp` to `slug`
         <Link href={`/autos/${vehicle.slug}`} className="flex-shrink-0 w-64 h-48 rounded-2xl overflow-hidden group relative bg-gray-200">
             <img
-                src={vehicle.feature_image[0]}
+                src={imageSrc}
                 alt={vehicle.title} 
                 className={`w-full h-full object-cover transition-all duration-500 ease-in-out group-hover:scale-110 ${isLoaded ? 'blur-0 scale-100' : 'blur-lg scale-110'}`}
                 loading="lazy"
