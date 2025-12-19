@@ -17,6 +17,7 @@ const CONFIG = {
 };
 
 // Mapping: Google Sheets column name → Supabase column name
+// NOTE: updated_at is NOT included - let database use default value (now())
 const CAMPO_MAPPING = {
   'OrdenCompra': 'ordencompra',
   'OrdenStatus': 'ordenstatus',
@@ -34,7 +35,6 @@ const CAMPO_MAPPING = {
   'AutoMarca': 'marca',
   'AutoSubMarcaVersion': 'modelo',
   'AutoAño': 'autoano',
-  'LastUpdated': 'updated_at',
   'AutoTransmision': 'autotransmision',
   'UsuarioComprador': 'usuario_comprador',
   'AutoLlaves': 'auto_llaves',
@@ -51,7 +51,7 @@ const CAMPOS_BOOLEANOS = ['Consigna', 'Separado', 'Vendido', 'UnidadEnReparacion
 const CAMPOS_NUMERICOS = ['AutoPrecioVenta', 'AutoAño', 'AutoKilometraje', 'AutoDuenos'];
 
 // Date fields
-const CAMPOS_FECHA = ['OrdenFecha', 'HistoricoFecha', 'FechaSeparado', 'FechaVendido', 'LastUpdated'];
+const CAMPOS_FECHA = ['OrdenFecha', 'HistoricoFecha', 'FechaSeparado', 'FechaVendido'];
 
 /**
  * Run once to setup the trigger
@@ -171,6 +171,8 @@ function syncAllRows() {
     }
 
     if (registro.ordencompra) {
+      // Remove updated_at to let database use default value (now())
+      delete registro.updated_at;
       registros.push(registro);
     }
   });
@@ -275,6 +277,9 @@ function syncSingleRow(ordenCompra) {
 
     registro[supabaseCol] = valor;
   }
+
+  // Remove updated_at to let database use default value (now())
+  delete registro.updated_at;
 
   upsertToSupabase([registro]);
   Logger.log('Synced: ' + ordenCompra);
