@@ -59,6 +59,7 @@ import {
     SidebarProvider,
     SidebarRail,
     SidebarTrigger,
+    useSidebar,
 } from '@/components/ui/sidebar';
 import {
     Collapsible,
@@ -230,6 +231,14 @@ const SidebarLoadingSkeleton: React.FC = () => (
 const AppSidebarContent: React.FC = () => {
     const { profile, user, isAdmin, isSales, isMarketing, loading, signOut } = useAuth();
     const pathname = usePathname();
+    const { isMobile, setOpenMobile } = useSidebar();
+
+    // Close mobile sidebar when navigating
+    const handleNavClick = () => {
+        if (isMobile) {
+            setOpenMobile(false);
+        }
+    };
 
     const [loadingTimeout, setLoadingTimeout] = React.useState(false);
 
@@ -353,7 +362,7 @@ const AppSidebarContent: React.FC = () => {
                                                 isActive && "bg-primary/10 text-primary font-medium shadow-sm border border-primary/20"
                                             )}
                                         >
-                                            <Link href={item.to}>
+                                            <Link href={item.to} onClick={handleNavClick}>
                                                 <Icon className={cn("h-4 w-4", isActive && "text-primary")} />
                                                 <span>{item.label}</span>
                                             </Link>
@@ -396,7 +405,7 @@ const AppSidebarContent: React.FC = () => {
                                                                 isActive && "text-primary bg-primary/5 font-medium"
                                                             )}
                                                         >
-                                                            <Link href={item.to} className="flex items-center gap-2">
+                                                            <Link href={item.to} onClick={handleNavClick} className="flex items-center gap-2">
                                                                 <Icon className={cn("h-3.5 w-3.5", isActive && "text-primary")} />
                                                                 <span>{item.label}</span>
                                                             </Link>
@@ -439,7 +448,7 @@ const AppSidebarContent: React.FC = () => {
                                                         isActive && "bg-primary/10 text-primary font-medium shadow-sm border border-primary/20"
                                                     )}
                                                 >
-                                                    <Link href={item.to}>
+                                                    <Link href={item.to} onClick={handleNavClick}>
                                                         <Icon className={cn("h-4 w-4", isActive && "text-primary")} />
                                                         <span>{item.label}</span>
                                                     </Link>
@@ -482,7 +491,7 @@ const AppSidebarContent: React.FC = () => {
                                                                         isActive && "text-primary bg-primary/5 font-medium"
                                                                     )}
                                                                 >
-                                                                    <Link href={item.to}>
+                                                                    <Link href={item.to} onClick={handleNavClick}>
                                                                         <Icon className={cn("h-3.5 w-3.5", isActive && "text-primary")} />
                                                                         <span>{item.label}</span>
                                                                     </Link>
@@ -529,7 +538,7 @@ const AppSidebarContent: React.FC = () => {
                                                                         isActive && "text-primary bg-primary/5 font-medium"
                                                                     )}
                                                                 >
-                                                                    <Link href={item.to}>
+                                                                    <Link href={item.to} onClick={handleNavClick}>
                                                                         <Icon className={cn("h-3.5 w-3.5", isActive && "text-primary")} />
                                                                         <span>{item.label}</span>
                                                                     </Link>
@@ -572,7 +581,7 @@ const AppSidebarContent: React.FC = () => {
                                                         isActive && "bg-primary/10 text-primary font-medium shadow-sm border border-primary/20"
                                                     )}
                                                 >
-                                                    <Link href={item.to}>
+                                                    <Link href={item.to} onClick={handleNavClick}>
                                                         <Icon className={cn("h-4 w-4", isActive && "text-primary")} />
                                                         <span>{item.label}</span>
                                                     </Link>
@@ -613,7 +622,7 @@ const AppSidebarContent: React.FC = () => {
                                                         isActive && "bg-primary/10 text-primary font-medium shadow-sm border border-primary/20"
                                                     )}
                                                 >
-                                                    <Link href={item.to}>
+                                                    <Link href={item.to} onClick={handleNavClick}>
                                                         <Icon className={cn("h-4 w-4", isActive && "text-primary")} />
                                                         <span>{item.label}</span>
                                                     </Link>
@@ -656,7 +665,7 @@ const AppSidebarContent: React.FC = () => {
                                                                         isActive && "text-primary bg-primary/5 font-medium"
                                                                     )}
                                                                 >
-                                                                    <Link href={item.to}>
+                                                                    <Link href={item.to} onClick={handleNavClick}>
                                                                         <Icon className={cn("h-3.5 w-3.5", isActive && "text-primary")} />
                                                                         <span>{item.label}</span>
                                                                     </Link>
@@ -703,7 +712,7 @@ const AppSidebarContent: React.FC = () => {
                                                                         isActive && "text-primary bg-primary/5 font-medium"
                                                                     )}
                                                                 >
-                                                                    <Link href={item.to}>
+                                                                    <Link href={item.to} onClick={handleNavClick}>
                                                                         <Icon className={cn("h-3.5 w-3.5", isActive && "text-primary")} />
                                                                         <span>{item.label}</span>
                                                                     </Link>
@@ -730,7 +739,7 @@ const AppSidebarContent: React.FC = () => {
                             tooltip="Ayuda / FAQs"
                             className="h-10 px-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 transition-all duration-150"
                         >
-                            <Link href="/faq">
+                            <Link href="/faq" onClick={handleNavClick}>
                                 <HelpCircle className="h-4 w-4" />
                                 <span>Ayuda</span>
                             </Link>

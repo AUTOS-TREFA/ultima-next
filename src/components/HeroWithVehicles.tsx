@@ -117,7 +117,7 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
   const rightVehicles = vehicles.slice(halfLength);
 
   return (
-    <section className="from-primary/10 via-orange-50/50 to-transparent flex min-h-screen flex-1 flex-col bg-gradient-to-bl to-80% overflow-hidden relative">
+    <section className="from-white via-gray-50/50 to-white flex min-h-screen flex-1 flex-col bg-gradient-to-bl to-80% overflow-hidden relative">
       {/* Mobile background images - only visible on mobile */}
       <div className="lg:hidden absolute inset-0 pointer-events-none overflow-hidden">
         {/* Advisor image - positioned bottom right with transparency */}

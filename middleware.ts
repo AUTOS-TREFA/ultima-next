@@ -98,7 +98,7 @@ export async function middleware(req: NextRequest) {
 
     // Check if user is admin by email
     if (isAdminEmail(session.user.email)) {
-      defaultRedirect = '/escritorio/admin/dashboard';
+      defaultRedirect = '/escritorio/admin/marketing';
     } else {
       // Check profile role
       const { data: profile } = await supabase
@@ -108,7 +108,7 @@ export async function middleware(req: NextRequest) {
         .maybeSingle();
 
       if (profile?.role === 'admin') {
-        defaultRedirect = '/escritorio/admin/dashboard';
+        defaultRedirect = '/escritorio/admin/marketing';
       } else if (profile?.role === 'sales') {
         defaultRedirect = '/escritorio/dashboard';
       }

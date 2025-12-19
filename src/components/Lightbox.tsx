@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon, XIcon } from './icons';
 import { getVideoEmbedUrl } from '../utils/formatters';
+import { DEFAULT_PLACEHOLDER_IMAGE } from '../utils/constants';
 
 type MediaItem = {
     type: 'image' | 'video';
@@ -165,6 +166,10 @@ const Lightbox: React.FC<LightboxProps> = ({ media, currentIndex, onClose, onPre
                             className="max-w-full max-h-full object-contain rounded-md select-none"
                             draggable={false}
                             style={{ maxHeight: 'calc(100vh - 180px)' }}
+                            onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = DEFAULT_PLACEHOLDER_IMAGE;
+                            }}
                         />
                         {/* Zoom lens - Desktop only */}
                         {showZoom && (
@@ -217,7 +222,15 @@ const Lightbox: React.FC<LightboxProps> = ({ media, currentIndex, onClose, onPre
                                     }`}
                                 >
                                     {item.type === 'image' ? (
-                                        <img src={item.url} alt="" className="w-full h-full object-cover" />
+                                        <img
+                                            src={item.url}
+                                            alt=""
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.src = DEFAULT_PLACEHOLDER_IMAGE;
+                                            }}
+                                        />
                                     ) : (
                                         <div className="w-full h-full bg-gray-700 flex items-center justify-center">
                                             <span className="text-white text-xs">Video</span>

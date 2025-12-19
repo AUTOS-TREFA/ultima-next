@@ -572,43 +572,41 @@ const DashboardSidebarPage: React.FC = () => {
 
         {/* Right Sidebar - 1/3 */}
         <div className="space-y-6">
-          {/* Assigned Agent Card - Prominent */}
+          {/* Assigned Agent - Clean Design */}
           {assignedAgent && (
-            <Card className="border-0 shadow-md bg-gradient-to-br from-slate-900 to-slate-800 text-white">
-              <CardContent className="p-6 text-center">
-                <p className="text-xs text-slate-300 uppercase tracking-wide mb-4">Tu Asesor Asignado</p>
-                {/* Prominent Avatar */}
-                <div className="relative mx-auto mb-4">
-                  {assignedAgent.picture_url ? (
-                    <img
-                      src={assignedAgent.picture_url}
-                      alt={assignedAgent.full_name || assignedAgent.name}
-                      className="w-24 h-24 rounded-full object-cover mx-auto ring-4 ring-white/20"
-                    />
-                  ) : (
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold text-3xl mx-auto ring-4 ring-white/20">
-                      {(assignedAgent.full_name || assignedAgent.name).charAt(0)}
-                    </div>
-                  )}
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-slate-900 flex items-center justify-center">
-                    <CheckCircle className="w-3 h-3 text-white" />
+            <div className="text-center py-4">
+              <p className="text-xs text-gray-500 uppercase tracking-wide mb-4">Tu Asesor Asignado</p>
+              {/* Larger Avatar */}
+              <div className="relative mx-auto mb-4 w-32">
+                {assignedAgent.picture_url ? (
+                  <img
+                    src={assignedAgent.picture_url}
+                    alt={assignedAgent.full_name || assignedAgent.name}
+                    className="w-32 h-32 rounded-full object-cover mx-auto ring-4 ring-gray-100"
+                  />
+                ) : (
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold text-4xl mx-auto ring-4 ring-gray-100">
+                    {(assignedAgent.full_name || assignedAgent.name).charAt(0)}
                   </div>
+                )}
+                <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                  <CheckCircle className="w-3 h-3 text-white" />
                 </div>
-                <p className="font-bold text-lg text-white">{assignedAgent.full_name || assignedAgent.name}</p>
-                <p className="text-sm text-slate-300 mb-4">{assignedAgent.phone}</p>
-                <a
-                  href={`https://wa.me/${assignedAgent.phone.replace(/\D/g, '')}?text=Hola,%20necesito%20ayuda%20con%20mi%20solicitud`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block"
-                >
-                  <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Enviar WhatsApp
-                  </Button>
-                </a>
-              </CardContent>
-            </Card>
+              </div>
+              <p className="font-bold text-lg text-gray-900">{assignedAgent.full_name || assignedAgent.name}</p>
+              <p className="text-sm text-gray-600 mb-4">{assignedAgent.phone}</p>
+              <a
+                href={`https://wa.me/${assignedAgent.phone.replace(/\D/g, '')}?text=Hola,%20necesito%20ayuda%20con%20mi%20solicitud`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+              >
+                <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Enviar WhatsApp
+                </Button>
+              </a>
+            </div>
           )}
 
           {/* Document Dropzone */}

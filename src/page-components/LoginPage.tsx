@@ -135,7 +135,7 @@ const LoginPage: React.FC = () => {
       // Determinar redirect basado en rol
       if (!redirectPath) {
         if (checkIsAdmin(session.user?.email)) {
-          redirectPath = '/escritorio/admin/dashboard';
+          redirectPath = '/escritorio/admin/marketing';
         } else if (profile?.role === 'admin' || profile?.role === 'sales') {
           redirectPath = '/escritorio/dashboard';
         } else {
@@ -256,7 +256,7 @@ const LoginPage: React.FC = () => {
       // Determinar redirect
       let redirectPath = localStorage.getItem('loginRedirect');
       if (!redirectPath) {
-        redirectPath = checkIsAdmin(data.user?.email) ? '/escritorio/admin/dashboard' : '/escritorio';
+        redirectPath = checkIsAdmin(data.user?.email) ? '/escritorio/admin/marketing' : '/escritorio';
       }
       localStorage.removeItem('loginRedirect');
 

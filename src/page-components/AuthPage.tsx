@@ -122,7 +122,7 @@ const AuthPage: React.FC = () => {
             if (!redirectPath) {
                 // Check if user email is an admin email (takes priority)
                 if (checkIsAdmin(session.user?.email)) {
-                    redirectPath = '/escritorio/admin/dashboard';
+                    redirectPath = '/escritorio/admin/marketing';
                 } else if (profile?.role === 'admin' || profile?.role === 'sales') {
                     redirectPath = '/escritorio/dashboard';
                 } else {
@@ -156,7 +156,7 @@ const AuthPage: React.FC = () => {
         if (session && !profile && !authLoading) {
             console.log('[AuthPage] Session exists but no profile loaded - redirecting to dashboard');
             // Session exists but profile didn't load - still redirect (profile will be created by AuthContext)
-            const redirectPath = checkIsAdmin(session.user?.email) ? '/escritorio/admin/dashboard' : '/escritorio';
+            const redirectPath = checkIsAdmin(session.user?.email) ? '/escritorio/admin/marketing' : '/escritorio';
             router.replace(redirectPath);
         }
     }, [session, profile, authLoading, router]);
@@ -321,7 +321,7 @@ const AuthPage: React.FC = () => {
             if (!redirectPath) {
                 // Check if this is an admin email (takes priority)
                 if (checkIsAdmin(data.user?.email)) {
-                    redirectPath = '/escritorio/admin/dashboard';
+                    redirectPath = '/escritorio/admin/marketing';
                 } else {
                     // Note: profile might not be loaded yet, so the useEffect will handle the redirect
                     redirectPath = '/escritorio';

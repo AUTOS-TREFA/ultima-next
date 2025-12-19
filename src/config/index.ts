@@ -122,20 +122,13 @@ export const config = {
 };
 
 /**
- * Obtiene la URL base del sitio de forma dinámica
- * SIEMPRE usa NEXT_PUBLIC_SITE_URL para OAuth redirects
- * Fallback a window.location.origin solo si no está definido (dev local)
+ * Obtiene la URL base del sitio
+ * SIEMPRE usa https://autostrefa.mx para OAuth redirects
+ * NO usar window.location.origin ya que puede causar problemas con localhost
  */
 export const getSiteUrl = (): string => {
-  // ALWAYS prioritize NEXT_PUBLIC_SITE_URL for production consistency
-  if (SITE_URL && SITE_URL !== '') {
-    return SITE_URL;
-  }
-  // Fallback to window.location.origin only if SITE_URL is not set
-  if (typeof window !== 'undefined') {
-    return window.location.origin;
-  }
-  return 'https://autostrefa.mx'; // Final fallback
+  // ALWAYS return autostrefa.mx for OAuth redirects - never use window.location.origin
+  return 'https://autostrefa.mx';
 };
 
 /**

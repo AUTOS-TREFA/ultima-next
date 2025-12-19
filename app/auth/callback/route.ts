@@ -2,6 +2,9 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
+// HARDCODED BASE URL - prevents issues with localhost redirects
+const BASE_URL = 'https://autostrefa.mx';
+
 /**
  * Auth Callback Route Handler
  *
@@ -22,7 +25,7 @@ export async function GET(request: NextRequest) {
 
   // Handle errors from Supabase
   if (error) {
-    const errorUrl = new URL('/auth', requestUrl.origin);
+    const errorUrl = new URL('/auth', BASE_URL);
     errorUrl.searchParams.set('error', error);
     if (errorDescription) {
       errorUrl.searchParams.set('error_description', errorDescription);
@@ -41,7 +44,7 @@ export async function GET(request: NextRequest) {
 
       if (exchangeError) {
         console.error('[Auth Callback] Error exchanging code:', exchangeError);
-        const errorUrl = new URL('/auth', requestUrl.origin);
+        const errorUrl = new URL('/auth', BASE_URL);
         errorUrl.searchParams.set('error', 'exchange_failed');
         errorUrl.searchParams.set('error_description', exchangeError.message);
         return NextResponse.redirect(errorUrl);
@@ -49,10 +52,10 @@ export async function GET(request: NextRequest) {
 
       // Successfully exchanged code - redirect to the intended destination
       console.log('[Auth Callback] Code exchanged successfully, redirecting to:', redirectTo);
-      return NextResponse.redirect(new URL(redirectTo, requestUrl.origin));
+      return NextResponse.redirect(new URL(redirectTo, BASE_URL));
     } catch (e: any) {
       console.error('[Auth Callback] Unexpected error:', e);
-      const errorUrl = new URL('/auth', requestUrl.origin);
+      const errorUrl = new URL('/auth', BASE_URL);
       errorUrl.searchParams.set('error', 'unexpected_error');
       errorUrl.searchParams.set('error_description', e.message || 'Error inesperado');
       return NextResponse.redirect(errorUrl);
@@ -60,5 +63,5 @@ export async function GET(request: NextRequest) {
   }
 
   // No code, redirect to login
-  return NextResponse.redirect(new URL('/acceder', requestUrl.origin));
+  return NextResponse.redirect(new URL('/acceder', BASE_URL));
 }

@@ -49,7 +49,7 @@ const AuthHandler: React.FC = () => {
       if (!redirectPath) {
         // Check if user email is an admin email (takes priority)
         if (checkIsAdmin(session.user?.email)) {
-          redirectPath = '/escritorio/admin/dashboard';
+          redirectPath = '/escritorio/admin/marketing';
         } else if (profile.role === 'admin' || profile.role === 'sales') {
           redirectPath = '/escritorio/dashboard';
         } else {
