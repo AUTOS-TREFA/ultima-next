@@ -48,6 +48,54 @@ const BottomNav: React.FC = () => {
         return listPageRegex.test(pathname);
     }, [pathname]);
 
+    // Check if on vehicle detail page (hide BottomNav entirely)
+    const isVehicleDetailPage = useMemo(() => {
+        const vehicleDetailRegex = /^\/autos\/[^\/]+$/;
+        return vehicleDetailRegex.test(pathname);
+    }, [pathname]);
+
+    // Auto-hide after inactivity (only on non-vehicle detail pages)
+    const [isHidden, setIsHidden] = useState(false);
+    const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        if (isVehicleDetailPage) return; // Don't set up auto-hide on vehicle detail page
+
+        const showNav = () => {
+            setIsHidden(false);
+            if (hideTimeoutRef.current) {
+                clearTimeout(hideTimeoutRef.current);
+            }
+            hideTimeoutRef.current = setTimeout(() => {
+                setIsHidden(true);
+            }, 3000); // Hide after 3 seconds of inactivity
+        };
+
+        const handleScroll = () => showNav();
+        const handleTouch = () => showNav();
+
+        // Show on initial load
+        showNav();
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('touchstart', handleTouch, { passive: true });
+        window.addEventListener('touchmove', handleTouch, { passive: true });
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('touchstart', handleTouch);
+            window.removeEventListener('touchmove', handleTouch);
+            if (hideTimeoutRef.current) {
+                clearTimeout(hideTimeoutRef.current);
+            }
+        };
+    }, [isVehicleDetailPage, pathname]);
+
+    // Don't render on vehicle detail pages
+    if (isVehicleDetailPage) {
+        return null;
+    }
+
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -139,7 +187,7 @@ const BottomNav: React.FC = () => {
 
     return (
         <>
-            <nav className={`fixed bottom-0 left-0 right-0 z-[80] bg-white border-t border-gray-100/60 lg:hidden transition-transform duration-300 ${isKeyboardVisible ? 'translate-y-full' : 'translate-y-0'}`}>
+            <nav className={`fixed bottom-0 left-0 right-0 z-[80] bg-white border-t border-gray-100/60 lg:hidden transition-transform duration-300 ${isKeyboardVisible || isHidden ? 'translate-y-full' : 'translate-y-0'}`}>
                 <div className="max-w-md mx-auto grid grid-cols-5 justify-around items-center h-16">
                     <NavItem to="/" icon={HomeIcon} label="Inicio" end={true} />
                     <NavItem to="/vender-mi-auto" icon={SellCarIcon} label="Vender" />

@@ -1139,59 +1139,58 @@ const VehicleProductOverview = ({
         />
       )}
 
-      {/* Mobile Sticky CTA Footer - positioned above BottomNav */}
+      {/* Mobile Sticky CTA Footer - at bottom since BottomNav is hidden on this page */}
       <div
-        className="lg:hidden fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-border/60 shadow-sm"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-t border-border/40"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        <div className="px-3 py-2.5">
-          {/* Price summary - more compact */}
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-baseline gap-2">
-              <p className="text-lg font-black text-foreground">
-                {formatPrice(hasPromotion && vehicle.precio_reduccion ? vehicle.precio_reduccion : vehicle.precio)}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                o <span className="font-semibold text-orange-600">{formatPrice(financeData.monthlyPayment)}</span>/mes
-              </p>
-            </div>
+        <div className="px-4 py-2.5 flex items-center gap-3">
+          {/* Price - left side */}
+          <div className="flex-1 min-w-0">
+            <p className="text-lg font-black text-foreground leading-tight">
+              {formatPrice(hasPromotion && vehicle.precio_reduccion ? vehicle.precio_reduccion : vehicle.precio)}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Desde <span className="font-semibold text-orange-600">{formatPrice(financeData.monthlyPayment)}</span>/mes
+            </p>
           </div>
 
-          {/* CTA Buttons - compact */}
-          <div className="flex gap-2">
-            <Button
-              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold h-10 text-sm"
-              onClick={onFinancingClick}
-            >
-              <CreditCardIcon className="w-4 h-4 mr-1.5" />
-              Financiar
-            </Button>
+          {/* CTA Buttons - right side */}
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              className="bg-green-500 hover:bg-green-600 text-white border-green-500 hover:border-green-600 font-semibold h-10 px-3"
-              onClick={onWhatsAppClick}
-              aria-label="Contactar por WhatsApp"
-            >
-              <MessageCircleIcon className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
+              size="icon"
               className={cn(
-                'border-2 h-10 px-3',
+                'w-10 h-10 rounded-full border-2 shrink-0',
                 isFavorite
                   ? 'border-red-400 text-red-500 bg-red-50'
-                  : 'border-red-300 text-red-400 hover:border-red-400 hover:text-red-500'
+                  : 'border-red-300 text-red-400'
               )}
               onClick={onFavoriteClick}
               aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
             >
-              <HeartIcon className={cn('w-4 h-4', isFavorite && 'fill-current')} />
+              <HeartIcon className={cn('w-5 h-5', isFavorite && 'fill-current')} />
+            </Button>
+            <Button
+              size="icon"
+              className="w-10 h-10 rounded-full bg-green-500 hover:bg-green-600 text-white shrink-0"
+              onClick={onWhatsAppClick}
+              aria-label="Contactar por WhatsApp"
+            >
+              <MessageCircleIcon className="w-5 h-5" />
+            </Button>
+            <Button
+              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold h-10 px-5 text-sm rounded-full"
+              onClick={onFinancingClick}
+            >
+              Financiar
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Spacer for mobile sticky footer + BottomNav (CTA ~120px + Nav 64px = ~184px) */}
-      <div className="lg:hidden h-48" />
+      {/* Spacer for mobile sticky footer (CTA ~70px + safe area) */}
+      <div className="lg:hidden h-24" />
     </>
   )
 }
