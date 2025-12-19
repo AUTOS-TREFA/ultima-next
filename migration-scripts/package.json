@@ -1,0 +1,20 @@
+{
+  "name": "supabase-data-migration",
+  "version": "1.0.0",
+  "description": "Scripts para migrar datos entre proyectos de Supabase",
+  "main": "migrate-data.js",
+  "scripts": {
+    "migrate": "node migrate-data.js",
+    "verify": "psql -h db.pemgwyymodlwabaexxrb.supabase.co -U postgres -d postgres -f verify-migration.sql"
+  },
+  "keywords": [
+    "supabase",
+    "migration",
+    "database"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.89.0"
+  }
+}
