@@ -24,6 +24,7 @@ import useDebounce from '../hooks/useDebounce';
 import { useRealtimeVisitors } from '../hooks/useRealtimeVisitors';
 import { proxyImage } from '../utils/proxyImage';
 import { getVehicleImage } from '../utils/getVehicleImage';
+import { DEFAULT_PLACEHOLDER_IMAGE } from '../utils/constants';
 import ExplorarTutorialOverlay from '../components/ExplorarTutorialOverlay';
 import { useDrag } from '@use-gesture/react';
 import { animated, useSpring } from 'react-spring';
@@ -610,7 +611,7 @@ const VehicleListPage: React.FC = () => {
               <p className="text-red-500 text-center py-10">Error al cargar los autos. Por favor, intentelo de nuevo mas tarde.</p>
             ) : vehicles.length === 0 && !isLoading ? (
               <div className="text-center py-16 px-6 bg-white rounded-2xl">
-                <img src={proxyImage("http://5.183.8.48/wp-content/uploads/2024/09/trefa-no-encontrado.png")} alt="No se encontraron resultados" className="w-48 mx-auto mb-6" />
+                <img src={proxyImage("http://5.183.8.48/wp-content/uploads/2024/09/trefa-no-encontrado.png")} alt="No se encontraron resultados" className="w-48 mx-auto mb-6" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_PLACEHOLDER_IMAGE; }} />
                 <h3 className="text-xl font-semibold text-gray-800">No se encontraron autos</h3>
                 <p className="text-gray-500 mt-2">Intente ajustar los filtros o ampliar su busqueda.</p>
               </div>

@@ -47,6 +47,7 @@ import ShareButtons from '../components/ShareButtons';
 
 // Import finance calculator utilities
 import { calculateMonthlyPayment, calculateTotalPaid, getValidTermOptions, getMaxTermByYear } from '../utils/financeCalculator';
+import { DEFAULT_PLACEHOLDER_IMAGE } from '../utils/constants';
 
 // =================================================================================
 // TYPE DEFINITIONS
@@ -928,7 +929,7 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
             return (
               <Link href={`/autos/${prevVehicle.slug}`} className="group flex items-center gap-1.5 sm:gap-3 p-1.5 sm:p-2 rounded-lg hover:bg-white/60 transition-colors min-w-0 flex-1">
                 <ChevronLeftIcon className="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0 text-gray-400 group-hover:text-primary-600 transition-colors" />
-                <img src={prevImage} alt={prevVehicle.title} className="w-12 h-10 sm:w-20 sm:h-16 object-cover rounded-md flex-shrink-0 hidden sm:block" />
+                <img src={prevImage} alt={prevVehicle.title} className="w-12 h-10 sm:w-20 sm:h-16 object-cover rounded-md flex-shrink-0 hidden sm:block" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_PLACEHOLDER_IMAGE; }} />
                 <div className="truncate text-left min-w-0">
                   <span className="text-[10px] sm:text-xs text-gray-500 block">Anterior</span>
                   <span className="font-semibold text-xs sm:text-sm md:text-base truncate text-neutral-800 group-hover:text-primary-700 block">{prevVehicle.title}</span>
@@ -948,7 +949,7 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
                   <span className="text-[10px] sm:text-xs text-gray-500 block">Siguiente</span>
                   <span className="font-semibold text-xs sm:text-sm md:text-base truncate text-neutral-800 group-hover:text-primary-700 block">{nextVehicle.title}</span>
                 </div>
-                <img src={nextImage} alt={nextVehicle.title} className="w-12 h-10 sm:w-20 sm:h-16 object-cover rounded-md flex-shrink-0 hidden sm:block" />
+                <img src={nextImage} alt={nextVehicle.title} className="w-12 h-10 sm:w-20 sm:h-16 object-cover rounded-md flex-shrink-0 hidden sm:block" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_PLACEHOLDER_IMAGE; }} />
                 <ChevronRightIcon className="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0 text-gray-400 group-hover:text-primary-600 transition-colors" />
               </Link>
             );

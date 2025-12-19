@@ -51,6 +51,7 @@ import { cn } from '@/lib/utils'
 import { formatPrice, formatMileage } from '@/utils/formatters'
 import { getVehicleImage } from '@/utils/getVehicleImage'
 import { calculateMonthlyPayment } from '@/utils/financeCalculator'
+import { DEFAULT_PLACEHOLDER_IMAGE } from '@/utils/constants'
 import type { WordPressVehicle } from '@/types/types'
 
 // Types
@@ -224,6 +225,7 @@ const Lightbox = ({
               className="max-w-full max-h-full object-contain rounded-md"
               draggable={false}
               style={{ maxHeight: 'calc(100vh - 180px)' }}
+              onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_PLACEHOLDER_IMAGE; }}
             />
             {showZoom && (
               <div
@@ -260,7 +262,7 @@ const Lightbox = ({
                     : 'border-transparent opacity-60 hover:opacity-100'
                 )}
               >
-                <img src={item.url} alt="" className="w-full h-full object-cover" />
+                <img src={item.url} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_PLACEHOLDER_IMAGE; }} />
               </button>
             ))}
           </div>
@@ -527,6 +529,7 @@ const VehicleProductOverview = ({
                           src={img}
                           alt={`Miniatura ${idx + 1}`}
                           className="w-full h-full object-cover"
+                          onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_PLACEHOLDER_IMAGE; }}
                         />
                       </button>
                     ))}
