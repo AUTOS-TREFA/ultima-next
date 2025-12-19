@@ -1158,20 +1158,6 @@ const VehicleProductOverview = ({
           {/* CTA Buttons - right side */}
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
-              size="icon"
-              className={cn(
-                'w-10 h-10 rounded-full border-2 shrink-0',
-                isFavorite
-                  ? 'border-red-400 text-red-500 bg-red-50'
-                  : 'border-red-300 text-red-400'
-              )}
-              onClick={onFavoriteClick}
-              aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-            >
-              <HeartIcon className={cn('w-5 h-5', isFavorite && 'fill-current')} />
-            </Button>
-            <Button
               size="icon"
               className="w-10 h-10 rounded-full bg-green-500 hover:bg-green-600 text-white shrink-0"
               onClick={onWhatsAppClick}

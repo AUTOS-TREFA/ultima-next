@@ -160,12 +160,12 @@ const HeroWithVehicles = ({ vehicles }: HeroWithVehiclesProps) => {
               slide
               delay={0.3}
               transition={{ duration: 0.5, ease: 'easeOut' }}
-              className="text-3xl leading-tight font-black text-balance sm:text-4xl sm:font-extrabold lg:text-5xl lg:font-black text-gray-900"
+              className="text-[1.65rem] leading-tight font-bold sm:text-4xl sm:font-extrabold lg:text-5xl lg:font-black text-gray-900"
             >
               Estrena un auto seminuevo{' '}
               <span
                 key={phraseIndex}
-                className="text-[#FF6801] inline-block animate-text-rotate"
+                className="text-[#FF6801] block sm:inline-block animate-text-rotate whitespace-nowrap"
               >
                 {rotatingPhrases[phraseIndex]}
               </span>
