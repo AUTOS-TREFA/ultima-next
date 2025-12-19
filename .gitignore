@@ -73,3 +73,13 @@ temp-images-migration/
 
 # Scripts de prueba SMTP
 test-smtp.cjs
+
+# Logs temporales
+funciones_log.txt
+schema_completo_log.txt
+
+# Archivos temp de Supabase
+supabase/.temp/
+
+# Archivos de configuración local
+lib/siteConfig.ts

@@ -5,12 +5,12 @@ import { config } from '../../src/config';
 // IMPORTANT: Your Supabase project's URL and Anon Key should be stored in environment variables.
 // The execution environment should provide these variables via import.meta.env.
 // For example:
-// VITE_SUPABASE_URL="https://pemgwyymodlwabaexxrb.supabase.co"
+// VITE_SUPABASE_URL="https://mhlztgilrmgebkyqowxz.supabase.co"
 // VITE_SUPABASE_ANON_KEY="YOUR_SUPABASE_PUBLIC_ANON_KEY"
 // You can find these in your Supabase project settings under API.
 
-const FALLBACK_URL = 'https://pemgwyymodlwabaexxrb.supabase.co';
-const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlbWd3eXltb2Rsd2FiYWV4eHJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5OTE1MTYsImV4cCI6MjA3ODU2NzUxNn0.wfwBKfCuDYmBX_Hi5KvqtNmLLpbgQllPnUaPfoDrYok';
+const FALLBACK_URL = 'https://mhlztgilrmgebkyqowxz.supabase.co';
+const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1obHp0Z2lscm1nZWJreXFvd3h6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYxMjI5MjAsImV4cCI6MjA4MTY5ODkyMH0.jdLFYjqoEnFQBAVd8zuZI0oq5NAo9uIy73fiRjgmSwI';
 
 const env = (import.meta as any)?.env;
 const envUrl = env?.VITE_SUPABASE_URL;

@@ -67,9 +67,9 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* Preconnect to external domains for faster loading */}
-        <link rel="preconnect" href="https://pemgwyymodlwabaexxrb.supabase.co" />
+        <link rel="preconnect" href="https://mhlztgilrmgebkyqowxz.supabase.co" />
         <link rel="preconnect" href="https://r2.trefa.mx" />
-        <link rel="dns-prefetch" href="https://pemgwyymodlwabaexxrb.supabase.co" />
+        <link rel="dns-prefetch" href="https://mhlztgilrmgebkyqowxz.supabase.co" />
         <link rel="dns-prefetch" href="https://r2.trefa.mx" />
       </head>
       <body className="antialiased">
