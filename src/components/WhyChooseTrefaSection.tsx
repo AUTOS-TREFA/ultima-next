@@ -56,9 +56,9 @@ const WhyChooseTrefaSection = () => {
             component='h2'
             className='text-2xl font-bold md:text-3xl lg:text-4xl'
             fade
-            slide={{ direction: 'up', offset: 50 }}
+            slide={{ direction: 'up', offset: 30 }}
             blur
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.3 }}
           >
             ¿Por qué elegir{' '}
             <span className='relative z-10 text-[#FF6801]'>
@@ -74,10 +74,10 @@ const WhyChooseTrefaSection = () => {
             component='p'
             className='text-muted-foreground text-lg lg:text-xl max-w-3xl mx-auto'
             fade
-            slide={{ direction: 'up', offset: 50 }}
+            slide={{ direction: 'up', offset: 20 }}
             blur
-            delay={0.3}
-            transition={{ duration: 0.5 }}
+            delay={0.1}
+            transition={{ duration: 0.3 }}
           >
             Simplificamos cada paso para que tu experiencia sea segura, transparente y excepcional.
           </MotionPreset>
@@ -96,10 +96,10 @@ const WhyChooseTrefaSection = () => {
                   key={item.title}
                   className='flex items-center gap-4 max-lg:justify-end'
                   fade
-                  slide={{ direction: 'down', offset: 50 }}
+                  slide={{ direction: 'down', offset: 20 }}
                   blur
-                  delay={0.4 * index + 1.5}
-                  transition={{ duration: 0.5 }}
+                  delay={0.1 * index + 0.2}
+                  transition={{ duration: 0.3 }}
                 >
                   <div className='border-[#FF6801]/60 bg-[#FF6801]/10 flex size-16 shrink-0 items-center justify-center rounded-xl border lg:hidden'>
                     <IconComponent className='size-8 stroke-[1.5] text-[#FF6801]' />
@@ -122,8 +122,8 @@ const WhyChooseTrefaSection = () => {
             className='max-lg:order-1 md:max-lg:col-span-2'
             fade
             blur
-            delay={0.6}
-            transition={{ duration: 0.9 }}
+            delay={0.15}
+            transition={{ duration: 0.4 }}
           >
             <img
               src='/images/landing-asset-main.png'
@@ -136,7 +136,6 @@ const WhyChooseTrefaSection = () => {
           <div className='w-full space-y-9 max-lg:order-3 max-lg:mx-auto max-lg:max-w-md'>
             {rightFeatures.map((item, index) => {
               const IconComponent = item.icon
-              const leftSectionDelay = 0.4 * (leftFeatures.length - 1) + 1.5 + 0.5
 
               return (
                 <MotionPreset
@@ -144,10 +143,10 @@ const WhyChooseTrefaSection = () => {
                   key={item.title}
                   className='flex items-center gap-4'
                   fade
-                  slide={{ direction: 'down', offset: 50 }}
+                  slide={{ direction: 'down', offset: 20 }}
                   blur
-                  delay={leftSectionDelay + 0.4 * index}
-                  transition={{ duration: 0.5 }}
+                  delay={0.1 * index + 0.3}
+                  transition={{ duration: 0.3 }}
                 >
                   <div className='border-[#FF6801]/60 bg-[#FF6801]/10 flex size-16 shrink-0 items-center justify-center rounded-xl border'>
                     <IconComponent className='size-8 stroke-[1.5] text-[#FF6801]' />
