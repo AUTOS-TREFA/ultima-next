@@ -125,6 +125,14 @@ const ScrollerRow: React.FC<{ vehicles: Vehicle[]; reverse?: boolean; speed?: nu
 /* ---------- Landing Page Hero Section ---------- */
 const LandingPageHero: React.FC<{ content: HeroContent | null }> = ({ content }) => {
   const [ref, isVisible] = useIntersectionObserver({ threshold: 0.1 });
+  const [isMounted, setIsMounted] = useState(false);
+  const [maxVehicles, setMaxVehicles] = useState(20);
+
+  // Handle client-side mounting to prevent hydration mismatch
+  useEffect(() => {
+    setIsMounted(true);
+    setMaxVehicles(window.innerWidth < 768 ? 12 : 30);
+  }, []);
 
   // Default fallback content
   const defaultContent: HeroContent = {
@@ -147,9 +155,9 @@ const LandingPageHero: React.FC<{ content: HeroContent | null }> = ({ content })
   return (
     <section className="relative overflow-hidden bg-white min-h-[100dvh] flex items-center">
       {/* Animated Vehicle Grid Background - Full Screen */}
-      {typeof window !== 'undefined' && (
+      {isMounted && (
         <AnimatedVehicleGrid
-          maxVehicles={window.innerWidth < 768 ? 12 : 30}
+          maxVehicles={maxVehicles}
           gradientDirection="diagonal"
         />
       )}
