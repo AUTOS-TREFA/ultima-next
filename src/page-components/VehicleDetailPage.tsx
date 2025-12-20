@@ -74,7 +74,7 @@ const TABS = [
   { id: 'inspection', label: 'Inspeccion', icon: ShieldCheckIcon },
 ];
 
-const cardStyle = "bg-white p-3 sm:p-4 lg:p-6 rounded-xl lg:rounded-2xl shadow-sm ring-1 ring-gray-200/60 border-0";
+const cardStyle = "bg-white p-3 sm:p-4 lg:p-6 rounded-xl lg:rounded-2xl shadow-sm ring-1 ring-gray-200/60 border-0 transition-shadow duration-200 hover:shadow-md";
 
 // =================================================================================
 // SUB-COMPONENTS
@@ -160,13 +160,16 @@ const MediaGallery: React.FC<{
 
     const MainViewer = () => (
         <motion.div
-            className="aspect-[4/3] sm:aspect-video bg-gray-900 rounded-none sm:rounded-xl overflow-hidden shadow-lg relative group cursor-grab active:cursor-grabbing -mx-2 sm:mx-0"
+            className="aspect-[4/3] sm:aspect-video bg-gray-900 rounded-none sm:rounded-xl overflow-hidden shadow-lg sm:shadow-xl relative group cursor-grab active:cursor-grabbing -mx-4 sm:mx-0"
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.1}
+            dragElastic={0.08}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
-            dragListener={!isEmbed} // Disable drag on iframes
+            dragListener={!isEmbed}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
         >
             {bonusPromo && (
                 <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-lg animate-fade-in-up text-xs sm:text-sm">
@@ -174,14 +177,14 @@ const MediaGallery: React.FC<{
                 </div>
             )}
 
-            <AnimatePresence initial={false}>
+            <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                     key={activeMedia?.src}
                     className="absolute inset-0 w-full h-full"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+                    initial={{ opacity: 0, scale: 1.02 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
                     onClick={(e) => {
                         // Only open lightbox if clicking on the image itself, not on buttons or while dragging
                         const target = e.target as HTMLElement;
@@ -246,49 +249,76 @@ const TitlePriceActionsBlock: React.FC<{
     onToggleFavorite: () => void;
     onFinancingClick: () => void;
     onWhatsAppClick?: () => void;
-}> = React.memo(({ vehicle, financeData, favoriteCount, isFavorite, isToggling, onToggleFavorite, onFinancingClick, onWhatsAppClick }) => (
-    <div className={cardStyle}>
-        <div>
-            {vehicle.ordencompra && (
-                <p className="text-xs font-light text-gray-500 uppercase tracking-widest mb-1">
-                    {vehicle.ordencompra}
-                </p>
-            )}
-            <h1 className="text-2xl lg:text-4xl font-extrabold text-gray-900 leading-tight">{vehicle.title} {(vehicle.autoano || vehicle.year) && <span className="text-gray-600">{vehicle.autoano || vehicle.year}</span>}</h1>
-            <div className="mt-2 flex items-center gap-x-4 gap-y-1 text-xs lg:text-sm text-gray-500 flex-wrap">
-                <div className="flex items-center gap-1.5"> <HeartIcon className="w-4 h-4 text-red-400" /> <span className="font-medium">{favoriteCount} {favoriteCount === 1 ? 'favorito' : 'favoritos'}</span> </div>
-                <div className="flex items-center gap-1.5"> <EyeIcon className="w-4 h-4" /> <span className="font-medium">{(vehicle.view_count || 0).toLocaleString('es-MX')} vistas</span> <PopularityBadge viewCount={vehicle.view_count || 0} /> </div>
-            </div>
-        </div>
-        <div className="mt-4">
-            <p className="text-3xl lg:text-4xl font-black text-orange-600">{formatPrice(financeData?.displayedPrice ?? 0)} <span className="text-lg lg:text-xl font-semibold text-gray-500 align-baseline">MXN</span></p>
-            {financeData?.hasReduction && <p className="text-sm lg:text-base text-gray-500 line-through">{formatPrice(vehicle.precio)}</p>}
-        </div>
+}> = React.memo(({ vehicle, financeData, favoriteCount, isFavorite, isToggling, onToggleFavorite, onFinancingClick, onWhatsAppClick }) => {
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
 
-        {vehicle.promociones && vehicle.promociones.length > 0 && (
+    // Build title: Brand + Model + Year (e.g., "Tesla Model Y 2023")
+    const vehicleYear = vehicle.autoano || vehicle.year;
+    const displayTitle = vehicleYear ? `${vehicle.title} ${vehicleYear}` : vehicle.title;
+
+    return (
+        <div className={cardStyle}>
+            {/* Favorite button - small liquid glass style, top right */}
+            <div className="flex justify-between items-start gap-3">
+                <div className="flex-1 min-w-0">
+                    {vehicle.ordencompra && (
+                        <p className="text-xs font-light text-gray-500 uppercase tracking-widest mb-1">
+                            {vehicle.ordencompra}
+                        </p>
+                    )}
+                    <h1 className="text-3xl lg:text-5xl font-black text-gray-900 leading-tight tracking-tight">
+                        {displayTitle}
+                    </h1>
+                    <div className="mt-2 flex items-center gap-x-4 gap-y-1 text-xs lg:text-sm text-gray-500 flex-wrap">
+                        <div className="flex items-center gap-1.5"> <EyeIcon className="w-4 h-4" /> <span className="font-medium">{(vehicle.view_count || 0).toLocaleString('es-MX')} vistas</span> <PopularityBadge viewCount={vehicle.view_count || 0} /> </div>
+                    </div>
+                </div>
+                {/* Liquid glass favorite button */}
+                <button
+                    data-gtm-id="detail-page-favorite"
+                    onClick={onToggleFavorite}
+                    disabled={isToggling}
+                    className="flex-shrink-0 p-2.5 rounded-full bg-white/70 backdrop-blur-md border border-white/40 shadow-lg hover:bg-white/90 transition-all duration-200 disabled:opacity-50 group"
+                    aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                >
+                    {isFavorite ? (
+                        <SolidHeartIcon className="w-5 h-5 text-red-500 group-hover:scale-110 transition-transform" />
+                    ) : (
+                        <HeartIcon className="w-5 h-5 text-gray-600 group-hover:text-red-500 group-hover:scale-110 transition-all" />
+                    )}
+                </button>
+            </div>
+
             <div className="mt-4">
-                <sup className="text-xs lg:text-sm font-semibold italic text-gray-700">
-                    <i>{vehicle.promociones.map(p => formatPromotion(p)).join('! + ')}!</i>
-                </sup>
+                <p className="text-3xl lg:text-4xl font-black text-orange-600">{formatPrice(financeData?.displayedPrice ?? 0)} <span className="text-lg lg:text-xl font-semibold text-gray-500 align-baseline">MXN</span></p>
+                {financeData?.hasReduction && <p className="text-sm lg:text-base text-gray-500 line-through">{formatPrice(vehicle.precio)}</p>}
             </div>
-        )}
 
-        <div className="mt-4 sm:mt-6 flex flex-col gap-2 sm:gap-3">
-            <button data-gtm-id="detail-page-finance" onClick={onFinancingClick} className="w-full text-center bg-primary-600 text-white font-bold py-3 sm:py-3.5 px-3 sm:px-6 rounded-lg hover:bg-primary-700 text-base sm:text-base lg:text-lg shadow-md transition-all"> Comprar con financiamiento </button>
-            <a
-                href={`https://wa.me/5218187049079?text=${encodeURIComponent(`Hola, me interesa el ${vehicle.title}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={onWhatsAppClick}
-                className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-green-500 text-white font-bold py-3 sm:py-3 px-3 sm:px-6 rounded-lg hover:bg-green-600 text-base sm:text-base lg:text-lg shadow-md transition-all"
-            >
-                <WhatsAppIcon className="w-5 h-5 sm:w-6 sm:h-6" /> Contactar por WhatsApp
-            </a>
-            <button data-gtm-id="detail-page-favorite" onClick={onToggleFavorite} disabled={isToggling} className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-white text-gray-700 font-bold py-3 sm:py-3 px-3 sm:px-6 rounded-lg hover:bg-gray-100 border-2 border-gray-300 text-base sm:text-base lg:text-lg shadow-sm transition-all disabled:opacity-50"> {isFavorite ? <SolidHeartIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" /> : <HeartIcon className="w-5 h-5 sm:w-6 sm:h-6" />} {isFavorite ? 'Guardado' : 'Favoritos'} ({favoriteCount}) </button>
+            {vehicle.promociones && vehicle.promociones.length > 0 && (
+                <div className="mt-3">
+                    <sup className="text-xs lg:text-sm font-semibold italic text-gray-700">
+                        <i>{vehicle.promociones.map(p => formatPromotion(p)).join('! + ')}!</i>
+                    </sup>
+                </div>
+            )}
+
+            <div className="mt-4 sm:mt-5 flex flex-col gap-2.5">
+                <button data-gtm-id="detail-page-finance" onClick={onFinancingClick} className="w-full text-center bg-primary-600 text-white font-bold py-3 sm:py-3.5 px-4 rounded-xl hover:bg-primary-700 text-base lg:text-lg shadow-md transition-all hover:shadow-lg active:scale-[0.98]"> Comprar con financiamiento </button>
+                <a
+                    href={`https://wa.me/5218187049079?text=${encodeURIComponent(`Hola, me interesa el ${vehicle.title}`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={onWhatsAppClick}
+                    className="w-full flex items-center justify-center gap-2 bg-green-500 text-white font-bold py-3 px-4 rounded-xl hover:bg-green-600 text-base lg:text-lg shadow-md transition-all hover:shadow-lg active:scale-[0.98]"
+                >
+                    <WhatsAppIcon className="w-5 h-5" /> Contactar por WhatsApp
+                </a>
+            </div>
+            {mounted && <ShareButtons url={window.location.href} title={vehicle.title} className="mt-5 justify-center" />}
         </div>
-        <ShareButtons url={typeof window !== 'undefined' ? window.location.href : ''} title={vehicle.title} className="mt-6 justify-center" />
-    </div>
-));
+    );
+});
 
 const CharacteristicsSection: React.FC<{ vehicle: WordPressVehicle; inspectionData: InspectionReportData | null; }> = React.memo(({ vehicle, inspectionData }) => {
     const features = useMemo(() => {
@@ -926,7 +956,7 @@ const VehicleDetailPage: React.FC<VehicleDetailPageProps> = ({ slug }) => {
 
   return (
     <div className="bg-white min-h-screen font-sans">
-      <main className="relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-6 lg:py-8" id="page-content">
+      <main className="relative max-w-7xl mx-auto px-4 sm:px-4 lg:px-8 py-3 sm:py-6 lg:py-8" id="page-content">
         <div className="mb-3 sm:mb-6"><Breadcrumbs crumbs={crumbs} /></div>
 
         <nav className="no-print flex items-center justify-between bg-gray-100 p-1.5 sm:p-2 rounded-lg sm:rounded-xl mb-3 sm:mb-4 md:mb-8 border border-gray-200">

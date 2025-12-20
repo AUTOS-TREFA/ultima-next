@@ -203,10 +203,12 @@ NEXT_PUBLIC_CALENDLY_URL_COAH=$(grep "NEXT_PUBLIC_CALENDLY_URL_COAH:" cloud-buil
 NEXT_PUBLIC_CALENDLY_URL_GPE=$(grep "NEXT_PUBLIC_CALENDLY_URL_GPE:" cloud-build-vars.yaml | cut -d'"' -f2)
 NEXT_PUBLIC_CLOUD_RUN_URL=$(grep "NEXT_PUBLIC_CLOUD_RUN_URL:" cloud-build-vars.yaml | cut -d'"' -f2)
 
-# Use BuildKit for faster builds with better caching
+# Use BuildKit for faster builds
 export DOCKER_BUILDKIT=1
 
+# Build without cache to ensure fresh build
 docker build \
+  --no-cache \
   --platform linux/amd64 \
   --build-arg NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
   --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$NEXT_PUBLIC_SUPABASE_ANON_KEY" \

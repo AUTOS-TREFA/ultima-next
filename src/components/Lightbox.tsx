@@ -22,7 +22,9 @@ const Lightbox: React.FC<LightboxProps> = ({ media, currentIndex, onClose, onPre
     const [showZoom, setShowZoom] = useState(false);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const [touchStart, setTouchStart] = useState<number | null>(null);
-    const ZOOM_LEVEL = 3;
+    const [imageRect, setImageRect] = useState<DOMRect | null>(null);
+    const imageRef = React.useRef<HTMLImageElement>(null);
+    const ZOOM_LEVEL = 2.5; // Zoom level for magnification
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -61,16 +63,25 @@ const Lightbox: React.FC<LightboxProps> = ({ media, currentIndex, onClose, onPre
         setTouchStart(null);
     };
 
-    const handleMouseEnter = () => setShowZoom(true);
+    const handleMouseEnter = () => {
+        if (imageRef.current) {
+            setImageRect(imageRef.current.getBoundingClientRect());
+        }
+        setShowZoom(true);
+    };
     const handleMouseLeave = () => setShowZoom(false);
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-        const x = ((e.clientX - left) / width) * 100;
-        const y = ((e.clientY - top) / height) * 100;
-        setMousePosition({
-            x: Math.max(0, Math.min(100, x)),
-            y: Math.max(0, Math.min(100, y))
-        });
+        // Get the actual image element's bounds for accurate zoom positioning
+        if (imageRef.current) {
+            const rect = imageRef.current.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            setMousePosition({
+                x: Math.max(0, Math.min(100, x)),
+                y: Math.max(0, Math.min(100, y))
+            });
+            setImageRect(rect);
+        }
     };
 
     const goToImage = useCallback((index: number) => {
@@ -139,14 +150,14 @@ const Lightbox: React.FC<LightboxProps> = ({ media, currentIndex, onClose, onPre
                 </>
             )}
 
-            {/* Main content area - Touch swipeable */}
+            {/* Main content area - Touch swipeable, minimal padding for maximum image size */}
             <div
                 className="absolute inset-0 flex items-center justify-center"
                 style={{
-                    paddingTop: 'max(56px, calc(env(safe-area-inset-top) + 44px))',
-                    paddingBottom: media.length > 1 ? 'max(88px, calc(env(safe-area-inset-bottom) + 72px))' : 'max(16px, env(safe-area-inset-bottom))',
-                    paddingLeft: '8px',
-                    paddingRight: '8px'
+                    paddingTop: 'max(52px, calc(env(safe-area-inset-top) + 40px))',
+                    paddingBottom: media.length > 1 ? 'max(72px, calc(env(safe-area-inset-bottom) + 56px))' : 'max(8px, env(safe-area-inset-bottom))',
+                    paddingLeft: '0',
+                    paddingRight: '0'
                 }}
                 onClick={onClose}
                 onTouchStart={handleTouchStart}
@@ -154,37 +165,47 @@ const Lightbox: React.FC<LightboxProps> = ({ media, currentIndex, onClose, onPre
             >
                 {currentItem.type === 'image' ? (
                     <div
-                        className="relative w-full h-full flex items-center justify-center"
+                        className="relative w-full h-full flex items-center justify-center px-2 sm:px-4"
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
                         onMouseMove={handleMouseMove}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <img
+                            ref={imageRef}
                             src={currentItem.url}
                             alt={`Imagen ${currentIndex + 1} de ${media.length}`}
-                            className="max-w-full max-h-full object-contain select-none"
+                            className="max-w-full max-h-full object-contain select-none transition-opacity duration-200"
                             draggable={false}
-                            style={{ maxHeight: 'calc(100vh - 140px)' }}
+                            style={{ maxHeight: 'calc(100vh - 100px)' }}
                             onError={(e) => {
                                 const target = e.target as HTMLImageElement;
                                 target.src = DEFAULT_PLACEHOLDER_IMAGE;
                             }}
                         />
-                        {/* Zoom lens - Desktop only */}
-                        {showZoom && (
-                            <div
-                                className="absolute pointer-events-none w-48 h-48 sm:w-64 sm:h-64 rounded-full border-4 border-white/80 bg-no-repeat shadow-2xl hidden sm:block"
-                                style={{
-                                    left: `${mousePosition.x}%`,
-                                    top: `${mousePosition.y}%`,
-                                    transform: 'translate(-50%, -50%)',
-                                    backgroundImage: `url(${currentItem.url})`,
-                                    backgroundSize: `${100 * ZOOM_LEVEL}%`,
-                                    backgroundPosition: `${mousePosition.x}% ${mousePosition.y}%`,
-                                }}
-                            />
-                        )}
+                        {/* Zoom lens - Desktop only, positioned relative to cursor */}
+                        {showZoom && imageRect && (() => {
+                            const lensSize = window.innerWidth >= 1024 ? 224 : 160; // lg:w-56 = 224px, w-40 = 160px
+                            const halfLens = lensSize / 2;
+                            const zoomedW = imageRect.width * ZOOM_LEVEL;
+                            const zoomedH = imageRect.height * ZOOM_LEVEL;
+                            const bgX = halfLens - (mousePosition.x / 100) * zoomedW;
+                            const bgY = halfLens - (mousePosition.y / 100) * zoomedH;
+
+                            return (
+                                <div
+                                    className="fixed pointer-events-none w-40 h-40 lg:w-56 lg:h-56 rounded-full border-4 border-white/90 bg-no-repeat shadow-2xl hidden sm:block ring-2 ring-black/20"
+                                    style={{
+                                        left: `${imageRect.left + (mousePosition.x / 100) * imageRect.width}px`,
+                                        top: `${imageRect.top + (mousePosition.y / 100) * imageRect.height}px`,
+                                        transform: 'translate(-50%, -50%)',
+                                        backgroundImage: `url(${currentItem.url})`,
+                                        backgroundSize: `${zoomedW}px ${zoomedH}px`,
+                                        backgroundPosition: `${bgX}px ${bgY}px`,
+                                    }}
+                                />
+                            );
+                        })()}
                     </div>
                 ) : (
                     <div
