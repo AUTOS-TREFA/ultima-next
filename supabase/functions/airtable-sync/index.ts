@@ -63,23 +63,16 @@ serve(async (req: Request) => {
     if (!response.ok) {
       const errorData = await response.json();
 
-      // If record was deleted in Airtable (404), remove from Supabase
+      // If record was deleted in Airtable (404), DO NOT delete from Supabase
+      // Just log it and return - we preserve local data even if Airtable doesn't have it
       if (response.status === 404) {
-        console.log(`🗑️ Record ${recordId} not found in Airtable. Deleting from Supabase...`);
-
-        const { error: deleteError } = await supabase
-          .from('inventario_cache')
-          .delete()
-          .eq('record_id', recordId);
-
-        if (deleteError) {
-          console.error('Error deleting record:', deleteError);
-        } else {
-          console.log(`✅ Deleted record ${recordId} from Supabase`);
-        }
+        console.log(`⚠️ Record ${recordId} not found in Airtable. PRESERVING local data (no delete).`);
 
         return new Response(
-          JSON.stringify({ message: `Record ${recordId} deleted from cache.` }),
+          JSON.stringify({
+            message: `Record ${recordId} not found in Airtable. Local data preserved.`,
+            action: 'preserved'
+          }),
           {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200,
@@ -229,7 +222,56 @@ serve(async (req: Request) => {
       ? `${fields.AutoMarca} ${fields.AutoSubmarcaVersion}`.trim()
       : fields.Auto || 'Auto sin título';
 
-    const ordenCompra = fields.OrdenCompra || record.id;
+    // --- ID/OC → TRF CONVERSION ---
+    // Airtable may send ID or OC format, but we now use TRF as primary key
+    // Convert ID001234 → TRF001234 and OC001234 → TRF001234 automatically
+    // IMPORTANT: Do NOT use record.id as fallback - reject records without valid OrdenCompra
+    let rawOrdenCompra = fields.OrdenCompra;
+    let legacyId: string | null = null;
+
+    // Validate OrdenCompra exists and has valid format
+    if (!rawOrdenCompra || rawOrdenCompra.trim() === '') {
+      console.log(`⚠️ Record ${record.id} has no OrdenCompra - skipping sync to prevent invalid data`);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: `Record ${record.id} skipped: missing OrdenCompra field`,
+          action: 'skipped'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    }
+
+    // Reject records where OrdenCompra looks like a record_id (starts with 'rec')
+    if (rawOrdenCompra.startsWith('rec')) {
+      console.log(`⚠️ Record ${record.id} has invalid OrdenCompra (looks like record_id) - skipping`);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: `Record ${record.id} skipped: OrdenCompra "${rawOrdenCompra}" appears to be a record_id`,
+          action: 'skipped'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    }
+
+    if (rawOrdenCompra.startsWith('ID')) {
+      legacyId = rawOrdenCompra;  // Save original ID
+      rawOrdenCompra = 'TRF' + rawOrdenCompra.substring(2);  // Convert to TRF
+      console.log(`🔄 Converted OrdenCompra: ${legacyId} → ${rawOrdenCompra}`);
+    } else if (rawOrdenCompra.startsWith('OC')) {
+      legacyId = rawOrdenCompra;  // Save original OC
+      rawOrdenCompra = 'TRF' + rawOrdenCompra.substring(2);  // Convert to TRF
+      console.log(`🔄 Converted OrdenCompra: ${legacyId} → ${rawOrdenCompra}`);
+    }
+
+    const ordenCompra = rawOrdenCompra;
 
     // --- IMAGE HANDLING ---
     // Check if this vehicle already has R2 images uploaded via "Cargar Fotos" admin page
@@ -243,12 +285,36 @@ serve(async (req: Request) => {
     let r2FeatureImage: string | null = null;
     let r2Gallery: string[] = [];
 
-    // Check existing record for R2 images and other fields to preserve
-    const { data: existingRecord } = await supabase
+    // Check existing record for ALL fields to preserve
+    // This ensures we never overwrite valid data with empty values from Airtable
+    // SAFE LOOKUP: Try by ordencompra (TRF format) first, then by legacy_id if not found
+    let existingRecord = null;
+
+    // First try: Look up by converted TRF ordencompra
+    const { data: byOrdencompra } = await supabase
       .from('inventario_cache')
-      .select('use_r2_images, r2_feature_image, r2_gallery, feature_image, fotos_exterior_url, fotos_interior_url, feature_image_url, descripcion, created_at')
+      .select('*')
       .eq('ordencompra', ordenCompra)
       .single();
+
+    if (byOrdencompra) {
+      existingRecord = byOrdencompra;
+      console.log(`📋 Found by ordencompra: ${ordenCompra}`);
+    } else if (legacyId) {
+      // Second try: Look up by legacy_id (original ID format from Airtable)
+      const { data: byLegacyId } = await supabase
+        .from('inventario_cache')
+        .select('*')
+        .eq('legacy_id', legacyId)
+        .single();
+
+      if (byLegacyId) {
+        existingRecord = byLegacyId;
+        console.log(`📋 Found by legacy_id: ${legacyId} → updating ordencompra to ${ordenCompra}`);
+      }
+    }
+
+    console.log(`📋 Existing record found: ${existingRecord ? 'YES' : 'NO'}`);
 
     if (existingRecord?.use_r2_images) {
       // PRESERVE R2 IMAGES - Don't overwrite with Airtable URLs
@@ -337,6 +403,35 @@ serve(async (req: Request) => {
     const currentOrdenStatus = fields.OrdenStatus || '';
     const isVendido = currentOrdenStatus === 'Historico' || fields.vendido === true;
 
+    // ==========================================================================
+    // SAFE DATA MAPPING - THREE UPDATE MODES:
+    // ==========================================================================
+    // 1. neverOverwrite: NEVER overwrite existing values (only fill if empty)
+    const neverOverwrite = <T>(newValue: T | null | undefined, existingValue: T | null | undefined): T | null => {
+      // If existing has value, ALWAYS keep it
+      if (existingValue !== null && existingValue !== undefined && existingValue !== '' && existingValue !== 0) {
+        return existingValue as T;
+      }
+      // Only use new value if existing is empty
+      return newValue ?? null;
+    };
+
+    // 2. allowUpdate: CAN be overwritten from Airtable (but not with null/empty)
+    const allowUpdate = <T>(newValue: T | null | undefined, existingValue: T | null | undefined): T | null => {
+      if (newValue === null || newValue === undefined || newValue === '' || newValue === 0) {
+        return (existingValue as T) ?? null;
+      }
+      return newValue;
+    };
+
+    // 3. updateIfNotNull: CAN update but NEVER with null value (for images)
+    const updateIfNotNull = <T>(newValue: T | null | undefined, existingValue: T | null | undefined): T | null => {
+      if (newValue === null || newValue === undefined || newValue === '') {
+        return (existingValue as T) ?? null;
+      }
+      return newValue;
+    };
+
     // Map Airtable fields to Supabase columns
     // Generate unique slug: use ligawp/slug if available, otherwise generate from title with numeric suffix
     let slug = fields.ligawp || fields.slug;
@@ -378,63 +473,104 @@ serve(async (req: Request) => {
       }
     }
 
+    // Build safe data object - preserving existing values when Airtable sends empty
+    const airtablePrecio = parseFloat(fields.Precio || '0');
+    const airtableKilometraje = getNumberField(fields.autokilometraje, fields.kilometraje);
+    const airtableAutoano = getNumberField(fields.AutoAno, fields.autoano);
+    const airtableCilindros = getNumberField(fields.AutoCilindros, fields.cilindros);
+    const airtableEnganchemin = getNumberField(fields.EngancheMin, fields.enganchemin);
+    const airtableEngancheRec = getNumberField(fields.EngancheRecomendado, fields.enganche_recomendado);
+    const airtableMensMin = getNumberField(fields.MensualidadMinima, fields.mensualidad_minima);
+    const airtableMensRec = getNumberField(fields.MensualidadRecomendada, fields.mensualidad_recomendada);
+    const airtablePlazomax = getNumberField(fields.PlazoMax, fields.plazomax);
+    const airtableNumDuenos = getNumberField(fields.NumeroDuenos, fields.numero_duenos);
+
+    // =========================================================================
+    // BUILD SUPABASE DATA OBJECT
+    // FIELD UPDATE RULES:
+    // - neverOverwrite: NEVER overwrite (only fill if empty)
+    // - allowUpdate: CAN be overwritten from Airtable (but not with null)
+    // - updateIfNotNull: CAN update but NEVER with null value
+    // =========================================================================
     const supabaseData = {
+      // ALWAYS UPDATE from Airtable
       record_id: record.id,
-      title: titulo,
-      slug: slug,
-      precio: parseFloat(fields.Precio || '0'),
-      marca: fields.AutoMarca || 'Sin Marca',
-      modelo: fields.AutoSubmarcaVersion || '',
-      transmision: transmisionValue,
-      combustible: combustibleValue,
-      kilometraje: getNumberField(fields.autokilometraje, fields.kilometraje),
-      autoano: getNumberField(fields.AutoAno, fields.autoano),
-      cilindros: getNumberField(fields.AutoCilindros, fields.cilindros),
-      feature_image: featureImage,
-      feature_image_url: featureImage, // Store in both columns for compatibility
-      fotos_exterior_url: exteriorImages,
-      fotos_interior_url: interiorImages,
-      // Preserve R2 image fields if they exist
+      ordencompra: ordenCompra || existingRecord?.ordencompra || '',
+      ordenstatus: currentOrdenStatus || existingRecord?.ordenstatus,
+      legacy_id: legacyId || existingRecord?.legacy_id || null,
+
+      // NEVER OVERWRITE - Only fill if empty
+      title: neverOverwrite(titulo, existingRecord?.title),
+      titulo: neverOverwrite(titulo, existingRecord?.titulo),
+      marca: neverOverwrite(fields.AutoMarca, existingRecord?.marca),
+      modelo: neverOverwrite(fields.AutoSubmarcaVersion, existingRecord?.modelo),
+      transmision: neverOverwrite(transmisionValue, existingRecord?.transmision),
+      autotransmision: neverOverwrite(transmisionValue, existingRecord?.autotransmision),
+      combustible: neverOverwrite(combustibleValue, existingRecord?.combustible),
+      carroceria: neverOverwrite(clasificacionValue, existingRecord?.carroceria),
+      clasificacionid: neverOverwrite(clasificacionValue, existingRecord?.clasificacionid),
+      vin: neverOverwrite(fields.VIN, existingRecord?.vin),
+      titulometa: neverOverwrite(getStringField(fields.TituloMeta, fields.metadescripcion), existingRecord?.titulometa),
+      precio: neverOverwrite(airtablePrecio, existingRecord?.precio),
+      kilometraje: neverOverwrite(airtableKilometraje, existingRecord?.kilometraje),
+      autoano: neverOverwrite(airtableAutoano, existingRecord?.autoano),
+      cilindros: neverOverwrite(airtableCilindros, existingRecord?.cilindros),
+      numero_duenos: neverOverwrite(airtableNumDuenos, existingRecord?.numero_duenos),
+      oferta: neverOverwrite(getNumberField(fields.Oferta, fields.oferta), existingRecord?.oferta),
+      reel_url: neverOverwrite(fields.Reel, existingRecord?.reel_url),
+
+      // ALLOWED TO UPDATE from Airtable (but not with null)
+      slug: allowUpdate(slug, existingRecord?.slug),
+      ubicacion: allowUpdate(ubicacionValue, existingRecord?.ubicacion),
+      garantia: allowUpdate(getStringField(fields.Garantia, fields.garantia), existingRecord?.garantia),
+      descripcion: allowUpdate(fields.descripcion, existingRecord?.descripcion),
+      AutoMotor: allowUpdate(getStringField(fields.AutoMotor, fields.motor), existingRecord?.AutoMotor),
+      enganchemin: allowUpdate(airtableEnganchemin, existingRecord?.enganchemin),
+      enganche_recomendado: allowUpdate(airtableEngancheRec, existingRecord?.enganche_recomendado),
+      mensualidad_minima: allowUpdate(airtableMensMin, existingRecord?.mensualidad_minima),
+      mensualidad_recomendada: allowUpdate(airtableMensRec, existingRecord?.mensualidad_recomendada),
+      plazomax: allowUpdate(airtablePlazomax, existingRecord?.plazomax),
+      promociones: promocionesValue || existingRecord?.promociones || null,
+      rfdm: allowUpdate(fields.rfdm, existingRecord?.rfdm),
+      liga_bot: allowUpdate(fields.ligaBot || fields.LigaBot, existingRecord?.liga_bot),
+      liga_web: allowUpdate(`https://trefa.mx/autos/${slug}`, existingRecord?.liga_web),
+
+      // IMAGE FIELDS - Update only if NOT null (never overwrite with null)
+      feature_image: updateIfNotNull(featureImage, existingRecord?.feature_image),
+      feature_image_url: updateIfNotNull(featureImage, existingRecord?.feature_image_url),
+      fotos_exterior_url: updateIfNotNull(exteriorImages, existingRecord?.fotos_exterior_url),
+      fotos_interior_url: updateIfNotNull(interiorImages, existingRecord?.fotos_interior_url),
+
+      // ALWAYS PRESERVE R2 image fields
       ...(useR2Images && {
         use_r2_images: true,
         r2_feature_image: r2FeatureImage,
         r2_gallery: r2Gallery,
       }),
-      ordencompra: fields.OrdenCompra || '',
-      ordenstatus: currentOrdenStatus,
-      separado: !!(fields.separado || fields.Separado), // Convert any truthy value to boolean
+
+      // Boolean fields - preserve existing if Airtable doesn't send
+      separado: fields.separado !== undefined || fields.Separado !== undefined
+        ? !!(fields.separado || fields.Separado)
+        : existingRecord?.separado ?? false,
       vendido: isVendido,
-      clasificacionid: clasificacionValue,
-      ubicacion: ubicacionValue,
-      // ✅ FIX: Preserve existing descripcion if Airtable doesn't send one
-      descripcion: fields.descripcion || existingRecord?.descripcion || '',
+      rezago: fields.Rezago !== undefined || fields.rezago !== undefined
+        ? (fields.Rezago === true || fields.rezago === true)
+        : existingRecord?.rezago ?? false,
+      con_oferta: fields['Con Oferta'] !== undefined
+        ? fields['Con Oferta'] === true
+        : existingRecord?.con_oferta ?? false,
+      en_reparacion: fields['En Reparación'] ?? existingRecord?.en_reparacion ?? false,
+      utilitario: fields.Utilitario ?? existingRecord?.utilitario ?? false,
 
-      // Financial fields
-      enganchemin: getNumberField(fields.EngancheMin, fields.enganchemin),
-      enganche_recomendado: getNumberField(fields.EngancheRecomendado, fields.enganche_recomendado),
-      mensualidad_minima: getNumberField(fields.MensualidadMinima, fields.mensualidad_minima),
-      mensualidad_recomendada: getNumberField(fields.MensualidadRecomendada, fields.mensualidad_recomendada),
-      plazomax: getNumberField(fields.PlazoMax, fields.plazomax),
-
-      // Additional fields
-      garantia: getStringField(fields.Garantia, fields.garantia),
-      titulometa: getStringField(fields.TituloMeta, fields.metadescripcion),
-      AutoMotor: getStringField(fields.AutoMotor, fields.motor),
-      ingreso_inventario: fields.IngresoInventario || fields.ingreso_inventario || null,
-      numero_duenos: getNumberField(fields.NumeroDuenos, fields.numero_duenos),
-      rezago: fields.Rezago === true || fields.rezago === true,
-      promociones: promocionesValue,
-
-      // URLs del vehículo
-      liga_bot: fields.ligaBot || fields.LigaBot || null,  // Directo de Airtable
-      liga_web: `https://autostrefa.mx/autos/${slug}`,     // URL generada
-
+      // Timestamps
+      ingreso_inventario: fields.IngresoInventario || fields.ingreso_inventario || existingRecord?.ingreso_inventario,
       last_synced_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      // ✅ FIX: Preserve created_at if it already exists
+      // Preserve created_at if it already exists
       ...(existingRecord?.created_at && { created_at: existingRecord.created_at }),
-      // Store full Airtable data for reference
-      data: fields,
+
+      // Store full Airtable data for reference (merge with existing)
+      data: { ...(existingRecord?.data || {}), ...fields },
     };
 
     // --- 6. Upsert Data into Supabase ---

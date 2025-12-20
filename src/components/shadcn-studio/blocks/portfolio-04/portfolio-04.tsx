@@ -282,8 +282,8 @@ const Portfolio = ({
         const supabase = createBrowserSupabaseClient()
         const { data, error } = await supabase
           .from('inventario_cache')
-          .select('id, slug, title, precio, feature_image, galeria_exterior, fotos_exterior_url, r2_feature_image, r2_gallery, separado, vendido, ordenstatus')
-          .eq('ordenstatus', 'Comprado')
+          .select('id, slug, title, precio, feature_image, galeria_exterior, fotos_exterior_url, r2_feature_image, r2_gallery, separado, vendido, ordenstatus, exhibicion_inventario')
+          .eq('exhibicion_inventario', true)
           .or('separado.is.null,separado.eq.false')
           .or('vendido.is.null,vendido.eq.false')
           .order('id', { ascending: false })

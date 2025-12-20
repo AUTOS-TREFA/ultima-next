@@ -125,8 +125,8 @@ async function fetchVehiclesFromDB(
     .from('inventario_cache')
     .select('*', { count: 'exact' });
 
-  // Base filters
-  query = query.eq('ordenstatus', 'Comprado');
+  // Base filters - only show vehicles approved for public exhibition
+  query = query.eq('exhibicion_inventario', true);
 
   if (filters.hideSeparado) {
     query = query.or('separado.eq.false,separado.is.null');

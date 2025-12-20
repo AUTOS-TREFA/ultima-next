@@ -32,7 +32,7 @@ async function fetchAllSlugs() {
   const { data, error } = await supabase
     .from('inventario_cache')
     .select('slug')
-    .eq('ordenstatus', 'Comprado')
+    .eq('exhibicion_inventario', true)
     .order('updated_at', { ascending: false });
 
   if (error) {

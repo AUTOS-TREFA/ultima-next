@@ -308,7 +308,8 @@ class VehicleService {
         let query = supabase.from('inventario_cache').select('*, feature_image_url, fotos_exterior_url', { count: 'exact' });
 
         // --- Base Filters ---
-        query = query.eq('ordenstatus', 'Comprado');
+        // Use exhibicion_inventario instead of ordenstatus for public listings
+        query = query.eq('exhibicion_inventario', true);
         if (filters.hideSeparado) {
             query = query.or('separado.eq.false,separado.is.null');
         }
@@ -649,7 +650,7 @@ class VehicleService {
                 .from('inventario_cache')
                 .select('*')
                 .or(`slug.ilike.${slug}%,slug.ilike.%${slug}`)
-                .eq('ordenstatus', 'Comprado')
+                .eq('exhibicion_inventario', true)
                 .limit(1)
                 .maybeSingle();
 
@@ -696,7 +697,7 @@ class VehicleService {
             const { data, error } = await supabase
                 .from('inventario_cache')
                 .select('slug')
-                .eq('ordenstatus', 'Comprado')
+                .eq('exhibicion_inventario', true)
                 .order('updated_at', { ascending: false });
 
             if (error) throw error;

@@ -481,8 +481,8 @@ function parseFilters(searchParams) {
 async function buildFilteredQuery(filters) {
   let query = supabase.from("inventario_cache").select("*", { count: 'exact' });
 
-  // Base filter - always show only Comprado
-  query = query.ilike("ordenstatus", "Comprado");
+  // Base filter - only show vehicles approved for exhibition
+  query = query.eq("exhibicion_inventario", true);
 
   // Hide separado vehicles if requested
   if (filters.hideSeparado) {
@@ -602,7 +602,7 @@ async function fetchAllComprado(forceRefresh = false) {
     console.log("🔄 Force refreshing cache...");
   }
 
-  const { data, error } = await supabase.from("inventario_cache").select("*").ilike("ordenstatus", "Comprado");
+  const { data, error } = await supabase.from("inventario_cache").select("*").eq("exhibicion_inventario", true);
   if (error) throw new Error(error.message);
   const enriched = (data || []).map(transformVehicle);
   cachedAll = {
