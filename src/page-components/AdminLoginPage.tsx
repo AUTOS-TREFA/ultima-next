@@ -24,7 +24,7 @@ const AdminLoginPage: React.FC = () => {
         if (!authLoading && session) {
             // Check if user is admin by email or profile role
             if (isAdmin || checkIsAdmin(session.user?.email)) {
-                router.replace('/escritorio/admin/dashboard');
+                router.replace('/escritorio/admin/marketing');
             } else if (profile?.role === 'sales') {
                 router.replace('/escritorio/ventas/dashboard');
             } else if (profile) {
@@ -52,7 +52,7 @@ const AdminLoginPage: React.FC = () => {
 
             // Check if user is admin by email (faster than waiting for profile)
             if (data.user && checkIsAdmin(data.user.email)) {
-                router.push('/escritorio/admin/dashboard');
+                router.push('/escritorio/admin/marketing');
                 return;
             }
 
@@ -65,7 +65,7 @@ const AdminLoginPage: React.FC = () => {
                     .single();
 
                 if (profile?.role === 'admin') {
-                    router.push('/escritorio/admin/dashboard');
+                    router.push('/escritorio/admin/marketing');
                 } else if (profile?.role === 'sales') {
                     router.push('/escritorio/ventas/dashboard');
                 } else {
