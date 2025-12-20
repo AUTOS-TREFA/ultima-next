@@ -162,9 +162,9 @@ export const adminFirstLevelItems: NavItem[] = [
     },
     {
         to: '/escritorio/admin/cargar-fotos',
-        label: 'Cargar Fotos',
+        label: 'Editar Autos',
         icon: ImagePlus,
-        roles: ['admin']
+        roles: ['admin', 'marketing']
     },
 ];
 

@@ -12,6 +12,7 @@ export interface Vehicle {
   
   // ========== TÍTULO Y DESCRIPCIÓN ==========
   titulo: string;
+  titulometa?: string;
   descripcion: string;
   metadescripcion: string;
 

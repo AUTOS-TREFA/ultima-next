@@ -227,15 +227,9 @@ function transformToFacebookProduct(row: InventarioRow): FacebookProduct {
   if (row.autotransmision) product.custom_label_2 = row.autotransmision;
   if (row.ubicacion) product.custom_label_3 = row.ubicacion;
 
-  // Add mileage to custom label if available
-  if (row.kilometraje) {
-    let km = "";
-    if (typeof row.kilometraje === "object" && row.kilometraje?.value) {
-      km = `${row.kilometraje.value} km`;
-    } else if (typeof row.kilometraje === "number") {
-      km = `${row.kilometraje} km`;
-    }
-    if (km) product.custom_label_4 = km;
+  // Add mileage to custom label if available (kilometraje is now NUMERIC)
+  if (row.kilometraje && typeof row.kilometraje === "number") {
+    product.custom_label_4 = `${row.kilometraje} km`;
   }
 
   return product;

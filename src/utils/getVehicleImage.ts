@@ -72,6 +72,10 @@ export function getVehicleImage(vehicle: Partial<Vehicle & WordPressVehicle>): s
         continue;
       }
       // Only accept URLs that start with http://, https://, or /
+      // Exclude miniextensions URLs - these are Airtable attachment links, not actual images
+      if (trimmed.includes('miniextensions.com')) {
+        continue;
+      }
       if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/')) {
         // Convert Supabase URL to CDN URL
         return getCdnUrl(trimmed);

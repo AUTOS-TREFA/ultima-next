@@ -64,8 +64,16 @@ const VehicleGridCard: React.FC<VehicleGridCardProps> = ({ vehicle }) => {
       mainImage,
       ...(vehicle.galeria_exterior || []),
     ];
-    // Deduplicate, filter out falsy values, and LIMIT TO 3 IMAGES MAX for performance
-    const uniqueImages = [...new Set(imageUrls.filter(Boolean))];
+    // Filter out invalid URLs (miniextensions, empty, etc.)
+    const isValidImageUrl = (url: string | null | undefined): boolean => {
+      if (!url || typeof url !== 'string') return false;
+      const trimmed = url.trim();
+      if (!trimmed.startsWith('http')) return false;
+      if (trimmed.includes('miniextensions.com')) return false;
+      return true;
+    };
+    // Deduplicate, filter out invalid values, and LIMIT TO 3 IMAGES MAX for performance
+    const uniqueImages = [...new Set(imageUrls.filter(isValidImageUrl))];
     return uniqueImages.slice(0, 3);
   }, [vehicle]);
 
@@ -122,12 +130,8 @@ const VehicleGridCard: React.FC<VehicleGridCardProps> = ({ vehicle }) => {
                         );
                     })}
                 </div>
-                <h3 className="font-bold text-base text-gray-900 group-hover:text-primary-600 transition-colors truncate mb-2" title={vehicle.title}>
-                    {vehicle.title}{(() => {
-                      const year = vehicle.autoano || vehicle.year;
-                      const titleContainsYear = year && vehicle.title.includes(String(year));
-                      return !titleContainsYear && year ? <span className="text-gray-600"> {year}</span> : null;
-                    })()}
+                <h3 className="font-bold text-base text-gray-900 group-hover:text-primary-600 transition-colors truncate mb-2" title={`${vehicle.titulometa || vehicle.titulo || vehicle.title} ${vehicle.autoano || ''}`}>
+                    {vehicle.titulometa || vehicle.titulo || vehicle.title} {vehicle.autoano || ''}
                 </h3>
 
                 {/* Specs badges in white section */}

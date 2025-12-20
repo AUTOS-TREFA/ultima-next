@@ -43,26 +43,63 @@ serve(async (req: Request) => {
     // --- 3. Update Vehicle in Supabase ---
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // First, check if the vehicle exists
-    const { data: existingVehicle, error: fetchError } = await supabase
+    // Helper to convert ID/OC format to TRF
+    const convertToTrfFormat = (id: string): string => {
+      if (!id) return id;
+      if (id.startsWith('TRF')) return id;
+      if (id.startsWith('ID')) return 'TRF' + id.substring(2);
+      if (id.startsWith('OC')) return 'TRF' + id.substring(2);
+      return id;
+    };
+
+    // First, try to find by ordencompra (TRF format)
+    let existingVehicle = null;
+    let searchedOrdencompra = ordencompra;
+
+    // Try TRF format first
+    const trfFormat = convertToTrfFormat(ordencompra);
+    const { data: byOrdencompra, error: fetchError1 } = await supabase
       .from('inventario_cache')
-      .select('id, titulo, record_id, ordenstatus, vendido')
-      .eq('ordencompra', ordencompra)
+      .select('id, titulo, record_id, ordenstatus, vendido, ordencompra')
+      .eq('ordencompra', trfFormat)
       .single();
 
-    if (fetchError && fetchError.code !== 'PGRST116') {
-      // PGRST116 is "not found" error, which we want to handle separately
-      console.error('❌ Error fetching vehicle:', fetchError);
-      throw new Error(`Failed to fetch vehicle: ${fetchError.message}`);
+    if (fetchError1 && fetchError1.code !== 'PGRST116') {
+      console.error('❌ Error fetching vehicle by ordencompra:', fetchError1);
+      throw new Error(`Failed to fetch vehicle: ${fetchError1.message}`);
+    }
+
+    if (byOrdencompra) {
+      existingVehicle = byOrdencompra;
+      searchedOrdencompra = trfFormat;
+      console.log(`📋 Found by ordencompra: ${trfFormat}`);
+    } else {
+      // Try to find by legacy_id (ID or OC format)
+      const { data: byLegacyId, error: fetchError2 } = await supabase
+        .from('inventario_cache')
+        .select('id, titulo, record_id, ordenstatus, vendido, ordencompra')
+        .eq('legacy_id', ordencompra)
+        .single();
+
+      if (fetchError2 && fetchError2.code !== 'PGRST116') {
+        console.error('❌ Error fetching vehicle by legacy_id:', fetchError2);
+      }
+
+      if (byLegacyId) {
+        existingVehicle = byLegacyId;
+        searchedOrdencompra = byLegacyId.ordencompra; // Use the actual ordencompra for update
+        console.log(`📋 Found by legacy_id: ${ordencompra} → ordencompra: ${byLegacyId.ordencompra}`);
+      }
     }
 
     if (!existingVehicle) {
-      console.warn(`⚠️ Vehicle with OrdenCompra ${ordencompra} not found in inventario_cache`);
+      console.warn(`⚠️ Vehicle with OrdenCompra ${ordencompra} not found in inventario_cache (tried TRF: ${trfFormat} and legacy_id)`);
       return new Response(
         JSON.stringify({
           success: false,
           message: `Vehicle with OrdenCompra ${ordencompra} not found`,
           ordencompra: ordencompra,
+          searched: { trf_format: trfFormat, legacy_id: ordencompra }
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -74,7 +111,7 @@ serve(async (req: Request) => {
     console.log(`📋 Found vehicle: ${existingVehicle.titulo} (ID: ${existingVehicle.id})`);
     console.log(`   Current status: ordenstatus=${existingVehicle.ordenstatus}, vendido=${existingVehicle.vendido}`);
 
-    // Update the vehicle to mark it as sold
+    // Update the vehicle to mark it as sold (use the actual ordencompra found)
     const { error: updateError } = await supabase
       .from('inventario_cache')
       .update({
@@ -83,14 +120,14 @@ serve(async (req: Request) => {
         last_synced_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
-      .eq('ordencompra', ordencompra);
+      .eq('ordencompra', searchedOrdencompra);
 
     if (updateError) {
       console.error('❌ Error updating vehicle:', updateError);
       throw new Error(`Failed to update vehicle: ${updateError.message}`);
     }
 
-    console.log(`✅ Successfully marked vehicle ${ordencompra} as sold (Historico)`);
+    console.log(`✅ Successfully marked vehicle ${searchedOrdencompra} as sold (Historico)`);
 
     // --- 4. Invalidate rapid-processor cache (fire and forget) ---
     try {
@@ -117,7 +154,8 @@ serve(async (req: Request) => {
         success: true,
         message: `Successfully marked vehicle as sold`,
         data: {
-          ordencompra: ordencompra,
+          ordencompra: searchedOrdencompra,
+          original_ordencompra: ordencompra,
           vehicle_id: existingVehicle.id,
           titulo: existingVehicle.titulo,
           previous_status: {

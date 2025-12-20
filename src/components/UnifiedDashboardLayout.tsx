@@ -135,13 +135,13 @@ const sellCarGroup: NavGroup = {
 };
 
 // Admin Main Items (Simplified - only most used)
+// Note: "Editar Autos" is now a dedicated button at the top of the Admin section
 const adminMainItems: NavItem[] = [
     { to: '/escritorio/admin/marketing', label: 'Dashboard General', icon: LayoutDashboard, roles: ['admin'] },
     { to: '/escritorio/admin/crm', label: 'Leads', icon: Target, roles: ['admin'] },
     { to: '/escritorio/admin/usuarios', label: 'Asesores', icon: Users, roles: ['admin'] },
     { to: '/escritorio/admin/marketplace', label: 'Marketplace Admin', icon: Store, roles: ['admin'] },
     { to: '/escritorio/admin/compras', label: 'Compras', icon: ShoppingCart, roles: ['admin'] },
-    { to: '/escritorio/admin/cargar-fotos', label: 'Cargar Fotos', icon: ImagePlus, roles: ['admin'] },
 ];
 
 // Admin Analytics Group
@@ -178,9 +178,9 @@ const salesItems: NavItem[] = [
 ];
 
 // Marketing items - NO access to CRM, leads, or sensitive data
+// Note: "Editar Autos" is now a dedicated button at the top of the Marketing section
 const marketingMainItems: NavItem[] = [
     { to: '/escritorio/marketing', label: 'Marketing Hub', icon: BarChart3, roles: ['marketing'] },
-    { to: '/escritorio/admin/cargar-fotos', label: 'Cargar Fotos', icon: ImagePlus, roles: ['marketing'] },
 ];
 
 // Marketing Analytics Group
@@ -426,6 +426,21 @@ const AppSidebarContent: React.FC = () => {
                     <>
                         <Separator className="bg-gray-200 my-2" />
 
+                        {/* Editar Autos Quick Action Button */}
+                        <div className="px-3 mb-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                asChild
+                                className="w-full h-8 justify-start gap-2 text-xs font-medium border-primary/30 text-primary hover:bg-primary/10 hover:text-primary hover:border-primary/50"
+                            >
+                                <Link href="/escritorio/admin/cargar-fotos" onClick={handleNavClick}>
+                                    <ImagePlus className="h-3.5 w-3.5" />
+                                    Editar Autos
+                                </Link>
+                            </Button>
+                        </div>
+
                         {/* Admin Main */}
                         <SidebarGroup className="py-1">
                             <SidebarGroupLabel className="text-gray-400 text-[10px] font-semibold uppercase tracking-widest mb-1 px-3">
@@ -599,6 +614,21 @@ const AppSidebarContent: React.FC = () => {
                 {isMarketing && (
                     <>
                         <Separator className="bg-gray-200 my-2" />
+
+                        {/* Editar Autos Quick Action Button (Marketing) */}
+                        <div className="px-3 mb-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                asChild
+                                className="w-full h-8 justify-start gap-2 text-xs font-medium border-primary/30 text-primary hover:bg-primary/10 hover:text-primary hover:border-primary/50"
+                            >
+                                <Link href="/escritorio/admin/cargar-fotos" onClick={handleNavClick}>
+                                    <ImagePlus className="h-3.5 w-3.5" />
+                                    Editar Autos
+                                </Link>
+                            </Button>
+                        </div>
 
                         {/* Marketing Main */}
                         <SidebarGroup className="py-1">

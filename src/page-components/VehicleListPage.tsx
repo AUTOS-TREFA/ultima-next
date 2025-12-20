@@ -318,7 +318,7 @@ const VehicleListPage: React.FC = () => {
     }
   }, [vehicles]);
 
-  const vehiclesPerPage = 20;
+  const vehiclesPerPage = 16;
   const totalPages = useMemo(() => Math.ceil(totalCount / vehiclesPerPage), [totalCount]);
 
   const activeFiltersList = useMemo(() => {

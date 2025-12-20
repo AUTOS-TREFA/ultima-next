@@ -28,6 +28,8 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, alt, className, i
       if (!img) return false;
       if (typeof img !== 'string') return false;
       const trimmed = img.trim();
+      // Exclude miniextensions URLs - these are Airtable attachment links, not actual images
+      if (trimmed.includes('miniextensions.com')) return false;
       return trimmed.length > 0 && trimmed.startsWith('http');
     });
 

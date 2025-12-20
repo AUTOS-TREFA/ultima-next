@@ -102,7 +102,27 @@ serve(async (req) => {
 });
 
 async function buscarEnAirtable(ordenCompra: string): Promise<any> {
-  const formula = encodeURIComponent(`{OrdenCompra}="${ordenCompra}"`);
+  // Search for TRF, ID, and OC formats to handle migration period
+  // TRF001234 → also search for ID001234 and OC001234
+  const formats: string[] = [ordenCompra];
+
+  if (ordenCompra.startsWith('TRF')) {
+    const num = ordenCompra.substring(3);
+    formats.push('ID' + num);   // TRF001234 → ID001234
+    formats.push('OC' + num);   // TRF001234 → OC001234
+  } else if (ordenCompra.startsWith('ID')) {
+    const num = ordenCompra.substring(2);
+    formats.push('TRF' + num);  // ID001234 → TRF001234
+    formats.push('OC' + num);   // ID001234 → OC001234
+  } else if (ordenCompra.startsWith('OC')) {
+    const num = ordenCompra.substring(2);
+    formats.push('TRF' + num);  // OC001234 → TRF001234
+    formats.push('ID' + num);   // OC001234 → ID001234
+  }
+
+  // Search for any format
+  const orClauses = formats.map(f => `{OrdenCompra}="${f}"`).join(',');
+  const formula = encodeURIComponent(`OR(${orClauses})`);
   const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}?filterByFormula=${formula}&maxRecords=1`;
   const response = await fetch(url, { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } });
   if (response.status === 429) {
@@ -154,7 +174,7 @@ function mapearCampos(registro: Record<string, any>): Record<string, any> {
   for (const [supabaseKey, airtableKey] of Object.entries(CAMPOS_SUPABASE_TO_AIRTABLE)) {
     let valor = registro[supabaseKey];
     if (valor === null || valor === undefined || valor === "") continue;
-    if (supabaseKey === "kilometraje" && typeof valor === "object") valor = valor.value || valor.km || valor;
+    // kilometraje is now NUMERIC - no object handling needed
     if (typeof valor === "string") {
       valor = valor.replace(/^["']+|["']+$/g, "").replace(/\\"/g, '"').trim();
       if (valor === "") continue;

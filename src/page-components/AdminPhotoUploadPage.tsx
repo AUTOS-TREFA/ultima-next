@@ -78,6 +78,7 @@ import {
   type VehicleEditData,
   type VehicleUpdatePayload,
 } from '@/services/VehiclePhotoService';
+import VehicleEditDialog from '@/components/shadcn-studio/blocks/dashboard-dialog-12/vehicle-edit-dialog';
 
 // Constants for form options
 const SUCURSALES = [
@@ -132,473 +133,6 @@ const DEFAULT_PROMOCIONES = [
 interface PreviewFile extends File {
   preview: string;
   id: string;
-}
-
-// Vehicle Edit Dialog Component
-function VehicleEditDialog({
-  open,
-  onOpenChange,
-  vehicle,
-  onSaved,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  vehicle: VehicleEditData | null;
-  onSaved: () => void;
-}) {
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState<VehicleUpdatePayload>({});
-  const [selectedPromociones, setSelectedPromociones] = useState<string[]>([]);
-  const [customPromocion, setCustomPromocion] = useState('');
-  const [availablePromociones, setAvailablePromociones] = useState<string[]>(DEFAULT_PROMOCIONES);
-  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
-  // Photo management state
-  const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
-
-  // Load form data when vehicle changes
-  useEffect(() => {
-    if (vehicle && open) {
-      setFormData({
-        mensualidad_minima: vehicle.mensualidad_minima,
-        mensualidad_recomendada: vehicle.mensualidad_recomendada,
-        ubicacion: vehicle.ubicacion,
-        garantia: vehicle.garantia,
-        carroceria: vehicle.carroceria,
-        kilometraje: vehicle.kilometraje,
-        transmision: vehicle.transmision,
-        ordenstatus: vehicle.ordenstatus || 'Comprado',
-      });
-      setSelectedPromociones(vehicle.promociones || []);
-      setSaveMessage(null);
-
-      // Load unique promociones
-      VehiclePhotoService.getUniquePromociones().then(promos => {
-        const allPromos = new Set([...DEFAULT_PROMOCIONES, ...promos]);
-        setAvailablePromociones(Array.from(allPromos).sort());
-      });
-    }
-  }, [vehicle, open]);
-
-  const handleInputChange = (field: keyof VehicleUpdatePayload, value: unknown) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setSaveMessage(null);
-  };
-
-  const handlePromocionToggle = (promo: string, checked: boolean) => {
-    if (checked) {
-      setSelectedPromociones(prev => [...prev, promo]);
-    } else {
-      setSelectedPromociones(prev => prev.filter(p => p !== promo));
-    }
-    setSaveMessage(null);
-  };
-
-  const handleAddCustomPromocion = () => {
-    const trimmed = customPromocion.trim();
-    if (trimmed && !availablePromociones.includes(trimmed)) {
-      setAvailablePromociones(prev => [...prev, trimmed].sort());
-      setSelectedPromociones(prev => [...prev, trimmed]);
-      setCustomPromocion('');
-      setSaveMessage(null);
-    }
-  };
-
-  const handleSave = async () => {
-    if (!vehicle) return;
-
-    setSaving(true);
-    setSaveMessage(null);
-
-    const payload: VehicleUpdatePayload = {
-      ...formData,
-      promociones: selectedPromociones.length > 0 ? selectedPromociones : null,
-    };
-
-    const result = await VehiclePhotoService.updateVehicleData(vehicle.id, payload);
-
-    setSaving(false);
-
-    if (result.success) {
-      setSaveMessage({ type: 'success', text: 'Datos guardados correctamente' });
-      onSaved();
-      setTimeout(() => {
-        onOpenChange(false);
-      }, 1500);
-    } else {
-      setSaveMessage({ type: 'error', text: result.error || 'Error al guardar' });
-    }
-  };
-
-  const formatCurrency = (value: number | null | undefined) => {
-    if (value == null) return '-';
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN',
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
-  if (!vehicle) return null;
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Settings2 className="w-5 h-5" />
-            Editar Vehículo
-          </DialogTitle>
-          <DialogDescription>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <span className="font-mono text-xs bg-muted px-2 py-1 rounded">
-                {vehicle.ordencompra || 'Sin OC'}
-              </span>
-              <span className="font-medium">{vehicle.title}</span>
-            </div>
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-6 py-4">
-          {/* Non-editable info */}
-          <Card className="bg-muted/30">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <Car className="w-4 h-4" />
-                Información del Vehículo (Solo lectura)
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-              <div>
-                <p className="text-muted-foreground text-xs">Marca</p>
-                <p className="font-medium">{vehicle.marca || '-'}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-xs">Modelo</p>
-                <p className="font-medium">{vehicle.modelo || '-'}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-xs">Año</p>
-                <p className="font-medium">{vehicle.autoano || '-'}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-xs">Precio</p>
-                <p className="font-medium text-primary">{formatCurrency(vehicle.precio)}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Photo Status */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center justify-between">
-                <span className="flex items-center gap-2">
-                  <Camera className="w-4 h-4" />
-                  Fotos
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPhotoDialogOpen(true)}
-                  className="gap-2"
-                >
-                  <Images className="w-4 h-4" />
-                  Administrar Fotos
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                {vehicle.thumbnail_url ? (
-                  <div className="w-24 h-16 rounded-lg overflow-hidden bg-muted relative">
-                    <Image
-                      src={vehicle.thumbnail_url}
-                      alt={vehicle.title}
-                      fill
-                      className="object-cover"
-                      sizes="96px"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-24 h-16 rounded-lg bg-muted flex items-center justify-center">
-                    <ImageOff className="w-6 h-6 text-muted-foreground" />
-                  </div>
-                )}
-                <div className="flex gap-2 flex-wrap">
-                  {vehicle.has_feature_image ? (
-                    <Badge variant="default" className="bg-green-600">
-                      <CheckCircle2 className="w-3 h-3 mr-1" />
-                      Foto Principal
-                    </Badge>
-                  ) : (
-                    <Badge variant="destructive">
-                      <AlertCircle className="w-3 h-3 mr-1" />
-                      Sin Foto Principal
-                    </Badge>
-                  )}
-                  {vehicle.has_gallery ? (
-                    <Badge variant="secondary">
-                      <Images className="w-3 h-3 mr-1" />
-                      {vehicle.gallery_count} fotos
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-amber-600 border-amber-300">
-                      <ImageOff className="w-3 h-3 mr-1" />
-                      Sin galería
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Editable Fields */}
-          <div className="grid gap-6">
-            {/* Mensualidades */}
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="mensualidad_minima" className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
-                  Mensualidad Mínima
-                </Label>
-                <Input
-                  id="mensualidad_minima"
-                  type="number"
-                  placeholder="0"
-                  value={formData.mensualidad_minima ?? ''}
-                  onChange={(e) => handleInputChange('mensualidad_minima', e.target.value ? Number(e.target.value) : null)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="mensualidad_recomendada" className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
-                  Mensualidad Recomendada
-                </Label>
-                <Input
-                  id="mensualidad_recomendada"
-                  type="number"
-                  placeholder="0"
-                  value={formData.mensualidad_recomendada ?? ''}
-                  onChange={(e) => handleInputChange('mensualidad_recomendada', e.target.value ? Number(e.target.value) : null)}
-                />
-              </div>
-            </div>
-
-            {/* Sucursal y Garantía */}
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="ubicacion" className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  Sucursal
-                </Label>
-                <Select
-                  value={formData.ubicacion || ''}
-                  onValueChange={(value) => handleInputChange('ubicacion', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar sucursal" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SUCURSALES.map(suc => (
-                      <SelectItem key={suc} value={suc}>{suc}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="garantia" className="flex items-center gap-2">
-                  <Shield className="w-4 h-4" />
-                  Garantía
-                </Label>
-                <Select
-                  value={formData.garantia || ''}
-                  onValueChange={(value) => handleInputChange('garantia', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar garantía" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GARANTIAS.map(g => (
-                      <SelectItem key={g} value={g}>{g}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Carrocería, Kilometraje, Transmisión */}
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="carroceria">Carrocería</Label>
-                <Select
-                  value={formData.carroceria || ''}
-                  onValueChange={(value) => handleInputChange('carroceria', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CARROCERIAS.map(c => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="kilometraje">Kilometraje</Label>
-                <Input
-                  id="kilometraje"
-                  type="number"
-                  placeholder="0"
-                  value={formData.kilometraje ?? ''}
-                  onChange={(e) => handleInputChange('kilometraje', e.target.value ? Number(e.target.value) : null)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="transmision">Transmisión</Label>
-                <Select
-                  value={formData.transmision || ''}
-                  onValueChange={(value) => handleInputChange('transmision', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TRANSMISIONES.map(t => (
-                      <SelectItem key={t} value={t}>{t}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Order Status */}
-            <div className="space-y-2">
-              <Label htmlFor="ordenstatus">Estado de Orden</Label>
-              <Select
-                value={formData.ordenstatus || 'Comprado'}
-                onValueChange={(value) => handleInputChange('ordenstatus', value)}
-              >
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Seleccionar estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ORDENSTATUS_OPTIONS.map(s => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Promociones */}
-            <div className="space-y-3">
-              <Label className="flex items-center gap-2">
-                <Tag className="w-4 h-4" />
-                Promociones
-              </Label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {availablePromociones.map(promo => (
-                  <div key={promo} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`promo-${promo}`}
-                      checked={selectedPromociones.includes(promo)}
-                      onCheckedChange={(checked) => handlePromocionToggle(promo, checked as boolean)}
-                    />
-                    <label
-                      htmlFor={`promo-${promo}`}
-                      className="text-sm cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      {promo}
-                    </label>
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-2 mt-2">
-                <Input
-                  placeholder="Nueva promoción..."
-                  value={customPromocion}
-                  onChange={(e) => setCustomPromocion(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddCustomPromocion();
-                    }
-                  }}
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={handleAddCustomPromocion}
-                  disabled={!customPromocion.trim()}
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Save message */}
-          {saveMessage && (
-            <Alert variant={saveMessage.type === 'error' ? 'destructive' : 'default'} className={saveMessage.type === 'success' ? 'bg-green-50 border-green-200' : ''}>
-              {saveMessage.type === 'success' ? (
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-              ) : (
-                <AlertCircle className="h-4 w-4" />
-              )}
-              <AlertDescription className={saveMessage.type === 'success' ? 'text-green-700' : ''}>
-                {saveMessage.text}
-              </AlertDescription>
-            </Alert>
-          )}
-        </div>
-
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-            Cancelar
-          </Button>
-          <Button onClick={handleSave} disabled={saving} className="gap-2">
-            {saving ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Guardando...
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                Guardar Cambios
-              </>
-            )}
-          </Button>
-        </DialogFooter>
-
-        {/* Photo Manager Dialog (nested) */}
-        <PhotoManagerDialog
-          open={photoDialogOpen}
-          onOpenChange={setPhotoDialogOpen}
-          vehicle={vehicle ? {
-            id: vehicle.id,
-            ordencompra: vehicle.ordencompra,
-            title: vehicle.title,
-            brand: vehicle.marca,
-            model: vehicle.modelo,
-            year: vehicle.autoano,
-            feature_image: vehicle.feature_image,
-            r2_feature_image: vehicle.r2_feature_image,
-            r2_gallery: vehicle.r2_gallery,
-            gallery_count: vehicle.gallery_count,
-            thumbnail_url: vehicle.thumbnail_url,
-            ubicacion: vehicle.ubicacion,
-          } : null}
-          onPhotoDeleted={() => onSaved()}
-          onFeaturedChanged={() => onSaved()}
-          onPhotosAdded={() => onSaved()}
-        />
-      </DialogContent>
-    </Dialog>
-  );
 }
 
 // Photo Manager Dialog Component
@@ -1670,6 +1204,47 @@ export default function AdminPhotoUploadPage() {
         onOpenChange={setEditDialogOpen}
         vehicle={editingVehicle}
         onSaved={() => {
+          fetchAllVehicles();
+          fetchVehiclesWithoutPhotos();
+          fetchVehiclesWithPhotos();
+        }}
+        onManagePhotos={() => {
+          if (editingVehicle) {
+            setPhotoManagerVehicle({
+              id: editingVehicle.id,
+              ordencompra: editingVehicle.ordencompra,
+              title: editingVehicle.title,
+              brand: editingVehicle.marca,
+              model: editingVehicle.modelo,
+              year: editingVehicle.autoano,
+              feature_image: editingVehicle.feature_image,
+              r2_feature_image: editingVehicle.r2_feature_image,
+              r2_gallery: editingVehicle.r2_gallery,
+              gallery_count: editingVehicle.gallery_count,
+              thumbnail_url: editingVehicle.thumbnail_url,
+              ubicacion: editingVehicle.ubicacion,
+            });
+            setPhotoDialogOpen(true);
+          }
+        }}
+      />
+
+      {/* Photo Manager Dialog (for editing photos from VehicleEditDialog) */}
+      <PhotoManagerDialog
+        open={photoDialogOpen}
+        onOpenChange={setPhotoDialogOpen}
+        vehicle={photoManagerVehicle}
+        onPhotoDeleted={() => {
+          fetchAllVehicles();
+          fetchVehiclesWithoutPhotos();
+          fetchVehiclesWithPhotos();
+        }}
+        onFeaturedChanged={() => {
+          fetchAllVehicles();
+          fetchVehiclesWithoutPhotos();
+          fetchVehiclesWithPhotos();
+        }}
+        onPhotosAdded={() => {
           fetchAllVehicles();
           fetchVehiclesWithoutPhotos();
           fetchVehiclesWithPhotos();

@@ -27,7 +27,8 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
   const hasSlug = vehicle.slug && vehicle.slug.trim() !== '';
   const isSeparado = vehicle.separado === true;
   const favoriteStatus = isFavorite(vehicle.id);
-  const whatsappUrl = vehicle.liga_boton_whatsapp || `https://wa.me/5218187049079?text=Hola,%20me%20interesa%20el%20${encodeURIComponent(vehicle.title)}`;
+  const vehicleName = `${vehicle.titulometa || vehicle.titulo || vehicle.title} ${vehicle.autoano || ''}`.trim();
+  const whatsappUrl = vehicle.liga_boton_whatsapp || `https://wa.me/5218187049079?text=Hola,%20me%20interesa%20el%20${encodeURIComponent(vehicleName)}`;
 
   // Check if vehicle is popular (1000+ views)
   const isPopular = vehicle.view_count >= 1000;
@@ -66,8 +67,16 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
       mainImage,
       ...(vehicle.galeria_exterior || []),
     ];
-    // Deduplicate, filter out falsy values, and LIMIT TO 3 IMAGES MAX for performance
-    const uniqueImages = [...new Set(imageUrls.filter(Boolean))];
+    // Filter out invalid URLs (miniextensions, empty, etc.)
+    const isValidImageUrl = (url: string | null | undefined): boolean => {
+      if (!url || typeof url !== 'string') return false;
+      const trimmed = url.trim();
+      if (!trimmed.startsWith('http')) return false;
+      if (trimmed.includes('miniextensions.com')) return false;
+      return true;
+    };
+    // Deduplicate, filter out invalid values, and LIMIT TO 3 IMAGES MAX for performance
+    const uniqueImages = [...new Set(imageUrls.filter(isValidImageUrl))];
     return uniqueImages.slice(0, 3);
   }, [vehicle]);
 
@@ -108,7 +117,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
         <div className="md:w-[42%] md:flex-shrink-0 relative">
           <ImageCarousel
             images={imagesForCarousel}
-            alt={vehicle.title}
+            alt={vehicleName}
             isSeparado={isSeparado}
             garantia={vehicle.garantia}
             sucursal={vehicle.ubicacion}
@@ -121,7 +130,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
 
         <div className="flex-grow p-5 flex flex-col justify-between min-w-0">
           <div>
-            <VehicleCardHeader title={vehicle.title} year={vehicle.autoano || vehicle.year} view_count={vehicle.view_count || 0} ordencompra={vehicle.ordencompra} promociones={vehicle.promociones} />
+            <VehicleCardHeader title={vehicleName} year={vehicle.autoano || vehicle.year} view_count={vehicle.view_count || 0} ordencompra={vehicle.ordencompra} promociones={vehicle.promociones} />
             <VehicleCardSpecs
               sucursal={vehicle.ubicacion}
               kilometraje={vehicle.kilometraje}
@@ -146,7 +155,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
               marca={vehicle.marca}
               carroceria={vehicle.carroceria}
               precio={vehicle.precio}
-              vehicleTitle={vehicle.title}
+              vehicleTitle={vehicleName}
               vehicleSlug={vehicle.slug}
             />
           </div>

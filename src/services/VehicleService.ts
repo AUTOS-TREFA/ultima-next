@@ -902,7 +902,21 @@ private static normalizeVehicleData(rawData: any[]): Vehicle[] {
         // Handle images - check airtableData for galeriaExterior/galeriaInterior/image_link
         const airtableExterior = airtableData.galeriaExterior || airtableData['Foto Catalogo'] || [];
         const airtableInterior = airtableData.galeriaInterior || [];
-        const airtableFeatureImage = airtableData.image_link || (Array.isArray(airtableExterior) && airtableExterior[0]) || null;
+
+        // Helper to validate image URLs - exclude miniextensions and other invalid sources
+        const isValidImageUrl = (url: string | null | undefined): boolean => {
+            if (!url || typeof url !== 'string') return false;
+            const trimmed = url.trim();
+            if (!trimmed.startsWith('http')) return false;
+            // Exclude miniextensions URLs - these are not actual image URLs
+            if (trimmed.includes('miniextensions.com')) return false;
+            return true;
+        };
+
+        const rawImageLink = airtableData.image_link;
+        const airtableFeatureImage = isValidImageUrl(rawImageLink)
+            ? rawImageLink
+            : (Array.isArray(airtableExterior) && airtableExterior[0]) || null;
 
         // Get feature image from item or airtable data
         const featureImage = getVehicleImage(item) || airtableFeatureImage || DEFAULT_PLACEHOLDER_IMAGE;

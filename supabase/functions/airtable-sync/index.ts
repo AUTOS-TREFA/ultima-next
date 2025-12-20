@@ -514,7 +514,7 @@ serve(async (req: Request) => {
       precio: neverOverwrite(airtablePrecio, existingRecord?.precio),
       kilometraje: neverOverwrite(airtableKilometraje, existingRecord?.kilometraje),
       autoano: neverOverwrite(airtableAutoano, existingRecord?.autoano),
-      cilindros: neverOverwrite(airtableCilindros, existingRecord?.cilindros),
+      cilindros: allowUpdate(airtableCilindros, existingRecord?.cilindros),
       numero_duenos: neverOverwrite(airtableNumDuenos, existingRecord?.numero_duenos),
       oferta: neverOverwrite(getNumberField(fields.Oferta, fields.oferta), existingRecord?.oferta),
       reel_url: neverOverwrite(fields.Reel, existingRecord?.reel_url),
@@ -524,13 +524,14 @@ serve(async (req: Request) => {
       ubicacion: allowUpdate(ubicacionValue, existingRecord?.ubicacion),
       garantia: allowUpdate(getStringField(fields.Garantia, fields.garantia), existingRecord?.garantia),
       descripcion: allowUpdate(fields.descripcion, existingRecord?.descripcion),
+      description: allowUpdate(fields.descripcion || fields.description, existingRecord?.description),
       AutoMotor: allowUpdate(getStringField(fields.AutoMotor, fields.motor), existingRecord?.AutoMotor),
       enganchemin: allowUpdate(airtableEnganchemin, existingRecord?.enganchemin),
       enganche_recomendado: allowUpdate(airtableEngancheRec, existingRecord?.enganche_recomendado),
       mensualidad_minima: allowUpdate(airtableMensMin, existingRecord?.mensualidad_minima),
       mensualidad_recomendada: allowUpdate(airtableMensRec, existingRecord?.mensualidad_recomendada),
       plazomax: allowUpdate(airtablePlazomax, existingRecord?.plazomax),
-      promociones: promocionesValue || existingRecord?.promociones || null,
+      promociones: allowUpdate(promocionesValue, existingRecord?.promociones),
       rfdm: allowUpdate(fields.rfdm, existingRecord?.rfdm),
       liga_bot: allowUpdate(fields.ligaBot || fields.LigaBot, existingRecord?.liga_bot),
       liga_web: allowUpdate(`https://trefa.mx/autos/${slug}`, existingRecord?.liga_web),
@@ -553,14 +554,20 @@ serve(async (req: Request) => {
         ? !!(fields.separado || fields.Separado)
         : existingRecord?.separado ?? false,
       vendido: isVendido,
-      rezago: fields.Rezago !== undefined || fields.rezago !== undefined
-        ? (fields.Rezago === true || fields.rezago === true)
+      rezago: (fields.Rezago !== undefined || fields.rezago !== undefined)
+        ? !!(fields.Rezago || fields.rezago)
         : existingRecord?.rezago ?? false,
       con_oferta: fields['Con Oferta'] !== undefined
         ? fields['Con Oferta'] === true
         : existingRecord?.con_oferta ?? false,
       en_reparacion: fields['En Reparación'] ?? existingRecord?.en_reparacion ?? false,
       utilitario: fields.Utilitario ?? existingRecord?.utilitario ?? false,
+      // Exhibicion field from Airtable controls visibility on /autos page
+      // If checked in Airtable → true in Supabase (visible)
+      // If unchecked in Airtable → false in Supabase (hidden from listings)
+      exhibicion_inventario: (fields.Exhibicion !== undefined || fields.exhibicion !== undefined)
+        ? !!(fields.Exhibicion || fields.exhibicion)
+        : existingRecord?.exhibicion_inventario ?? true,
 
       // Timestamps
       ingreso_inventario: fields.IngresoInventario || fields.ingreso_inventario || existingRecord?.ingreso_inventario,
