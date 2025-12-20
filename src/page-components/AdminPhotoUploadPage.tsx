@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Image from 'next/image';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -34,6 +34,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Camera,
   Upload,
@@ -54,12 +63,542 @@ import {
   Search,
   Eye,
   Plus,
+  Car,
+  DollarSign,
+  MapPin,
+  Shield,
+  Tag,
+  Settings2,
+  Save,
 } from 'lucide-react';
-import { VehiclePhotoService, type VehicleWithoutPhotos, type VehicleWithPhotos } from '@/services/VehiclePhotoService';
+import {
+  VehiclePhotoService,
+  type VehicleWithoutPhotos,
+  type VehicleWithPhotos,
+  type VehicleEditData,
+  type VehicleUpdatePayload,
+} from '@/services/VehiclePhotoService';
+
+// Constants for form options
+const SUCURSALES = [
+  'Monterrey',
+  'Guadalupe',
+  'Guadalupe 2',
+  'Reynosa',
+  'Saltillo',
+  'Las Americas',
+];
+
+const GARANTIAS = [
+  '365 días',
+  '90 días',
+  'Agencia',
+];
+
+const CARROCERIAS = [
+  'SUV',
+  'Sedán',
+  'Pick Up',
+  'Hatchback',
+  'Motocicleta',
+  'Crossover',
+  'Coupé',
+  'Van',
+  'Wagon',
+];
+
+const TRANSMISIONES = [
+  'Automático',
+  'Manual',
+];
+
+const ORDENSTATUS_OPTIONS = [
+  'Comprado',
+  'Prospecto',
+  'Historico',
+  'Cancelado',
+];
+
+// Common promociones (can be extended by user)
+const DEFAULT_PROMOCIONES = [
+  'Enganche Bajo',
+  'Tasa Preferencial',
+  'MSI',
+  'Seguro Gratis',
+  'Garantía Extendida',
+  'Mantenimiento Incluido',
+];
 
 interface PreviewFile extends File {
   preview: string;
   id: string;
+}
+
+// Vehicle Edit Dialog Component
+function VehicleEditDialog({
+  open,
+  onOpenChange,
+  vehicle,
+  onSaved,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  vehicle: VehicleEditData | null;
+  onSaved: () => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState<VehicleUpdatePayload>({});
+  const [selectedPromociones, setSelectedPromociones] = useState<string[]>([]);
+  const [customPromocion, setCustomPromocion] = useState('');
+  const [availablePromociones, setAvailablePromociones] = useState<string[]>(DEFAULT_PROMOCIONES);
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Photo management state
+  const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
+
+  // Load form data when vehicle changes
+  useEffect(() => {
+    if (vehicle && open) {
+      setFormData({
+        mensualidad_minima: vehicle.mensualidad_minima,
+        mensualidad_recomendada: vehicle.mensualidad_recomendada,
+        ubicacion: vehicle.ubicacion,
+        garantia: vehicle.garantia,
+        carroceria: vehicle.carroceria,
+        kilometraje: vehicle.kilometraje,
+        transmision: vehicle.transmision,
+        ordenstatus: vehicle.ordenstatus || 'Comprado',
+      });
+      setSelectedPromociones(vehicle.promociones || []);
+      setSaveMessage(null);
+
+      // Load unique promociones
+      VehiclePhotoService.getUniquePromociones().then(promos => {
+        const allPromos = new Set([...DEFAULT_PROMOCIONES, ...promos]);
+        setAvailablePromociones(Array.from(allPromos).sort());
+      });
+    }
+  }, [vehicle, open]);
+
+  const handleInputChange = (field: keyof VehicleUpdatePayload, value: unknown) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setSaveMessage(null);
+  };
+
+  const handlePromocionToggle = (promo: string, checked: boolean) => {
+    if (checked) {
+      setSelectedPromociones(prev => [...prev, promo]);
+    } else {
+      setSelectedPromociones(prev => prev.filter(p => p !== promo));
+    }
+    setSaveMessage(null);
+  };
+
+  const handleAddCustomPromocion = () => {
+    const trimmed = customPromocion.trim();
+    if (trimmed && !availablePromociones.includes(trimmed)) {
+      setAvailablePromociones(prev => [...prev, trimmed].sort());
+      setSelectedPromociones(prev => [...prev, trimmed]);
+      setCustomPromocion('');
+      setSaveMessage(null);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!vehicle) return;
+
+    setSaving(true);
+    setSaveMessage(null);
+
+    const payload: VehicleUpdatePayload = {
+      ...formData,
+      promociones: selectedPromociones.length > 0 ? selectedPromociones : null,
+    };
+
+    const result = await VehiclePhotoService.updateVehicleData(vehicle.id, payload);
+
+    setSaving(false);
+
+    if (result.success) {
+      setSaveMessage({ type: 'success', text: 'Datos guardados correctamente' });
+      onSaved();
+      setTimeout(() => {
+        onOpenChange(false);
+      }, 1500);
+    } else {
+      setSaveMessage({ type: 'error', text: result.error || 'Error al guardar' });
+    }
+  };
+
+  const formatCurrency = (value: number | null | undefined) => {
+    if (value == null) return '-';
+    return new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: 'MXN',
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  if (!vehicle) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Settings2 className="w-5 h-5" />
+            Editar Vehículo
+          </DialogTitle>
+          <DialogDescription>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className="font-mono text-xs bg-muted px-2 py-1 rounded">
+                {vehicle.ordencompra || 'Sin OC'}
+              </span>
+              <span className="font-medium">{vehicle.title}</span>
+            </div>
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6 py-4">
+          {/* Non-editable info */}
+          <Card className="bg-muted/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Car className="w-4 h-4" />
+                Información del Vehículo (Solo lectura)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground text-xs">Marca</p>
+                <p className="font-medium">{vehicle.marca || '-'}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Modelo</p>
+                <p className="font-medium">{vehicle.modelo || '-'}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Año</p>
+                <p className="font-medium">{vehicle.autoano || '-'}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Precio</p>
+                <p className="font-medium text-primary">{formatCurrency(vehicle.precio)}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Photo Status */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Camera className="w-4 h-4" />
+                  Fotos
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPhotoDialogOpen(true)}
+                  className="gap-2"
+                >
+                  <Images className="w-4 h-4" />
+                  Administrar Fotos
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                {vehicle.thumbnail_url ? (
+                  <div className="w-24 h-16 rounded-lg overflow-hidden bg-muted relative">
+                    <Image
+                      src={vehicle.thumbnail_url}
+                      alt={vehicle.title}
+                      fill
+                      className="object-cover"
+                      sizes="96px"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-24 h-16 rounded-lg bg-muted flex items-center justify-center">
+                    <ImageOff className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="flex gap-2 flex-wrap">
+                  {vehicle.has_feature_image ? (
+                    <Badge variant="default" className="bg-green-600">
+                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                      Foto Principal
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive">
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      Sin Foto Principal
+                    </Badge>
+                  )}
+                  {vehicle.has_gallery ? (
+                    <Badge variant="secondary">
+                      <Images className="w-3 h-3 mr-1" />
+                      {vehicle.gallery_count} fotos
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-amber-600 border-amber-300">
+                      <ImageOff className="w-3 h-3 mr-1" />
+                      Sin galería
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Editable Fields */}
+          <div className="grid gap-6">
+            {/* Mensualidades */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="mensualidad_minima" className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  Mensualidad Mínima
+                </Label>
+                <Input
+                  id="mensualidad_minima"
+                  type="number"
+                  placeholder="0"
+                  value={formData.mensualidad_minima ?? ''}
+                  onChange={(e) => handleInputChange('mensualidad_minima', e.target.value ? Number(e.target.value) : null)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="mensualidad_recomendada" className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  Mensualidad Recomendada
+                </Label>
+                <Input
+                  id="mensualidad_recomendada"
+                  type="number"
+                  placeholder="0"
+                  value={formData.mensualidad_recomendada ?? ''}
+                  onChange={(e) => handleInputChange('mensualidad_recomendada', e.target.value ? Number(e.target.value) : null)}
+                />
+              </div>
+            </div>
+
+            {/* Sucursal y Garantía */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="ubicacion" className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  Sucursal
+                </Label>
+                <Select
+                  value={formData.ubicacion || ''}
+                  onValueChange={(value) => handleInputChange('ubicacion', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar sucursal" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SUCURSALES.map(suc => (
+                      <SelectItem key={suc} value={suc}>{suc}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="garantia" className="flex items-center gap-2">
+                  <Shield className="w-4 h-4" />
+                  Garantía
+                </Label>
+                <Select
+                  value={formData.garantia || ''}
+                  onValueChange={(value) => handleInputChange('garantia', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar garantía" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {GARANTIAS.map(g => (
+                      <SelectItem key={g} value={g}>{g}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Carrocería, Kilometraje, Transmisión */}
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="carroceria">Carrocería</Label>
+                <Select
+                  value={formData.carroceria || ''}
+                  onValueChange={(value) => handleInputChange('carroceria', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CARROCERIAS.map(c => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="kilometraje">Kilometraje</Label>
+                <Input
+                  id="kilometraje"
+                  type="number"
+                  placeholder="0"
+                  value={formData.kilometraje ?? ''}
+                  onChange={(e) => handleInputChange('kilometraje', e.target.value ? Number(e.target.value) : null)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="transmision">Transmisión</Label>
+                <Select
+                  value={formData.transmision || ''}
+                  onValueChange={(value) => handleInputChange('transmision', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TRANSMISIONES.map(t => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Order Status */}
+            <div className="space-y-2">
+              <Label htmlFor="ordenstatus">Estado de Orden</Label>
+              <Select
+                value={formData.ordenstatus || 'Comprado'}
+                onValueChange={(value) => handleInputChange('ordenstatus', value)}
+              >
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Seleccionar estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ORDENSTATUS_OPTIONS.map(s => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Promociones */}
+            <div className="space-y-3">
+              <Label className="flex items-center gap-2">
+                <Tag className="w-4 h-4" />
+                Promociones
+              </Label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {availablePromociones.map(promo => (
+                  <div key={promo} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`promo-${promo}`}
+                      checked={selectedPromociones.includes(promo)}
+                      onCheckedChange={(checked) => handlePromocionToggle(promo, checked as boolean)}
+                    />
+                    <label
+                      htmlFor={`promo-${promo}`}
+                      className="text-sm cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {promo}
+                    </label>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2 mt-2">
+                <Input
+                  placeholder="Nueva promoción..."
+                  value={customPromocion}
+                  onChange={(e) => setCustomPromocion(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddCustomPromocion();
+                    }
+                  }}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleAddCustomPromocion}
+                  disabled={!customPromocion.trim()}
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Save message */}
+          {saveMessage && (
+            <Alert variant={saveMessage.type === 'error' ? 'destructive' : 'default'} className={saveMessage.type === 'success' ? 'bg-green-50 border-green-200' : ''}>
+              {saveMessage.type === 'success' ? (
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+              ) : (
+                <AlertCircle className="h-4 w-4" />
+              )}
+              <AlertDescription className={saveMessage.type === 'success' ? 'text-green-700' : ''}>
+                {saveMessage.text}
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSave} disabled={saving} className="gap-2">
+            {saving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Guardando...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                Guardar Cambios
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+
+        {/* Photo Manager Dialog (nested) */}
+        <PhotoManagerDialog
+          open={photoDialogOpen}
+          onOpenChange={setPhotoDialogOpen}
+          vehicle={vehicle ? {
+            id: vehicle.id,
+            ordencompra: vehicle.ordencompra,
+            title: vehicle.title,
+            brand: vehicle.marca,
+            model: vehicle.modelo,
+            year: vehicle.autoano,
+            feature_image: vehicle.feature_image,
+            r2_feature_image: vehicle.r2_feature_image,
+            r2_gallery: vehicle.r2_gallery,
+            gallery_count: vehicle.gallery_count,
+            thumbnail_url: vehicle.thumbnail_url,
+            ubicacion: vehicle.ubicacion,
+          } : null}
+          onPhotoDeleted={() => onSaved()}
+          onFeaturedChanged={() => onSaved()}
+          onPhotosAdded={() => onSaved()}
+        />
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 // Photo Manager Dialog Component
@@ -446,17 +985,17 @@ function PhotoManagerDialog({
   );
 }
 
-// Vehicles With Photos DataTable Component
-function VehiclesWithPhotosTable({
+// All Vehicles DataTable Component
+function AllVehiclesTable({
   vehicles,
   loading,
   onRefresh,
-  onEditPhotos,
+  onEdit,
 }: {
-  vehicles: VehicleWithPhotos[];
+  vehicles: VehicleEditData[];
   loading: boolean;
   onRefresh: () => void;
-  onEditPhotos: (vehicle: VehicleWithPhotos) => void;
+  onEdit: (vehicle: VehicleEditData) => void;
 }) {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -466,8 +1005,9 @@ function VehiclesWithPhotosTable({
     return vehicles.filter(v =>
       v.title.toLowerCase().includes(search) ||
       v.ordencompra?.toLowerCase().includes(search) ||
-      v.brand?.toLowerCase().includes(search) ||
-      v.model?.toLowerCase().includes(search)
+      v.marca?.toLowerCase().includes(search) ||
+      v.modelo?.toLowerCase().includes(search) ||
+      v.ubicacion?.toLowerCase().includes(search)
     );
   }, [vehicles, searchTerm]);
 
@@ -481,12 +1021,12 @@ function VehiclesWithPhotosTable({
 
   return (
     <div className="space-y-4">
-      {/* Search */}
+      {/* Search and Refresh */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar por OC, título, marca..."
+            placeholder="Buscar por OC, título, marca, sucursal..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             className="pl-9"
@@ -505,19 +1045,20 @@ function VehiclesWithPhotosTable({
             <TableRow className="bg-muted/50">
               <TableHead className="w-20">Foto</TableHead>
               <TableHead>Vehículo</TableHead>
-              <TableHead className="w-24">Galería</TableHead>
-              <TableHead className="w-28">Ubicación</TableHead>
-              <TableHead className="w-32 text-right">Acciones</TableHead>
+              <TableHead className="w-28">Sucursal</TableHead>
+              <TableHead className="w-24">Fotos</TableHead>
+              <TableHead className="w-28">Estado</TableHead>
+              <TableHead className="w-28 text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredVehicles.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   <div className="flex flex-col items-center gap-2">
-                    <ImageOff className="w-8 h-8 text-muted-foreground" />
+                    <Car className="w-8 h-8 text-muted-foreground" />
                     <p className="text-muted-foreground">
-                      {searchTerm ? 'No se encontraron vehículos' : 'No hay vehículos con fotos'}
+                      {searchTerm ? 'No se encontraron vehículos' : 'No hay vehículos comprados'}
                     </p>
                   </div>
                 </TableCell>
@@ -553,25 +1094,56 @@ function VehiclesWithPhotosTable({
                         </span>
                       </div>
                       <p className="font-medium text-sm">{vehicle.title}</p>
-                      {vehicle.year && (
-                        <p className="text-xs text-muted-foreground">{vehicle.year}</p>
-                      )}
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        {vehicle.autoano && <span>{vehicle.autoano}</span>}
+                        {vehicle.kilometraje && (
+                          <>
+                            <span>•</span>
+                            <span>{vehicle.kilometraje.toLocaleString()} km</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </TableCell>
-
-                  {/* Gallery Count */}
-                  <TableCell>
-                    <Badge variant="secondary" className="font-mono">
-                      <Images className="w-3 h-3 mr-1" />
-                      {vehicle.gallery_count}
-                    </Badge>
                   </TableCell>
 
                   {/* Location */}
                   <TableCell>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-sm">
                       {vehicle.ubicacion || '-'}
                     </span>
+                  </TableCell>
+
+                  {/* Photo Status */}
+                  <TableCell>
+                    <div className="flex flex-col gap-1">
+                      {vehicle.has_feature_image ? (
+                        <Badge variant="secondary" className="text-xs w-fit">
+                          <CheckCircle2 className="w-3 h-3 mr-1" />
+                          Principal
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive" className="text-xs w-fit">
+                          <AlertCircle className="w-3 h-3 mr-1" />
+                          Sin foto
+                        </Badge>
+                      )}
+                      {vehicle.gallery_count > 0 && (
+                        <Badge variant="outline" className="text-xs w-fit">
+                          <Images className="w-3 h-3 mr-1" />
+                          {vehicle.gallery_count}
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+
+                  {/* Status */}
+                  <TableCell>
+                    <Badge
+                      variant={vehicle.ordenstatus === 'Comprado' ? 'default' : 'secondary'}
+                      className={vehicle.ordenstatus === 'Comprado' ? 'bg-green-600' : ''}
+                    >
+                      {vehicle.ordenstatus || 'Sin estado'}
+                    </Badge>
                   </TableCell>
 
                   {/* Actions */}
@@ -579,7 +1151,7 @@ function VehiclesWithPhotosTable({
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => onEditPhotos(vehicle)}
+                      onClick={() => onEdit(vehicle)}
                       className="gap-2"
                     >
                       <Pencil className="w-3.5 h-3.5" />
@@ -601,9 +1173,105 @@ function VehiclesWithPhotosTable({
   );
 }
 
+// Vehicles Without Photos Table
+function VehiclesWithoutPhotosTable({
+  vehicles,
+  loading,
+  onRefresh,
+  onUpload,
+}: {
+  vehicles: VehicleWithoutPhotos[];
+  loading: boolean;
+  onRefresh: () => void;
+  onUpload: (vehicle: VehicleWithoutPhotos) => void;
+}) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (vehicles.length === 0) {
+    return (
+      <Card className="bg-card border-border">
+        <CardContent className="py-12 text-center">
+          <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-foreground">Todos los autos tienen fotos</h3>
+          <p className="text-muted-foreground mt-1">No hay vehículos pendientes de cargar fotos.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          onClick={onRefresh}
+          disabled={loading}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          Actualizar
+        </Button>
+      </div>
+      <div className="grid gap-3">
+        {vehicles.map(vehicle => (
+          <Card key={vehicle.id} className="bg-card border-border hover:border-primary/50 transition-colors">
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-mono text-sm bg-muted px-2 py-1 rounded text-foreground">
+                      {vehicle.ordencompra || 'Sin OC'}
+                    </span>
+                    <h3 className="font-semibold text-foreground">
+                      {vehicle.title || `${vehicle.brand || ''} ${vehicle.model || ''} ${vehicle.year || ''}`.trim() || 'Sin título'}
+                    </h3>
+                  </div>
+
+                  <div className="flex gap-2 mt-2">
+                    {!vehicle.has_feature_image && (
+                      <Badge variant="destructive" className="text-xs">
+                        <AlertCircle className="w-3 h-3 mr-1" />
+                        Sin foto principal
+                      </Badge>
+                    )}
+                    {!vehicle.has_gallery && (
+                      <Badge variant="secondary" className="text-xs bg-amber-500/10 text-amber-700 border-amber-200">
+                        <ImageOff className="w-3 h-3 mr-1" />
+                        Galería vacía
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                <Button
+                  onClick={() => onUpload(vehicle)}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Subir Fotos
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // Main Component
 export default function AdminPhotoUploadPage() {
-  const [activeTab, setActiveTab] = useState<'sin-fotos' | 'con-fotos'>('sin-fotos');
+  const [activeTab, setActiveTab] = useState<'todos' | 'sin-fotos' | 'con-fotos'>('todos');
+
+  // All vehicles state
+  const [allVehicles, setAllVehicles] = useState<VehicleEditData[]>([]);
+  const [loadingAll, setLoadingAll] = useState(true);
 
   // Vehicles without photos state
   const [vehiclesWithoutPhotos, setVehiclesWithoutPhotos] = useState<VehicleWithoutPhotos[]>([]);
@@ -613,13 +1281,17 @@ export default function AdminPhotoUploadPage() {
   const [vehiclesWithPhotos, setVehiclesWithPhotos] = useState<VehicleWithPhotos[]>([]);
   const [loadingWith, setLoadingWith] = useState(true);
 
+  // Edit dialog state
+  const [editingVehicle, setEditingVehicle] = useState<VehicleEditData | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+
   // Upload sheet state
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleWithoutPhotos | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
   // Photo manager dialog state
-  const [editingVehicle, setEditingVehicle] = useState<VehicleWithPhotos | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [photoManagerVehicle, setPhotoManagerVehicle] = useState<VehicleWithPhotos | null>(null);
+  const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
 
   // Upload state for sheet
   const [featuredImage, setFeaturedImage] = useState<PreviewFile | null>(null);
@@ -628,6 +1300,19 @@ export default function AdminPhotoUploadPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
   const [uploadMessage, setUploadMessage] = useState('');
+
+  // Fetch all vehicles
+  const fetchAllVehicles = useCallback(async () => {
+    try {
+      setLoadingAll(true);
+      const data = await VehiclePhotoService.getAllVehiclesForEdit();
+      setAllVehicles(data);
+    } catch (error) {
+      console.error('Error fetching all vehicles:', error);
+    } finally {
+      setLoadingAll(false);
+    }
+  }, []);
 
   // Fetch vehicles without photos
   const fetchVehiclesWithoutPhotos = useCallback(async () => {
@@ -656,9 +1341,10 @@ export default function AdminPhotoUploadPage() {
   }, []);
 
   useEffect(() => {
+    fetchAllVehicles();
     fetchVehiclesWithoutPhotos();
     fetchVehiclesWithPhotos();
-  }, [fetchVehiclesWithoutPhotos, fetchVehiclesWithPhotos]);
+  }, [fetchAllVehicles, fetchVehiclesWithoutPhotos, fetchVehiclesWithPhotos]);
 
   // Generate unique ID for files
   const generateId = () => `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -827,7 +1513,8 @@ export default function AdminPhotoUploadPage() {
         setUploadStatus('success');
         setUploadMessage(`${result.uploadedCount} foto${result.uploadedCount > 1 ? 's' : ''} subida${result.uploadedCount > 1 ? 's' : ''} y vinculada${result.uploadedCount > 1 ? 's' : ''} exitosamente.`);
 
-        // Refresh both lists
+        // Refresh all lists
+        fetchAllVehicles();
         fetchVehiclesWithoutPhotos();
         fetchVehiclesWithPhotos();
 
@@ -859,6 +1546,10 @@ export default function AdminPhotoUploadPage() {
 
   const totalPhotos = (featuredImage ? 1 : 0) + galleryImages.length;
 
+  // Count stats
+  const withPhotosCount = allVehicles.filter(v => v.has_feature_image && v.has_gallery).length;
+  const withoutPhotosCount = allVehicles.filter(v => !v.has_feature_image || !v.has_gallery).length;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -870,14 +1561,27 @@ export default function AdminPhotoUploadPage() {
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground">Gestor de Fotos</h1>
             <p className="text-sm text-muted-foreground">
-              Administra las fotos del inventario comprado
+              Administra fotos y datos del inventario comprado
             </p>
           </div>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="bg-card border-border">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-blue-500/10 rounded-full">
+                <Car className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-foreground">{allVehicles.length}</p>
+                <p className="text-sm text-muted-foreground">Total Comprados</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         <Card className="bg-card border-border">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
@@ -885,8 +1589,8 @@ export default function AdminPhotoUploadPage() {
                 <ImageOff className="w-6 h-6 text-amber-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{vehiclesWithoutPhotos.length}</p>
-                <p className="text-sm text-muted-foreground">Sin fotos</p>
+                <p className="text-2xl font-bold text-foreground">{withoutPhotosCount}</p>
+                <p className="text-sm text-muted-foreground">Sin fotos completas</p>
               </div>
             </div>
           </CardContent>
@@ -898,8 +1602,8 @@ export default function AdminPhotoUploadPage() {
                 <Images className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{vehiclesWithPhotos.length}</p>
-                <p className="text-sm text-muted-foreground">Con fotos</p>
+                <p className="text-2xl font-bold text-foreground">{withPhotosCount}</p>
+                <p className="text-sm text-muted-foreground">Con fotos completas</p>
               </div>
             </div>
           </CardContent>
@@ -907,8 +1611,12 @@ export default function AdminPhotoUploadPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'sin-fotos' | 'con-fotos')}>
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+        <TabsList className="grid w-full max-w-lg grid-cols-3">
+          <TabsTrigger value="todos" className="gap-2">
+            <Car className="w-4 h-4" />
+            Todos ({allVehicles.length})
+          </TabsTrigger>
           <TabsTrigger value="sin-fotos" className="gap-2">
             <ImageOff className="w-4 h-4" />
             Sin Fotos ({vehiclesWithoutPhotos.length})
@@ -919,93 +1627,54 @@ export default function AdminPhotoUploadPage() {
           </TabsTrigger>
         </TabsList>
 
+        {/* Tab: All Vehicles */}
+        <TabsContent value="todos" className="mt-6">
+          <AllVehiclesTable
+            vehicles={allVehicles}
+            loading={loadingAll}
+            onRefresh={fetchAllVehicles}
+            onEdit={(vehicle) => {
+              setEditingVehicle(vehicle);
+              setEditDialogOpen(true);
+            }}
+          />
+        </TabsContent>
+
         {/* Tab: Vehicles Without Photos */}
         <TabsContent value="sin-fotos" className="mt-6">
-          {loadingWithout ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-          ) : vehiclesWithoutPhotos.length === 0 ? (
-            <Card className="bg-card border-border">
-              <CardContent className="py-12 text-center">
-                <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground">Todos los autos comprados tienen fotos</h3>
-                <p className="text-muted-foreground mt-1">No hay vehículos pendientes de cargar fotos.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex justify-end">
-                <Button
-                  variant="outline"
-                  onClick={fetchVehiclesWithoutPhotos}
-                  disabled={loadingWithout}
-                  className="flex items-center gap-2"
-                >
-                  <RefreshCw className={`w-4 h-4 ${loadingWithout ? 'animate-spin' : ''}`} />
-                  Actualizar
-                </Button>
-              </div>
-              <div className="grid gap-3">
-                {vehiclesWithoutPhotos.map(vehicle => (
-                  <Card key={vehicle.id} className="bg-card border-border hover:border-primary/50 transition-colors">
-                    <CardContent className="p-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-mono text-sm bg-muted px-2 py-1 rounded text-foreground">
-                              {vehicle.ordencompra || 'Sin OC'}
-                            </span>
-                            <h3 className="font-semibold text-foreground">
-                              {vehicle.title || `${vehicle.brand || ''} ${vehicle.model || ''} ${vehicle.year || ''}`.trim() || 'Sin título'}
-                            </h3>
-                          </div>
-
-                          <div className="flex gap-2 mt-2">
-                            {!vehicle.has_feature_image && (
-                              <Badge variant="destructive" className="text-xs">
-                                <AlertCircle className="w-3 h-3 mr-1" />
-                                Sin foto principal
-                              </Badge>
-                            )}
-                            {!vehicle.has_gallery && (
-                              <Badge variant="secondary" className="text-xs bg-amber-500/10 text-amber-700 border-amber-200">
-                                <ImageOff className="w-3 h-3 mr-1" />
-                                Galería vacía
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-
-                        <Button
-                          onClick={() => handleOpenSheet(vehicle)}
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          <Upload className="w-4 h-4 mr-2" />
-                          Subir Fotos
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
+          <VehiclesWithoutPhotosTable
+            vehicles={vehiclesWithoutPhotos}
+            loading={loadingWithout}
+            onRefresh={fetchVehiclesWithoutPhotos}
+            onUpload={handleOpenSheet}
+          />
         </TabsContent>
 
         {/* Tab: Vehicles With Photos */}
         <TabsContent value="con-fotos" className="mt-6">
-          <VehiclesWithPhotosTable
-            vehicles={vehiclesWithPhotos}
-            loading={loadingWith}
-            onRefresh={fetchVehiclesWithPhotos}
-            onEditPhotos={(vehicle) => {
+          <AllVehiclesTable
+            vehicles={allVehicles.filter(v => v.has_feature_image || v.has_gallery)}
+            loading={loadingAll}
+            onRefresh={fetchAllVehicles}
+            onEdit={(vehicle) => {
               setEditingVehicle(vehicle);
-              setDialogOpen(true);
+              setEditDialogOpen(true);
             }}
           />
         </TabsContent>
       </Tabs>
+
+      {/* Edit Dialog */}
+      <VehicleEditDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        vehicle={editingVehicle}
+        onSaved={() => {
+          fetchAllVehicles();
+          fetchVehiclesWithoutPhotos();
+          fetchVehiclesWithPhotos();
+        }}
+      />
 
       {/* Upload Sheet (for vehicles without photos) */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -1252,23 +1921,6 @@ export default function AdminPhotoUploadPage() {
           </SheetFooter>
         </SheetContent>
       </Sheet>
-
-      {/* Photo Manager Dialog (for vehicles with photos) */}
-      <PhotoManagerDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        vehicle={editingVehicle}
-        onPhotoDeleted={() => {
-          fetchVehiclesWithPhotos();
-          fetchVehiclesWithoutPhotos();
-        }}
-        onFeaturedChanged={() => {
-          fetchVehiclesWithPhotos();
-        }}
-        onPhotosAdded={() => {
-          fetchVehiclesWithPhotos();
-        }}
-      />
     </div>
   );
 }

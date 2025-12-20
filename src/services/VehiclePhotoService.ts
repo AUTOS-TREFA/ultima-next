@@ -41,6 +41,46 @@ export interface VehicleWithPhotos {
   ubicacion: string | null;
 }
 
+// Extended vehicle data for editing
+export interface VehicleEditData {
+  id: string;
+  ordencompra: string | null;
+  title: string;
+  marca: string | null;
+  modelo: string | null;
+  autoano: number | null;
+  precio: number | null;
+  mensualidad_minima: number | null;
+  mensualidad_recomendada: number | null;
+  ubicacion: string | null;
+  garantia: string | null;
+  promociones: string[] | null;
+  carroceria: string | null;
+  kilometraje: number | null;
+  transmision: string | null;
+  ordenstatus: string | null;
+  feature_image: string | null;
+  r2_feature_image: string | null;
+  r2_gallery: string[] | null;
+  gallery_count: number;
+  thumbnail_url: string | null;
+  has_feature_image: boolean;
+  has_gallery: boolean;
+}
+
+// Update payload for vehicle data
+export interface VehicleUpdatePayload {
+  mensualidad_minima?: number | null;
+  mensualidad_recomendada?: number | null;
+  ubicacion?: string | null;
+  garantia?: string | null;
+  promociones?: string[] | null;
+  carroceria?: string | null;
+  kilometraje?: number | null;
+  transmision?: string | null;
+  ordenstatus?: string | null;
+}
+
 export interface UploadResult {
   success: boolean;
   uploadedCount: number;
@@ -637,6 +677,190 @@ export const VehiclePhotoService = {
         error: error instanceof Error ? error.message : 'Error desconocido.'
       };
     }
+  },
+
+  /**
+   * Get ALL vehicles with OrdenStatus='Comprado' for editing (includes all fields)
+   */
+  async getAllVehiclesForEdit(): Promise<VehicleEditData[]> {
+    const { data, error } = await supabase
+      .from('inventario_cache')
+      .select(`
+        id, ordencompra, title, titulo, marca, modelo, autoano, precio,
+        mensualidad_minima, mensualidad_recomendada, ubicacion, garantia,
+        promociones, carroceria, kilometraje, transmision, ordenstatus,
+        feature_image, feature_image_url, r2_feature_image,
+        galeria_exterior, fotos_exterior_url, r2_gallery
+      `)
+      .eq('ordenstatus', 'Comprado')
+      .order('ordencompra', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching all vehicles:', error);
+      throw new Error('No se pudieron obtener los vehículos.');
+    }
+
+    // Helper to check if a value is a valid non-empty string
+    const isValidString = (val: unknown): boolean => {
+      return typeof val === 'string' && val.trim() !== '' && val !== 'null' && val !== 'undefined';
+    };
+
+    // Helper to get gallery array
+    const getGalleryArray = (val: unknown): string[] => {
+      if (Array.isArray(val)) {
+        return val.filter(item => isValidString(item));
+      }
+      if (typeof val === 'string' && val.trim() !== '') {
+        try {
+          const parsed = JSON.parse(val);
+          if (Array.isArray(parsed)) {
+            return parsed.filter(item => isValidString(item));
+          }
+        } catch {
+          return val.split(',').map(s => s.trim()).filter(s => s !== '');
+        }
+      }
+      return [];
+    };
+
+    // Helper to parse kilometraje (can be number, string, or JSON object)
+    const parseKilometraje = (val: unknown): number | null => {
+      if (typeof val === 'number') return val;
+      if (typeof val === 'string') {
+        const parsed = parseInt(val.replace(/[^0-9]/g, ''), 10);
+        return isNaN(parsed) ? null : parsed;
+      }
+      if (val && typeof val === 'object' && 'value' in val) {
+        return parseKilometraje((val as any).value);
+      }
+      return null;
+    };
+
+    // Helper to parse promociones (can be array of strings/IDs)
+    const parsePromociones = (val: unknown): string[] | null => {
+      if (Array.isArray(val)) {
+        return val.filter(item => typeof item === 'string' && item.trim() !== '');
+      }
+      if (typeof val === 'string' && val.trim() !== '') {
+        try {
+          const parsed = JSON.parse(val);
+          if (Array.isArray(parsed)) {
+            return parsed.filter(item => typeof item === 'string' && item.trim() !== '');
+          }
+        } catch {
+          return val.split(',').map(s => s.trim()).filter(s => s !== '');
+        }
+      }
+      return null;
+    };
+
+    return ((data as any[]) || []).map(vehicle => {
+      const hasFeatureImage =
+        isValidString(vehicle.feature_image) ||
+        isValidString(vehicle.feature_image_url) ||
+        isValidString(vehicle.r2_feature_image);
+
+      const r2Gallery = getGalleryArray(vehicle.r2_gallery);
+      const exteriorGallery = getGalleryArray(vehicle.galeria_exterior);
+      const fotosUrl = getGalleryArray(vehicle.fotos_exterior_url);
+
+      const hasGallery = r2Gallery.length > 0 || exteriorGallery.length > 0 || fotosUrl.length > 0;
+      const galleryCount = r2Gallery.length > 0
+        ? r2Gallery.length
+        : Math.max(exteriorGallery.length, fotosUrl.length);
+
+      const thumbnailUrl =
+        (isValidString(vehicle.r2_feature_image) ? vehicle.r2_feature_image : null) ||
+        (isValidString(vehicle.feature_image) ? vehicle.feature_image : null) ||
+        (isValidString(vehicle.feature_image_url) ? vehicle.feature_image_url : null);
+
+      return {
+        id: vehicle.id,
+        ordencompra: vehicle.ordencompra,
+        title: vehicle.title || vehicle.titulo || `${vehicle.marca || ''} ${vehicle.modelo || ''} ${vehicle.autoano || ''}`.trim() || 'Sin título',
+        marca: vehicle.marca,
+        modelo: vehicle.modelo,
+        autoano: vehicle.autoano,
+        precio: vehicle.precio,
+        mensualidad_minima: vehicle.mensualidad_minima,
+        mensualidad_recomendada: vehicle.mensualidad_recomendada,
+        ubicacion: vehicle.ubicacion,
+        garantia: vehicle.garantia,
+        promociones: parsePromociones(vehicle.promociones),
+        carroceria: vehicle.carroceria,
+        kilometraje: parseKilometraje(vehicle.kilometraje),
+        transmision: vehicle.transmision,
+        ordenstatus: vehicle.ordenstatus,
+        feature_image: vehicle.feature_image,
+        r2_feature_image: vehicle.r2_feature_image,
+        r2_gallery: r2Gallery.length > 0 ? r2Gallery : null,
+        gallery_count: galleryCount,
+        thumbnail_url: thumbnailUrl,
+        has_feature_image: hasFeatureImage,
+        has_gallery: hasGallery,
+      };
+    });
+  },
+
+  /**
+   * Update vehicle data (non-photo fields)
+   */
+  async updateVehicleData(
+    vehicleId: string,
+    payload: VehicleUpdatePayload
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const updateData: Record<string, unknown> = {
+        ...payload,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await (supabase
+        .from('inventario_cache') as any)
+        .update(updateData)
+        .eq('id', vehicleId);
+
+      if (error) {
+        console.error('Error updating vehicle data:', error);
+        return { success: false, error: 'Error al actualizar los datos del vehículo.' };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error in updateVehicleData:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido.'
+      };
+    }
+  },
+
+  /**
+   * Get unique promociones from all vehicles (for dropdown options)
+   */
+  async getUniquePromociones(): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('inventario_cache')
+      .select('promociones')
+      .not('promociones', 'is', null);
+
+    if (error) {
+      console.error('Error fetching promociones:', error);
+      return [];
+    }
+
+    const allPromociones = new Set<string>();
+    (data || []).forEach((row: any) => {
+      if (Array.isArray(row.promociones)) {
+        row.promociones.forEach((p: string) => {
+          if (p && typeof p === 'string') {
+            allPromociones.add(p);
+          }
+        });
+      }
+    });
+
+    return Array.from(allPromociones).sort();
   },
 };
 
