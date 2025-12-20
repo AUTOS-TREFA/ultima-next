@@ -20,7 +20,6 @@ export const ImageService = {
       .update({
         car_studio_feature_image: featureImageUrl,
         car_studio_gallery: galleryImageUrls,
-        use_car_studio_images: true,
         last_synced_at: new Date().toISOString(), // Touch the record
       })
       .eq('id', vehicleId);
@@ -86,7 +85,6 @@ export const ImageService = {
     const updateData: any = {
       fotos_exterior_url: galleryImages, // Save as JSONB array
       galeria_exterior: galleryImages, // Save as JSONB array (for Car Studio processed images)
-      use_car_studio_images: true,
       updated_at: new Date().toISOString(),
     };
 

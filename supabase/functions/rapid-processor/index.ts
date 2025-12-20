@@ -368,7 +368,7 @@ function buildPublicUrl(bucket, path) {
   const modelo = getValue('modelo', 'Modelo') || '';
   const autoano = getValue('autoano', 'AutoAno');
   const precio = getValue('precio', 'Precio');
-  const kilometraje = getFirstOrString(getValue('kilometraje', 'Kilometraje'));
+  const kilometraje = getValue('kilometraje', 'Kilometraje');
   const transmision = getFirstOrString(getValue('transmision', 'Transmision'));
   const combustible = getFirstOrString(getValue('combustible', 'Combustible'));
   const garantia = getValue('garantia', 'Garantia') || '';

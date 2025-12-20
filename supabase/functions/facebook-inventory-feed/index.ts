@@ -70,7 +70,6 @@ interface InventarioRow {
   feature_image_url: string | null;
   fotos_exterior_url: any;
   fotos_interior_url: any;
-  additional_image_link: string | null;
   slug: string | null;
   ordenstatus: string | null;
   vendido: boolean | null;
@@ -78,7 +77,7 @@ interface InventarioRow {
   carroceria: string | null;
   combustible: string | null;
   autotransmision: string | null;
-  kilometraje: any;
+  kilometraje: number | null;
   ubicacion: string | null;
   clasificacionid: string | null;
 }
@@ -142,15 +141,9 @@ function formatPrice(precio: number | null, currency = "MXN"): string {
 
 function extractAdditionalImages(
   fotosExterior: any,
-  fotosInterior: any,
-  additionalImageLink: string | null
+  fotosInterior: any
 ): string {
   const images: string[] = [];
-
-  // Add from additional_image_link if available (convert to CDN)
-  if (additionalImageLink) {
-    images.push(convertToCdnUrl(additionalImageLink));
-  }
 
   // Extract from fotos_exterior_url (JSONB array) and convert to CDN
   if (fotosExterior && Array.isArray(fotosExterior)) {
@@ -213,8 +206,7 @@ function transformToFacebookProduct(row: InventarioRow): FacebookProduct {
 
   const additionalImages = extractAdditionalImages(
     row.fotos_exterior_url,
-    row.fotos_interior_url,
-    row.additional_image_link
+    row.fotos_interior_url
   );
   if (additionalImages) {
     product.additional_image_link = additionalImages;
@@ -315,7 +307,6 @@ async function generateCsv(): Promise<string> {
       feature_image_url,
       fotos_exterior_url,
       fotos_interior_url,
-      additional_image_link,
       slug,
       ordenstatus,
       vendido,

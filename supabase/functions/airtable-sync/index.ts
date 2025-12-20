@@ -243,10 +243,10 @@ serve(async (req: Request) => {
     let r2FeatureImage: string | null = null;
     let r2Gallery: string[] = [];
 
-    // Check existing record for R2 images
+    // Check existing record for R2 images and other fields to preserve
     const { data: existingRecord } = await supabase
       .from('inventario_cache')
-      .select('use_r2_images, r2_feature_image, r2_gallery, feature_image, fotos_exterior_url, fotos_interior_url')
+      .select('use_r2_images, r2_feature_image, r2_gallery, feature_image, fotos_exterior_url, fotos_interior_url, feature_image_url, descripcion, created_at')
       .eq('ordencompra', ordenCompra)
       .single();
 
@@ -265,8 +265,8 @@ serve(async (req: Request) => {
       // Note: airtable-image-upload-optimized.js automation should be DISABLED
       console.log(`📥 No R2 images - reading from Airtable fields (legacy mode)`);
 
-      exteriorImages = getImageUrls(fields.fotos_exterior_url).join(', ') || '';
-      interiorImages = getImageUrls(fields.fotos_interior_url).join(', ') || '';
+      const airtableExteriorImages = getImageUrls(fields.fotos_exterior_url).join(', ') || '';
+      const airtableInteriorImages = getImageUrls(fields.fotos_interior_url).join(', ') || '';
 
       // Check multiple possible field names for feature image
       const featureImageArray = getImageUrls(fields.feature_image) || [];
@@ -274,16 +274,38 @@ serve(async (req: Request) => {
       const featureImageUrlArray = getImageUrls(fields.feature_image_url) || [];
 
       // Use feature_image if available, then featured_image_url, then feature_image_url, then first exterior image
-      featureImage = featureImageArray.length > 0 ? featureImageArray[0] :
+      const airtableFeatureImage = featureImageArray.length > 0 ? featureImageArray[0] :
                          featuredImageUrlArray.length > 0 ? featuredImageUrlArray[0] :
                          featureImageUrlArray.length > 0 ? featureImageUrlArray[0] : null;
 
-      if (!featureImage && exteriorImages) {
+      // ✅ FIX: PRESERVE existing images if Airtable doesn't have them
+      // This prevents data loss when webhook sends incomplete data
+      if (airtableExteriorImages) {
+        exteriorImages = airtableExteriorImages;
+      } else if (existingRecord?.fotos_exterior_url) {
+        exteriorImages = existingRecord.fotos_exterior_url;
+        console.log(`📷 Preservando fotos_exterior_url existentes (Airtable no envió nuevas)`);
+      }
+
+      if (airtableInteriorImages) {
+        interiorImages = airtableInteriorImages;
+      } else if (existingRecord?.fotos_interior_url) {
+        interiorImages = existingRecord.fotos_interior_url;
+        console.log(`📷 Preservando fotos_interior_url existentes (Airtable no envió nuevas)`);
+      }
+
+      if (airtableFeatureImage) {
+        featureImage = airtableFeatureImage;
+      } else if (existingRecord?.feature_image) {
+        featureImage = existingRecord.feature_image;
+        console.log(`📷 Preservando feature_image existente (Airtable no envió nueva)`);
+      } else if (exteriorImages) {
+        // Fallback to first exterior image
         const exteriorArray = exteriorImages.split(',').map(url => url.trim()).filter(Boolean);
         featureImage = exteriorArray[0] || null;
       }
 
-      console.log(`✅ Found ${exteriorImages.split(',').filter(Boolean).length} exterior, ${interiorImages.split(',').filter(Boolean).length} interior, ${featureImage ? 1 : 0} feature image URLs from Airtable`);
+      console.log(`✅ Found ${exteriorImages.split(',').filter(Boolean).length} exterior, ${interiorImages.split(',').filter(Boolean).length} interior, ${featureImage ? 1 : 0} feature image URLs`);
     }
 
     // Normalize combustible field - convert to plain text (first element)
@@ -384,7 +406,8 @@ serve(async (req: Request) => {
       vendido: isVendido,
       clasificacionid: clasificacionValue,
       ubicacion: ubicacionValue,
-      descripcion: fields.descripcion || '',
+      // ✅ FIX: Preserve existing descripcion if Airtable doesn't send one
+      descripcion: fields.descripcion || existingRecord?.descripcion || '',
 
       // Financial fields
       enganchemin: getNumberField(fields.EngancheMin, fields.enganchemin),
@@ -408,6 +431,8 @@ serve(async (req: Request) => {
 
       last_synced_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      // ✅ FIX: Preserve created_at if it already exists
+      ...(existingRecord?.created_at && { created_at: existingRecord.created_at }),
       // Store full Airtable data for reference
       data: fields,
     };

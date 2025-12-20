@@ -54,11 +54,21 @@ serve(async (req) => {
     for (const record of records) {
       try {
         const existing = await buscarEnAirtable(record.ordencompra);
-        
+
         if (existing) {
-          await actualizarEnAirtable(existing.id, record);
-          updated++;
+          // ✅ FIX: NO actualizar registros existentes para evitar sobrescribir datos completos
+          // Solo guardar el airtable_id en Supabase si no lo tiene
+          console.log(`Record ${record.ordencompra} already exists in Airtable (${existing.id}), skipping update to preserve data`);
+          if (!record.airtable_id) {
+            await supabase
+              .from("inventario_cache")
+              .update({ airtable_id: existing.id })
+              .eq("ordencompra", record.ordencompra);
+            console.log(`  → Saved airtable_id ${existing.id} to Supabase`);
+          }
+          skipped++;
         } else {
+          // Crear nuevo registro solo si no existe en Airtable
           const newRecord = await crearEnAirtable(record);
           if (newRecord?.id) {
             await supabase
@@ -66,6 +76,7 @@ serve(async (req) => {
               .update({ airtable_id: newRecord.id })
               .eq("ordencompra", record.ordencompra);
             created++;
+            console.log(`  → Created new record in Airtable: ${newRecord.id}`);
           } else {
             skipped++;
           }

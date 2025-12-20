@@ -143,10 +143,10 @@ const Lightbox: React.FC<LightboxProps> = ({ media, currentIndex, onClose, onPre
             <div
                 className="absolute inset-0 flex items-center justify-center"
                 style={{
-                    paddingTop: 'max(60px, calc(env(safe-area-inset-top) + 48px))',
-                    paddingBottom: media.length > 1 ? 'max(100px, calc(env(safe-area-inset-bottom) + 80px))' : 'max(20px, env(safe-area-inset-bottom))',
-                    paddingLeft: '48px',
-                    paddingRight: '48px'
+                    paddingTop: 'max(56px, calc(env(safe-area-inset-top) + 44px))',
+                    paddingBottom: media.length > 1 ? 'max(88px, calc(env(safe-area-inset-bottom) + 72px))' : 'max(16px, env(safe-area-inset-bottom))',
+                    paddingLeft: '8px',
+                    paddingRight: '8px'
                 }}
                 onClick={onClose}
                 onTouchStart={handleTouchStart}
@@ -163,9 +163,9 @@ const Lightbox: React.FC<LightboxProps> = ({ media, currentIndex, onClose, onPre
                         <img
                             src={currentItem.url}
                             alt={`Imagen ${currentIndex + 1} de ${media.length}`}
-                            className="max-w-full max-h-full object-contain rounded-md select-none"
+                            className="max-w-full max-h-full object-contain select-none"
                             draggable={false}
-                            style={{ maxHeight: 'calc(100vh - 180px)' }}
+                            style={{ maxHeight: 'calc(100vh - 140px)' }}
                             onError={(e) => {
                                 const target = e.target as HTMLImageElement;
                                 target.src = DEFAULT_PLACEHOLDER_IMAGE;

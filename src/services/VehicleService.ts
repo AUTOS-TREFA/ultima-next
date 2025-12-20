@@ -113,7 +113,7 @@ class VehicleService {
 
                 autoano: safeParseInt(item.autoano),
                 precio: safeParseFloat(item.precio),
-                kilometraje: safeParseInt(getFirstOrString(item.kilometraje)),
+                kilometraje: safeParseInt(item.kilometraje),
                 transmision: getFirstOrString(item.transmision),
                 combustible: getFirstOrString(item.combustible),
                 carroceria: getFirstOrString(item.carroceria || item.clasificacionid),
@@ -944,7 +944,7 @@ private static normalizeVehicleData(rawData: any[]): Vehicle[] {
         const modelo = getValue('modelo', 'Modelo') || '';
         const autoano = safeParseInt(getValue('autoano', 'AutoAno'));
         const precio = safeParseFloat(getValue('precio', 'Precio'));
-        const kilometraje = safeParseInt(getFirstOrString(getValue('kilometraje', 'Kilometraje')));
+        const kilometraje = safeParseInt(getValue('kilometraje', 'Kilometraje'));
         const transmision = getFirstOrString(getValue('transmision', 'Transmision'));
         const combustible = getFirstOrString(getValue('combustible', 'Combustible'));
         const carroceria = getFirstOrString(getValue('carroceria') || getValue('clasificacionid', 'ClasificacionID'));

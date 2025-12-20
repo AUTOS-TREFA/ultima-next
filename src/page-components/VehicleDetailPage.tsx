@@ -74,7 +74,7 @@ const TABS = [
   { id: 'inspection', label: 'Inspeccion', icon: ShieldCheckIcon },
 ];
 
-const cardStyle = "bg-white p-3 sm:p-4 lg:p-6 rounded-xl lg:rounded-2xl shadow-sm border border-gray-200/80";
+const cardStyle = "bg-white p-3 sm:p-4 lg:p-6 rounded-xl lg:rounded-2xl shadow-sm ring-1 ring-gray-200/60 border-0";
 
 // =================================================================================
 // SUB-COMPONENTS
@@ -160,7 +160,7 @@ const MediaGallery: React.FC<{
 
     const MainViewer = () => (
         <motion.div
-            className="aspect-video bg-gray-900 rounded-xl overflow-hidden shadow-lg relative group cursor-grab active:cursor-grabbing"
+            className="aspect-[4/3] sm:aspect-video bg-gray-900 rounded-none sm:rounded-xl overflow-hidden shadow-lg relative group cursor-grab active:cursor-grabbing -mx-2 sm:mx-0"
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.1}
@@ -169,7 +169,7 @@ const MediaGallery: React.FC<{
             dragListener={!isEmbed} // Disable drag on iframes
         >
             {bonusPromo && (
-                <div className="absolute top-4 left-4 z-20 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold px-4 py-2 rounded-full shadow-lg animate-fade-in-up text-sm">
+                <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-lg animate-fade-in-up text-xs sm:text-sm">
                     {bonusPromo}
                 </div>
             )}
@@ -204,17 +204,24 @@ const MediaGallery: React.FC<{
                 </motion.div>
             </AnimatePresence>
 
-            <button onClick={handleOpenLightbox} className="absolute top-4 right-4 bg-black/30 text-white p-2 rounded-full backdrop-blur-sm hover:bg-black/50 transition-colors opacity-0 group-hover:opacity-100 z-20">
-                <Maximize className="w-7 h-7" />
+            {/* Image counter badge - bottom right */}
+            {mediaItems.length > 1 && (
+                <div className="absolute bottom-3 right-3 z-20 bg-black/60 text-white text-xs sm:text-sm font-medium px-2.5 py-1 rounded-md backdrop-blur-sm">
+                    {activeIndex + 1} / {mediaItems.length}
+                </div>
+            )}
+
+            <button onClick={handleOpenLightbox} className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-black/30 text-white p-2 rounded-full backdrop-blur-sm hover:bg-black/50 transition-colors sm:opacity-0 sm:group-hover:opacity-100 z-20">
+                <Maximize className="w-5 h-5 sm:w-7 sm:h-7" />
             </button>
 
             {mediaItems.length > 1 && (
                 <>
-                    <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); goToPrev(); }} className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-black/30 text-white p-2 rounded-full backdrop-blur-sm hover:bg-black/50 transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center" aria-label="Previous image">
-                        <ChevronLeftIcon className="w-8 h-8" />
+                    <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); goToPrev(); }} className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-20 bg-black/30 text-white p-1.5 sm:p-2 rounded-full backdrop-blur-sm hover:bg-black/50 transition-colors sm:opacity-0 sm:group-hover:opacity-100 flex items-center justify-center" aria-label="Previous image">
+                        <ChevronLeftIcon className="w-6 h-6 sm:w-8 sm:h-8" />
                     </button>
-                    <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); goToNext(); }} className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-black/30 text-white p-2 rounded-full backdrop-blur-sm hover:bg-black/50 transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center" aria-label="Next image">
-                        <ChevronRightIcon className="w-8 h-8" />
+                    <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); goToNext(); }} className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-20 bg-black/30 text-white p-1.5 sm:p-2 rounded-full backdrop-blur-sm hover:bg-black/50 transition-colors sm:opacity-0 sm:group-hover:opacity-100 flex items-center justify-center" aria-label="Next image">
+                        <ChevronRightIcon className="w-6 h-6 sm:w-8 sm:h-8" />
                     </button>
                 </>
             )}
@@ -267,17 +274,17 @@ const TitlePriceActionsBlock: React.FC<{
         )}
 
         <div className="mt-4 sm:mt-6 flex flex-col gap-2 sm:gap-3">
-            <button data-gtm-id="detail-page-finance" onClick={onFinancingClick} className="w-full text-center bg-primary-600 text-white font-bold py-2.5 sm:py-3.5 px-4 sm:px-6 rounded-lg hover:bg-primary-700 text-sm sm:text-base lg:text-lg shadow-md transition-all"> Comprar con financiamiento </button>
+            <button data-gtm-id="detail-page-finance" onClick={onFinancingClick} className="w-full text-center bg-primary-600 text-white font-bold py-3 sm:py-3.5 px-3 sm:px-6 rounded-lg hover:bg-primary-700 text-base sm:text-base lg:text-lg shadow-md transition-all"> Comprar con financiamiento </button>
             <a
                 href={`https://wa.me/5218187049079?text=${encodeURIComponent(`Hola, me interesa el ${vehicle.title}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={onWhatsAppClick}
-                className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-green-500 text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg hover:bg-green-600 text-sm sm:text-base lg:text-lg shadow-md transition-all"
+                className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-green-500 text-white font-bold py-3 sm:py-3 px-3 sm:px-6 rounded-lg hover:bg-green-600 text-base sm:text-base lg:text-lg shadow-md transition-all"
             >
                 <WhatsAppIcon className="w-5 h-5 sm:w-6 sm:h-6" /> Contactar por WhatsApp
             </a>
-            <button data-gtm-id="detail-page-favorite" onClick={onToggleFavorite} disabled={isToggling} className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-white text-gray-700 font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg hover:bg-gray-100 border-2 border-gray-300 text-sm sm:text-base lg:text-lg shadow-sm transition-all disabled:opacity-50"> {isFavorite ? <SolidHeartIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" /> : <HeartIcon className="w-5 h-5 sm:w-6 sm:h-6" />} {isFavorite ? 'Guardado' : 'Anadir a favoritos'} ({favoriteCount}) </button>
+            <button data-gtm-id="detail-page-favorite" onClick={onToggleFavorite} disabled={isToggling} className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-white text-gray-700 font-bold py-3 sm:py-3 px-3 sm:px-6 rounded-lg hover:bg-gray-100 border-2 border-gray-300 text-base sm:text-base lg:text-lg shadow-sm transition-all disabled:opacity-50"> {isFavorite ? <SolidHeartIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" /> : <HeartIcon className="w-5 h-5 sm:w-6 sm:h-6" />} {isFavorite ? 'Guardado' : 'Favoritos'} ({favoriteCount}) </button>
         </div>
         <ShareButtons url={typeof window !== 'undefined' ? window.location.href : ''} title={vehicle.title} className="mt-6 justify-center" />
     </div>
