@@ -2,12 +2,28 @@
 
 # TREFA Cloud Run Deployment Script
 # This script builds and deploys the application to Google Cloud Run
-# Usage: ./deploy.sh [staging|production]
+# Usage: ./deploy.sh [staging|production] [--cloud-build]
+#
+# Options:
+#   --cloud-build    Use Google Cloud Build instead of local Docker
+#                    (recommended for ARM Macs to avoid QEMU issues)
 
 set -e  # Exit on error
 
-# === Configuration ===
-ENVIRONMENT=${1:-staging}  # Default to staging if not specified
+# === Parse Arguments ===
+ENVIRONMENT="staging"
+USE_CLOUD_BUILD=false
+
+for arg in "$@"; do
+    case $arg in
+        staging|production)
+            ENVIRONMENT="$arg"
+            ;;
+        --cloud-build)
+            USE_CLOUD_BUILD=true
+            ;;
+    esac
+done
 PROJECT_ID="trefa-web-apis-1731136641165"
 REGION="us-central1"
 REPOSITORY="marianomoralesr"
@@ -32,7 +48,27 @@ IMAGE_URL="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$IMAGE_TAG
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+
+# === Helper Functions ===
+
+# Read a value from cloud-build-vars.yaml
+read_yaml_var() {
+    local key=$1
+    grep "^$key:" cloud-build-vars.yaml 2>/dev/null | cut -d'"' -f2
+}
+
+# Clean up old Docker images to free disk space
+cleanup_docker() {
+    echo -e "${BLUE}Cleaning up old Docker images...${NC}"
+    # Remove dangling images
+    docker image prune -f > /dev/null 2>&1 || true
+    # Remove old app images (keep last 3)
+    docker images "$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME" --format "{{.ID}} {{.CreatedAt}}" 2>/dev/null | \
+        sort -k2 -r | tail -n +4 | awk '{print $1}' | xargs -r docker rmi -f > /dev/null 2>&1 || true
+    echo -e "${GREEN}✓ Docker cleanup completed${NC}"
+}
 
 echo -e "${GREEN}╔═══════════════════════════════════════════════╗${NC}"
 echo -e "${GREEN}║   TREFA Cloud Run Deployment Script          ║${NC}"
@@ -157,26 +193,27 @@ echo ""
 
 # === Step 3: Build Docker Image ===
 echo -e "${YELLOW}[3/7] Building Docker image...${NC}"
+BUILD_START_TIME=$(date +%s)
 
-# Read build-time credentials from cloud-build-vars.yaml
-NEXT_PUBLIC_SUPABASE_URL=$(grep "NEXT_PUBLIC_SUPABASE_URL:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_SUPABASE_ANON_KEY=$(grep "NEXT_PUBLIC_SUPABASE_ANON_KEY:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID=$(grep "NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_INTELIMOTOR_API_KEY=$(grep "NEXT_PUBLIC_INTELIMOTOR_API_KEY:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_INTELIMOTOR_API_SECRET=$(grep "NEXT_PUBLIC_INTELIMOTOR_API_SECRET:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_AIRTABLE_VALUATION_API_KEY=$(grep "NEXT_PUBLIC_AIRTABLE_VALUATION_API_KEY:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_AIRTABLE_VALUATION_BASE_ID=$(grep "NEXT_PUBLIC_AIRTABLE_VALUATION_BASE_ID:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_AIRTABLE_VALUATION_TABLE_ID=$(grep "NEXT_PUBLIC_AIRTABLE_VALUATION_TABLE_ID:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_AIRTABLE_VALUATION_VIEW=$(grep "NEXT_PUBLIC_AIRTABLE_VALUATION_VIEW:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_AIRTABLE_VALUATIONS_STORAGE_TABLE_ID=$(grep "NEXT_PUBLIC_AIRTABLE_VALUATIONS_STORAGE_TABLE_ID:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_API_KEY=$(grep "NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_API_KEY:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_BASE_ID=$(grep "NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_BASE_ID:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_TABLE_ID=$(grep "NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_TABLE_ID:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_IMAGE_CDN_URL=$(grep "NEXT_PUBLIC_IMAGE_CDN_URL:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL=$(grep "NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID=$(grep "NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_CLOUDFLARE_R2_ACCESS_KEY_ID=$(grep "NEXT_PUBLIC_CLOUDFLARE_R2_ACCESS_KEY_ID:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_CLOUDFLARE_R2_SECRET_ACCESS_KEY=$(grep "NEXT_PUBLIC_CLOUDFLARE_R2_SECRET_ACCESS_KEY:" cloud-build-vars.yaml | cut -d'"' -f2)
+# Read build-time credentials from cloud-build-vars.yaml using helper function
+NEXT_PUBLIC_SUPABASE_URL=$(read_yaml_var "NEXT_PUBLIC_SUPABASE_URL")
+NEXT_PUBLIC_SUPABASE_ANON_KEY=$(read_yaml_var "NEXT_PUBLIC_SUPABASE_ANON_KEY")
+NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID=$(read_yaml_var "NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID")
+NEXT_PUBLIC_INTELIMOTOR_API_KEY=$(read_yaml_var "NEXT_PUBLIC_INTELIMOTOR_API_KEY")
+NEXT_PUBLIC_INTELIMOTOR_API_SECRET=$(read_yaml_var "NEXT_PUBLIC_INTELIMOTOR_API_SECRET")
+NEXT_PUBLIC_AIRTABLE_VALUATION_API_KEY=$(read_yaml_var "NEXT_PUBLIC_AIRTABLE_VALUATION_API_KEY")
+NEXT_PUBLIC_AIRTABLE_VALUATION_BASE_ID=$(read_yaml_var "NEXT_PUBLIC_AIRTABLE_VALUATION_BASE_ID")
+NEXT_PUBLIC_AIRTABLE_VALUATION_TABLE_ID=$(read_yaml_var "NEXT_PUBLIC_AIRTABLE_VALUATION_TABLE_ID")
+NEXT_PUBLIC_AIRTABLE_VALUATION_VIEW=$(read_yaml_var "NEXT_PUBLIC_AIRTABLE_VALUATION_VIEW")
+NEXT_PUBLIC_AIRTABLE_VALUATIONS_STORAGE_TABLE_ID=$(read_yaml_var "NEXT_PUBLIC_AIRTABLE_VALUATIONS_STORAGE_TABLE_ID")
+NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_API_KEY=$(read_yaml_var "NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_API_KEY")
+NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_BASE_ID=$(read_yaml_var "NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_BASE_ID")
+NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_TABLE_ID=$(read_yaml_var "NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_TABLE_ID")
+NEXT_PUBLIC_IMAGE_CDN_URL=$(read_yaml_var "NEXT_PUBLIC_IMAGE_CDN_URL")
+NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL=$(read_yaml_var "NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL")
+NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID=$(read_yaml_var "NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID")
+NEXT_PUBLIC_CLOUDFLARE_R2_ACCESS_KEY_ID=$(read_yaml_var "NEXT_PUBLIC_CLOUDFLARE_R2_ACCESS_KEY_ID")
+NEXT_PUBLIC_CLOUDFLARE_R2_SECRET_ACCESS_KEY=$(read_yaml_var "NEXT_PUBLIC_CLOUDFLARE_R2_SECRET_ACCESS_KEY")
 
 # Get git commit hash and build date
 NEXT_PUBLIC_GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -192,24 +229,89 @@ echo "  - NEXT_PUBLIC_BUILD_DATE: $NEXT_PUBLIC_BUILD_DATE"
 echo "  - Image URL: $IMAGE_URL"
 
 # Read additional build args from cloud-build-vars.yaml
-NEXT_PUBLIC_CAR_STUDIO_API_KEY=$(grep "NEXT_PUBLIC_CAR_STUDIO_API_KEY:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL=$(grep "NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_LANDING_WEBHOOK_URL=$(grep "NEXT_PUBLIC_LANDING_WEBHOOK_URL:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_APPLICATION_WEBHOOK_URL=$(grep "NEXT_PUBLIC_APPLICATION_WEBHOOK_URL:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_PROXY_URL=$(grep "NEXT_PUBLIC_PROXY_URL:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_CALENDLY_URL_MTY=$(grep "NEXT_PUBLIC_CALENDLY_URL_MTY:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_CALENDLY_URL_TMPS=$(grep "NEXT_PUBLIC_CALENDLY_URL_TMPS:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_CALENDLY_URL_COAH=$(grep "NEXT_PUBLIC_CALENDLY_URL_COAH:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_CALENDLY_URL_GPE=$(grep "NEXT_PUBLIC_CALENDLY_URL_GPE:" cloud-build-vars.yaml | cut -d'"' -f2)
-NEXT_PUBLIC_CLOUD_RUN_URL=$(grep "NEXT_PUBLIC_CLOUD_RUN_URL:" cloud-build-vars.yaml | cut -d'"' -f2)
+NEXT_PUBLIC_CAR_STUDIO_API_KEY=$(read_yaml_var "NEXT_PUBLIC_CAR_STUDIO_API_KEY")
+NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL=$(read_yaml_var "NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL")
+NEXT_PUBLIC_LANDING_WEBHOOK_URL=$(read_yaml_var "NEXT_PUBLIC_LANDING_WEBHOOK_URL")
+NEXT_PUBLIC_APPLICATION_WEBHOOK_URL=$(read_yaml_var "NEXT_PUBLIC_APPLICATION_WEBHOOK_URL")
+NEXT_PUBLIC_PROXY_URL=$(read_yaml_var "NEXT_PUBLIC_PROXY_URL")
+NEXT_PUBLIC_CALENDLY_URL_MTY=$(read_yaml_var "NEXT_PUBLIC_CALENDLY_URL_MTY")
+NEXT_PUBLIC_CALENDLY_URL_TMPS=$(read_yaml_var "NEXT_PUBLIC_CALENDLY_URL_TMPS")
+NEXT_PUBLIC_CALENDLY_URL_COAH=$(read_yaml_var "NEXT_PUBLIC_CALENDLY_URL_COAH")
+NEXT_PUBLIC_CALENDLY_URL_GPE=$(read_yaml_var "NEXT_PUBLIC_CALENDLY_URL_GPE")
+NEXT_PUBLIC_CLOUD_RUN_URL=$(read_yaml_var "NEXT_PUBLIC_CLOUD_RUN_URL")
 
 # Use BuildKit for faster builds
 export DOCKER_BUILDKIT=1
 
-# Build without cache to ensure fresh build
-docker build \
-  --no-cache \
-  --platform linux/amd64 \
+if [ "$USE_CLOUD_BUILD" = true ]; then
+    # === Cloud Build (recommended for ARM Macs) ===
+    echo -e "${BLUE}Using Google Cloud Build (remote)...${NC}"
+
+    # Create a temporary cloudbuild.yaml with build args
+    cat > /tmp/cloudbuild-temp.yaml << CLOUDBUILD_EOF
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--platform=linux/amd64'
+      - '--build-arg=NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL'
+      - '--build-arg=NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY'
+      - '--build-arg=NEXT_PUBLIC_GIT_COMMIT=$NEXT_PUBLIC_GIT_COMMIT'
+      - '--build-arg=NEXT_PUBLIC_BUILD_DATE=$NEXT_PUBLIC_BUILD_DATE'
+      - '--build-arg=NEXT_PUBLIC_ENVIRONMENT=$ENVIRONMENT'
+      - '--build-arg=NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID=$NEXT_PUBLIC_INTELIMOTOR_BUSINESS_UNIT_ID'
+      - '--build-arg=NEXT_PUBLIC_INTELIMOTOR_API_KEY=$NEXT_PUBLIC_INTELIMOTOR_API_KEY'
+      - '--build-arg=NEXT_PUBLIC_INTELIMOTOR_API_SECRET=$NEXT_PUBLIC_INTELIMOTOR_API_SECRET'
+      - '--build-arg=NEXT_PUBLIC_AIRTABLE_VALUATION_API_KEY=$NEXT_PUBLIC_AIRTABLE_VALUATION_API_KEY'
+      - '--build-arg=NEXT_PUBLIC_AIRTABLE_VALUATION_BASE_ID=$NEXT_PUBLIC_AIRTABLE_VALUATION_BASE_ID'
+      - '--build-arg=NEXT_PUBLIC_AIRTABLE_VALUATION_TABLE_ID=$NEXT_PUBLIC_AIRTABLE_VALUATION_TABLE_ID'
+      - '--build-arg=NEXT_PUBLIC_AIRTABLE_VALUATION_VIEW=$NEXT_PUBLIC_AIRTABLE_VALUATION_VIEW'
+      - '--build-arg=NEXT_PUBLIC_AIRTABLE_VALUATIONS_STORAGE_TABLE_ID=$NEXT_PUBLIC_AIRTABLE_VALUATIONS_STORAGE_TABLE_ID'
+      - '--build-arg=NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_API_KEY=$NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_API_KEY'
+      - '--build-arg=NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_BASE_ID=$NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_BASE_ID'
+      - '--build-arg=NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_TABLE_ID=$NEXT_PUBLIC_AIRTABLE_LEAD_CAPTURE_TABLE_ID'
+      - '--build-arg=NEXT_PUBLIC_IMAGE_CDN_URL=$NEXT_PUBLIC_IMAGE_CDN_URL'
+      - '--build-arg=NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL=$NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL'
+      - '--build-arg=NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID=$NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID'
+      - '--build-arg=NEXT_PUBLIC_CLOUDFLARE_R2_ACCESS_KEY_ID=$NEXT_PUBLIC_CLOUDFLARE_R2_ACCESS_KEY_ID'
+      - '--build-arg=NEXT_PUBLIC_CLOUDFLARE_R2_SECRET_ACCESS_KEY=$NEXT_PUBLIC_CLOUDFLARE_R2_SECRET_ACCESS_KEY'
+      - '--build-arg=NEXT_PUBLIC_CAR_STUDIO_API_KEY=$NEXT_PUBLIC_CAR_STUDIO_API_KEY'
+      - '--build-arg=NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL=$NEXT_PUBLIC_LEAD_CONNECTOR_WEBHOOK_URL'
+      - '--build-arg=NEXT_PUBLIC_LANDING_WEBHOOK_URL=$NEXT_PUBLIC_LANDING_WEBHOOK_URL'
+      - '--build-arg=NEXT_PUBLIC_APPLICATION_WEBHOOK_URL=$NEXT_PUBLIC_APPLICATION_WEBHOOK_URL'
+      - '--build-arg=NEXT_PUBLIC_PROXY_URL=$NEXT_PUBLIC_PROXY_URL'
+      - '--build-arg=NEXT_PUBLIC_CALENDLY_URL_MTY=$NEXT_PUBLIC_CALENDLY_URL_MTY'
+      - '--build-arg=NEXT_PUBLIC_CALENDLY_URL_TMPS=$NEXT_PUBLIC_CALENDLY_URL_TMPS'
+      - '--build-arg=NEXT_PUBLIC_CALENDLY_URL_COAH=$NEXT_PUBLIC_CALENDLY_URL_COAH'
+      - '--build-arg=NEXT_PUBLIC_CALENDLY_URL_GPE=$NEXT_PUBLIC_CALENDLY_URL_GPE'
+      - '--build-arg=NEXT_PUBLIC_CLOUD_RUN_URL=$NEXT_PUBLIC_CLOUD_RUN_URL'
+      - '--build-arg=NEXT_PUBLIC_FRONTEND_URL=$FRONTEND_URL_OVERRIDE'
+      - '-t'
+      - '$IMAGE_URL'
+      - '.'
+images:
+  - '$IMAGE_URL'
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+timeout: '1800s'
+CLOUDBUILD_EOF
+
+    # Submit build to Cloud Build
+    gcloud builds submit \
+        --config=/tmp/cloudbuild-temp.yaml \
+        --substitutions="_IMAGE_URL=$IMAGE_URL" \
+        .
+
+    rm -f /tmp/cloudbuild-temp.yaml
+
+else
+    # === Local Docker Build ===
+    echo -e "${BLUE}Using local Docker build...${NC}"
+
+    # Build with Docker layer caching enabled (removes --no-cache to prevent QEMU segfaults)
+    docker build \
+      --platform linux/amd64 \
   --build-arg NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
   --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$NEXT_PUBLIC_SUPABASE_ANON_KEY" \
   --build-arg NEXT_PUBLIC_GIT_COMMIT="$NEXT_PUBLIC_GIT_COMMIT" \
@@ -245,30 +347,34 @@ docker build \
   -t $IMAGE_URL \
   .
 
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✓ Docker image built successfully${NC}"
-else
-    echo -e "${RED}✗ Docker build failed${NC}"
-    exit 1
+    BUILD_END_TIME=$(date +%s)
+    BUILD_DURATION=$((BUILD_END_TIME - BUILD_START_TIME))
+
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ Docker image built successfully in ${BUILD_DURATION}s${NC}"
+    else
+        echo -e "${RED}✗ Docker build failed after ${BUILD_DURATION}s${NC}"
+        exit 1
+    fi
+    echo ""
+
+    # === Step 4: Push to Artifact Registry ===
+    echo -e "${YELLOW}[4/7] Pushing image to Artifact Registry...${NC}"
+
+    # Configure Docker auth for Artifact Registry
+    gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
+
+    echo "Pushing image to: $IMAGE_URL"
+    docker push $IMAGE_URL
+
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ Image pushed successfully${NC}"
+    else
+        echo -e "${RED}✗ Image push failed${NC}"
+        exit 1
+    fi
+    echo ""
 fi
-echo ""
-
-# === Step 4: Push to Artifact Registry ===
-echo -e "${YELLOW}[4/7] Pushing image to Artifact Registry...${NC}"
-
-# Configure Docker auth for Artifact Registry
-gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
-
-echo "Pushing image to: $IMAGE_URL"
-docker push $IMAGE_URL
-
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✓ Image pushed successfully${NC}"
-else
-    echo -e "${RED}✗ Image push failed${NC}"
-    exit 1
-fi
-echo ""
 
 # === Step 5: Deploy to Cloud Run ===
 echo -e "${YELLOW}[5/7] Deploying to Cloud Run...${NC}"
@@ -323,8 +429,8 @@ gcloud run deploy $SERVICE_NAME \
   --region=$REGION \
   --allow-unauthenticated \
   --port=8080 \
-  --memory=2Gi \
-  --cpu=4 \
+  --memory=1536Mi \
+  --cpu=2 \
   --min-instances=0 \
   --max-instances=10 \
   --timeout=300 \
@@ -352,6 +458,35 @@ if [ $? -eq 0 ]; then
         --to-latest \
         --quiet 2>/dev/null || true
     echo -e "${GREEN}✓ Traffic routed to latest revision${NC}"
+    echo ""
+
+    # === Health Check Verification ===
+    echo -e "${YELLOW}Verifying deployment health...${NC}"
+    HEALTH_URL="$SERVICE_URL/api/health"
+    HEALTH_RETRIES=3
+    HEALTH_OK=false
+
+    for i in $(seq 1 $HEALTH_RETRIES); do
+        echo -n "  Health check attempt $i/$HEALTH_RETRIES... "
+        HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL" 2>/dev/null || echo "000")
+
+        if [ "$HEALTH_RESPONSE" = "200" ]; then
+            echo -e "${GREEN}OK${NC}"
+            HEALTH_OK=true
+            break
+        else
+            echo -e "${YELLOW}HTTP $HEALTH_RESPONSE${NC}"
+            sleep 3
+        fi
+    done
+
+    if [ "$HEALTH_OK" = true ]; then
+        echo -e "${GREEN}✓ Health check passed${NC}"
+    else
+        echo -e "${RED}⚠️  Health check failed after $HEALTH_RETRIES attempts${NC}"
+        echo -e "${YELLOW}   Service may still be starting. Check logs:${NC}"
+        echo -e "${YELLOW}   gcloud run logs tail $SERVICE_NAME --region=$REGION${NC}"
+    fi
     echo ""
 
     # Update FRONTEND_URL for staging if needed
@@ -431,6 +566,19 @@ if [ $? -eq 0 ]; then
         echo "- Test in incognito mode"
         echo "- Hard refresh (Cmd+Shift+R) if needed"
     fi
+
+    # === Step 7: Cleanup ===
+    echo ""
+    echo -e "${YELLOW}[7/7] Cleaning up...${NC}"
+    cleanup_docker
+
+    # Show total deployment time
+    DEPLOY_END_TIME=$(date +%s)
+    TOTAL_DURATION=$((DEPLOY_END_TIME - BUILD_START_TIME))
+    echo ""
+    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${GREEN}Total deployment time: ${TOTAL_DURATION}s (~$((TOTAL_DURATION / 60))m $((TOTAL_DURATION % 60))s)${NC}"
+    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 else
     echo -e "${RED}✗ Deployment failed${NC}"
     exit 1

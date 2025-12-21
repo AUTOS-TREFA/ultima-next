@@ -122,12 +122,16 @@ const MAX_KILOMETRAJE = 120000;
  * Normalizes subbrand names by removing parenthetical suffixes.
  * This merges variants like "Versa", "Versa (línea nueva)", "Versa (línea vieja)"
  * into a single "Versa" option while preserving the original name for API calls.
+ * Also replaces "VUD" with "SUV" for better user understanding (same meaning).
  */
 function normalizeSubbrand(subbrand: string | undefined | null): string {
   // Guard against undefined/null values
   if (!subbrand || typeof subbrand !== 'string') return '';
-  // Remove common suffixes: (línea nueva), (línea vieja), (cambio de línea), (línea anterior), etc.
-  return subbrand.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  // Remove common suffixes and replace VUD with SUV for display clarity
+  return subbrand
+    .replace(/\s*\([^)]*\)\s*$/, '')  // Remove parenthetical suffixes
+    .replace(/\bVUD\b/g, 'SUV')        // VUD → SUV (same meaning, more familiar)
+    .trim();
 }
 
 // ============================================================================
