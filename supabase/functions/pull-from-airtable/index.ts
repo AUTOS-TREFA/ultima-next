@@ -338,7 +338,8 @@ serve(async (req: Request) => {
           promociones: fields.Promociones || fields.promociones || existingRecord?.promociones || null,
           rfdm: allowUpdate(fields.rfdm, existingRecord?.rfdm),
           liga_bot: allowUpdate(fields.ligaBot || fields.LigaBot, existingRecord?.liga_bot),
-          liga_web: allowUpdate(`https://trefa.mx/autos/${slug}`, existingRecord?.liga_web),
+          // liga_web usa URL relativa para funcionar con ambos dominios
+          liga_web: allowUpdate(`/autos/${slug}`, existingRecord?.liga_web),
 
           // IMAGE FIELDS - Update only if NOT null (never overwrite with null)
           feature_image: updateIfNotNull(featureImage, existingRecord?.feature_image),
