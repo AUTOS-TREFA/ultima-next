@@ -50,6 +50,12 @@ let cachedOne = new Map();
 
 // Cache invalidation tracking
 let lastCacheInvalidation = Date.now();
+// Legacy Supabase storage URLs - do NOT convert these (images not migrated to R2/CDN)
+const LEGACY_SUPABASE_HOSTS = [
+  'jjepfehmuybpctdzipnu.supabase.co',
+  'pemgwyymodlwabaexxrb.supabase.co'
+];
+
 /* ================================
    🔧 HELPERS
 ================================== */
@@ -57,12 +63,22 @@ let lastCacheInvalidation = Date.now();
  * Converts Supabase Storage URLs to Cloudflare CDN URLs
  * This dramatically reduces Supabase egress costs and improves performance
  * Falls back to original URL if not a Supabase storage URL
+ *
+ * IMPORTANT: Legacy Supabase URLs are NOT converted because:
+ * - Images are still stored in old Supabase projects
+ * - CDN is not configured to proxy those URLs
  */
 function convertToCdnUrl(url: string | null | undefined): string {
   if (!url) return "";
 
   // If already using CDN or R2, return as-is
   if (url.startsWith(IMAGE_CDN_URL) || url.includes('.r2.cloudflarestorage.com')) {
+    return url;
+  }
+
+  // Skip conversion for legacy Supabase URLs (images not migrated to R2/CDN)
+  const isLegacyUrl = LEGACY_SUPABASE_HOSTS.some(host => url.includes(host));
+  if (isLegacyUrl) {
     return url;
   }
 
