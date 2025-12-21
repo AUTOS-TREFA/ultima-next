@@ -652,15 +652,62 @@ async function fetchBySlug(slug) {
     console.log(`♻️ Using cached data for slug: ${slug}`);
     return cached.data;
   }
-  const { data, error } = await supabase.from("inventario_cache").select("*").eq("slug", slug).single();
-  if (error) throw new Error(error.message);
-  const enriched = transformVehicle(data);
-  cachedOne.set(slug, {
-    ts: now,
-    data: enriched
-  });
-  console.log(`✅ Retrieved vehicle for slug: ${slug}`);
-  return enriched;
+
+  // First try: vehicles with exhibicion_inventario = true (active inventory)
+  const { data, error } = await supabase
+    .from("inventario_cache")
+    .select("*")
+    .eq("slug", slug)
+    .eq("exhibicion_inventario", true)
+    .single();
+
+  if (data) {
+    const enriched = transformVehicle(data);
+    cachedOne.set(slug, {
+      ts: now,
+      data: enriched
+    });
+    console.log(`✅ Retrieved active vehicle for slug: ${slug}`);
+    return enriched;
+  }
+
+  // Second try: historic (sold) vehicles - show with "VENDIDO" banner
+  if (error && error.code === 'PGRST116') {
+    console.log(`🏛️ Checking for historic vehicle: ${slug}`);
+    const { data: historicData, error: historicError } = await supabase
+      .from("inventario_cache")
+      .select("*")
+      .eq("slug", slug)
+      .eq("ordenstatus", "Historico")
+      .single();
+
+    if (historicData) {
+      const enriched = transformVehicle(historicData);
+      // Mark as sold/historic for frontend display
+      enriched.vendido = true;
+      enriched.isHistoric = true;
+      enriched.ordenstatus = "Historico";
+      cachedOne.set(slug, {
+        ts: now,
+        data: enriched
+      });
+      console.log(`✅ Retrieved HISTORIC (sold) vehicle for slug: ${slug}`);
+      return enriched;
+    }
+
+    if (historicError && historicError.code !== 'PGRST116') {
+      console.warn(`⚠️ Historic vehicle query error: ${historicError.message}`);
+    }
+
+    console.log(`⚠️ Vehicle with slug '${slug}' not found in active or historic inventory`);
+    return null;
+  }
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return null;
 }
 /* ================================
    🌐 MAIN HANDLER

@@ -611,11 +611,13 @@ class VehicleService {
 
             // ═══════════════════════════════════════════════════════════════
             // TIER 2: Supabase Direct Query (Fresh data)
+            // Only show vehicles with exhibicion_inventario = true
             // ═══════════════════════════════════════════════════════════════
             const { data, error } = await supabase
                 .from('inventario_cache')
                 .select('*')
                 .eq('slug', slug)
+                .eq('exhibicion_inventario', true)
                 .single();
 
             if (error && error.code !== 'PGRST116') {
@@ -662,6 +664,33 @@ class VehicleService {
                 console.log(`[VehicleService] ✅ TIER 2: Found fuzzy match: ${fuzzyData.slug}`);
                 const normalized = this.normalizeVehicleData([fuzzyData]);
                 return normalized[0];
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // TIER 2.5: Check for HISTORIC vehicles (sold vehicles)
+            // These are shown with a "VENDIDO" banner instead of 404
+            // ═══════════════════════════════════════════════════════════════
+            console.log(`[VehicleService] 🏛️ Checking for historic (sold) vehicle...`);
+            const { data: historicData, error: historicError } = await supabase
+                .from('inventario_cache')
+                .select('*')
+                .eq('slug', slug)
+                .eq('ordenstatus', 'Historico')
+                .single();
+
+            if (historicError && historicError.code !== 'PGRST116') {
+                console.warn('[VehicleService] Historic vehicle query error:', historicError.message);
+            }
+
+            if (historicData) {
+                console.log(`[VehicleService] ✅ TIER 2.5: Found HISTORIC vehicle: ${historicData.slug}`);
+                const normalized = this.normalizeVehicleData([historicData]);
+                const vehicle = normalized[0];
+                // Mark as sold/historic for frontend display
+                vehicle.vendido = true;
+                vehicle.isHistoric = true;
+                vehicle.ordenstatus = 'Historico';
+                return vehicle;
             }
 
             // ═══════════════════════════════════════════════════════════════

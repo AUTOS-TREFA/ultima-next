@@ -17,7 +17,7 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import RecentlyViewed from '@/components/RecentlyViewed';
 import SimpleVehicleCard from '@/components/SimpleVehicleCard';
 import VehicleCarousel from '@/components/VehicleCarousel';
-import { ChevronLeft, ChevronRight, ArrowLeft, Grid3X3 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowLeft, Grid3X3, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface VehicleDetailPageV2Props {
@@ -256,6 +256,30 @@ const VehicleDetailPageV2: React.FC<VehicleDetailPageV2Props> = ({ slug }) => {
 
   return (
     <div className="bg-background min-h-screen">
+      {/* SOLD Banner for historic vehicles */}
+      {(vehicle.vendido || vehicle.isHistoric || vehicle.ordenstatus === 'Historico') && (
+        <div className="bg-amber-500 text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center justify-center gap-3">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <div className="text-center">
+                <p className="font-bold text-lg">VENDIDO</p>
+                <p className="text-sm opacity-90">Este vehículo ya no está disponible. Explora nuestro inventario actual para encontrar opciones similares.</p>
+              </div>
+            </div>
+            <div className="flex justify-center mt-3">
+              <Link
+                href="/autos"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white text-amber-600 rounded-full font-semibold text-sm hover:bg-amber-50 transition-colors"
+              >
+                <Grid3X3 className="w-4 h-4" />
+                Ver inventario disponible
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Enhanced Breadcrumbs with back button */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-2">
         <div className="flex items-center justify-between gap-4">
@@ -293,6 +317,7 @@ const VehicleDetailPageV2: React.FC<VehicleDetailPageV2Props> = ({ slug }) => {
         favoriteCount={favoriteCount}
         inspectionData={inspectionData}
         inspectionLoading={inspectionLoading}
+        isSold={vehicle.vendido || vehicle.isHistoric || vehicle.ordenstatus === 'Historico'}
       />
 
       {/* Recently Viewed */}

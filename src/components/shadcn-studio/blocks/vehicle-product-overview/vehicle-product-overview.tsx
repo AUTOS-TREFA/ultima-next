@@ -75,6 +75,7 @@ type VehicleProductOverviewProps = {
   favoriteCount: number
   inspectionData?: InspectionReportData | null
   inspectionLoading?: boolean
+  isSold?: boolean  // Hide action buttons for sold/historic vehicles
 }
 
 // Lightbox Component - Enhanced with better controls and visibility
@@ -313,7 +314,8 @@ const VehicleProductOverview = ({
   isFavorite,
   favoriteCount,
   inspectionData = null,
-  inspectionLoading = false
+  inspectionLoading = false,
+  isSold = false
 }: VehicleProductOverviewProps) => {
   const id = useId()
 
@@ -324,6 +326,12 @@ const VehicleProductOverview = ({
   const [downPayment, setDownPayment] = useState(0)
   const [loanTerm, setLoanTerm] = useState(48)
   const thumbnailContainerRef = useRef<HTMLDivElement>(null)
+
+  // Action button visibility - hide for sold/historic vehicles and separado
+  const isSeparado = vehicle.separado === true || vehicle.separado === 'true'
+  const showFinancingButton = !isSold && !isSeparado
+  const showWhatsAppButton = !isSold  // WhatsApp visible even if separado, but not if sold
+  const showActionButtons = showFinancingButton || showWhatsAppButton
 
   // Get all vehicle images for gallery
   const allImages = useMemo(() => {
@@ -586,24 +594,30 @@ const VehicleProductOverview = ({
                   </div>
                 </div>
 
-                {/* Mobile CTAs */}
-                <div className="flex gap-2">
-                  <Button
-                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold h-11 text-sm"
-                    onClick={onFinancingClick}
-                  >
-                    <CreditCardIcon className="w-4 h-4 mr-1.5" />
-                    Financiar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1 bg-green-500 hover:bg-green-600 text-white border-green-500 hover:border-green-600 font-semibold h-11 text-sm"
-                    onClick={onWhatsAppClick}
-                  >
-                    <MessageCircleIcon className="w-4 h-4 mr-1.5" />
-                    WhatsApp
-                  </Button>
-                </div>
+                {/* Mobile CTAs - Hidden for sold vehicles */}
+                {showActionButtons && (
+                  <div className="flex gap-2">
+                    {showFinancingButton && (
+                      <Button
+                        className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold h-11 text-sm"
+                        onClick={onFinancingClick}
+                      >
+                        <CreditCardIcon className="w-4 h-4 mr-1.5" />
+                        Financiar
+                      </Button>
+                    )}
+                    {showWhatsAppButton && (
+                      <Button
+                        variant="outline"
+                        className="flex-1 bg-green-500 hover:bg-green-600 text-white border-green-500 hover:border-green-600 font-semibold h-11 text-sm"
+                        onClick={onWhatsAppClick}
+                      >
+                        <MessageCircleIcon className="w-4 h-4 mr-1.5" />
+                        WhatsApp
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Key Highlights Grid */}
@@ -655,68 +669,76 @@ const VehicleProductOverview = ({
                 </div>
               </div>
 
-              {/* Purchase Options Cards */}
-              <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
-                <h2 className="text-base font-semibold text-foreground mb-4">Opciones de Compra</h2>
-                <div className="grid gap-3 sm:grid-cols-3">
-                  {/* Cash */}
-                  <button
-                    onClick={onWhatsAppClick}
-                    className="group text-left p-4 rounded-xl border-2 border-border hover:border-green-400 hover:bg-green-50 transition-all"
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                        <BanknoteIcon className="w-5 h-5 text-green-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-sm text-foreground">Contado</h3>
-                        <p className="text-xs text-muted-foreground">Asesoría profesional</p>
-                      </div>
-                    </div>
-                    <span className="inline-flex items-center gap-1 text-sm font-semibold text-green-600 group-hover:gap-2 transition-all">
-                      Iniciar chat <ChevronRightIcon className="w-4 h-4" />
-                    </span>
-                  </button>
+              {/* Purchase Options Cards - Hidden for sold vehicles */}
+              {showActionButtons && (
+                <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
+                  <h2 className="text-base font-semibold text-foreground mb-4">Opciones de Compra</h2>
+                  <div className={`grid gap-3 ${showFinancingButton ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+                    {/* Cash */}
+                    {showWhatsAppButton && (
+                      <button
+                        onClick={onWhatsAppClick}
+                        className="group text-left p-4 rounded-xl border-2 border-border hover:border-green-400 hover:bg-green-50 transition-all"
+                      >
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                            <BanknoteIcon className="w-5 h-5 text-green-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-sm text-foreground">Contado</h3>
+                            <p className="text-xs text-muted-foreground">Asesoría profesional</p>
+                          </div>
+                        </div>
+                        <span className="inline-flex items-center gap-1 text-sm font-semibold text-green-600 group-hover:gap-2 transition-all">
+                          Iniciar chat <ChevronRightIcon className="w-4 h-4" />
+                        </span>
+                      </button>
+                    )}
 
-                  {/* Finance */}
-                  <button
-                    onClick={onFinancingClick}
-                    className="group text-left p-4 rounded-xl border-2 border-border hover:border-orange-400 hover:bg-orange-50 transition-all"
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                        <CreditCardIcon className="w-5 h-5 text-orange-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-sm text-foreground">Crédito</h3>
-                        <p className="text-xs text-muted-foreground">100% en línea</p>
-                      </div>
-                    </div>
-                    <span className="inline-flex items-center gap-1 text-sm font-semibold text-orange-600 group-hover:gap-2 transition-all">
-                      Iniciar trámite <ChevronRightIcon className="w-4 h-4" />
-                    </span>
-                  </button>
+                    {/* Finance - Hidden for separado vehicles */}
+                    {showFinancingButton && (
+                      <button
+                        onClick={onFinancingClick}
+                        className="group text-left p-4 rounded-xl border-2 border-border hover:border-orange-400 hover:bg-orange-50 transition-all"
+                      >
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                            <CreditCardIcon className="w-5 h-5 text-orange-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-sm text-foreground">Crédito</h3>
+                            <p className="text-xs text-muted-foreground">100% en línea</p>
+                          </div>
+                        </div>
+                        <span className="inline-flex items-center gap-1 text-sm font-semibold text-orange-600 group-hover:gap-2 transition-all">
+                          Iniciar trámite <ChevronRightIcon className="w-4 h-4" />
+                        </span>
+                      </button>
+                    )}
 
-                  {/* Branch */}
-                  <button
-                    onClick={onWhatsAppClick}
-                    className="group text-left p-4 rounded-xl border-2 border-border hover:border-blue-400 hover:bg-blue-50 transition-all"
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <BuildingIcon className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-sm text-foreground">Sucursal</h3>
-                        <p className="text-xs text-muted-foreground">{sucursal}</p>
-                      </div>
-                    </div>
-                    <span className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 group-hover:gap-2 transition-all">
-                      Agendar cita <ChevronRightIcon className="w-4 h-4" />
-                    </span>
-                  </button>
+                    {/* Branch */}
+                    {showWhatsAppButton && (
+                      <button
+                        onClick={onWhatsAppClick}
+                        className="group text-left p-4 rounded-xl border-2 border-border hover:border-blue-400 hover:bg-blue-50 transition-all"
+                      >
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <BuildingIcon className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-sm text-foreground">Sucursal</h3>
+                            <p className="text-xs text-muted-foreground">{sucursal}</p>
+                          </div>
+                        </div>
+                        <span className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 group-hover:gap-2 transition-all">
+                          Agendar cita <ChevronRightIcon className="w-4 h-4" />
+                        </span>
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Accordion Sections */}
               <div className="bg-card rounded-xl shadow-sm overflow-hidden border border-border">
@@ -1040,33 +1062,39 @@ const VehicleProductOverview = ({
                   </div>
                 </div>
 
-                {/* CTA Buttons Card */}
+                {/* CTA Buttons Card - Hidden for sold vehicles */}
                 <div className="bg-card rounded-xl p-5 shadow-sm border border-border space-y-3">
-                  <Button
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-14 text-base shadow-lg shadow-orange-200"
-                    onClick={onFinancingClick}
-                    data-gtm-id="detail-page-finance"
-                  >
-                    <CreditCardIcon className="mr-2 w-5 h-5" />
-                    Comprar con Financiamiento
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full bg-green-500 hover:bg-green-600 text-white border-green-500 hover:border-green-600 font-bold h-14 text-base"
-                    onClick={onWhatsAppClick}
-                  >
-                    <MessageCircleIcon className="mr-2 w-5 h-5" />
-                    Contactar por WhatsApp
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full border-2 border-border hover:border-border/80 font-bold h-12"
-                    onClick={onFavoriteClick}
-                    data-gtm-id="detail-page-favorite"
-                  >
-                    <HeartIcon className={cn('mr-2 w-5 h-5', isFavorite && 'fill-red-500 text-red-500')} />
-                    {isFavorite ? 'Guardado en favoritos' : 'Guardar en favoritos'}
-                  </Button>
+                  {showFinancingButton && (
+                    <Button
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-14 text-base shadow-lg shadow-orange-200"
+                      onClick={onFinancingClick}
+                      data-gtm-id="detail-page-finance"
+                    >
+                      <CreditCardIcon className="mr-2 w-5 h-5" />
+                      Comprar con Financiamiento
+                    </Button>
+                  )}
+                  {showWhatsAppButton && (
+                    <Button
+                      variant="outline"
+                      className="w-full bg-green-500 hover:bg-green-600 text-white border-green-500 hover:border-green-600 font-bold h-14 text-base"
+                      onClick={onWhatsAppClick}
+                    >
+                      <MessageCircleIcon className="mr-2 w-5 h-5" />
+                      Contactar por WhatsApp
+                    </Button>
+                  )}
+                  {!isSold && (
+                    <Button
+                      variant="outline"
+                      className="w-full border-2 border-border hover:border-border/80 font-bold h-12"
+                      onClick={onFavoriteClick}
+                      data-gtm-id="detail-page-favorite"
+                    >
+                      <HeartIcon className={cn('mr-2 w-5 h-5', isFavorite && 'fill-red-500 text-red-500')} />
+                      {isFavorite ? 'Guardado en favoritos' : 'Guardar en favoritos'}
+                    </Button>
+                  )}
                 </div>
 
                 {/* Trust Badges Card */}
@@ -1142,44 +1170,50 @@ const VehicleProductOverview = ({
         />
       )}
 
-      {/* Mobile Sticky CTA Footer - at bottom since BottomNav is hidden on this page */}
-      <div
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-t border-border/40"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-      >
-        <div className="px-4 py-2.5 flex items-center gap-3">
-          {/* Price - left side */}
-          <div className="flex-1 min-w-0">
-            <p className="text-lg font-black text-foreground leading-tight">
-              {formatPrice(hasPromotion && vehicle.precio_reduccion ? vehicle.precio_reduccion : vehicle.precio)}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Desde <span className="font-semibold text-orange-600">{formatPrice(financeData.monthlyPayment)}</span>/mes
-            </p>
-          </div>
+      {/* Mobile Sticky CTA Footer - Hidden for sold vehicles */}
+      {showActionButtons && (
+        <div
+          className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-t border-border/40"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        >
+          <div className="px-4 py-2.5 flex items-center gap-3">
+            {/* Price - left side */}
+            <div className="flex-1 min-w-0">
+              <p className="text-lg font-black text-foreground leading-tight">
+                {formatPrice(hasPromotion && vehicle.precio_reduccion ? vehicle.precio_reduccion : vehicle.precio)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Desde <span className="font-semibold text-orange-600">{formatPrice(financeData.monthlyPayment)}</span>/mes
+              </p>
+            </div>
 
-          {/* CTA Buttons - right side */}
-          <div className="flex items-center gap-2">
-            <Button
-              size="icon"
-              className="w-10 h-10 rounded-full bg-green-500 hover:bg-green-600 text-white shrink-0"
-              onClick={onWhatsAppClick}
-              aria-label="Contactar por WhatsApp"
-            >
-              <MessageCircleIcon className="w-5 h-5" />
-            </Button>
-            <Button
-              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold h-10 px-5 text-sm rounded-full"
-              onClick={onFinancingClick}
-            >
-              Financiar
-            </Button>
+            {/* CTA Buttons - right side */}
+            <div className="flex items-center gap-2">
+              {showWhatsAppButton && (
+                <Button
+                  size="icon"
+                  className="w-10 h-10 rounded-full bg-green-500 hover:bg-green-600 text-white shrink-0"
+                  onClick={onWhatsAppClick}
+                  aria-label="Contactar por WhatsApp"
+                >
+                  <MessageCircleIcon className="w-5 h-5" />
+                </Button>
+              )}
+              {showFinancingButton && (
+                <Button
+                  className="bg-orange-500 hover:bg-orange-600 text-white font-semibold h-10 px-5 text-sm rounded-full"
+                  onClick={onFinancingClick}
+                >
+                  Financiar
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Spacer for mobile sticky footer (CTA ~70px + safe area) */}
-      <div className="lg:hidden h-24" />
+      {showActionButtons && <div className="lg:hidden h-24" />}
     </>
   )
 }
