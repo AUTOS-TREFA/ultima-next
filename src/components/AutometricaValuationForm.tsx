@@ -123,7 +123,9 @@ const MAX_KILOMETRAJE = 120000;
  * This merges variants like "Versa", "Versa (línea nueva)", "Versa (línea vieja)"
  * into a single "Versa" option while preserving the original name for API calls.
  */
-function normalizeSubbrand(subbrand: string): string {
+function normalizeSubbrand(subbrand: string | undefined | null): string {
+  // Guard against undefined/null values
+  if (!subbrand || typeof subbrand !== 'string') return '';
   // Remove common suffixes: (línea nueva), (línea vieja), (cambio de línea), (línea anterior), etc.
   return subbrand.replace(/\s*\([^)]*\)\s*$/, '').trim();
 }
@@ -194,6 +196,9 @@ export function AutometricaValuationForm({
     const brands = new Set<string>();
 
     for (const v of catalog) {
+      // Skip entries with missing required fields
+      if (!v.brand || !v.subbrand || !v.version) continue;
+
       brands.add(v.brand);
       const normalizedSubbrand = normalizeSubbrand(v.subbrand);
 
@@ -248,11 +253,11 @@ export function AutometricaValuationForm({
     if (!catalogIndex || !selectedBrand || !selectedSubbrand || !selectedYear) return [];
     const key = `${selectedBrand}|${selectedSubbrand}|${selectedYear}`;
     const vers = catalogIndex.brandSubbrandYearToVersions.get(key);
-    if (!vers) return [];
+    if (!vers || vers.length === 0) return [];
 
     // Return unique versions with their original subbrand (for API calls)
-    // Sort by version name for consistent ordering
-    return vers.sort((a, b) => a.version.localeCompare(b.version));
+    // Create a copy before sorting to avoid mutating the original array
+    return [...vers].sort((a, b) => a.version.localeCompare(b.version));
   }, [catalogIndex, selectedBrand, selectedSubbrand, selectedYear]);
 
   // Valuation state
