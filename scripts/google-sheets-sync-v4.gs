@@ -221,6 +221,12 @@ function syncAllRows() {
   scriptProps.setProperty('LAST_SYNC_TIME', new Date().toISOString());
 
   Logger.log(`✅ Sincronización completada: ${successCount} éxitos, ${errorCount} errores`);
+
+  // Trigger sync to Airtable for new records
+  if (successCount > 0) {
+    Logger.log('🔄 Sincronizando nuevos registros a Airtable...');
+    triggerAirtableSync();
+  }
 }
 
 /**
@@ -236,37 +242,64 @@ function forceFullSync() {
 /**
  * Upsert records to Supabase
  * Uses merge-duplicates to only update fields that are sent, preserving others
+ *
+ * FIX: PostgREST requires all objects in a batch to have the same keys (PGRST102)
+ * So we group records by their key signature and upsert each group separately
  */
 function upsertToSupabase(registros) {
+  if (!registros || registros.length === 0) return true;
+
+  // Group records by their key signature (set of keys)
+  const groups = {};
+  registros.forEach(registro => {
+    const keySignature = Object.keys(registro).sort().join(',');
+    if (!groups[keySignature]) {
+      groups[keySignature] = [];
+    }
+    groups[keySignature].push(registro);
+  });
+
   const url = `${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.TABLE}?on_conflict=${CONFIG.PRIMARY_KEY}`;
+  let allSuccess = true;
 
-  const options = {
-    method: 'POST',
-    headers: {
-      'apikey': CONFIG.SUPABASE_KEY,
-      'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'resolution=merge-duplicates'  // CRITICAL: merge, don't replace
-    },
-    payload: JSON.stringify(registros),
-    muteHttpExceptions: true
-  };
+  // Upsert each group separately (same keys within each group)
+  for (const [signature, group] of Object.entries(groups)) {
+    const options = {
+      method: 'POST',
+      headers: {
+        'apikey': CONFIG.SUPABASE_KEY,
+        'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'  // CRITICAL: merge, don't replace
+      },
+      payload: JSON.stringify(group),
+      muteHttpExceptions: true
+    };
 
-  try {
-    const response = UrlFetchApp.fetch(url, options);
-    const code = response.getResponseCode();
+    try {
+      const response = UrlFetchApp.fetch(url, options);
+      const code = response.getResponseCode();
 
-    if (code !== 200 && code !== 201) {
-      Logger.log(`❌ Error Supabase: ${code} - ${response.getContentText().substring(0, 200)}`);
-      return false;
+      if (code !== 200 && code !== 201) {
+        Logger.log(`❌ Error Supabase: ${code} - ${response.getContentText().substring(0, 300)}`);
+        Logger.log(`   Keys in failed group: ${signature}`);
+        allSuccess = false;
+      } else {
+        Logger.log(`✅ Upserted group: ${group.length} records (keys: ${signature.split(',').length})`);
+      }
+    } catch (error) {
+      Logger.log(`❌ Error de red: ${error.message}`);
+      allSuccess = false;
     }
 
-    Logger.log(`✅ Batch upserted: ${registros.length} records`);
-    return true;
-  } catch (error) {
-    Logger.log(`❌ Error de red: ${error.message}`);
-    return false;
+    // Small delay between groups to avoid rate limiting
+    Utilities.sleep(100);
   }
+
+  if (allSuccess) {
+    Logger.log(`✅ All ${registros.length} records upserted successfully`);
+  }
+  return allSuccess;
 }
 
 /**
@@ -371,4 +404,45 @@ function viewSyncStatus() {
   Logger.log(`Hoja origen: ${CONFIG.SHEET_NAME}`);
   Logger.log(`Campos mapeados: ${Object.keys(CAMPO_MAPPING).length}`);
   Logger.log('═══════════════════════════════════════');
+}
+
+/**
+ * Trigger Supabase Edge Function to sync new records to Airtable
+ * This creates records in Airtable that don't have an airtable_id yet
+ */
+function triggerAirtableSync() {
+  const url = `${CONFIG.SUPABASE_URL}/functions/v1/batch-sync-airtable`;
+
+  const options = {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    payload: JSON.stringify({}),
+    muteHttpExceptions: true
+  };
+
+  try {
+    const response = UrlFetchApp.fetch(url, options);
+    const code = response.getResponseCode();
+    const result = response.getContentText();
+
+    if (code === 200 || code === 201) {
+      const data = JSON.parse(result);
+      Logger.log(`✅ Airtable sync: ${data.created || 0} creados, ${data.skipped || 0} omitidos`);
+    } else {
+      Logger.log(`⚠️ Airtable sync warning: ${code} - ${result.substring(0, 200)}`);
+    }
+  } catch (error) {
+    Logger.log(`⚠️ Airtable sync error: ${error.message}`);
+  }
+}
+
+/**
+ * Manual function to trigger Airtable sync
+ */
+function manualAirtableSync() {
+  Logger.log('🔄 Iniciando sincronización manual a Airtable...');
+  triggerAirtableSync();
 }

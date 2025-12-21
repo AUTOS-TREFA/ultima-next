@@ -91,12 +91,7 @@ const BottomNav: React.FC = () => {
         };
     }, [isVehicleDetailPage, pathname]);
 
-    // Don't render on vehicle detail pages
-    if (isVehicleDetailPage) {
-        return null;
-    }
-
-
+    // Handle click outside to close menu
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
@@ -144,6 +139,11 @@ const BottomNav: React.FC = () => {
             document.removeEventListener('focusout', handleFocusOut);
         };
     }, []);
+
+    // Don't render on vehicle detail pages - MUST be after all hooks
+    if (isVehicleDetailPage) {
+        return null;
+    }
 
     const handleLinkClick = (to: string, authRequired: boolean, isSignOut?: boolean) => {
         setIsMenuOpen(false);
