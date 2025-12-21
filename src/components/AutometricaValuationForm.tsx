@@ -115,6 +115,20 @@ const MIN_YEAR = 2016;
 const MAX_KILOMETRAJE = 120000;
 
 // ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Normalizes subbrand names by removing parenthetical suffixes.
+ * This merges variants like "Versa", "Versa (línea nueva)", "Versa (línea vieja)"
+ * into a single "Versa" option while preserving the original name for API calls.
+ */
+function normalizeSubbrand(subbrand: string): string {
+  // Remove common suffixes: (línea nueva), (línea vieja), (cambio de línea), (línea anterior), etc.
+  return subbrand.replace(/\s*\([^)]*\)\s*$/, '').trim();
+}
+
+// ============================================================================
 // PROPS
 // ============================================================================
 
@@ -164,37 +178,47 @@ export function AutometricaValuationForm({
 
   // ============================================================================
   // INDEXED LOOKUPS - O(1) access instead of filtering arrays
+  // Uses normalized subbrand names for display, but stores original for API calls
   // ============================================================================
   const catalogIndex = useMemo(() => {
     if (catalog.length === 0) return null;
 
-    const brandToSubbrands = new Map<string, Set<string>>();
+    // Maps use normalized subbrand names for grouping
+    const brandToSubbrands = new Map<string, Set<string>>(); // Normalized names
     const brandSubbrandToYears = new Map<string, Set<number>>();
-    const brandSubbrandYearToVersions = new Map<string, string[]>();
+    // Versions store both original subbrand and version for API calls
+    const brandSubbrandYearToVersions = new Map<string, Array<{
+      originalSubbrand: string;
+      version: string;
+    }>>();
     const brands = new Set<string>();
 
     for (const v of catalog) {
       brands.add(v.brand);
+      const normalizedSubbrand = normalizeSubbrand(v.subbrand);
 
-      // Brand -> Subbrands
+      // Brand -> Normalized Subbrands
       if (!brandToSubbrands.has(v.brand)) {
         brandToSubbrands.set(v.brand, new Set());
       }
-      brandToSubbrands.get(v.brand)!.add(v.subbrand);
+      brandToSubbrands.get(v.brand)!.add(normalizedSubbrand);
 
-      // Brand+Subbrand -> Years
-      const bsKey = `${v.brand}|${v.subbrand}`;
+      // Brand+NormalizedSubbrand -> Years (merges years from all variants)
+      const bsKey = `${v.brand}|${normalizedSubbrand}`;
       if (!brandSubbrandToYears.has(bsKey)) {
         brandSubbrandToYears.set(bsKey, new Set());
       }
       brandSubbrandToYears.get(bsKey)!.add(v.year);
 
-      // Brand+Subbrand+Year -> Versions
-      const bsyKey = `${v.brand}|${v.subbrand}|${v.year}`;
+      // Brand+NormalizedSubbrand+Year -> Versions with original subbrand
+      const bsyKey = `${v.brand}|${normalizedSubbrand}|${v.year}`;
       if (!brandSubbrandYearToVersions.has(bsyKey)) {
         brandSubbrandYearToVersions.set(bsyKey, []);
       }
-      brandSubbrandYearToVersions.get(bsyKey)!.push(v.version);
+      brandSubbrandYearToVersions.get(bsyKey)!.push({
+        originalSubbrand: v.subbrand,
+        version: v.version
+      });
     }
 
     return { brands, brandToSubbrands, brandSubbrandToYears, brandSubbrandYearToVersions };
@@ -219,15 +243,35 @@ export function AutometricaValuationForm({
     return yrs ? [...yrs].filter(y => y >= MIN_YEAR).sort((a, b) => b - a) : [];
   }, [catalogIndex, selectedBrand, selectedSubbrand]);
 
-  const versions = useMemo(() => {
+  // Versions now include originalSubbrand for API calls
+  const versionOptions = useMemo(() => {
     if (!catalogIndex || !selectedBrand || !selectedSubbrand || !selectedYear) return [];
     const key = `${selectedBrand}|${selectedSubbrand}|${selectedYear}`;
     const vers = catalogIndex.brandSubbrandYearToVersions.get(key);
-    return vers ? [...vers].sort() : [];
+    if (!vers) return [];
+
+    // Return unique versions with their original subbrand (for API calls)
+    // Sort by version name for consistent ordering
+    return vers.sort((a, b) => a.version.localeCompare(b.version));
   }, [catalogIndex, selectedBrand, selectedSubbrand, selectedYear]);
 
   // Valuation state
   const [valuation, setValuation] = useState<AutometricaValuation | null>(null);
+
+  // Selected version with original subbrand for API calls
+  const [selectedVersionData, setSelectedVersionData] = useState<{
+    originalSubbrand: string;
+    version: string;
+  } | null>(null);
+
+  // Pending form data for verification-first flow
+  const [pendingFormData, setPendingFormData] = useState<{
+    brand: string;
+    subbrand: string; // Original subbrand for API
+    year: string;
+    version: string;
+    kilometraje: number;
+  } | null>(null);
 
   // Verification state (for reveal step)
   const [phoneInput, setPhoneInput] = useState('');
@@ -382,6 +426,7 @@ export function AutometricaValuationForm({
   useEffect(() => {
     if (selectedYear) {
       setSelectedVersion('');
+      setSelectedVersionData(null);
       setTimeout(() => versionRef.current?.focus({ preventScroll: true }), 50);
 
       // Pre-fill estimated mileage (capped at MAX_KILOMETRAJE)
@@ -442,6 +487,38 @@ export function AutometricaValuationForm({
     return null;
   };
 
+  // Execute valuation API call - called after verification for unverified users
+  const executeValuation = async (formData: typeof pendingFormData) => {
+    if (!formData) return;
+
+    setStep('valuating');
+    setError(null);
+
+    try {
+      const valuationResult = await AutometricaService.getValuation(
+        {
+          year: parseInt(formData.year),
+          brand: formData.brand,
+          subbrand: formData.subbrand,
+          version: formData.version,
+        },
+        formData.kilometraje
+      );
+
+      setValuation(valuationResult);
+      await saveValuationData(valuationResult, formData.kilometraje);
+      setStep('success');
+
+      if (onComplete) {
+        setTimeout(onComplete, 2000);
+      }
+    } catch (err: any) {
+      console.error('Valuation error:', err);
+      setError(err.message || 'No pudimos generar una oferta. Intenta de nuevo.');
+      setStep('vehicle');
+    }
+  };
+
   const handleGetValuation = async () => {
     if (!selectedBrand || !selectedSubbrand || !selectedYear || !selectedVersion) {
       setError('Por favor, completa todos los campos del auto');
@@ -457,7 +534,6 @@ export function AutometricaValuationForm({
     if (isQueryInProgress) return;
 
     setIsQueryInProgress(true);
-    setStep('valuating');
     setError(null);
 
     try {
@@ -466,33 +542,26 @@ export function AutometricaValuationForm({
         const existing = await checkExistingQuote();
         if (existing) {
           setExistingQuote(existing);
-          setStep('vehicle');
           setIsQueryInProgress(false);
           return;
         }
       }
 
-      const valuationResult = await AutometricaService.getValuation(
-        {
-          year: parseInt(selectedYear),
-          brand: selectedBrand,
-          subbrand: selectedSubbrand,
-          version: selectedVersion,
-        },
-        kmValue
-      );
+      // Build form data with original subbrand for API
+      const formData = {
+        brand: selectedBrand,
+        subbrand: selectedVersionData?.originalSubbrand || selectedSubbrand,
+        year: selectedYear,
+        version: selectedVersion,
+        kilometraje: kmValue,
+      };
 
-      setValuation(valuationResult);
-
-      // If user is already logged in AND has phone verified, go directly to success
-      // Otherwise, require phone verification (even for logged-in users without phone_verified)
+      // If user is already logged in AND has phone verified, call API directly
       if (user && profile?.phone_verified === true) {
-        await saveValuationData(valuationResult, kmValue);
-        setStep('success');
+        await executeValuation(formData);
       } else {
-        // Show verification modal to reveal offer
-        // - For unauthenticated users: will create account + verify phone
-        // - For authenticated users without phone_verified: will verify phone only
+        // Store form data and show verification modal BEFORE calling API
+        setPendingFormData(formData);
         setShowVerificationModal(true);
         setStep('verify_to_reveal');
 
@@ -505,10 +574,6 @@ export function AutometricaValuationForm({
             setEmailInput(profile.email);
           }
         }
-      }
-
-      if (onComplete) {
-        setTimeout(onComplete, 2000);
       }
     } catch (err: any) {
       console.error('Valuation error:', err);
@@ -745,12 +810,15 @@ export function AutometricaValuationForm({
           vehicleId: `${selectedBrand}-${selectedSubbrand}-${selectedYear}`
         });
 
-        // Reload profile and save valuation
+        // Reload profile and execute valuation
         await reloadProfile();
 
-        const kmValue = parseInt(kilometraje.replace(/[^0-9]/g, ''), 10);
-        if (valuation) {
-          await saveValuationData(valuation, kmValue);
+        // Now call the API with pending form data
+        if (pendingFormData) {
+          setShowVerificationModal(false);
+          await executeValuation(pendingFormData);
+          setPendingFormData(null);
+          return; // executeValuation handles setStep('success')
         }
 
       } else {
@@ -827,12 +895,15 @@ export function AutometricaValuationForm({
           vehicleId: `${selectedBrand}-${selectedSubbrand}-${selectedYear}`
         });
 
-        // Reload profile and save valuation
+        // Reload profile and execute valuation
         await reloadProfile();
 
-        const kmValue = parseInt(kilometraje.replace(/[^0-9]/g, ''), 10);
-        if (valuation) {
-          await saveValuationData(valuation, kmValue);
+        // Now call the API with pending form data
+        if (pendingFormData) {
+          setShowVerificationModal(false);
+          await executeValuation(pendingFormData);
+          setPendingFormData(null);
+          return; // executeValuation handles setStep('success')
         }
       }
 
@@ -933,12 +1004,15 @@ export function AutometricaValuationForm({
         vehicleId: `${selectedBrand}-${selectedSubbrand}-${selectedYear}`
       });
 
-      // Reload profile and save valuation
+      // Reload profile and execute valuation
       await reloadProfile();
 
-      const kmValue = parseInt(kilometraje.replace(/[^0-9]/g, ''), 10);
-      if (valuation) {
-        await saveValuationData(valuation, kmValue);
+      // Now call the API with pending form data
+      if (pendingFormData) {
+        setShowVerificationModal(false);
+        await executeValuation(pendingFormData);
+        setPendingFormData(null);
+        return; // executeValuation handles setStep('success')
       }
 
       setShowVerificationModal(false);
@@ -959,8 +1033,10 @@ export function AutometricaValuationForm({
     setSelectedSubbrand('');
     setSelectedYear('');
     setSelectedVersion('');
+    setSelectedVersionData(null);
     setKilometraje('');
     setValuation(null);
+    setPendingFormData(null);
     setOtpSent(false);
     setEmailOtpSent(false);
     setOtpCode('');
@@ -1075,28 +1151,30 @@ export function AutometricaValuationForm({
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-green-600" />
+            <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center">
+              <Lock className="w-4 h-4 text-primary-600" />
             </div>
-            ¡Tu oferta está lista!
+            Verifica tu identidad
           </DialogTitle>
           <DialogDescription>
-            {selectedBrand} {selectedSubbrand} {selectedYear}
+            Para generar tu oferta por tu {selectedBrand} {selectedSubbrand} {selectedYear}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* Blurred offer preview */}
-          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl p-4">
-            <p className="text-white/50 text-xs uppercase tracking-wider mb-1">Oferta TREFA</p>
+          {/* Info card - no price shown yet */}
+          <div className="bg-gradient-to-br from-slate-100 via-slate-50 to-white rounded-xl p-4 border border-slate-200">
             <div className="flex items-center gap-3">
-              <p className="text-2xl font-black text-white blur-md select-none">
-                {valuation ? currencyFormatter.format(valuation.purchasePrice) : '$---,---'}
-              </p>
-              <Lock className="w-5 h-5 text-white/40" />
+              <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
+                <Car className="w-5 h-5 text-primary-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-slate-900">{selectedBrand} {selectedSubbrand}</p>
+                <p className="text-sm text-slate-500">{selectedYear} • {kilometraje} km</p>
+              </div>
             </div>
-            <p className="text-white/40 text-xs mt-2">
-              Verifica tu identidad para ver tu oferta completa
+            <p className="text-slate-500 text-xs mt-3">
+              Verificamos tu identidad para proteger tu información y generar una oferta personalizada
             </p>
           </div>
 
@@ -1577,13 +1655,19 @@ export function AutometricaValuationForm({
                     <select
                       ref={versionRef}
                       value={selectedVersion}
-                      onChange={(e) => setSelectedVersion(e.target.value)}
+                      onChange={(e) => {
+                        const version = e.target.value;
+                        setSelectedVersion(version);
+                        // Find and store the version data with original subbrand for API
+                        const versionData = versionOptions.find(v => v.version === version);
+                        setSelectedVersionData(versionData || null);
+                      }}
                       disabled={!selectedYear}
                       className={`w-full appearance-none form-select-animated rounded-lg ${inputPy} px-3 pr-7 ${inputText} font-medium ${!selectedYear ? 'cursor-not-allowed' : 'cursor-pointer'} ${selectedYear ? 'text-gray-900' : 'text-gray-300'}`}
                     >
                       <option value="">{selectedYear ? 'Seleccionar' : '—'}</option>
-                      {versions.map((version) => (
-                        <option key={version} value={version}>{version}</option>
+                      {versionOptions.map((versionOption, idx) => (
+                        <option key={`${versionOption.version}-${idx}`} value={versionOption.version}>{versionOption.version}</option>
                       ))}
                     </select>
                     <ChevronDown className={`absolute right-2 top-1/2 -translate-y-1/2 ${iconSize} ${!selectedYear ? 'text-gray-300' : 'text-gray-400'} pointer-events-none`} />
