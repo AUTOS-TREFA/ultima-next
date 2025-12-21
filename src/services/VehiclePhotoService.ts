@@ -108,16 +108,16 @@ interface InventarioCacheRow {
 
 export const VehiclePhotoService = {
   /**
-   * Get vehicles with OrdenStatus='Comprado' that are missing photos
+   * Get vehicles with exhibicion_inventario=true that are missing photos
    * Checks all image fields: feature_image, feature_image_url, r2_feature_image, fotos_exterior_url
    * Only shows vehicles that are missing at least one of these image sources
    */
   async getVehiclesWithoutPhotos(): Promise<VehicleWithoutPhotos[]> {
-    // Only fetch vehicles that are "Comprado" (purchased inventory ready for photos)
+    // Only fetch vehicles that are approved for exhibition (visible on frontend)
     const { data, error } = await supabase
       .from('inventario_cache')
       .select('id, ordencompra, title, titulo, marca, modelo, autoano, feature_image, feature_image_url, r2_feature_image, galeria_exterior, fotos_exterior_url, r2_gallery, use_r2_images')
-      .eq('ordenstatus', 'Comprado')
+      .eq('exhibicion_inventario', true)
       .order('ordencompra', { ascending: false });
 
     if (error) {
@@ -388,13 +388,13 @@ export const VehiclePhotoService = {
   },
 
   /**
-   * Get vehicles with OrdenStatus='Comprado' that HAVE photos (for photo management)
+   * Get vehicles with exhibicion_inventario=true that HAVE photos (for photo management)
    */
   async getVehiclesWithPhotos(): Promise<VehicleWithPhotos[]> {
     const { data, error } = await supabase
       .from('inventario_cache')
       .select('id, ordencompra, title, titulo, marca, modelo, autoano, feature_image, feature_image_url, r2_feature_image, galeria_exterior, fotos_exterior_url, r2_gallery, ubicacion')
-      .eq('ordenstatus', 'Comprado')
+      .eq('exhibicion_inventario', true)
       .order('ordencompra', { ascending: false });
 
     if (error) {
@@ -680,7 +680,7 @@ export const VehiclePhotoService = {
   },
 
   /**
-   * Get ALL vehicles with OrdenStatus='Comprado' for editing (includes all fields)
+   * Get ALL vehicles with exhibicion_inventario=true for editing (includes all fields)
    */
   async getAllVehiclesForEdit(): Promise<VehicleEditData[]> {
     const { data, error } = await supabase
@@ -692,7 +692,7 @@ export const VehiclePhotoService = {
         feature_image, feature_image_url, r2_feature_image,
         galeria_exterior, fotos_exterior_url, r2_gallery
       `)
-      .eq('ordenstatus', 'Comprado')
+      .eq('exhibicion_inventario', true)
       .order('ordencompra', { ascending: false });
 
     if (error) {
